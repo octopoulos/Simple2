@@ -5,6 +5,5 @@
 assets/
 build*/
 build/
-common/
 models/
 runtime/
