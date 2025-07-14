@@ -1,0 +1,41 @@
+// ModelLoader.cpp
+// @author octopoulos
+// @version 2025-07-10
+
+#include "stdafx.h"
+#include "ModelLoader.h"
+
+/**
+ * Loads mesh from file, creates Object3D with that mesh, and returns it
+ */
+sMesh ModelLoader::LoadModel(std::string_view name)
+{
+	std::filesystem::path path = "runtime/models";
+	path /= fmt::format("{}.bin", name);
+
+	bx::FilePath filePath(path.string().c_str());
+
+	auto mesh = MeshLoad(filePath);
+	if (!mesh)
+	{
+		ui::LogError("Failed to load mesh: {} @{}", name, path);
+		return nullptr;
+	}
+	return mesh;
+}
+
+Mesh2* ModelLoader::LoadModel2(std::string_view name)
+{
+	std::filesystem::path path = "runtime/models";
+	path /= fmt::format("{}.bin", name);
+
+	bx::FilePath filePath(path.string().c_str());
+
+	auto mesh = meshLoad(filePath);
+	if (!mesh)
+	{
+		ui::LogError("Failed to load mesh: {} @{}", name, path);
+		return nullptr;
+	}
+	return mesh;
+}

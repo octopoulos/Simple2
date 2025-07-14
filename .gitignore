@@ -1,0 +1,10 @@
+.DS_Store
+.vs/
+.vscode/
+*.zip
+assets/
+build*/
+build/
+common/
+models/
+runtime/
