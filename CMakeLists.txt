@@ -156,7 +156,7 @@ if(APPLE AND WITH_SDL3)
 	list(APPEND APP_SRC_FILES "app/platform.mm")
 endif()
 
-add_executable(Simple app/main.cpp)
+add_executable(Simple app/app.cpp)
 
 #######################################################################################################################
 # 4) INCLUDES

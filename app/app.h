@@ -1,26 +1,36 @@
 // app.h
 // @author octopoulos
-// @version 2025-07-05
+// @version 2025-07-10
 
 #pragma once
 
 #include "engine/ShaderManager.h"
 #include "physics.h"
 
-class App
+class App : public entry::AppI
 {
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// ENTRY
+	////////
+
+public:
+	App(const char* _name, const char* _description, const char* _url)
+		: entry::AppI(_name, _description, _url)
+	{
+	}
+
+	void init(int32_t argc, const char* const* argv, uint32_t width, uint32_t height) override;
+	int  shutdown() override;
+	bool update() override;
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// INIT
 	///////
 
-private:
-	int InitBackend();
-
 public:
-	App();
 	~App();
 
-	int  Init();
+	int  Initialize();
 	void Destroy();
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -60,19 +70,20 @@ private:
 	/////////
 
 private:
-	bool        hasFocus     = true;    //
-	int         mouseButton  = 0;       // last known mouse button
-	float       mousePos[3]  = {};      // last known mouse position: x, y
-	int         mouseScroll  = 0;       // mouse wheel
-	bool        quit         = false;   // exit the mainloop
-	int         screenHeight = 800;     //
-	int         screenWidth  = 1280;    //
-	bool        useGlm       = false;   //
-	SDL_Window* window       = nullptr; //
-
-	void MainLoop();
-	void Render();
+	bool              hasFocus     = true;    //
+	uint32_t          isDebug      = 0;       //
+	uint32_t          isReset      = 0;       //
+	int               mouseButton  = 0;       // last known mouse button
+	float             mousePos[3]  = {};      // last known mouse position: x, y
+	int               mouseScroll  = 0;       // mouse wheel
+	entry::MouseState mouseState   = {};      //
+	bool              quit         = false;   // exit the mainloop
+	uint32_t          screenHeight = 800;     //
+	uint32_t          screenWidth  = 1280;    //
+	bool              useGlm       = false;   //
+	SDL_Window*       window       = nullptr; //
 
 public:
-	void Run();
+	void MainLoop();
+	void Render();
 };

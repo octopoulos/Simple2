@@ -6,6 +6,8 @@
 
 #include <bx/bounds.h>
 
+#include "engine/Object3d.h"
+
 struct Primitive
 {
 	uint32_t m_startIndex;
@@ -65,20 +67,20 @@ struct MeshState
 class Mesh : public Object3d
 {
 public:
-	btRigidBody*              body     = nullptr; //
-	std::shared_ptr<Geometry> geometry = nullptr; //
-	std::shared_ptr<Material> material = nullptr; //
+	// btRigidBody*              body     = nullptr; //
+	// std::shared_ptr<Geometry> geometry = nullptr; //
+	// std::shared_ptr<Material> material = nullptr; //
 	bgfx::ProgramHandle       program  = {};      //
 	std::vector<Group>        groups   = {};      //
 	bgfx::VertexLayout        layout   = {};      //
 
 	Mesh() = default;
 
-	Mesh(std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material)
-	    : geometry(std::move(geometry))
-	    , material(std::move(material))
-	{
-	}
+	// Mesh(std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material)
+	//     : geometry(std::move(geometry))
+	//     , material(std::move(material))
+	// {
+	// }
 
 	~Mesh() { Destroy(); }
 

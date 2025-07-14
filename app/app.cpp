@@ -5,7 +5,6 @@
 #include "stdafx.h"
 #include "app.h"
 #include "common/bgfx_utils.h"
-// #include "gui/imgui-bgfx.h"
 #include "imgui/imgui.h"
 
 #include "engine/ModelLoader.h"
@@ -14,43 +13,69 @@
 #	include <windows.h>
 #endif
 #if BX_PLATFORM_OSX
-	extern "C" void* GetMacOSMetalLayer(SDL_Window* window);
+extern "C" void* GetMacOSMetalLayer(SDL_Window* window);
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ENTRY
+////////
 
-// A key for the index triplet
-struct IndexKey
+void App::init(int32_t argc, const char* const* argv, uint32_t width, uint32_t height)
 {
-	int pi, ni, ti;
+	Args args(argc, argv);
 
-	bool operator==(const IndexKey& other) const
+	// FindAppDirectory(true);
+
+	screenWidth  = width;
+	screenHeight = height;
+	isDebug      = BGFX_DEBUG_NONE;
+	isReset      = BGFX_RESET_VSYNC;
+
+	bgfx::Init init;
+	init.type              = args.m_type;
+	init.vendorId          = args.m_pciId;
+	init.platformData.nwh  = entry::getNativeWindowHandle(entry::kDefaultWindowHandle);
+	init.platformData.ndt  = entry::getNativeDisplayHandle();
+	init.platformData.type = entry::getNativeWindowHandleType();
+	init.resolution.width  = screenWidth;
+	init.resolution.height = screenHeight;
+	init.resolution.reset  = isReset;
+	bgfx::init(init);
+
+	bgfx::setDebug(isDebug);
+	bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
+
+	Initialize();
+}
+
+int App::shutdown()
+{
+	Destroy();
+	return 0;
+}
+
+bool App::update()
+{
+	if (!entry::processEvents(screenWidth, screenHeight, isDebug, isReset, &mouseState))
 	{
-		return pi == other.pi && ni == other.ni && ti == other.ti;
-	}
-};
+		imguiBeginFrame(mouseState.m_mx, mouseState.m_my, (mouseState.m_buttons[entry::MouseButton::Left] ? IMGUI_MBUT_LEFT : 0) | (mouseState.m_buttons[entry::MouseButton::Right] ? IMGUI_MBUT_RIGHT : 0) | (mouseState.m_buttons[entry::MouseButton::Middle] ? IMGUI_MBUT_MIDDLE : 0), mouseState.m_mz, uint16_t(screenWidth), uint16_t(screenHeight));
 
-struct IndexKeyHash
-{
-	std::size_t operator()(const IndexKey& k) const
-	{
-		return (std::hash<int>()(k.pi) ^ (std::hash<int>()(k.ni) << 1)) ^ (std::hash<int>()(k.ti) << 2);
-	}
-};
+		showExampleDialog(this);
+		imguiEndFrame();
 
-int SDL_Fail()
-{
-	SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "Error %s", SDL_GetError());
-	return -1;
+		Render();
+
+		// Advance to next frame. Rendering thread will be kicked to process submitted rendering primitives.
+		bgfx::frame();
+		return true;
+	}
+
+	return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // INIT
 ///////
-
-App::App()
-{
-}
 
 App::~App()
 {
@@ -70,90 +95,13 @@ void App::Destroy()
 	SDL_Quit();
 }
 
-int App::Init()
+int App::Initialize()
 {
 	FindAppDirectory(true);
 
-	if (const int result = InitBackend(); result < 0) return result;
 	if (const int result = InitScene(); result < 0) return result;
 
 	imguiCreate();
-	return 1;
-}
-
-int App::InitBackend()
-{
-	// 1) SDL window
-	{
-		ui::Log("Initializing SDL");
-		if (!SDL_Init(SDL_INIT_VIDEO)) return -1;
-
-		window = SDL_CreateWindow("Hello bgfx + bullet + SDL3", screenWidth, screenHeight, SDL_WINDOW_RESIZABLE);
-		if (!window) return -2;
-	}
-
-	// 2) Find native window
-	bgfx::PlatformData       pd           = {};
-	bgfx::RendererType::Enum rendererType = bgfx::RendererType::Count;
-	std::filesystem::path    shaderDir    = "runtime/shaders";
-
-// 	const auto props = SDL_GetWindowProperties(window);
-
-// #if BX_PLATFORM_ANDROID
-// #elif BX_PLATFORM_EMSCRIPTEN
-// 	ui::Log("__EMSCRIPTEN__");
-// 	shaderDir /= "essl";
-// 	pd.context = SDL_GL_GetCurrentContext();
-// 	pd.nwh     = (void*)"#canvas";
-// #elif BX_PLATFORM_IOS
-// #elif BX_PLATFORM_LINUX
-// 	ui::Log("SDL_PLATFORM_LINUX");
-// 	rendererType = bgfx::RendererType::OpenGL;
-// 	shaderDir /= "glsl";
-// 	if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0)
-// 	{
-// 		pd.ndt = (Display*)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
-// 		pd.nwh = (Window)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
-// 	}
-// 	else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0)
-// 	{
-// 		pd.ndt = (struct wl_display*)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
-// 		pd.nwh = (struct wl_surface*)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
-// 	}
-// #elif BX_PLATFORM_OSX
-// 	ui::Log("SDL_PLATFORM_MACOS");
-// 	rendererType = bgfx::RendererType::Metal;
-// 	shaderDir /= "metal";
-// 	// pd.nwh = GetMacOSMetalLayer(window);
-// #elif BX_PLATFORM_WINDOWS
-// 	ui::Log("SDL_PLATFORM_WIN32");
-// 	rendererType = bgfx::RendererType::Vulkan;
-// 	shaderDir /= "spirv";
-// 	pd.nwh = (HWND)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
-// #endif // BX_PLATFORM_*
-
-	// 3) Bgfx initialization
-	{
-		bgfx::Init init;
-		init.platformData      = pd;
-		init.resolution.height = screenHeight;
-		init.resolution.reset  = BGFX_RESET_VSYNC;
-		init.resolution.width  = screenWidth;
-		init.type              = rendererType;
-
-		ui::Log("Initializing bgfx");
-		if (!bgfx::init(init))
-		{
-			ui::LogError("bgfx::init failed");
-			SDL_DestroyWindow(window);
-			SDL_Quit();
-			return -4;
-		}
-		ui::Log("bgfx initialized successfully");
-		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
-	}
-
-	// entry::StartEntry();
 	return 1;
 }
 
@@ -248,13 +196,6 @@ void App::MainLoop()
 
 void App::Render()
 {
-	imguiBeginFrame(mousePos[0], mousePos[1], mouseButton, mouseScroll, uint16_t(screenWidth), uint16_t(screenHeight));
-	showExampleDialog(nullptr);
-	imguiEndFrame();
-
-	bgfx::setViewRect(0, 0, 0, screenWidth, screenHeight);
-	bgfx::touch(0);
-
 	// ui::Log("Rendering frame");
 	if (useGlm)
 	{
@@ -330,32 +271,6 @@ void App::Render()
 
 	// draw the scene
 	scene.RenderScene(0, screenWidth, screenHeight);
-
-	//{
-	//	float mtx[16];
-	//	bx::mtxRotateXY(mtx, 0.0f, deltaTime * 0.37f);
-
-	//	const auto obj = scene.children[0];
-	//	obj->Render(0);
-	//	//meshSubmit(obj->mesh, 0, obj->program, mtx);
-	//}
-
-	const uint32_t frame = bgfx::frame();
-	//ui::Log("frame={} time={} deltaTime={}", frame, time, deltaTime);
-}
-
-void App::Run()
-{
-#ifdef __EMSCRIPTEN__
-	ui::Log("Starting main loop");
-	// clang-format off
-	emscripten_set_main_loop_arg([](void* arg) {
-		static_cast<App*>(arg)->MainLoop();
-	}, this, 0, 1);
-	// clang-format on
-#else
-	while (!quit) MainLoop();
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -403,34 +318,45 @@ int App::InitScene()
 
 	// load BIN model
 	ModelLoader loader;
-	//if (auto object = loader.LoadModel("kenney_car-kit-obj/race-future"))
-	//{
-	//	object->program = shaderManager.LoadProgram("vs_model", "fs_model");
-	//	bx::mtxRotateXYZ(object->transform, -0.3f, 2.5f, 0.0f);
-	//	scene.AddNamedChild("car", object);
-	//}
-	//if (auto object = loader.LoadModel("building-n"))
-	//{
-	//	object->program = shaderManager.LoadProgram("vs_model", "fs_model");
-	//	bx::mtxSRT(
-	//	    object->transform,
-	//	    1.0f, 1.0f, 1.0f, // scale
-	//	    0.0f, 1.5f, 0.0f, // rotation
-	//	    3.0f, -1.0f, 0.0f // translation
-	//	);
-	//	scene.AddNamedChild("building", object);
-	//}
-	//if (auto object = loader.LoadModel("bunny"))
-	//{
-	//	object->program = shaderManager.LoadProgram("vs_mesh", "fs_mesh");
-	//	bx::mtxSRT(
-	//	    object->transform,
-	//	    1.0f, 1.0f, 1.0f, // scale
-	//	    0.0f, 1.5f, 0.0f, // rotation
-	//	    -3.0f, 0.0f, 0.0f // translation
-	//	);
-	//	scene.AddNamedChild("bunny", object);
-	//}
+	if (auto object = loader.LoadModel("kenney_car-kit-obj/race-future"))
+	{
+		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
+		bx::mtxRotateXYZ(object->transform, -0.3f, 2.5f, 0.0f);
+		scene.AddNamedChild("car", object);
+	}
+	if (auto object = loader.LoadModel("building-n"))
+	{
+		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
+		bx::mtxSRT(
+		    object->transform,
+		    1.0f, 1.0f, 1.0f, // scale
+		    0.0f, 1.5f, 0.0f, // rotation
+		    3.0f, -1.0f, 0.0f // translation
+		);
+		scene.AddNamedChild("building", object);
+	}
+	if (auto object = loader.LoadModel("bunny"))
+	{
+		object->program = shaderManager.LoadProgram("vs_mesh", "fs_mesh");
+		bx::mtxSRT(
+		    object->transform,
+		    1.0f, 1.0f, 1.0f, // scale
+		    0.0f, 1.5f, 0.0f, // rotation
+		    -3.0f, 0.0f, 0.0f // translation
+		);
+		scene.AddNamedChild("bunny", object);
+	}
+	if (auto object = loader.LoadModel("Donut"))
+	{
+		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
+		bx::mtxSRT(
+		    object->transform,
+		    1.0f, 1.0f, 1.0f, // scale
+		    0.0f, 3.0f, 0.0f, // rotation
+		    0.0f, 1.0f, -2.0f // translation
+		);
+		scene.AddNamedChild("bunny", object);
+	}
 	ui::Log("Scene.children={}", scene.children.size());
 
 	physicsWorld = std::make_unique<PhysicsWorld>();
@@ -441,161 +367,5 @@ int App::InitScene()
 	return 1;
 }
 
-class ExampleMesh : public entry::AppI
-{
-private:
-	uint32_t            m_debug       = 0;
-	uint32_t            m_height      = 480;
-	Mesh2*              m_mesh        = nullptr;
-	entry::MouseState   m_mouseState  = {};
-	bgfx::ProgramHandle m_program     = {};
-	uint32_t            m_reset       = 0;
-	bgfx::UniformHandle u_time        = {};
-	int64_t             m_timeOffset  = 0;
-	uint32_t            m_width       = 640;
-	sMesh               myMesh        = nullptr;
-	ShaderManager       shaderManager = {};
-
-public:
-	ExampleMesh(const char* _name, const char* _description, const char* _url)
-		: entry::AppI(_name, _description, _url)
-	{
-	}
-
-	void init(int32_t _argc, const char* const* _argv, uint32_t _width, uint32_t _height) override
-	{
-		Args args(_argc, _argv);
-
-		FindAppDirectory(true);
-
-		m_width  = _width;
-		m_height = _height;
-		m_debug  = BGFX_DEBUG_NONE;
-		m_reset  = BGFX_RESET_VSYNC;
-
-		bgfx::Init init;
-		init.type     = args.m_type;
-		init.vendorId = args.m_pciId;
-		init.platformData.nwh  = entry::getNativeWindowHandle(entry::kDefaultWindowHandle);
-		init.platformData.ndt  = entry::getNativeDisplayHandle();
-		init.platformData.type = entry::getNativeWindowHandleType();
-		init.resolution.width  = m_width;
-		init.resolution.height = m_height;
-		init.resolution.reset  = m_reset;
-		bgfx::init(init);
-
-		// Enable debug text.
-		bgfx::setDebug(m_debug);
-
-		// Set view 0 clear state.
-		bgfx::setViewClear(0 , BGFX_CLEAR_COLOR|BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
-
-		u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
-
-		// Create program from shaders.
-		m_program = shaderManager.LoadProgram("vs_model", "fs_model");
-
-		// m_mesh = meshLoad("runtime/models/building-n.bin");
-
-		ModelLoader loader;
-		m_mesh = loader.LoadModel2("Donut");
-		myMesh = loader.LoadModel("building-n");
-
-		m_timeOffset = bx::getHPCounter();
-
-		imguiCreate();
-	}
-
-	int shutdown() override
-	{
-		imguiDestroy();
-
-		if (myMesh) myMesh->Destroy();
-
-		meshUnload(m_mesh);
-
-		// Cleanup.
-		// bgfx::destroy(m_program);
-
-		shaderManager.Destroy();
-
-		bgfx::destroy(u_time);
-
-		// Shutdown bgfx.
-		bgfx::shutdown();
-
-		return 0;
-	}
-
-	bool update() override
-	{
-		if (!entry::processEvents(m_width, m_height, m_debug, m_reset, &m_mouseState) )
-		{
-			imguiBeginFrame(m_mouseState.m_mx
-				,  m_mouseState.m_my
-				, (m_mouseState.m_buttons[entry::MouseButton::Left  ] ? IMGUI_MBUT_LEFT   : 0)
-				| (m_mouseState.m_buttons[entry::MouseButton::Right ] ? IMGUI_MBUT_RIGHT  : 0)
-				| (m_mouseState.m_buttons[entry::MouseButton::Middle] ? IMGUI_MBUT_MIDDLE : 0)
-				,  m_mouseState.m_mz
-				, uint16_t(m_width)
-				, uint16_t(m_height)
-				);
-
-			showExampleDialog(this);
-
-			imguiEndFrame();
-
-			// Set view 0 default viewport.
-			bgfx::setViewRect(0, 0, 0, uint16_t(m_width), uint16_t(m_height) );
-
-			// This dummy draw call is here to make sure that view 0 is cleared
-			// if no other draw calls are submitted to view 0.
-			bgfx::touch(0);
-
-			float time = (float)( (bx::getHPCounter()-m_timeOffset)/double(bx::getHPFrequency() ) );
-			bgfx::setUniform(u_time, &time);
-
-			const bx::Vec3 at  = { 0.0f, 1.0f,  0.0f };
-			const bx::Vec3 eye = { 0.0f, 1.0f, -2.5f };
-
-			// Set view and projection matrix for view 0.
-			{
-				float view[16];
-				bx::mtxLookAt(view, eye, at);
-
-				float proj[16];
-				bx::mtxProj(proj, 60.0f, float(m_width)/float(m_height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-				bgfx::setViewTransform(0, view, proj);
-
-				// Set view 0 default viewport.
-				bgfx::setViewRect(0, 0, 0, uint16_t(m_width), uint16_t(m_height) );
-			}
-
-			float mtx[16];
-			bx::mtxRotateXY(mtx, 0.0f, time*0.37f);
-
-			if (m_mesh)
-				meshSubmit(m_mesh, 0, m_program, mtx);
-
-			if (myMesh)
-				myMesh->Submit(0, m_program, mtx, BGFX_STATE_MASK);
-			else
-				ui::Log("!!!myMesh");
-			// myMesh->Render(0);
-
-			// Advance to next frame. Rendering thread will be kicked to process submitted rendering primitives.
-			bgfx::frame();
-
-			return true;
-		}
-
-		return false;
-	}
-};
-
 ENTRY_IMPLEMENT_MAIN(
-	  ExampleMesh
-	, "04-mesh"
-	, "Loading meshes."
-	, "https://shark-it.be"
-	);
+    App, "App", "Simple app", "https://shark-it.be");

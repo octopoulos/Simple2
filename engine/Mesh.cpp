@@ -7,6 +7,11 @@
 
 #include <meshoptimizer.h>
 
+namespace bgfx
+{
+	int32_t read(bx::ReaderI* reader, bgfx::VertexLayout& layout, bx::Error* err);
+}
+
 void Mesh::Destroy()
 {
 	bx::AllocatorI* allocator = entry::getAllocator();
@@ -194,14 +199,14 @@ void Mesh::Render(uint8_t viewId)
 		ui::Log(" => submit");
 		Submit(viewId, program, transform, BGFX_STATE_MASK);
 	}
-	else if (geometry && material)
-	{
-		bgfx::setTransform(glm::value_ptr(worldMatrix));
-		bgfx::setVertexBuffer(0, geometry->vbh);
-		bgfx::setIndexBuffer(geometry->ibh);
-		material->Apply();
-		bgfx::submit(viewId, material->program);
-	}
+	// else if (geometry && material)
+	// {
+	// 	bgfx::setTransform(glm::value_ptr(worldMatrix));
+	// 	bgfx::setVertexBuffer(0, geometry->vbh);
+	// 	bgfx::setIndexBuffer(geometry->ibh);
+	// 	material->Apply();
+	// 	bgfx::submit(viewId, material->program);
+	// }
 }
 
 void Mesh::Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, uint64_t state) const
