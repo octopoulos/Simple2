@@ -23,7 +23,7 @@ option(WITH_SDL3 OFF)
 add_definitions(
 	-DENTRY_CONFIG_IMPLEMENT_MAIN=1
 	-DENTRY_CONFIG_USE_NATIVE=0
-	"-DWITH_SDL3=${WITH_SDL3}"
+	-DWITH_SDL3=${WITH_SDL3}
 )
 if(WITH_SDL3)
 	add_definitions(-DENTRY_CONFIG_USE_SDL3=1)
@@ -152,10 +152,6 @@ file(GLOB COMMON_SRC_FILES CONFIGURE_DEPENDS common/*.cpp common/*.h)
 file(GLOB ENGINE_SRC_FILES CONFIGURE_DEPENDS engine/*.cpp engine/*.h)
 # file(GLOB GUI_SRC_FILES CONFIGURE_DEPENDS src/gui/*.cpp src/gui/*.h)
 
-if(APPLE AND WITH_SDL3)
-	list(APPEND APP_SRC_FILES "app/platform.mm")
-endif()
-
 add_executable(Simple app/app.cpp)
 
 #######################################################################################################################
@@ -164,6 +160,8 @@ add_executable(Simple app/app.cpp)
 
 add_subdirectory(${CPP_PATH}/AI/ AI)
 
+set(VCPKG_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
+
 target_include_directories(Simple PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/3rdparty
@@ -171,7 +169,8 @@ target_include_directories(Simple PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/app
 	${CMAKE_CURRENT_SOURCE_DIR}/common
 	${CPP_PATH}
-	${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include/bullet
+	${VCPKG_INCLUDE_DIR}/bullet
+	# ${VCPKG_INCLUDE_DIR}/bx
 )
 
 #######################################################################################################################
@@ -211,13 +210,20 @@ message(STATUS "SHADERC=${SHADERC}")
 
 # Define shader types, platforms, and profiles
 set(SHADER_CONFIGS
-	#"dx11:windows:s_5_0"    # DirectX 11 (Windows)
-	"essl:wasm:300_es"      # OpenGL ES (WebGL via Emscripten)
-	"glsl:linux:150"        # OpenGL (Linux, fallback for others)
-	"metal:osx:metal"       # Metal (macOS, iOS)
-	#"pssl:ps:pssl"          # PlayStation Shader Language (PS4/PS5, if supported)
-	"spirv:windows:spirv"   # Vulkan/SPIR-V (cross-platform, often Windows/Linux)
+	#"dx11:windows:s_5_0"  # DirectX 11 (Windows)
+	"essl:wasm:300_es"     # OpenGL ES (WebGL via Emscripten)
+	"glsl:linux:150"       # OpenGL (Linux, fallback for others)
+	#"metal:osx:metal"     # Metal (macOS, iOS)
+	#"pssl:ps:pssl"        # PlayStation Shader Language (PS4/PS5, if supported)
+	"spirv:windows:spirv"  # Vulkan/SPIR-V (cross-platform, often Windows/Linux)
 )
+
+if(APPLE)
+	list(APPEND SHADER_CONFIGS "metal:osx:metal")
+endif()
+if(WIN32)
+	list(APPEND SHADER_CONFIGS "dx11:windows:s_5_0")
+endif()
 
 # Define directories
 set(RUNTIME_DIR "${CMAKE_CURRENT_SOURCE_DIR}/runtime")
@@ -369,6 +375,16 @@ source_group(TREE "${MODEL_SRC_DIR}" PREFIX "Assets/Models" FILES ${MODEL_SRC_FI
 source_group(TREE "${SHADER_SRC_DIR}" PREFIX "Assets/Shaders" FILES ${SHADER_SRC_FILES})
 source_group(TREE "${RUNTIME_DIR}" PREFIX "Assets/Binaries" FILES ${MODEL_BIN_FILES} ${SHADER_BIN_FILES})
 
+set(EXTRA_SRC_FILES)
+if(WITH_SDL3)
+	list(APPEND EXTRA_SRC_FILES "common/entry/entry_sdl3.cpp")
+	if(APPLE)
+		list(APPEND APP_SRC_FILES "common/entry/entry_sdl3.mm")
+	endif()
+else()
+	list(APPEND EXTRA_SRC_FILES "common/entry/entry_sdl.cpp")
+endif()
+
 # Add compiled models and shaders to the target
 target_sources(Simple PRIVATE
 	${MODEL_BIN_FILES}
@@ -385,9 +401,9 @@ target_sources(Simple PRIVATE
 	"common/entry/cmd.cpp"
 	"common/entry/dialog.cpp"
 	"common/entry/entry.cpp"
-	"common/entry/entry_sdl.cpp"
 	"common/entry/input.cpp"
 	"common/imgui/imgui.cpp"
+	${EXTRA_SRC_FILES}
 	${ENGINE_SRC_FILES}
 	${GUI_SRC_FILES}
 )

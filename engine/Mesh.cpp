@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-07-05
+// @version 2025-07-11
 
 #include "stdafx.h"
 #include "Mesh.h"
@@ -192,21 +192,16 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 
 void Mesh::Render(uint8_t viewId)
 {
-	ui::Log("Mesh::Render {} {} {}", name, (intptr_t)(void*)this, bgfx::isValid(program));
-
 	if (bgfx::isValid(program))
-	{
-		ui::Log(" => submit");
 		Submit(viewId, program, transform, BGFX_STATE_MASK);
+	else if (geometry && material)
+	{
+		bgfx::setTransform(glm::value_ptr(worldMatrix));
+		bgfx::setVertexBuffer(0, geometry->vbh);
+		bgfx::setIndexBuffer(geometry->ibh);
+		material->Apply();
+		bgfx::submit(viewId, material->program);
 	}
-	// else if (geometry && material)
-	// {
-	// 	bgfx::setTransform(glm::value_ptr(worldMatrix));
-	// 	bgfx::setVertexBuffer(0, geometry->vbh);
-	// 	bgfx::setIndexBuffer(geometry->ibh);
-	// 	material->Apply();
-	// 	bgfx::submit(viewId, material->program);
-	// }
 }
 
 void Mesh::Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, uint64_t state) const
@@ -279,12 +274,10 @@ sMesh MeshLoad(const bx::FilePath& filePath, bool ramcopy)
 	bx::FileReaderI* reader = entry::getFileReader();
 	if (bx::open(reader, filePath))
 	{
-		ui::Log("BX:OPEN!");
 		auto mesh = MeshLoad(reader, ramcopy);
 		bx::close(reader);
 		return mesh;
 	}
-	else ui::Log("BX:OPEN?? {}", filePath.getCPtr());
 	return nullptr;
 }
 

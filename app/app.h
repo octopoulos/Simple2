@@ -1,6 +1,6 @@
 // app.h
 // @author octopoulos
-// @version 2025-07-10
+// @version 2025-07-11
 
 #pragma once
 
@@ -45,6 +45,8 @@ private:
 	bgfx::VertexBufferHandle vbh     = {}; //
 	bgfx::ProgramHandle      program = {}; // For cube and floor
 
+	float   curTime   = 0.0f; // current time
+	float   deltaTime = 0.0f; // last delta (current - last)
 	float   lastTime  = 0.0f; // last rendered time
 	int64_t lastUs    = 0;    // microseconds
 	int64_t startTime = 0;    // initial time
@@ -70,18 +72,18 @@ private:
 	/////////
 
 private:
-	bool              hasFocus     = true;    //
-	uint32_t          isDebug      = 0;       //
-	uint32_t          isReset      = 0;       //
-	int               mouseButton  = 0;       // last known mouse button
-	float             mousePos[3]  = {};      // last known mouse position: x, y
-	int               mouseScroll  = 0;       // mouse wheel
-	entry::MouseState mouseState   = {};      //
-	bool              quit         = false;   // exit the mainloop
-	uint32_t          screenHeight = 800;     //
-	uint32_t          screenWidth  = 1280;    //
-	bool              useGlm       = false;   //
-	SDL_Window*       window       = nullptr; //
+	bool              hasFocus    = true;    //
+	uint32_t          isDebug     = 0;       //
+	uint32_t          isReset     = 0;       //
+	int               mouseButton = 0;       // last known mouse button
+	float             mousePos[3] = {};      // last known mouse position: x, y
+	int               mouseScroll = 0;       // mouse wheel
+	entry::MouseState mouseState  = {};      //
+	bool              quit        = false;   // exit the mainloop
+	uint32_t          screenX     = 1280;    //
+	uint32_t          screenY     = 800;     //
+	bool              useGlm      = false;   //
+	SDL_Window*       window      = nullptr; //
 
 public:
 	void MainLoop();

@@ -1,10 +1,13 @@
 // app.cpp
 // @author octopoulos
-// @version 2025-07-06
+// @version 2025-07-11
+//
+// export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
 #include "stdafx.h"
 #include "app.h"
 #include "common/bgfx_utils.h"
+#include "common/camera.h"
 #include "imgui/imgui.h"
 
 #include "engine/ModelLoader.h"
@@ -24,12 +27,10 @@ void App::init(int32_t argc, const char* const* argv, uint32_t width, uint32_t h
 {
 	Args args(argc, argv);
 
-	// FindAppDirectory(true);
-
-	screenWidth  = width;
-	screenHeight = height;
-	isDebug      = BGFX_DEBUG_NONE;
-	isReset      = BGFX_RESET_VSYNC;
+	screenX = width;
+	screenY = height;
+	isDebug = BGFX_DEBUG_NONE;
+	isReset = BGFX_RESET_VSYNC;
 
 	bgfx::Init init;
 	init.type              = args.m_type;
@@ -37,8 +38,8 @@ void App::init(int32_t argc, const char* const* argv, uint32_t width, uint32_t h
 	init.platformData.nwh  = entry::getNativeWindowHandle(entry::kDefaultWindowHandle);
 	init.platformData.ndt  = entry::getNativeDisplayHandle();
 	init.platformData.type = entry::getNativeWindowHandleType();
-	init.resolution.width  = screenWidth;
-	init.resolution.height = screenHeight;
+	init.resolution.width  = screenX;
+	init.resolution.height = screenY;
 	init.resolution.reset  = isReset;
 	bgfx::init(init);
 
@@ -56,21 +57,22 @@ int App::shutdown()
 
 bool App::update()
 {
-	if (!entry::processEvents(screenWidth, screenHeight, isDebug, isReset, &mouseState))
-	{
-		imguiBeginFrame(mouseState.m_mx, mouseState.m_my, (mouseState.m_buttons[entry::MouseButton::Left] ? IMGUI_MBUT_LEFT : 0) | (mouseState.m_buttons[entry::MouseButton::Right] ? IMGUI_MBUT_RIGHT : 0) | (mouseState.m_buttons[entry::MouseButton::Middle] ? IMGUI_MBUT_MIDDLE : 0), mouseState.m_mz, uint16_t(screenWidth), uint16_t(screenHeight));
+	if (entry::processEvents(screenX, screenY, isDebug, isReset, &mouseState)) return false;
 
-		showExampleDialog(this);
-		imguiEndFrame();
+	imguiBeginFrame(mouseState.m_mx, mouseState.m_my, (mouseState.m_buttons[entry::MouseButton::Left] ? IMGUI_MBUT_LEFT : 0) | (mouseState.m_buttons[entry::MouseButton::Right] ? IMGUI_MBUT_RIGHT : 0) | (mouseState.m_buttons[entry::MouseButton::Middle] ? IMGUI_MBUT_MIDDLE : 0), mouseState.m_mz, uint16_t(screenX), uint16_t(screenY));
+	showExampleDialog(this);
+	imguiEndFrame();
 
-		Render();
+	curTime   = TO_FLOAT((bx::getHPCounter() - startTime) / TO_DOUBLE(bx::getHPFrequency()));
+	deltaTime = curTime - lastTime;
 
-		// Advance to next frame. Rendering thread will be kicked to process submitted rendering primitives.
-		bgfx::frame();
-		return true;
-	}
+	cameraUpdate(deltaTime, mouseState, ImGui::MouseOverArea());
 
-	return false;
+	Render();
+
+	// Advance to next frame. Rendering thread will be kicked to process submitted rendering primitives
+	bgfx::frame();
+	return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,6 +104,121 @@ int App::Initialize()
 	if (const int result = InitScene(); result < 0) return result;
 
 	imguiCreate();
+
+	cameraCreate();
+	cameraSetPosition({ 0.0f, 0.0, -5.0f });
+	// cameraSetVerticalAngle(-bx::kPi / 1.0f);
+	// cameraSetHorizontalAngle(bx::kPi / 1.0f);
+	return 1;
+}
+
+int App::InitScene()
+{
+	// Define cube vertex layout
+	bgfx::VertexLayout cubeLayout;
+	cubeLayout.begin()
+	    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+	    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
+	    .end();
+
+	struct PosColorVertex
+	{
+		float    x, y, z;
+		uint32_t abgr;
+	};
+
+	static PosColorVertex cubeVertices[] = {
+		{ -1, 1,  1,  0xff000000 },
+		{ 1,  1,  1,  0xff0000ff },
+		{ -1, -1, 1,  0xff00ff00 },
+		{ 1,  -1, 1,  0xff00ffff },
+		{ -1, 1,  -1, 0xffff0000 },
+		{ 1,  1,  -1, 0xffff00ff },
+		{ -1, -1, -1, 0xffffff00 },
+		{ 1,  -1, -1, 0xffffffff },
+	};
+
+	static const uint16_t cubeTriList[] = {
+		0, 1, 2, 1, 3, 2, 4, 6, 5, 5, 6, 7,
+		0, 2, 4, 4, 2, 6, 1, 5, 3, 5, 7, 3,
+		0, 4, 1, 4, 5, 1, 2, 3, 6, 6, 3, 7
+	};
+
+	vbh     = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), cubeLayout);
+	ibh     = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
+	program = shaderManager.LoadProgram("vs_cube", "fs_cube");
+
+	if (!bgfx::isValid(program)) THROW_RUNTIME("Shader program creation failed");
+	ui::Log("Shaders loaded successfully");
+
+	// load BIN model
+	ModelLoader loader;
+	if (auto object = loader.LoadModel("kenney_car-kit-obj/race-future"))
+	{
+		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
+		bx::mtxRotateXYZ(object->transform, -0.3f, 2.5f, 0.0f);
+		scene.AddNamedChild("car", object);
+	}
+	if (auto object = loader.LoadModel("building-n"))
+	{
+		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
+		bx::mtxSRT(
+		    object->transform,
+		    1.0f, 1.0f, 1.0f, // scale
+		    0.0f, 1.5f, 0.0f, // rotation
+		    3.0f, -1.0f, 0.0f // translation
+		);
+		scene.AddNamedChild("building", object);
+	}
+	if (auto object = loader.LoadModel("bunny"))
+	{
+		object->program = shaderManager.LoadProgram("vs_mesh", "fs_mesh");
+		bx::mtxSRT(
+		    object->transform,
+		    1.0f, 1.0f, 1.0f, // scale
+		    0.0f, 1.5f, 0.0f, // rotation
+		    -3.0f, 0.0f, 0.0f // translation
+		);
+		scene.AddNamedChild("bunny", object);
+	}
+	if (auto object = loader.LoadModel("Donut"))
+	{
+		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
+		bx::mtxSRT(
+		    object->transform,
+		    1.0f, 1.0f, 1.0f, // scale
+		    0.0f, 3.0f, 0.0f, // rotation
+		    0.0f, 1.0f, -2.0f // translation
+		);
+		scene.AddNamedChild("donut", object);
+	}
+	for (int i = 0; i < 15; ++i)
+	{
+		if (auto object = loader.LoadModel("Donut"))
+		{
+			object->program = shaderManager.LoadProgram("vs_model", "fs_model");
+			bx::mtxSRT(
+			    object->transform,
+			    1.0f, 1.0f, 1.0f,                             // scale
+			    sinf(i * 0.3f), 3.0f, 0.0f,                   // rotation
+			    i * 0.4f - 2.4f, sinf(i * 0.5f) + 0.1f, -2.5f // translation
+			);
+			scene.AddNamedChild(fmt::format("donut-{}", i), object);
+		}
+	}
+
+	// print scene children
+	{
+		ui::Log("Scene.children={}", scene.children.size());
+		for (int i = -1; const auto& child : scene.children)
+			ui::Log(" {:2}: {}", ++i, child->name);
+	}
+
+	physicsWorld = std::make_unique<PhysicsWorld>();
+	physicsWorld->ResetCube();
+
+	startTime = bx::getHPCounter();
+	lastUs    = NowUs();
 	return 1;
 }
 
@@ -185,8 +302,8 @@ void App::MainLoop()
 			hasFocus = false;
 			break;
 		case SDL_EVENT_WINDOW_RESIZED:
-			screenWidth  = event.window.data1;
-			screenHeight = event.window.data2;
+			screenX = event.window.data1;
+			screenY = event.window.data2;
 			// ResizeWindow(event.window.data1, event.window.data2);
 			break;
 		}
@@ -196,46 +313,21 @@ void App::MainLoop()
 
 void App::Render()
 {
-	// ui::Log("Rendering frame");
-	if (useGlm)
+	// camera view
 	{
-		glm::vec3 eye(0.0f, 0.0f, -5.0f);
-		glm::vec3 at(0.0f, 0.0f, 0.0f);
-		glm::vec3 up(0.0f, 1.0f, 0.0f);
-		glm::mat4 view = glm::lookAt(eye, at, up);
-		glm::mat4 proj = glm::perspective(glm::radians(60.0f), static_cast<float>(screenWidth) / screenHeight, 0.1f, 100.0f);
-
-		if (!bgfx::getCaps()->originBottomLeft) proj[1][1] *= -1.0f;
-		if (bgfx::getCaps()->homogeneousDepth)
-		{
-			glm::mat4 clipZRemap = glm::mat4(
-			    1, 0, 0, 0,
-			    0, 1, 0, 0,
-			    0, 0, 0.5f, 0.5f,
-			    0, 0, 0, 1);
-			proj = clipZRemap * proj;
-		}
-		bgfx::setViewTransform(0, glm::value_ptr(view), glm::value_ptr(proj));
-	}
-	else
-	{
-		const bx::Vec3 eye = { 0, 0, -5 };
-		const bx::Vec3 at  = { 0, 0, 0 };
+		bgfx::setViewRect(0, 0, 0, screenX, screenY);
 
 		float view[16];
-		bx::mtxLookAt(view, eye, at);
+		cameraGetViewMtx(view);
 
 		float proj[16];
-		bx::mtxProj(proj, 60.0f, float(screenWidth) / screenHeight, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+		bx::mtxProj(proj, 60.0f, float(screenX) / float(screenY), 0.1f, 2000.0f, bgfx::getCaps()->homogeneousDepth);
+
 		bgfx::setViewTransform(0, view, proj);
 	}
-	bgfx::setViewRect(0, 0, 0, screenWidth, screenHeight);
-
-	const float time      = TO_FLOAT((bx::getHPCounter() - startTime) / TO_DOUBLE(bx::getHPFrequency()));
-	const float deltaTime = time - lastTime;
 
 	physicsWorld->dynamicsWorld->stepSimulation(deltaTime, 10, 1.0f / 60.0f);
-	lastTime = time;
+	lastTime = curTime;
 
 	// Render cube
 	{
@@ -270,102 +362,7 @@ void App::Render()
 	}
 
 	// draw the scene
-	scene.RenderScene(0, screenWidth, screenHeight);
+	scene.RenderScene(0, screenX, screenY);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// SCENE
-////////
-
-int App::InitScene()
-{
-	// Define cube vertex layout
-	bgfx::VertexLayout cubeLayout;
-	cubeLayout.begin()
-	    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-	    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
-	    .end();
-
-	struct PosColorVertex
-	{
-		float    x, y, z;
-		uint32_t abgr;
-	};
-
-	static PosColorVertex cubeVertices[] = {
-		{ -1, 1,  1,  0xff000000 },
-		{ 1,  1,  1,  0xff0000ff },
-		{ -1, -1, 1,  0xff00ff00 },
-		{ 1,  -1, 1,  0xff00ffff },
-		{ -1, 1,  -1, 0xffff0000 },
-		{ 1,  1,  -1, 0xffff00ff },
-		{ -1, -1, -1, 0xffffff00 },
-		{ 1,  -1, -1, 0xffffffff },
-	};
-
-	static const uint16_t cubeTriList[] = {
-		0, 1, 2, 1, 3, 2, 4, 6, 5, 5, 6, 7,
-		0, 2, 4, 4, 2, 6, 1, 5, 3, 5, 7, 3,
-		0, 4, 1, 4, 5, 1, 2, 3, 6, 6, 3, 7
-	};
-
-	vbh     = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), cubeLayout);
-	ibh     = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
-	program = shaderManager.LoadProgram("vs_cube", "fs_cube");
-
-	if (!bgfx::isValid(program)) THROW_RUNTIME("Shader program creation failed");
-	ui::Log("Shaders loaded successfully");
-
-	// load BIN model
-	ModelLoader loader;
-	if (auto object = loader.LoadModel("kenney_car-kit-obj/race-future"))
-	{
-		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
-		bx::mtxRotateXYZ(object->transform, -0.3f, 2.5f, 0.0f);
-		scene.AddNamedChild("car", object);
-	}
-	if (auto object = loader.LoadModel("building-n"))
-	{
-		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
-		bx::mtxSRT(
-		    object->transform,
-		    1.0f, 1.0f, 1.0f, // scale
-		    0.0f, 1.5f, 0.0f, // rotation
-		    3.0f, -1.0f, 0.0f // translation
-		);
-		scene.AddNamedChild("building", object);
-	}
-	if (auto object = loader.LoadModel("bunny"))
-	{
-		object->program = shaderManager.LoadProgram("vs_mesh", "fs_mesh");
-		bx::mtxSRT(
-		    object->transform,
-		    1.0f, 1.0f, 1.0f, // scale
-		    0.0f, 1.5f, 0.0f, // rotation
-		    -3.0f, 0.0f, 0.0f // translation
-		);
-		scene.AddNamedChild("bunny", object);
-	}
-	if (auto object = loader.LoadModel("Donut"))
-	{
-		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
-		bx::mtxSRT(
-		    object->transform,
-		    1.0f, 1.0f, 1.0f, // scale
-		    0.0f, 3.0f, 0.0f, // rotation
-		    0.0f, 1.0f, -2.0f // translation
-		);
-		scene.AddNamedChild("bunny", object);
-	}
-	ui::Log("Scene.children={}", scene.children.size());
-
-	physicsWorld = std::make_unique<PhysicsWorld>();
-	physicsWorld->ResetCube();
-
-	startTime = bx::getHPCounter();
-	lastUs    = NowUs();
-	return 1;
-}
-
-ENTRY_IMPLEMENT_MAIN(
-    App, "App", "Simple app", "https://shark-it.be");
+ENTRY_IMPLEMENT_MAIN(App, "App", "Simple app", "https://shark-it.be");

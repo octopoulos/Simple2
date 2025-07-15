@@ -1,14 +1,13 @@
 // platform.mm
 // @author octopoulos
-// @version 2025-07-05
+// @version 2025-07-11
 
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CAMetalLayer.h>
-#import <SDL3/SDL.h>
 
-extern "C" void* GetMacOSMetalLayer(SDL_Window* window)
+extern "C" void* GetMacOSMetalLayer(void* handle)
 {
-	NSWindow* nswindow = (__bridge NSWindow*)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
+	NSWindow* nswindow = (__bridge NSWindow*)handle;
 	if (!nswindow) return nullptr;
 
 	NSView* contentView = [nswindow contentView];
