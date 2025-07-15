@@ -1,12 +1,16 @@
+// @version 2025-07-11
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
-#ifndef DIALOG_H_HEADER_GUARD
-#define DIALOG_H_HEADER_GUARD
+#pragma once
 
-namespace bx { class FilePath; class StringView; }
+namespace bx
+{
+class FilePath;
+class StringView;
+} // namespace bx
 
 struct FileSelectionDialogType
 {
@@ -14,20 +18,13 @@ struct FileSelectionDialogType
 	{
 		Open,
 		Save,
-
 		Count
 	};
 };
 
 ///
 bool openFileSelectionDialog(
-	  bx::FilePath& _inOutFilePath
-	, FileSelectionDialogType::Enum _type
-	, const bx::StringView& _title
-	, const bx::StringView& _filter = "All Files | *"
-	);
+    bx::FilePath& _inOutFilePath, FileSelectionDialogType::Enum _type, const bx::StringView& _title, const bx::StringView& _filter = "All Files | *");
 
 ///
 void openUrl(const bx::StringView& _url);
-
-#endif // DIALOG_H_HEADER_GUARD

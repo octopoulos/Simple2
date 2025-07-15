@@ -32,95 +32,65 @@ namespace entry
 ///
 static void* sdlNativeWindowHandle(SDL_Window* window)
 {
+	if (!window) return nullptr;
 	const auto props = SDL_GetWindowProperties(window);
 	printf("SDL_Window=%p props=%p\n", window, &props);
 
 #	if BX_PLATFORM_ANDROID
 	return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_ANDROID_JNIENV_POINTER, nullptr);
+
 #	elif BX_PLATFORM_EMSCRIPTEN
 	return (void*)"#canvas";
+
 #	elif BX_PLATFORM_IOS
 	return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_UIAPPLICATION_POINTER, nullptr);
+
 #	elif BX_PLATFORM_LINUX
 	const char* driver = SDL_GetCurrentVideoDriver();
 	if (SDL_strcmp(driver, "wayland") == 0)
 		return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, nullptr);
 	else if (SDL_strcmp(driver, "x11") == 0)
-
 		return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, nullptr);
+
 #	elif BX_PLATFORM_OSX
 	return GetMacOSMetalLayer(SDL_GetPointerProperty(props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr));
+
 #	elif BX_PLATFORM_WINDOWS
 	return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HINSTANCE_POINTER, nullptr);
+
 #	endif // BX_PLATFORM_*
 
 	return nullptr;
 }
 
-static uint8_t translateKeyModifiers(uint16_t _sdl)
+static uint8_t translateKeyModifiers(uint16_t sdl)
 {
 	uint8_t modifiers = 0;
-	modifiers |= _sdl & SDL_KMOD_LALT ? Modifier::LeftAlt : 0;
-	modifiers |= _sdl & SDL_KMOD_RALT ? Modifier::RightAlt : 0;
-	modifiers |= _sdl & SDL_KMOD_LCTRL ? Modifier::LeftCtrl : 0;
-	modifiers |= _sdl & SDL_KMOD_RCTRL ? Modifier::RightCtrl : 0;
-	modifiers |= _sdl & SDL_KMOD_LSHIFT ? Modifier::LeftShift : 0;
-	modifiers |= _sdl & SDL_KMOD_RSHIFT ? Modifier::RightShift : 0;
-	modifiers |= _sdl & SDL_KMOD_LGUI ? Modifier::LeftMeta : 0;
-	modifiers |= _sdl & SDL_KMOD_RGUI ? Modifier::RightMeta : 0;
+	modifiers |= sdl & SDL_KMOD_LALT ? Modifier::LeftAlt : 0;
+	modifiers |= sdl & SDL_KMOD_RALT ? Modifier::RightAlt : 0;
+	modifiers |= sdl & SDL_KMOD_LCTRL ? Modifier::LeftCtrl : 0;
+	modifiers |= sdl & SDL_KMOD_RCTRL ? Modifier::RightCtrl : 0;
+	modifiers |= sdl & SDL_KMOD_LSHIFT ? Modifier::LeftShift : 0;
+	modifiers |= sdl & SDL_KMOD_RSHIFT ? Modifier::RightShift : 0;
+	modifiers |= sdl & SDL_KMOD_LGUI ? Modifier::LeftMeta : 0;
+	modifiers |= sdl & SDL_KMOD_RGUI ? Modifier::RightMeta : 0;
 	return modifiers;
 }
 
-static uint8_t translateKeyModifierPress(uint16_t _key)
+static uint8_t translateKeyModifierPress(uint16_t key)
 {
 	uint8_t modifier;
-	switch (_key)
+	switch (key)
 	{
-	case SDL_SCANCODE_LALT:
-	{
-		modifier = Modifier::LeftAlt;
-	}
-	break;
-	case SDL_SCANCODE_RALT:
-	{
-		modifier = Modifier::RightAlt;
-	}
-	break;
-	case SDL_SCANCODE_LCTRL:
-	{
-		modifier = Modifier::LeftCtrl;
-	}
-	break;
-	case SDL_SCANCODE_RCTRL:
-	{
-		modifier = Modifier::RightCtrl;
-	}
-	break;
-	case SDL_SCANCODE_LSHIFT:
-	{
-		modifier = Modifier::LeftShift;
-	}
-	break;
-	case SDL_SCANCODE_RSHIFT:
-	{
-		modifier = Modifier::RightShift;
-	}
-	break;
-	case SDL_SCANCODE_LGUI:
-	{
-		modifier = Modifier::LeftMeta;
-	}
-	break;
-	case SDL_SCANCODE_RGUI:
-	{
-		modifier = Modifier::RightMeta;
-	}
-	break;
-	default:
-	{
-		modifier = 0;
-	}
-	break;
+	case SDL_SCANCODE_LALT: modifier = Modifier::LeftAlt; break;
+	case SDL_SCANCODE_RALT: modifier = Modifier::RightAlt; break;
+	case SDL_SCANCODE_LCTRL: modifier = Modifier::LeftCtrl; break;
+	case SDL_SCANCODE_RCTRL: modifier = Modifier::RightCtrl; break;
+	case SDL_SCANCODE_LSHIFT: modifier = Modifier::LeftShift; break;
+	case SDL_SCANCODE_RSHIFT: modifier = Modifier::RightShift; break;
+	case SDL_SCANCODE_LGUI: modifier = Modifier::LeftMeta; break;
+	case SDL_SCANCODE_RGUI: modifier = Modifier::RightMeta; break;
+	default: modifier = 0; break;
 	}
 
 	return modifier;
@@ -166,7 +136,7 @@ static GamepadAxis::Enum translateGamepadAxis(uint8_t _sdl)
 struct GamepadSDL
 {
 	GamepadSDL()
-	    : m_controller(NULL)
+	    : m_controller(nullptr)
 	    , m_jid(INT32_MAX)
 	{
 		bx::memSet(m_value, 0, sizeof(m_value));
@@ -202,16 +172,15 @@ struct GamepadSDL
 
 	void destroy()
 	{
-		if (NULL != m_controller)
+		if (m_controller)
 		{
 			SDL_CloseGamepad(m_controller);
-			m_controller = NULL;
+			m_controller = nullptr;
 		}
-
-		if (NULL != m_joystick)
+		if (m_joystick)
 		{
 			SDL_CloseJoystick(m_joystick);
-			m_joystick = NULL;
+			m_joystick = nullptr;
 		}
 
 		m_jid = INT32_MAX;
@@ -281,7 +250,7 @@ enum SDL_USER_WINDOW
 	SDL_USER_WINDOW_MOUSE_LOCK,
 };
 
-static void sdlPostEvent(SDL_USER_WINDOW _type, WindowHandle _handle, Msg* _msg = NULL, uint32_t _code = 0)
+static void sdlPostEvent(SDL_USER_WINDOW _type, WindowHandle _handle, Msg* _msg = nullptr, uint32_t _code = 0)
 {
 	SDL_Event      event;
 	SDL_UserEvent& uev = event.user;
@@ -440,10 +409,10 @@ struct Context
 		m_mte.m_argc = _argc;
 		m_mte.m_argv = _argv;
 
-		SDL_Init(0 | SDL_INIT_GAMEPAD);
+		SDL_Init(SDL_INIT_GAMEPAD | SDL_INIT_VIDEO);
 
 		m_windowAlloc.alloc();
-		m_window[0] = SDL_CreateWindow("bgfx", m_width, m_height, 0 | SDL_WINDOW_RESIZABLE);
+		m_window[0] = SDL_CreateWindow("bgfx", m_width, m_height, SDL_WINDOW_RESIZABLE);
 
 		m_flags[0] = 0
 		    | ENTRY_WINDOW_FLAG_ASPECT_RATIO
@@ -461,8 +430,8 @@ struct Context
 
 		SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, true);
 
-		bx::FileReaderI* reader = NULL;
-		while (NULL == reader)
+		bx::FileReaderI* reader = nullptr;
+		while (!reader)
 		{
 			reader = getFileReader();
 			bx::sleep(100);
@@ -738,12 +707,12 @@ struct Context
 						WindowHandle handle = getWindowHandle(uev);
 						Msg*         msg    = (Msg*)uev.data2;
 
-						m_window[handle.idx] = SDL_CreateWindow(msg->m_title.c_str(), msg->m_width, msg->m_height, 0 | SDL_WINDOW_RESIZABLE);
+						m_window[handle.idx] = SDL_CreateWindow(msg->m_title.c_str(), msg->m_width, msg->m_height, SDL_WINDOW_RESIZABLE);
 
 						m_flags[handle.idx] = msg->m_flags;
 
 						void* nwh = sdlNativeWindowHandle(m_window[handle.idx]);
-						if (NULL != nwh)
+						if (nwh)
 						{
 							m_eventQueue.postSizeEvent(handle, msg->m_width, msg->m_height);
 							m_eventQueue.postWindowEvent(handle, nwh);
@@ -760,7 +729,7 @@ struct Context
 						{
 							m_eventQueue.postWindowEvent(handle);
 							SDL_DestroyWindow(m_window[handle.idx]);
-							m_window[handle.idx] = NULL;
+							m_window[handle.idx] = nullptr;
 						}
 					}
 					break;
@@ -1010,7 +979,7 @@ void toggleFullscreen(WindowHandle _handle)
 
 void setMouseLock(WindowHandle _handle, bool _lock)
 {
-	sdlPostEvent(SDL_USER_WINDOW_MOUSE_LOCK, _handle, NULL, _lock);
+	sdlPostEvent(SDL_USER_WINDOW_MOUSE_LOCK, _handle, nullptr, _lock);
 }
 
 void* getNativeWindowHandle(WindowHandle _handle)
@@ -1022,14 +991,23 @@ void* getNativeDisplayHandle()
 {
 	SDL_Window* window = s_ctx.m_window[0];
 	if (!window) return nullptr;
-	return sdlNativeWindowHandle(window);
+
+#	if BX_PLATFORM_LINUX
+	const char* driver = SDL_GetCurrentVideoDriver();
+
+	if (SDL_strcmp(driver, "wayland") == 0)
+		return SDL_GetWindowProperty(window, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, nullptr);
+	else if (SDL_strcmp(driver, "x11") == 0)
+		return SDL_GetWindowProperty(window, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, nullptr);
+#	endif
+
+	return nullptr;
 }
 
 bgfx::NativeWindowHandleType::Enum getNativeWindowHandleType()
 {
-	const char* driver = SDL_GetCurrentVideoDriver();
-
 #	if BX_PLATFORM_LINUX
+	const char* driver = SDL_GetCurrentVideoDriver();
 	if (SDL_strcmp(driver, "wayland") == 0)
 		return bgfx::NativeWindowHandleType::Wayland;
 #	endif // BX_PLATFORM_*

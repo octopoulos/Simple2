@@ -1,10 +1,10 @@
+// @version 2025-07-11
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
-#ifndef INPUT_H_HEADER_GUARD
-#define INPUT_H_HEADER_GUARD
+#pragma once
 
 #include "entry.h"
 
@@ -12,9 +12,9 @@ typedef void (*InputBindingFn)(const void* _userData);
 
 struct InputBinding
 {
-	void set(entry::Key::Enum _key, uint8_t _modifiers, uint8_t _flags, InputBindingFn _fn, const void* _userData = NULL)
+	void set(entry::Key::Enum _key, uint8_t _modifiers, uint8_t _flags, InputBindingFn _fn, const void* _userData = nullptr)
 	{
-		m_key = _key;
+		m_key       = _key;
 		m_modifiers = _modifiers;
 		m_flags     = _flags;
 		m_fn        = _fn;
@@ -23,21 +23,21 @@ struct InputBinding
 
 	void end()
 	{
-		m_key = entry::Key::None;
+		m_key       = entry::Key::None;
 		m_modifiers = entry::Modifier::None;
 		m_flags     = 0;
-		m_fn        = NULL;
-		m_userData  = NULL;
+		m_fn        = nullptr;
+		m_userData  = nullptr;
 	}
 
 	entry::Key::Enum m_key;
-	uint8_t m_modifiers;
-	uint8_t m_flags;
-	InputBindingFn m_fn;
-	const void* m_userData;
+	uint8_t          m_modifiers;
+	uint8_t          m_flags;
+	InputBindingFn   m_fn;
+	const void*      m_userData;
 };
 
-#define INPUT_BINDING_END { entry::Key::None, entry::Modifier::None, 0, NULL, NULL }
+#define INPUT_BINDING_END { entry::Key::None, entry::Modifier::None, 0, nullptr, nullptr }
 
 ///
 void inputInit();
@@ -55,10 +55,10 @@ void inputRemoveBindings(const char* _name);
 void inputProcess();
 
 ///
-void inputSetKeyState(entry::Key::Enum  _key, uint8_t _modifiers, bool _down);
+void inputSetKeyState(entry::Key::Enum _key, uint8_t _modifiers, bool _down);
 
 ///
-bool inputGetKeyState(entry::Key::Enum _key, uint8_t* _modifiers = NULL);
+bool inputGetKeyState(entry::Key::Enum _key, uint8_t* _modifiers = nullptr);
 
 ///
 uint8_t inputGetModifiersState();
@@ -95,5 +95,3 @@ void inputSetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::Enum 
 
 ///
 int32_t inputGetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::Enum _axis);
-
-#endif // INPUT_H_HEADER_GUARD

@@ -1,8 +1,10 @@
+// @version 2025-07-11
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
+#include "stdafx.h"
 #include <bx/allocator.h>
 #include <bx/filepath.h>
 #include <bx/string.h>
@@ -12,7 +14,7 @@
 #include "dialog.h"
 
 #if BX_PLATFORM_WINDOWS
-typedef uintptr_t (__stdcall *LPOFNHOOKPROC)(void*, uint32_t, uintptr_t, uint64_t);
+typedef uintptr_t(__stdcall* LPOFNHOOKPROC)(void*, uint32_t, uintptr_t, uint64_t);
 
 struct OPENFILENAMEA
 {
@@ -41,11 +43,11 @@ struct OPENFILENAMEA
 	uint32_t      flagsEx;
 };
 
-extern "C" bool     __stdcall GetOpenFileNameA(OPENFILENAMEA* _ofn);
-extern "C" bool     __stdcall GetSaveFileNameA(OPENFILENAMEA * _ofn);
-extern "C" void*    __stdcall GetModuleHandleA(const char* _moduleName);
+extern "C" bool __stdcall GetOpenFileNameA(OPENFILENAMEA* _ofn);
+extern "C" bool __stdcall GetSaveFileNameA(OPENFILENAMEA* _ofn);
+extern "C" void* __stdcall GetModuleHandleA(const char* _moduleName);
 extern "C" uint32_t __stdcall GetModuleFileNameA(void* _module, char* _outFilePath, uint32_t _size);
-extern "C" void*    __stdcall ShellExecuteA(void* _hwnd, void* _operation, void* _file, void* _parameters, void* _directory, int32_t _showCmd);
+extern "C" void* __stdcall ShellExecuteA(void* _hwnd, void* _operation, void* _file, void* _parameters, void* _directory, int32_t _showCmd);
 
 #endif // BX_PLATFORM_WINDOWS
 
@@ -61,12 +63,12 @@ void openUrl(const bx::StringView& _url)
 #	define OPEN "xdg-open "
 #endif // BX_PLATFORM_OSX
 
-	bx::snprintf(tmp, BX_COUNTOF(tmp), OPEN "%.*s", _url.getLength(), _url.getPtr() );
+	bx::snprintf(tmp, BX_COUNTOF(tmp), OPEN "%.*s", _url.getLength(), _url.getPtr());
 
 #undef OPEN
 
 #if BX_PLATFORM_WINDOWS
-	void* result = ShellExecuteA(NULL, NULL, tmp, NULL, NULL, false);
+	void* result = ShellExecuteA(nullptr, nullptr, tmp, nullptr, nullptr, false);
 	BX_UNUSED(result);
 #elif !BX_PLATFORM_IOS && !BX_PLATFORM_VISIONOS
 	int32_t result = system(tmp);
@@ -78,9 +80,9 @@ class Split
 {
 public:
 	Split(const bx::StringView& _str, char _ch)
-		: m_str(_str)
-		, m_token(_str.getPtr(), bx::strFind(_str, _ch).getPtr() )
-		, m_ch(_ch)
+	    : m_str(_str)
+	    , m_token(_str.getPtr(), bx::strFind(_str, _ch).getPtr())
+	    , m_ch(_ch)
 	{
 	}
 
@@ -89,12 +91,9 @@ public:
 		bx::StringView result = m_token;
 
 		m_token = bx::strTrim(
-			  bx::StringView(
-				  m_token.getTerm()+1
-				, bx::strFind(bx::StringView(m_token.getTerm()+1, m_str.getTerm() ), m_ch).getPtr()
-				)
-			, " \t\n"
-			);
+		    bx::StringView(
+		        m_token.getTerm() + 1, bx::strFind(bx::StringView(m_token.getTerm() + 1, m_str.getTerm()), m_ch).getPtr()),
+		    " \t\n");
 
 		return result;
 	}
@@ -106,85 +105,73 @@ public:
 
 private:
 	const bx::StringView& m_str;
-	bx::StringView m_token;
-	char m_ch;
+	bx::StringView        m_token;
+	char                  m_ch;
 };
 
 #if BX_PLATFORM_WINDOWS
 extern "C" typedef bool(__stdcall* OPENFILENAMEFUNCTION)(OPENFILENAMEA* _ofn);
-static const struct { OPENFILENAMEFUNCTION m_function; uint32_t m_flags; }
-s_getFileNameA[] =
+
+static const struct
 {
+	OPENFILENAMEFUNCTION m_function;
+	uint32_t             m_flags;
+} s_getFileNameA[] = {
 	{ GetOpenFileNameA, /* OFN_EXPLORER */ 0x00080000 | /* OFN_DONTADDTORECENT */ 0x02000000 | /* OFN_FILEMUSTEXIST */ 0x00001000 },
 	{ GetSaveFileNameA, /* OFN_EXPLORER */ 0x00080000 | /* OFN_DONTADDTORECENT */ 0x02000000                                      },
 };
+
 static_assert(BX_COUNTOF(s_getFileNameA) == FileSelectionDialogType::Count);
 #endif
 
 #if !BX_PLATFORM_OSX
 bool openFileSelectionDialog(
-	  bx::FilePath& _inOutFilePath
-	, FileSelectionDialogType::Enum _type
-	, const bx::StringView& _title
-	, const bx::StringView& _filter
-	)
+    bx::FilePath& _inOutFilePath, FileSelectionDialogType::Enum _type, const bx::StringView& _title, const bx::StringView& _filter)
 {
 	bx::Error err;
 
-	char tmp[4096];
-	bx::StaticMemoryBlockWriter writer(tmp, sizeof(tmp) );
+	char                        tmp[4096];
+	bx::StaticMemoryBlockWriter writer(tmp, sizeof(tmp));
 
-#if BX_PLATFORM_LINUX
-	bx::write(&writer, &err
-		, "--file-selection%s --title \"%.*s\" --filename \"%s\""
-		, FileSelectionDialogType::Save == _type ? " --save" : ""
-		, _title.getLength()
-		, _title.getPtr()
-		, _inOutFilePath.getCPtr()
-		);
+#	if BX_PLATFORM_LINUX
+	bx::write(&writer, &err, "--file-selection%s --title \"%.*s\" --filename \"%s\"", FileSelectionDialogType::Save == _type ? " --save" : "", _title.getLength(), _title.getPtr(), _inOutFilePath.getCPtr());
 
 	for (bx::LineReader lr(_filter); !lr.isDone();)
 	{
 		const bx::StringView line = lr.next();
 
-		bx::write(&writer, &err
-			, " --file-filter \"%.*s\""
-			, line.getLength()
-			, line.getPtr()
-			);
+		bx::write(&writer, &err, " --file-filter \"%.*s\"", line.getLength(), line.getPtr());
 	}
 
 	bx::write(&writer, '\0', &err);
 
-	if (err.isOk() )
+	if (err.isOk())
 	{
 		bx::ProcessReader pr;
 
-		if (bx::open(&pr, "zenity", tmp, &err) )
+		if (bx::open(&pr, "zenity", tmp, &err))
 		{
-			char buffer[1024];
+			char    buffer[1024];
 			int32_t total = bx::read(&pr, buffer, sizeof(buffer), &err);
 			bx::close(&pr);
 
-			if (0 == pr.getExitCode() )
+			if (0 == pr.getExitCode())
 			{
-				_inOutFilePath.set(bx::strRTrim(bx::StringView(buffer, total), "\n\r") );
+				_inOutFilePath.set(bx::strRTrim(bx::StringView(buffer, total), "\n\r"));
 				return true;
 			}
 		}
 	}
 
-#elif BX_PLATFORM_WINDOWS
-	if (_type <  0
-	||  _type >= BX_COUNTOF(s_getFileNameA) )
-	{
+#	elif BX_PLATFORM_WINDOWS
+	if (_type < 0
+	    || _type >= BX_COUNTOF(s_getFileNameA))
 		return false;
-	}
 
 	char out[bx::kMaxFilePath] = { '\0' };
 
 	OPENFILENAMEA ofn;
-	bx::memSet(&ofn, 0, sizeof(ofn) );
+	bx::memSet(&ofn, 0, sizeof(ofn));
 	ofn.structSize = sizeof(OPENFILENAMEA);
 	ofn.initialDir = _inOutFilePath.getCPtr();
 	ofn.file       = out;
@@ -192,30 +179,28 @@ bool openFileSelectionDialog(
 	ofn.flags      = s_getFileNameA[_type].m_flags;
 
 	ofn.title = tmp;
-	bx::write(&writer, &err, "%.*s", _title.getLength(),  _title.getPtr() );
+	bx::write(&writer, &err, "%.*s", _title.getLength(), _title.getPtr());
 	bx::write(&writer, '\0', &err);
 
-	ofn.filter = tmp + uint32_t(bx::seek(&writer) );
+	ofn.filter = tmp + uint32_t(bx::seek(&writer));
 
 	for (bx::LineReader lr(_filter); !lr.isDone() && err.isOk();)
 	{
 		const bx::StringView line = lr.next();
 		const bx::StringView sep  = bx::strFind(line, '|');
 
-		if (!sep.isEmpty() )
+		if (!sep.isEmpty())
 		{
-			bx::write(&writer, bx::strTrim(bx::StringView(line.getPtr(), sep.getPtr() ), " "), &err);
+			bx::write(&writer, bx::strTrim(bx::StringView(line.getPtr(), sep.getPtr()), " "), &err);
 			bx::write(&writer, '\0', &err);
 
 			bool first = true;
 
-			for (Split split(bx::strTrim(bx::StringView(sep.getPtr()+1, line.getTerm() ), " "), ' '); !split.isDone() && err.isOk();)
+			for (Split split(bx::strTrim(bx::StringView(sep.getPtr() + 1, line.getTerm()), " "), ' '); !split.isDone() && err.isOk();)
 			{
 				const bx::StringView token = split.next();
 				if (!first)
-				{
 					bx::write(&writer, ';', &err);
-				}
 
 				first = false;
 				bx::write(&writer, token, &err);
@@ -234,14 +219,14 @@ bool openFileSelectionDialog(
 	bx::write(&writer, '\0', &err);
 
 	if (err.isOk()
-	&&  s_getFileNameA[_type].m_function(&ofn) )
+	    && s_getFileNameA[_type].m_function(&ofn))
 	{
 		_inOutFilePath.set(ofn.file);
 		return true;
 	}
-#else
+#	else
 	BX_UNUSED(_inOutFilePath, _type, _title, _filter, err, tmp, writer);
-#endif // BX_PLATFORM_LINUX
+#	endif // BX_PLATFORM_LINUX
 
 	return false;
 }
