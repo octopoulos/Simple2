@@ -1,6 +1,6 @@
 // app.cpp
 // @author octopoulos
-// @version 2025-07-11
+// @version 2025-07-12
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -181,12 +181,12 @@ int App::InitScene()
 		);
 		scene.AddNamedChild("bunny", object);
 	}
-	if (auto object = loader.LoadModel("Donut"))
+	if (auto object = loader.LoadModel("donut"))
 	{
 		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
 		bx::mtxSRT(
 		    object->transform,
-		    1.0f, 1.0f, 1.0f, // scale
+		    1.5f, 1.5f, 1.5f, // scale
 		    0.0f, 3.0f, 0.0f, // rotation
 		    0.0f, 1.0f, -2.0f // translation
 		);
@@ -194,16 +194,16 @@ int App::InitScene()
 	}
 	for (int i = 0; i < 15; ++i)
 	{
-		if (auto object = loader.LoadModel("Donut"))
+		if (auto object = loader.LoadModel("donut3"))
 		{
 			object->program = shaderManager.LoadProgram("vs_model", "fs_model");
 			bx::mtxSRT(
 			    object->transform,
-			    1.0f, 1.0f, 1.0f,                             // scale
+			    0.5f, 0.5f, 0.5f,                             // scale
 			    sinf(i * 0.3f), 3.0f, 0.0f,                   // rotation
 			    i * 0.4f - 2.4f, sinf(i * 0.5f) + 0.1f, -2.5f // translation
 			);
-			scene.AddNamedChild(fmt::format("donut-{}", i), object);
+			scene.AddNamedChild(fmt::format("donut3-{}", i), object);
 		}
 	}
 
@@ -215,7 +215,6 @@ int App::InitScene()
 	}
 
 	physicsWorld = std::make_unique<PhysicsWorld>();
-	physicsWorld->ResetCube();
 
 	startTime = bx::getHPCounter();
 	lastUs    = NowUs();
@@ -280,7 +279,6 @@ void App::MainLoop()
 			mousePos[0] = event.motion.x;
 			mousePos[1] = event.motion.y;
 			ui::Log("Mouse button down, resetting cube");
-			physicsWorld->ResetCube();
 			break;
 		case SDL_EVENT_MOUSE_BUTTON_UP:
 			mouseButton = 0;
@@ -326,24 +324,24 @@ void App::Render()
 		bgfx::setViewTransform(0, view, proj);
 	}
 
-	physicsWorld->dynamicsWorld->stepSimulation(deltaTime, 10, 1.0f / 60.0f);
+	physicsWorld->StepSimulation(deltaTime);
 	lastTime = curTime;
 
-	// Render cube
-	{
-		btTransform t;
-		physicsWorld->cubeRigidBody->getMotionState()->getWorldTransform(t);
-		float mat[16];
-		t.getBasis().getOpenGLSubMatrix(mat);
-		mat[12] = t.getOrigin().x();
-		mat[13] = t.getOrigin().y();
-		mat[14] = t.getOrigin().z();
-		mat[15] = 1;
-		bgfx::setTransform(mat);
-		bgfx::setVertexBuffer(0, vbh);
-		bgfx::setIndexBuffer(ibh);
-		bgfx::submit(0, program);
-	}
+	// // Render cube
+	// {
+	// 	btTransform t;
+	// 	physicsWorld->cubeRigidBody->getMotionState()->getWorldTransform(t);
+	// 	float mat[16];
+	// 	t.getBasis().getOpenGLSubMatrix(mat);
+	// 	mat[12] = t.getOrigin().x();
+	// 	mat[13] = t.getOrigin().y();
+	// 	mat[14] = t.getOrigin().z();
+	// 	mat[15] = 1;
+	// 	bgfx::setTransform(mat);
+	// 	bgfx::setVertexBuffer(0, vbh);
+	// 	bgfx::setIndexBuffer(ibh);
+	// 	bgfx::submit(0, program);
+	// }
 
 	// Floor
 	{

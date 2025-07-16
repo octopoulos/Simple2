@@ -1,4 +1,4 @@
-// @version 2025-07-11
+// @version 2025-07-12
 /*
  * Copyright 2013 Dario Manesku. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -117,9 +117,9 @@ struct Camera
 		m_up.z            = 0.0f;
 		m_horizontalAngle = 0.01f;
 		m_verticalAngle   = 0.0f;
-		m_mouseSpeed      = 0.0020f;
+		m_mouseSpeed      = 0.005f;
 		m_gamepadSpeed    = 0.04f;
-		m_moveSpeed       = 30.0f;
+		m_moveSpeed       = 10.0f;
 		m_keys            = 0;
 		m_mouseDown       = false;
 	}
@@ -149,7 +149,7 @@ struct Camera
 			m_mouseLast.m_my = _mouseState.m_my;
 		}
 
-		m_mouseDown = true; //!!_mouseState.m_buttons[entry::MouseButton::Left];
+		m_mouseDown = !!_mouseState.m_buttons[entry::MouseButton::Left];
 
 		if (m_mouseDown)
 		{

@@ -1,10 +1,12 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-07-11
+// @version 2025-07-12
 
 #pragma once
 
 #include <bx/bounds.h>
+
+#include "physics/Body.h"
 
 struct Primitive
 {
@@ -33,16 +35,16 @@ struct Group
 		m_prims.clear();
 	}
 
-	bgfx::VertexBufferHandle m_vbh;
-	bgfx::IndexBufferHandle  m_ibh;
-	uint16_t                 m_numVertices;
-	uint8_t*                 m_vertices;
-	uint32_t                 m_numIndices;
-	uint16_t*                m_indices;
-	bx::Sphere               m_sphere;
 	bx::Aabb                 m_aabb;
+	bgfx::IndexBufferHandle  m_ibh;
+	uint16_t*                m_indices;
+	uint32_t                 m_numIndices;
+	uint16_t                 m_numVertices;
 	bx::Obb                  m_obb;
 	std::vector<Primitive>   m_prims;
+	bx::Sphere               m_sphere;
+	bgfx::VertexBufferHandle m_vbh;
+	uint8_t*                 m_vertices;
 };
 
 struct MeshState
@@ -51,26 +53,26 @@ struct MeshState
 	{
 		uint32_t            m_flags;
 		bgfx::UniformHandle m_sampler;
-		bgfx::TextureHandle m_texture;
 		uint8_t             m_stage;
+		bgfx::TextureHandle m_texture;
 	};
 
-	Texture             m_textures[4];
-	uint64_t            m_state;
 	bgfx::ProgramHandle m_program;
 	uint8_t             m_numTextures;
+	uint64_t            m_state;
+	Texture             m_textures[4];
 	uint16_t            m_viewId;
 };
 
 class Mesh : public Object3d
 {
 public:
-	btRigidBody*              body     = nullptr; //
+	std::vector<Body>         body     = {};      // one physical body per group
 	std::shared_ptr<Geometry> geometry = nullptr; //
+	std::vector<Group>        groups   = {};      // groups of vertices
+	bgfx::VertexLayout        layout   = {};      //
 	std::shared_ptr<Material> material = nullptr; //
 	bgfx::ProgramHandle       program  = {};      //
-	std::vector<Group>        groups   = {};      //
-	bgfx::VertexLayout        layout   = {};      //
 
 	Mesh() = default;
 

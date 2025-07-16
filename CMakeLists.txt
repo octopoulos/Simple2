@@ -2,9 +2,11 @@
 # cmake -B . -S .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=~/Code/vcpkg/scripts/buildsystems/vcpkg.cmake
 # cmake -B . -S .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=~/Code/vcpkg/scripts/buildsystems/vcpkg.cmake
 # cmake --build . -j8
-
+#
 # http-server -p 9999 -bg
 # 1
+# ~/web/common-js, ~/web/gori/**, ~/web/mova/**, ~/web/vatreviews/**,, ~/Code/cpp/AI/**, ~/Code/cpp/Engine/**, ~/Code/cpp/Server/**, ~/Code/cpp/Simple2/**
+# *.dot, *.md, *_.*, *.sh, *.ttf*, *0.*, *testo*, _all*, _deps/, 3rdparty/, all*, app/1/, build*, CMakeFiles/, coverage/, debugdraw/, doc/, dummy.html, dump/, font/, fs_*, index.html, index-*.html, libs/, locale/, new.txt, source/, temp/, template/, vs_*, website2/
 
 cmake_minimum_required(VERSION 3.20)
 cmake_policy(SET CMP0167 NEW)
@@ -150,6 +152,7 @@ endif()
 file(GLOB APP_SRC_FILES CONFIGURE_DEPENDS app/*.cpp app/*.h)
 file(GLOB COMMON_SRC_FILES CONFIGURE_DEPENDS common/*.cpp common/*.h)
 file(GLOB ENGINE_SRC_FILES CONFIGURE_DEPENDS engine/*.cpp engine/*.h)
+file(GLOB PHYSICS_SRC_FILES CONFIGURE_DEPENDS physics/*.cpp physics/*.h)
 # file(GLOB GUI_SRC_FILES CONFIGURE_DEPENDS src/gui/*.cpp src/gui/*.h)
 
 add_executable(Simple app/app.cpp)
@@ -405,6 +408,7 @@ target_sources(Simple PRIVATE
 	"common/imgui/imgui.cpp"
 	${EXTRA_SRC_FILES}
 	${ENGINE_SRC_FILES}
+	${PHYSICS_SRC_FILES}
 	${GUI_SRC_FILES}
 )
 

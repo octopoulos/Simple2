@@ -1,10 +1,10 @@
+// @version 2025-07-12
 /*
  * Copyright 2013 Jeremie Roy. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
-#ifndef CUBE_ATLAS_H_HEADER_GUARD
-#define CUBE_ATLAS_H_HEADER_GUARD
+#pragma once
 
 /// Inspired from texture-atlas from freetype-gl (http://code.google.com/p/freetype-gl/)
 /// by Nicolas Rougier (Nicolas.Rougier@inria.fr)
@@ -21,8 +21,8 @@ struct AtlasRegion
 {
 	enum Type
 	{
-		TYPE_GRAY = 1, // 1 component
-		TYPE_BGRA8 = 4  // 4 components
+		TYPE_GRAY  = 1, ///< 1 component
+		TYPE_BGRA8 = 4  ///< 4 components
 	};
 
 	uint16_t x, y;
@@ -150,5 +150,3 @@ private:
 	uint16_t m_regionCount;
 	uint16_t m_maxRegionCount;
 };
-
-#endif // CUBE_ATLAS_H_HEADER_GUARD

@@ -1,12 +1,11 @@
 // stdafx.h
 // @author octopoulos
-// @version 2025-07-05
+// @version 2025-07-12
 
 #pragma once
 
 #include "AI/stdafx.h"
 
-#include <numbers>   // pi
 #include <stdexcept> // std::runtime_error
 
 #include <btBulletDynamicsCommon.h>

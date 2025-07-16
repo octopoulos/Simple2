@@ -1,28 +1,32 @@
+// @version 2025-07-12
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
-#ifndef NANOVG_BGFX_H_HEADER_GUARD
-#define NANOVG_BGFX_H_HEADER_GUARD
+#pragma once
 
 #include <bgfx/bgfx.h>
 
-namespace bx { struct AllocatorI; }
+namespace bx
+{
+struct AllocatorI;
+}
 
 struct NVGcontext;
 
 struct NVGLUframebuffer
 {
-  NVGcontext* ctx;
-  bgfx::FrameBufferHandle handle;
-  int image;
-  bgfx::ViewId viewId;
+	NVGcontext*             ctx;
+	bgfx::FrameBufferHandle handle;
+	int                     image;
+	bgfx::ViewId            viewId;
 };
 
 // These are additional flags on top of NVGimageFlags.
-enum NVGimageFlagsGL {
-	NVG_IMAGE_NODELETE = 1<<16, // Do not delete GL texture handle.
+enum NVGimageFlagsGL
+{
+	NVG_IMAGE_NODELETE = 1 << 16, // Do not delete GL texture handle.
 };
 
 ///
@@ -82,6 +86,4 @@ void nvgluDeleteFramebuffer(NVGLUframebuffer* _framebuffer);
 void nvgluSetViewFramebuffer(bgfx::ViewId _viewId, NVGLUframebuffer* _framebuffer);
 
 ///
-int nvgCreateBgfxTexture(struct NVGcontext *_ctx, bgfx::TextureHandle _id, int _width, int _height, int _flags);
-
-#endif // NANOVG_BGFX_H_HEADER_GUARD
+int nvgCreateBgfxTexture(struct NVGcontext* _ctx, bgfx::TextureHandle _id, int _width, int _height, int _flags);
