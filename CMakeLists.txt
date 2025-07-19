@@ -20,12 +20,24 @@ project(Simple LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-option(WITH_SDL3 OFF)
+OPTION(WITH_FILE_DIALOG ON )
+OPTION(WITH_SDL3        OFF)
+
+set(ALL_WITHS
+	WITH_FILE_DIALOG
+	WITH_SDL3
+)
+foreach(opt IN LISTS ALL_WITHS)
+	if(${opt})
+		add_definitions(-D${opt}=1)
+	endif()
+endforeach()
 
 add_definitions(
 	-DENTRY_CONFIG_IMPLEMENT_MAIN=1
 	-DENTRY_CONFIG_USE_NATIVE=0
-	-DWITH_SDL3=${WITH_SDL3}
+	-DIMGUI_INCLUDE="${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dear-imgui/imgui.h"
+	-DIMGUI_INTERNAL_INCLUDE="${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dear-imgui/imgui_internal.h"
 )
 if(WITH_SDL3)
 	add_definitions(-DENTRY_CONFIG_USE_SDL3=1)
@@ -161,19 +173,22 @@ add_executable(Simple app/app.cpp)
 # 4) INCLUDES
 #############
 
-add_subdirectory(${CPP_PATH}/AI/ AI)
+add_subdirectory("${CPP_PATH}/AI/" AI)
+if(WITH_FILE_DIALOG)
+	add_subdirectory("${CPP_PATH}/ImGuiFileDialog/" ImGuiFileDialog)
+endif()
 
 set(VCPKG_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
 
 target_include_directories(Simple PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/3rdparty
-	${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dear-imgui
-	${CMAKE_CURRENT_SOURCE_DIR}/app
-	${CMAKE_CURRENT_SOURCE_DIR}/common
-	${CPP_PATH}
-	${VCPKG_INCLUDE_DIR}/bullet
-	# ${VCPKG_INCLUDE_DIR}/bx
+	"${CMAKE_CURRENT_SOURCE_DIR}"
+	"${CMAKE_CURRENT_SOURCE_DIR}/3rdparty"
+	"${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dear-imgui"
+	"${CMAKE_CURRENT_SOURCE_DIR}/app"
+	"${CMAKE_CURRENT_SOURCE_DIR}/common"
+	"${CPP_PATH}"	
+	"${VCPKG_INCLUDE_DIR}/bullet"
+	# "${VCPKG_INCLUDE_DIR}/bx"
 )
 
 #######################################################################################################################
@@ -190,6 +205,11 @@ target_link_libraries(Simple PRIVATE
 	meshoptimizer::meshoptimizer
 	#rapidobj::rapidobj
 )
+
+if(WITH_FILE_DIALOG)
+	target_link_libraries(Simple PRIVATE ImGuiFileDialog)
+	#target_link_libraries(Simple PRIVATE "${imguifiledialog_SOURCE_DIR}/ImGuiFileDialog.cpp")
+endif()
 
 if(WITH_SDL3)
 	target_link_libraries(Simple PRIVATE SDL3::SDL3)
@@ -309,6 +329,8 @@ message(STATUS "GEOMETRYC=${GEOMETRYC}")
 
 set(MODEL_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets/models")
 set(MODEL_OUT_DIR "${RUNTIME_DIR}/models")
+set(PREVIEW_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets/models")
+set(PREVIEW_OUT_DIR "${RUNTIME_DIR}/models-prev")
 
 # Create base models output directory
 file(MAKE_DIRECTORY "${MODEL_OUT_DIR}")
@@ -316,6 +338,7 @@ file(MAKE_DIRECTORY "${MODEL_OUT_DIR}")
 # List to store all compiled model outputs
 set(MODEL_BIN_FILES)
 set(MODEL_SRC_FILES)
+set(PREVIEW_OUT_FILES)
 
 # Collect all .glb and .obj files recursively
 foreach(MODEL_EXT glb obj)
@@ -323,7 +346,8 @@ foreach(MODEL_EXT glb obj)
 	file(GLOB_RECURSE MODEL_FILES "${MODEL_SRC_DIR}/*.${MODEL_EXT}")
 
 	foreach(MODEL_SRC ${MODEL_FILES})
-		file(RELATIVE_PATH RELATIVE_PATH ${MODEL_SRC_DIR} ${MODEL_SRC})
+		#message("MODEL_SRC=${MODEL_SRC}")
+		file(RELATIVE_PATH RELATIVE_PATH "${MODEL_SRC_DIR}" "${MODEL_SRC}")
 		get_filename_component(FIRST_FOLDER "${RELATIVE_PATH}" DIRECTORY)
 		get_filename_component(MODEL_NAME ${MODEL_SRC} NAME_WE)
 		if(FIRST_FOLDER)
@@ -337,29 +361,43 @@ foreach(MODEL_EXT glb obj)
 		if(FIRST_FOLDER)
 			set(MODEL_BIN "${MODEL_OUT_DIR}/${FIRST_FOLDER}/${MODEL_NAME}.bin")
 			file(MAKE_DIRECTORY "${MODEL_OUT_DIR}/${FIRST_FOLDER}")
+			set(PREVIEW_OUT "${PREVIEW_OUT_DIR}/${FIRST_FOLDER}/${MODEL_NAME}.png")
+			file(MAKE_DIRECTORY "${PREVIEW_OUT_DIR}/${FIRST_FOLDER}")
 		else()
 			set(MODEL_BIN "${MODEL_OUT_DIR}/${MODEL_NAME}.bin")
+			set(PREVIEW_OUT "")
+		endif()
+
+		# Copy preview image if it exists
+		set(PREVIEW_SRC "${MODEL_SRC_DIR}/${FIRST_FOLDER}/Previews/${MODEL_NAME}.png")
+		#message("PREVIEW_SRC=${PREVIEW_SRC}")
+		#message("PREVIEW_OUT=${PREVIEW_OUT}")
+		if(PREVIEW_OUT AND EXISTS "${PREVIEW_SRC}" AND NOT EXISTS "${PREVIEW_OUT}")
+			file(COPY "${PREVIEW_SRC}" DESTINATION "${PREVIEW_OUT_DIR}/${FIRST_FOLDER}")
+			list(APPEND PREVIEW_OUT_FILES "${PREVIEW_OUT}")
 		endif()
 
 		# Check for duplicate output files
-		list(FIND MODEL_BIN_FILES ${MODEL_BIN} INDEX)
+		list(FIND MODEL_BIN_FILES "${MODEL_BIN}" INDEX)
 		if(INDEX EQUAL -1)
-			# Add custom command to compile the shader
-			set(CUSTOM_ARGS "${GEOMETRYC}" -f "${MODEL_SRC}" -o "${MODEL_BIN}")
-			list(JOIN CUSTOM_ARGS " " CUSTOM_ARGS_STRING)
-			#message("${CUSTOM_ARGS_STRING}")
+			if(NOT EXISTS "${MODEL_BIN}")
+				# Add custom command to compile the shader
+				set(CUSTOM_ARGS "${GEOMETRYC}" -f "${MODEL_SRC}" -o "${MODEL_BIN}")
+				list(JOIN CUSTOM_ARGS " " CUSTOM_ARGS_STRING)
+				#message("${CUSTOM_ARGS_STRING}")
 
-			add_custom_command(
-				OUTPUT "${MODEL_BIN}"
-				COMMAND ${CUSTOM_ARGS}
-				DEPENDS "${MODEL_SRC}"
-				COMMENT "Converting model ${FIRST_FOLDER}/${MODEL_NAME}"
-				VERBATIM
-			)
+				add_custom_command(
+					OUTPUT "${MODEL_BIN}"
+					COMMAND ${CUSTOM_ARGS}
+					DEPENDS "${MODEL_SRC}"
+					COMMENT "Converting model ${FIRST_FOLDER}/${MODEL_NAME}"
+					VERBATIM
+				)
 
-			list(APPEND MODEL_BIN_FILES ${MODEL_BIN})
-			list(APPEND MODEL_SRC_FILES ${MODEL_SRC})
-			#message("${MODEL_SRC} OK")
+				list(APPEND MODEL_BIN_FILES "${MODEL_BIN}")
+				list(APPEND MODEL_SRC_FILES "${MODEL_SRC}")
+				#message("${MODEL_SRC} OK")
+			endif()
 		else()
 			#message("${MODEL_SRC} ALREADY EXISTS")
 		endif()
@@ -374,7 +412,9 @@ endforeach()
 #add_custom_target("Assets-Bin" DEPENDS ${MODEL_BIN_FILES} ${SHADER_BIN_FILES}) X
 
 # Create folders for Visual Studio
+#source_group(TREE "${ENGINE_SRC_FILES}" PREFIX "Engine" FILES ${ENGINE_SRC_FILES})
 source_group(TREE "${MODEL_SRC_DIR}" PREFIX "Assets/Models" FILES ${MODEL_SRC_FILES})
+source_group(TREE "${PREVIEW_OUT_FILES}" PREFIX "Assets/Models-prev" FILES ${PREVIEW_OUT_FILES})
 source_group(TREE "${SHADER_SRC_DIR}" PREFIX "Assets/Shaders" FILES ${SHADER_SRC_FILES})
 source_group(TREE "${RUNTIME_DIR}" PREFIX "Assets/Binaries" FILES ${MODEL_BIN_FILES} ${SHADER_BIN_FILES})
 
@@ -427,14 +467,14 @@ if(IS_EMSCRIPTEN)
 	if(BROTLI AND GZIP)
 		add_custom_command(
 			TARGET ${PROJECT_NAME} POST_BUILD
-			COMMAND ${BROTLI} --force --keep --best ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.data
-			COMMAND ${BROTLI} --force --keep --best ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.js
-			COMMAND ${BROTLI} --force --keep --best ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.html
-			COMMAND ${BROTLI} --force --keep --best ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.wasm
-			COMMAND ${GZIP} --force --keep --best ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.data
-			COMMAND ${GZIP} --force --keep --best ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.js
-			COMMAND ${GZIP} --force --keep --best ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.html
-			COMMAND ${GZIP} --force --keep --best ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.wasm
+			COMMAND "${BROTLI}" --force --keep --best "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.data"
+			COMMAND "${BROTLI}" --force --keep --best "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.js"
+			COMMAND "${BROTLI}" --force --keep --best "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.html"
+			COMMAND "${BROTLI}" --force --keep --best "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.wasm"
+			COMMAND "${GZIP}" --force --keep --best "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.data"
+			COMMAND "${GZIP}" --force --keep --best "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.js"
+			COMMAND "${GZIP}" --force --keep --best "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.html"
+			COMMAND "${GZIP}" --force --keep --best "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.wasm"
 			COMMENT "Compressing Emscripten output files with Brotli and Gzip"
 		)
 	else()

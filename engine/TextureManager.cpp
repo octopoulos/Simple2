@@ -1,6 +1,6 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-07-05
+// @version 2025-07-15
 
 #include "stdafx.h"
 #include "TextureManager.h"
@@ -55,7 +55,7 @@ static bgfx::TextureHandle LoadTexture_(bx::FileReaderI* _reader, const bx::File
 	return handle;
 }
 
-static bgfx::TextureHandle LoadTexture_(const bx::FilePath& _filePath, uint64_t _flags, uint8_t _skip, bgfx::TextureInfo* _info, bimg::Orientation::Enum* _orientation)
+static bgfx::TextureHandle LoadTexture_(const bx::FilePath& _filePath, uint64_t _flags = BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, uint8_t _skip = 0, bgfx::TextureInfo* _info = nullptr, bimg::Orientation::Enum* _orientation = nullptr)
 {
 	return LoadTexture_(entry::getFileReader(), _filePath, _flags, _skip, _info, _orientation);
 }
@@ -81,11 +81,10 @@ bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 	if (const auto& it = textures.find(std::string(name)); it != textures.end())
 		return it->second;
 
-	bgfx::TextureHandle texture = BGFX_INVALID_HANDLE;
-	//LoadTexture_(bx::StringView(name.data(), (uint32_t)name.size()), 0);
+	bgfx::TextureHandle texture = LoadTexture_(bx::FilePath(name.data()));
 	if (!bgfx::isValid(texture))
 	{
-		std::cerr << "Failed to load shader: " << name << std::endl;
+		ui::LogError("Failed to load texture: {}", name);
 		return BGFX_INVALID_HANDLE;
 	}
 

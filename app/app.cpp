@@ -1,6 +1,6 @@
 // app.cpp
 // @author octopoulos
-// @version 2025-07-12
+// @version 2025-07-15
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -59,16 +59,24 @@ bool App::update()
 {
 	if (entry::processEvents(screenX, screenY, isDebug, isReset, &mouseState)) return false;
 
+	// 1) ImGui
 	imguiBeginFrame(mouseState.m_mx, mouseState.m_my, (mouseState.m_buttons[entry::MouseButton::Left] ? IMGUI_MBUT_LEFT : 0) | (mouseState.m_buttons[entry::MouseButton::Right] ? IMGUI_MBUT_RIGHT : 0) | (mouseState.m_buttons[entry::MouseButton::Middle] ? IMGUI_MBUT_MIDDLE : 0), mouseState.m_mz, uint16_t(screenX), uint16_t(screenY));
-	showExampleDialog(this);
+	{
+		showExampleDialog(this);
+		MapUi();
+		ShowMainMenu(1.0f);
+		FilesUi();
+	}
 	imguiEndFrame();
 
-	curTime   = TO_FLOAT((bx::getHPCounter() - startTime) / TO_DOUBLE(bx::getHPFrequency()));
-	deltaTime = curTime - lastTime;
+	// 2) 3d render
+	{
+		curTime   = TO_FLOAT((bx::getHPCounter() - startTime) / TO_DOUBLE(bx::getHPFrequency()));
+		deltaTime = curTime - lastTime;
 
-	cameraUpdate(deltaTime, mouseState, ImGui::MouseOverArea());
-
-	Render();
+		cameraUpdate(deltaTime, mouseState, ImGui::MouseOverArea());
+		Render();
+	}
 
 	// Advance to next frame. Rendering thread will be kicked to process submitted rendering primitives
 	bgfx::frame();
@@ -100,6 +108,7 @@ void App::Destroy()
 int App::Initialize()
 {
 	FindAppDirectory(true);
+	ScanModels("runtime/models", "runtime/models-prev");
 
 	if (const int result = InitScene(); result < 0) return result;
 
@@ -156,54 +165,55 @@ int App::InitScene()
 	if (auto object = loader.LoadModel("kenney_car-kit-obj/race-future"))
 	{
 		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
-		bx::mtxRotateXYZ(object->transform, -0.3f, 2.5f, 0.0f);
-		scene.AddNamedChild("car", object);
+		bx::mtxRotateXYZ(glm::value_ptr(object->transform), -0.3f, 2.5f, 0.0f);
+		scene.AddNamedChild(object, "car");
 	}
 	if (auto object = loader.LoadModel("building-n"))
 	{
 		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
 		bx::mtxSRT(
-		    object->transform,
+		    glm::value_ptr(object->transform),
 		    1.0f, 1.0f, 1.0f, // scale
 		    0.0f, 1.5f, 0.0f, // rotation
 		    3.0f, -1.0f, 0.0f // translation
 		);
-		scene.AddNamedChild("building", object);
+		scene.AddNamedChild(object, "building");
 	}
 	if (auto object = loader.LoadModel("bunny"))
 	{
 		object->program = shaderManager.LoadProgram("vs_mesh", "fs_mesh");
 		bx::mtxSRT(
-		    object->transform,
+		    glm::value_ptr(object->transform),
 		    1.0f, 1.0f, 1.0f, // scale
 		    0.0f, 1.5f, 0.0f, // rotation
 		    -3.0f, 0.0f, 0.0f // translation
 		);
-		scene.AddNamedChild("bunny", object);
+		scene.AddNamedChild(object, "bunny");
 	}
 	if (auto object = loader.LoadModel("donut"))
 	{
 		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
 		bx::mtxSRT(
-		    object->transform,
+		    glm::value_ptr(object->transform),
 		    1.5f, 1.5f, 1.5f, // scale
 		    0.0f, 3.0f, 0.0f, // rotation
 		    0.0f, 1.0f, -2.0f // translation
 		);
-		scene.AddNamedChild("donut", object);
+		scene.AddNamedChild(object, "donut");
 	}
+
 	for (int i = 0; i < 15; ++i)
 	{
 		if (auto object = loader.LoadModel("donut3"))
 		{
 			object->program = shaderManager.LoadProgram("vs_model", "fs_model");
 			bx::mtxSRT(
-			    object->transform,
+			    glm::value_ptr(object->transform),
 			    0.5f, 0.5f, 0.5f,                             // scale
 			    sinf(i * 0.3f), 3.0f, 0.0f,                   // rotation
-			    i * 0.4f - 2.4f, sinf(i * 0.5f) + 0.1f, -2.5f // translation
+			    i * 0.4f - 2.4f, sinf(i * 0.5f) + 0.1f, -2.5f + MerseneFloat() // translation
 			);
-			scene.AddNamedChild(fmt::format("donut3-{}", i), object);
+			scene.AddNamedChild(object, fmt::format("donut3-{}", i));
 		}
 	}
 
@@ -357,6 +367,32 @@ void App::Render()
 		bgfx::setVertexBuffer(0, vbh); // Reuse cube vertex buffer for floor
 		bgfx::setIndexBuffer(ibh);
 		bgfx::submit(0, program);
+	}
+	for (auto& child : scene.children)
+	{
+		if (child->name == "donut")
+		{
+			const glm::vec3 position = { 0.0f, 1.0f, -2.0f };
+			const glm::quat rotation = glm::quat(glm::vec3(lastTime, 6.0f, 0.0f));
+			child->transform         = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation);
+		}
+		else if (child->name.starts_with("donut3"))
+		{
+			//glm::vec3 position        = glm::vec3(child->transform[3]);
+			//glm::quat currentRotation = glm::quat_cast(child->transform);
+			//glm::quat extraRotation   = glm::quat(glm::vec3(0.001f, child->id * 0.001f, 0.0f));
+			//glm::quat newRotation     = currentRotation * extraRotation;
+			//glm::mat4 rotationMat     = glm::mat4_cast(newRotation);
+
+			 const glm::vec3 position    = glm::vec3(child->transform[3]);
+			 const glm::quat rotation    = glm::quat(glm::vec3(-lastTime * 0.05f * child->id, 3.0f, 0.0f));
+			 const glm::mat4 rotationMat = glm::mat4_cast(rotation);
+
+			child->transform[0] = rotationMat[0];
+			child->transform[1] = rotationMat[1];
+			child->transform[2] = rotationMat[2];
+			//child->transform[3] = glm::vec4(position, 1.0f);
+		}
 	}
 
 	// draw the scene

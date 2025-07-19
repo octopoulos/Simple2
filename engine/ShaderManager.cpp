@@ -1,6 +1,6 @@
 // ShaderManager.cpp
 // @author octopoulos
-// @version 2025-07-11
+// @version 2025-07-14
 
 #include "stdafx.h"
 #include "ShaderManager.h"
@@ -106,14 +106,14 @@ bgfx::ProgramHandle ShaderManager::LoadProgram(std::string_view vsName, std::str
 	bgfx::ShaderHandle fs = LoadShader(fsName);
 	if (!bgfx::isValid(vs) || !bgfx::isValid(fs))
 	{
-		std::cerr << "Failed to load shaders for program: " << key << std::endl;
+		ui::LogError("Failed to load shaders for program: {}", key);
 		return BGFX_INVALID_HANDLE;
 	}
 
 	bgfx::ProgramHandle program = LoadProgram_(vsName, fsName);
 	if (!bgfx::isValid(program))
 	{
-		std::cerr << "Failed to create program: " << key << std::endl;
+		ui::LogError("Failed to create program: {}", key);
 		return BGFX_INVALID_HANDLE;
 	}
 
@@ -134,7 +134,7 @@ bgfx::ShaderHandle ShaderManager::LoadShader(std::string_view name)
 	bgfx::ShaderHandle shader = LoadShader_(name);
 	if (!bgfx::isValid(shader))
 	{
-		std::cerr << "Failed to load shader: " << name << std::endl;
+		ui::LogError("Failed to load shader: {}", name);
 		return BGFX_INVALID_HANDLE;
 	}
 

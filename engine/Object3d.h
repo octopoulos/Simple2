@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-07-05
+// @version 2025-07-14
 
 #pragma once
 
@@ -10,13 +10,18 @@ using sObject3d = std::shared_ptr<Object3d>;
 class Object3d
 {
 public:
-	std::vector<sObject3d> children = {};      //
+	std::vector<sObject3d> children = {};      // sub-objects
+	int                    id       = 0;       // unique id
 	std::string            name     = "";      //
-	Object3d*              parent   = nullptr; //
+	Object3d*              parent   = nullptr; // parent object
 
-	float     transform[16] = {};              //
-	glm::mat4 localMatrix   = glm::mat4(1.0f); //
-	glm::mat4 worldMatrix   = glm::mat4(1.0f); //
+	glm::vec3 position      = {}; // x, y, z
+	glm::quat rotation      = {}; // quaternion
+	glm::vec3 scale         = {}; // sx, sy, sz
+	glm::mat4 transform     = {}; // computed from scale * rotation * position
+
+	glm::mat4 localMatrix = glm::mat4(1.0f); //
+	glm::mat4 worldMatrix = glm::mat4(1.0f); //
 
 	Object3d()          = default;
 	virtual ~Object3d() = default;
@@ -36,7 +41,7 @@ public:
 		}
 	}
 
-	virtual void Render(uint8_t viewId)	{}
+	virtual void Render(uint8_t viewId) {}
 
 	void TraverseAndRender(uint8_t viewId)
 	{

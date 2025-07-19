@@ -1,6 +1,6 @@
 // Scene.h
 // @author octopoulos
-// @version 2025-07-05
+// @version 2025-07-14
 
 #pragma once
 
@@ -21,11 +21,12 @@ public:
 			if (!inserted) ui::LogWarning("Scene/AddChild: {} already exists", child->name);
 		}
 
+		child->id     = TO_INT(children.size());
 		child->parent = this;
 		children.push_back(std::move(child));
 	}
 
-	void AddNamedChild(std::string&& name, sObject3d child)
+	void AddNamedChild(sObject3d child, std::string&& name)
 	{
 		child->name = std::move(name);
 		AddChild(child);
