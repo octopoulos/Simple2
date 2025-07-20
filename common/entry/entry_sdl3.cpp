@@ -1,7 +1,8 @@
 // entry_sdl3.cpp
 // @author octopoulos
-// @version 2025-07-11
+// @version 2025-07-15
 
+#include "stdafx.h"
 #include "entry_p.h"
 
 #if ENTRY_CONFIG_USE_SDL3
@@ -29,21 +30,23 @@ extern "C" void* GetMacOSMetalLayer(void* handle);
 
 namespace entry
 {
-///
+/**
+ * Check SDL_video.h
+ */
 static void* sdlNativeWindowHandle(SDL_Window* window)
 {
 	if (!window) return nullptr;
 	const auto props = SDL_GetWindowProperties(window);
-	printf("SDL_Window=%p props=%p\n", window, &props);
+	ui::Log("SDL_Window={} props={}\n", (void*)window, (void*)&props);
 
 #	if BX_PLATFORM_ANDROID
-	return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_ANDROID_JNIENV_POINTER, nullptr);
+	return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, nullptr);
 
 #	elif BX_PLATFORM_EMSCRIPTEN
 	return (void*)"#canvas";
 
 #	elif BX_PLATFORM_IOS
-	return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_UIAPPLICATION_POINTER, nullptr);
+	return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, nullptr);
 
 #	elif BX_PLATFORM_LINUX
 	const char* driver = SDL_GetCurrentVideoDriver();
@@ -56,7 +59,7 @@ static void* sdlNativeWindowHandle(SDL_Window* window)
 	return GetMacOSMetalLayer(SDL_GetPointerProperty(props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr));
 
 #	elif BX_PLATFORM_WINDOWS
-	return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HINSTANCE_POINTER, nullptr);
+	return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
 
 #	endif // BX_PLATFORM_*
 
@@ -410,6 +413,7 @@ struct Context
 		m_mte.m_argv = _argv;
 
 		SDL_Init(SDL_INIT_GAMEPAD | SDL_INIT_VIDEO);
+		ui::Log("SDL3 !!!! WINDOWS TITLE\n");
 
 		m_windowAlloc.alloc();
 		m_window[0] = SDL_CreateWindow("bgfx", m_width, m_height, SDL_WINDOW_RESIZABLE);
@@ -447,7 +451,7 @@ struct Context
 			((char*)data)[size] = '\0';
 
 			if (SDL_AddGamepadMapping((char*)data) < 0)
-				DBG("SDL game controller add mapping failed: %s", SDL_GetError());
+				ui::LogError("SDL game controller add mapping failed: {}", SDL_GetError());
 
 			bx::free(allocator, data);
 		}
@@ -530,7 +534,7 @@ struct Context
 						Key::Enum key       = translateKey(kev.scancode);
 
 #	if 1
-						DBG("SDL scancode %d, key %d, name %s, key name %s", kev.scancode, key, SDL_GetScancodeName(kev.scancode), SDL_GetKeyName(kev.scancode));
+						ui::Log("SDL scancode {}, key {}, name {}, key name {}", TO_INT(kev.scancode), TO_INT(key), SDL_GetScancodeName(kev.scancode), SDL_GetKeyName(kev.scancode));
 #	endif // 0
 
 						/// If you only press (e.g.) 'shift' and nothing else, then key == 'shift', modifier == 0.
@@ -565,7 +569,7 @@ struct Context
 				case SDL_EVENT_KEY_UP:
 				{
 					const SDL_KeyboardEvent& kev = event.key;
-					printf("KEYUP!!! %d", kev.scancode);
+					ui::Log("SDL3/SDL_EVENT_KEY_UP: {}", TO_INT(kev.scancode));
 					WindowHandle handle = findHandle(kev.windowID);
 					if (isValid(handle))
 					{

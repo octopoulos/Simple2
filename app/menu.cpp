@@ -102,42 +102,11 @@ void App::ShowMainMenu(float alpha)
 				if (first) ImGui::MenuItem("Empty List");
 				ImGui::EndMenu();
 			}
-			ImGui::Separator();
+			//ImGui::Separator();
 			// if (ImGui::MenuItem(fmt::format("Save {} Defaults", GameName()).c_str())) SaveGameSettings("", true, "-def");
 			// if (ImGui::MenuItem("Save Screenshot...", xsettings.shortcutScreenshot)) app->OpenFile(OpenAction_Screenshot);
-			ImGui::Separator();
+			//ImGui::Separator();
 			// if (ImGui::MenuItem("Exit")) app->Quit();
-			ImGui::EndMenu();
-		}
-
-		// capture
-		if (ImGui::BeginMenu("Capture"))
-		{
-			// if (ImGui::MenuItem("Capture Device", xsettings.shortcutDevice)) app->CaptureVideo(CapType::Device);
-			// if (ImGui::MenuItem("Capture Screen", xsettings.shortcutScreen)) app->SourceType(CapType::Screen);
-			ImGui::Separator();
-			// if (ImGui::MenuItem("Start", xsettings.shortcutStart, false, app->HasVideo())) app->Pause(0);
-			// if (ImGui::MenuItem("Pause", xsettings.shortcutPause, false, app->HasVideo())) app->Pause(1);
-			// if (ImGui::MenuItem("Stop", xsettings.shortcutStop, false, app->HasVideo())) app->SourceType(CapType::None);
-			ImGui::Separator();
-			// if (ImGui::MenuItem("OCR now")) app->OcrNow();
-			ImGui::EndMenu();
-		}
-
-		// view
-		if (ImGui::BeginMenu("View"))
-		{
-			// clang-format off
-			//if (ImGui::MenuItem("View Source","F1", xsettings.target == TARGET_SOURCE)) xsettings.target = TARGET_SOURCE;
-			//if (ImGui::MenuItem("View Paint" ,"F2", xsettings.target == TARGET_PAINT )) xsettings.target = TARGET_PAINT;
-			//if (ImGui::MenuItem("View OCR",   "F3", xsettings.target == TARGET_OCR   )) xsettings.target = TARGET_OCR;
-			//if (ImGui::MenuItem("View Debug", "F4", xsettings.target == TARGET_VIEW  )) xsettings.target = TARGET_VIEW;
-			//if (ImGui::MenuItem("View Gray",  "F5", xsettings.target == TARGET_GRAY  )) xsettings.target = TARGET_GRAY;
-			//if (ImGui::MenuItem("View Hue",   "F6", xsettings.target == TARGET_HUE   )) xsettings.target = TARGET_HUE;
-			//if (ImGui::MenuItem("R Channel",  "F7", xsettings.target == TARGET_R     )) xsettings.target = TARGET_R;
-			//if (ImGui::MenuItem("G Channel",  "F8", xsettings.target == TARGET_G     )) xsettings.target = TARGET_G;
-			//if (ImGui::MenuItem("B Channel",  "F9", xsettings.target == TARGET_B     )) xsettings.target = TARGET_B;
-			// clang-format on
 			ImGui::EndMenu();
 		}
 
@@ -148,8 +117,8 @@ void App::ShowMainMenu(float alpha)
 			// AddMenu("Log", xsettings.shortcutLog, GetLogWindow());
 			// app->MenuWindows();
 			// AddMenu("Settings", xsettings.shortcutSettings, GetSettingsWindow());
-			ImGui::Separator();
-			// ImGui::MenuItem("ImGui Demo", nullptr, &showImGuiDemo);
+			//ImGui::Separator();
+			ImGui::MenuItem("ImGui Demo", nullptr, &showImGuiDemo);
 			// AddMenu("Theme Editor", nullptr, GetThemeWindow());
 
 			ImGui::EndMenu();
@@ -158,7 +127,7 @@ void App::ShowMainMenu(float alpha)
 		// help
 		if (ImGui::BeginMenu("Help"))
 		{
-			ImGui::MenuItem("Lvi - Оксана (Gdansk): Привіт!!!");
+			ImGui::MenuItem("Good luck!");
 			ImGui::EndMenu();
 		}
 

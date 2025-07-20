@@ -66,6 +66,8 @@ bool App::update()
 		MapUi();
 		ShowMainMenu(1.0f);
 		FilesUi();
+
+		if (showImGuiDemo) ImGui::ShowDemoWindow(&showImGuiDemo);
 	}
 	imguiEndFrame();
 

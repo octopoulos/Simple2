@@ -1,9 +1,10 @@
-// @version 2025-07-11
+// @version 2025-07-15
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
+#include "stdafx.h"
 #include <bx/bx.h>
 #include <bx/file.h>
 #include <bx/sort.h>
@@ -699,8 +700,8 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 
 			case Event::Gamepad:
 			{
-				//						const GamepadEvent* gev = static_cast<const GamepadEvent*>(ev);
-				//						DBG("gamepad %d, %d", gev->m_gamepad.idx, gev->m_connected);
+				//const GamepadEvent* gev = static_cast<const GamepadEvent*>(ev);
+				//DBG("gamepad %d, %d", gev->m_gamepad.idx, gev->m_connected);
 			}
 			break;
 
@@ -745,7 +746,7 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 				_width  = size->m_width;
 				_height = size->m_height;
 				BX_TRACE("Window resize event: %d: %dx%d", handle, _width, _height);
-
+				ui::Log("processEvents/Event::Size: {}: {}x{}", (void*)&handle, _width, _height);
 				needReset = true;
 			}
 			break;
@@ -774,8 +775,7 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 
 	needReset |= _reset != s_reset;
 
-	if (handle.idx == 0
-	    && needReset)
+	if (handle.idx == 0 && needReset)
 	{
 		_reset = s_reset;
 		BX_TRACE("bgfx::reset(%d, %d, 0x%x)", _width, _height, _reset)
@@ -899,6 +899,7 @@ bool processWindowEvents(WindowState& _state, uint32_t& _debug, uint32_t& _reset
 				win.m_height          = size->m_height;
 
 				needReset = win.m_handle.idx == 0 ? true : needReset;
+				ui::Log("processWindowEvents/Event::Size: %d: %dx%d", size->m_handle, size->m_width, size->m_height);
 			}
 			break;
 

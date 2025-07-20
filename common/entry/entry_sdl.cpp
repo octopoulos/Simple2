@@ -1,9 +1,10 @@
-// @version 2025-07-11
+// @version 2025-07-15
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
+#include "stdafx.h"
 #include "entry_p.h"
 
 #if ENTRY_CONFIG_USE_SDL
@@ -776,7 +777,10 @@ struct Context
 						WindowHandle handle = getWindowHandle(uev);
 						Msg*         msg    = (Msg*)uev.data2;
 						if (isValid(handle))
+						{
 							SDL_SetWindowSize(m_window[handle.idx], msg->m_width, msg->m_height);
+							ui::Log("SDL_USER_WINDOW_SET_SIZE: %d: %dx%d", m_window[handle.idx], msg->m_width, msg->m_height);
+						}
 						delete msg;
 					}
 					break;

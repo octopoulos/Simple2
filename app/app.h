@@ -40,8 +40,12 @@ public:
 
 private:
 	MAP_STR<MAP_STR_INT> kitModels = {}; // model database: [title, filename]
+	// tiles
 
+	void AddObject(const std::string& name);
 	void MapUi();
+	bool OpenMap(const std::filesystem::path& filename);
+	bool SaveMap(const std::filesystem::path& filename);
 	void ScanModels(const std::filesystem::path& folder, const std::filesystem::path& folderPrev, int depth = 0, const std::string& relative = "");
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,12 +75,13 @@ private:
 	/////
 
 private:
-	UMAP_INT_STR actionFolders            = {}; ///< open image & save screenshot in different folders
-	int          fileAction               = 0;  ///< action to take in OpenedFile
-	std::string  fileFolder               = {}; ///< folder after OpenFile
-	int64_t      keys[SDL_SCANCODE_COUNT] = {}; ///< pushed keys
-	int          lastCode                 = 0;  ///< last pushed key
-	int64_t      now                      = 0;  ///< current timestamp in us
+	UMAP_INT_STR actionFolders            = {};    ///< open image & save screenshot in different folders
+	int          fileAction               = 0;     ///< action to take in OpenedFile
+	std::string  fileFolder               = {};    ///< folder after OpenFile
+	int64_t      keys[SDL_SCANCODE_COUNT] = {};    ///< pushed keys
+	int          lastCode                 = 0;     ///< last pushed key
+	int64_t      now                      = 0;     ///< current timestamp in us
+	bool         showImGuiDemo            = false; ///< show ImGui demo window
 
 	void EventKeyDown(int code);
 	void EventKeyUp(int code);

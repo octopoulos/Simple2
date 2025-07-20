@@ -7,6 +7,11 @@
 
 #include "dear-imgui/imgui.h"
 
+void App::AddObject(const std::string& name)
+{
+	ui::Log("AddObject: {}", name);
+}
+
 void App::MapUi()
 {
 	const ImVec2 displaySize = ImGui::GetIO().DisplaySize;
@@ -26,7 +31,8 @@ void App::MapUi()
 		{
 			if (ImGui::TreeNode(fmt::format("[{}] {}", models.size(), kit.size() ? kit : "*"s).c_str()))
 			{
-				int count = 0;
+				int       count    = 0;
+				const int numModel = TO_INT(models.size());
 
 				for (const auto& [name, hasPreview] : models)
 				{
@@ -42,24 +48,61 @@ void App::MapUi()
 						{
 							ImTextureID texId = (ImTextureID)(uintptr_t)handle.idx;
 							if (ImGui::ImageButton(fmt::format("##{}", preview).c_str(), texId, ImVec2(imageSize, imageSize)))
-							{
-								ui::Log("Clicked on model: {}", name);
-							}
+								AddObject(name);
+
 							if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", name.c_str());
 							hasImage = true;
 						}
 					}
-					// HERE, I WANT TO WRAP THE TEXT IN a 64x64 box
-					if (!hasImage) ImGui::TextWrapped("%s", name.c_str());
+
+					// no image => show text in boxes
+					if (!hasImage)
+					{
+						const ImVec2 boxSize = { imageSize, imageSize };
+						const auto   label   = fmt::format("##btn_{}", name);
+
+						if (ImGui::Button(label.c_str(), boxSize))
+							AddObject(name);
+
+						// draw wrapped text manually inside the button
+						const ImVec2 textMin   = ImGui::GetItemRectMin();
+						const ImVec2 textMax   = ImGui::GetItemRectMax();
+						const ImVec2 textPos   = textMin + ImVec2(4.0f, 4.0f);
+						const float  wrapWidth = boxSize.x - 8.0f;
+
+						ImGui::GetWindowDrawList()->AddText(
+						    ImGui::GetFont(),
+						    ImGui::GetFontSize(),
+						    textPos,
+						    ImGui::GetColorU32(ImGuiCol_Text),
+						    name.c_str(),
+						    nullptr,
+						    wrapWidth
+						);
+					}
 
 					// layout next item on same row
-					if (++count % itemsPerRow != 0) ImGui::SameLine();
+					++count;
+					if (count < numModel && (count % itemsPerRow) != 0)
+						ImGui::SameLine();
 				}
 				ImGui::TreePop();
 			}
 		}
 	}
 	ImGui::End();
+}
+
+bool App::OpenMap(const std::filesystem::path& filename)
+{
+	ReadLines(filename, [](std::string_view line, int lineId) {
+	});
+	return true;
+}
+
+bool App::SaveMap(const std::filesystem::path& filename)
+{
+	return true;
 }
 
 void App::ScanModels(const std::filesystem::path& folder, const std::filesystem::path& folderPrev, int depth, const std::string& relative)
