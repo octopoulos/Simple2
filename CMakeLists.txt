@@ -11,7 +11,7 @@
 cmake_minimum_required(VERSION 3.20)
 cmake_policy(SET CMP0167 NEW)
 
-project(Simple LANGUAGES CXX)
+project(Simple LANGUAGES C CXX)
 
 #######################################################################################################################
 # 1) COMPILER
@@ -21,10 +21,12 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 OPTION(WITH_FILE_DIALOG ON )
+OPTION(WITH_SDL         ON )
 OPTION(WITH_SDL3        ON )
 
 set(ALL_WITHS
 	WITH_FILE_DIALOG
+	WITH_SDL
 	WITH_SDL3
 )
 foreach(opt IN LISTS ALL_WITHS)
@@ -34,6 +36,8 @@ foreach(opt IN LISTS ALL_WITHS)
 endforeach()
 
 add_definitions(
+	-DBX_CONFIG_DEBUG=0
+	-DBX_CONFIG_SUPPORTS_THREADING=1
 	-DENTRY_CONFIG_IMPLEMENT_MAIN=1
 	-DENTRY_CONFIG_USE_NATIVE=0
 	-DIMGUI_INCLUDE="${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dear-imgui/imgui.h"
@@ -42,8 +46,10 @@ add_definitions(
 )
 if(WITH_SDL3)
 	add_definitions(-DENTRY_CONFIG_USE_SDL3=1)
-else()
+	set(SDL_USE "-sUSE_SDL=3")
+elseif(WITH_SDL)
 	add_definitions(-DENTRY_CONFIG_USE_SDL=1)
+	set(SDL_USE "-sUSE_SDL=2")
 endif()
 
 # Check for Emscripten once and set a variable
@@ -69,7 +75,7 @@ if(IS_EMSCRIPTEN)
 		-sNO_DISABLE_EXCEPTION_CATCHING=1 \
 		-sSAFE_HEAP=0 \
 		-sSTANDALONE_WASM=0 \
-		-sUSE_SDL=3 \
+		${SDL_USE} \
 		-sUSE_WEBGL2=1 \
 		-sWASM=1 \
 		--closure 1 \
@@ -81,8 +87,11 @@ if(IS_EMSCRIPTEN)
 	set(CMAKE_EXECUTABLE_SUFFIX ".html")
 
 	# Add Emscripten-specific linker flags (e.g., for SDL3 and bgfx)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -sUSE_SDL=3 -sNO_DISABLE_EXCEPTION_CATCHING")
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -sFULL_ES3=1 -sUSE_SDL=3 -sUSE_WEBGL2 -sWASM=1 -sASYNCIFY -sASSERTIONS -sALLOW_MEMORY_GROWTH -sEXPORTED_FUNCTIONS=['_main'] -sEXPORTED_RUNTIME_METHODS=['ccall','cwrap']")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SDL_USE} -sNO_DISABLE_EXCEPTION_CATCHING")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -sFULL_ES3=1 ${SDL_USE} -sUSE_WEBGL2 -sWASM=1 -sASYNCIFY -sASSERTIONS -sALLOW_MEMORY_GROWTH -sEXPORTED_FUNCTIONS=['_main'] -sEXPORTED_RUNTIME_METHODS=['ccall','cwrap']")
+	message("CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
+	message("CMAKE_EXE_LINKER_FLAGS=${CMAKE_EXE_LINKER_FLAGS}")
+	message("CMAKE_EXE_LINKER_FLAGS_RELEASE=${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 
 	# Fix for WebAssembly architecture
 	set(CMAKE_SIZEOF_VOID_P 4)
@@ -97,6 +106,9 @@ endif()
 # set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
 # set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "/home/ubuntu/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" CACHE STRING "")
 
+if("${CPP_3RDPARTY}" STREQUAL "")
+	set(CPP_3RDPARTY "$ENV{CPP_3RDPARTY}")
+endif()
 if("${CPP_PATH}" STREQUAL "")
 	set(CPP_PATH "$ENV{CPP_PATH}")
 endif()
@@ -104,7 +116,26 @@ if("${SDK_PATH}" STREQUAL "")
 	set(SDK_PATH "$ENV{SDK_PATH}")
 endif()
 
-if(WIN32)
+if(APPLE)
+	if("${CPP_3RDPARTY}" STREQUAL "")
+		set(CPP_3RDPARTY "/Users/ubuntu/Code/cpp-3rdparty")
+	endif()
+	if("${CPP_PATH}" STREQUAL "")
+		set(CPP_PATH "/Users/ubuntu/Code/cpp")
+	endif()
+	set(EXTRA_INCLUDE_DIR "/usr/local/include")
+elseif(IS_EMSCRIPTEN)
+	if("${CPP_3RDPARTY}" STREQUAL "")
+		set(CPP_3RDPARTY "/Users/ubuntu/Code/cpp-3rdparty")
+	endif()
+	if("${CPP_PATH}" STREQUAL "")
+		set(CPP_PATH "/Users/ubuntu/Code/cpp")
+	endif()
+	set(EXTRA_INCLUDE_DIR "/usr/local/include")
+elseif(WIN32)
+	if("${CPP_3RDPARTY}" STREQUAL "")
+		set(CPP_PATH "C:/Code/cpp-3rdparty")
+	endif()
 	if("${CPP_PATH}" STREQUAL "")
 		set(CPP_PATH "C:/Code/cpp")
 	endif()
@@ -113,12 +144,14 @@ if(WIN32)
 	endif()
 	set(EXTRA_INCLUDE_DIR "${SDK_PATH}/include")
 	set(EXTRA_LIB_DIR "${SDK_PATH}/lib/$<CONFIG>")
-elseif(APPLE)
-	if("${CPP_PATH}" STREQUAL "")
-		set(CPP_PATH "/Users/ubuntu/Code/cpp")
-	endif()
-	set(EXTRA_INCLUDE_DIR "/usr/local/include")
 else()
+	if("${CPP_3RDPARTY}" STREQUAL "")
+		if(IS_DIRECTORY "/home/ubuntu/Code/cpp-3rdparty")
+			set(CPP_3RDPARTY "/home/ubuntu/Code/3rdparty")
+		else()
+			set(CPP_3RDPARTY "/mnt/c/Code/3rdparty")
+		endif()
+	endif()
 	if("${CPP_PATH}" STREQUAL "")
 		if(IS_DIRECTORY "/home/ubuntu/Code/cpp")
 			set(CPP_PATH "/home/ubuntu/Code/cpp")
@@ -144,7 +177,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(fmt)
 
-find_package(bgfx CONFIG REQUIRED)
+# find_package(bgfx CONFIG REQUIRED)
 find_package(Bullet REQUIRED)
 find_package(doctest CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
@@ -152,19 +185,30 @@ find_package(fmt CONFIG REQUIRED)
 find_package(meshoptimizer CONFIG REQUIRED)
 #find_package(RapidObj CONFIG REQUIRED)
 
-if(WITH_SDL3)
-	find_package(SDL3 REQUIRED)
-else()
-	find_package(SDL2 CONFIG REQUIRED)
+if(NOT IS_EMSCRIPTEN)
+	if(WITH_SDL3)
+		find_package(SDL3 REQUIRED)
+	elseif(WITH_SDL)
+		find_package(SDL2 CONFIG REQUIRED)
+	endif()
 endif()
 
 #######################################################################################################################
 # 3) SOURCES
 ############
 
-file(GLOB APP_SRC_FILES CONFIGURE_DEPENDS app/*.cpp app/*.h)
-file(GLOB COMMON_SRC_FILES CONFIGURE_DEPENDS common/*.cpp common/*.h)
-file(GLOB ENGINE_SRC_FILES CONFIGURE_DEPENDS engine/*.cpp engine/*.h)
+if(APPLE)
+	set(CPP_MM "mm")
+else()
+	set(CPP_MM "cpp")
+endif()
+
+file(GLOB APP_SRC_FILES     CONFIGURE_DEPENDS app/*.cpp app/*.h)
+file(GLOB BGFX_SRC_FILES    CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bgfx/src/amalgamated.${CPP_MM}")
+file(GLOB BIMG_SRC_FILES    CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bimg/src/image.cpp" "${CPP_3RDPARTY}/bimg/src/image_decode.cpp" "${CPP_3RDPARTY}/bimg/src/image_gnf.cpp" "${CPP_3RDPARTY}/bimg/3rdparty/astc-encoder/source/*.cpp" "${CPP_3RDPARTY}/bimg/3rdparty/tinyexr/deps/miniz/miniz.*")
+file(GLOB BX_SRC_FILES      CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bx/src/amalgamated.cpp")
+file(GLOB COMMON_SRC_FILES  CONFIGURE_DEPENDS common/*.cpp common/*.h)
+file(GLOB ENGINE_SRC_FILES  CONFIGURE_DEPENDS engine/*.cpp engine/*.h)
 file(GLOB PHYSICS_SRC_FILES CONFIGURE_DEPENDS physics/*.cpp physics/*.h)
 # file(GLOB GUI_SRC_FILES CONFIGURE_DEPENDS src/gui/*.cpp src/gui/*.h)
 
@@ -187,7 +231,17 @@ target_include_directories(Simple PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dear-imgui"
 	"${CMAKE_CURRENT_SOURCE_DIR}/app"
 	"${CMAKE_CURRENT_SOURCE_DIR}/common"
-	"${CPP_PATH}"	
+	"${CPP_3RDPARTY}/bgfx/3rdparty/khronos"
+	"${CPP_3RDPARTY}/bgfx/include"
+	"${CPP_3RDPARTY}/bimg/3rdparty"
+	"${CPP_3RDPARTY}/bimg/3rdparty/astc-encoder/include"
+	"${CPP_3RDPARTY}/bimg/3rdparty/iqa/include"
+	"${CPP_3RDPARTY}/bimg/3rdparty/nvtt"
+	"${CPP_3RDPARTY}/bimg/3rdparty/tinyexr/deps/miniz"
+	"${CPP_3RDPARTY}/bimg/include"
+	"${CPP_3RDPARTY}/bx/3rdparty"
+	"${CPP_3RDPARTY}/bx/include"
+	"${CPP_PATH}"
 	"${VCPKG_INCLUDE_DIR}/bullet"
 	# "${VCPKG_INCLUDE_DIR}/bx"
 )
@@ -198,7 +252,7 @@ target_include_directories(Simple PRIVATE
 
 target_link_libraries(Simple PRIVATE
 	AI
-	bgfx::bgfx bgfx::bimg bgfx::bimg_decode bgfx::bx
+	# bgfx::bgfx bgfx::bimg bgfx::bimg_decode bgfx::bx
 	${BULLET_LIBRARIES}
 	doctest::doctest
 	fmt::fmt-header-only
@@ -212,10 +266,12 @@ if(WITH_FILE_DIALOG)
 	#target_link_libraries(Simple PRIVATE "${imguifiledialog_SOURCE_DIR}/ImGuiFileDialog.cpp")
 endif()
 
-if(WITH_SDL3)
-	target_link_libraries(Simple PRIVATE SDL3::SDL3)
-else()
-	target_link_libraries(Simple PRIVATE $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>)
+if(NOT IS_EMSCRIPTEN)
+	if(WITH_SDL3)
+		target_link_libraries(Simple PRIVATE SDL3::SDL3)
+	elseif(WITH_SDL)
+		target_link_libraries(Simple PRIVATE $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>)
+	endif()
 endif()
 
 # target_link_libraries(Simple "-framework GameController")
@@ -422,25 +478,21 @@ source_group(TREE "${RUNTIME_DIR}" PREFIX "Assets/Binaries" FILES ${MODEL_BIN_FI
 set(EXTRA_SRC_FILES)
 if(WITH_SDL3)
 	list(APPEND EXTRA_SRC_FILES "common/entry/entry_sdl3.cpp")
-	if(APPLE)
-		list(APPEND APP_SRC_FILES "common/entry/entry_sdl3.mm")
-	endif()
-else()
+elseif(WITH_SDL)
 	list(APPEND EXTRA_SRC_FILES "common/entry/entry_sdl.cpp")
 endif()
 
 # Add compiled models and shaders to the target
-target_sources(Simple PRIVATE
-	${MODEL_BIN_FILES}
-	${MODEL_SRC_FILES}
-	${SHADER_BIN_FILES}
-	${SHADER_SRC_FILES}
+set(SOURCES
 	"3rdparty/dear-imgui/imgui.cpp"
 	"3rdparty/dear-imgui/imgui_demo.cpp"
 	"3rdparty/dear-imgui/imgui_draw.cpp"
 	"3rdparty/dear-imgui/imgui_tables.cpp"
 	"3rdparty/dear-imgui/imgui_widgets.cpp"
 	${APP_SRC_FILES}
+	${BGFX_SRC_FILES}
+	${BIMG_SRC_FILES}
+	${BX_SRC_FILES}
 	${COMMON_SRC_FILES}
 	"common/entry/cmd.cpp"
 	"common/entry/dialog.cpp"
@@ -449,9 +501,15 @@ target_sources(Simple PRIVATE
 	"common/imgui/imgui.cpp"
 	${EXTRA_SRC_FILES}
 	${ENGINE_SRC_FILES}
-	${PHYSICS_SRC_FILES}
 	${GUI_SRC_FILES}
+	${MODEL_BIN_FILES}
+	${MODEL_SRC_FILES}
+	${PHYSICS_SRC_FILES}
+	${SHADER_BIN_FILES}
+	${SHADER_SRC_FILES}
 )
+#message("SOURCES=${SOURCES}")
+target_sources(Simple PRIVATE ${SOURCES})
 
 # Exclude .glb, .obj, and .sc files from compilation
 set_source_files_properties(${MODEL_SRC_FILES} ${SHADER_SRC_FILES} PROPERTIES

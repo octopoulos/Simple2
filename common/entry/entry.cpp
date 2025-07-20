@@ -899,7 +899,7 @@ bool processWindowEvents(WindowState& _state, uint32_t& _debug, uint32_t& _reset
 				win.m_height          = size->m_height;
 
 				needReset = win.m_handle.idx == 0 ? true : needReset;
-				ui::Log("processWindowEvents/Event::Size: %d: %dx%d", size->m_handle, size->m_width, size->m_height);
+				ui::Log("processWindowEvents/Event::Size: {}: {}x{}", (void*)&size->m_handle, size->m_width, size->m_height);
 			}
 			break;
 

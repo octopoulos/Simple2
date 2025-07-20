@@ -1,6 +1,6 @@
 // entry_sdl3.cpp
 // @author octopoulos
-// @version 2025-07-15
+// @version 2025-07-16
 
 #include "stdafx.h"
 #include "entry_p.h"
@@ -24,10 +24,6 @@
 #	include <bx/tinystl/string.h>
 #	include <bx/thread.h>
 
-#	if BX_PLATFORM_OSX
-extern "C" void* GetMacOSMetalLayer(void* handle);
-#	endif
-
 namespace entry
 {
 /**
@@ -37,7 +33,6 @@ static void* sdlNativeWindowHandle(SDL_Window* window)
 {
 	if (!window) return nullptr;
 	const auto props = SDL_GetWindowProperties(window);
-	ui::Log("SDL_Window={} props={}\n", (void*)window, (void*)&props);
 
 #	if BX_PLATFORM_ANDROID
 	return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, nullptr);
@@ -56,7 +51,7 @@ static void* sdlNativeWindowHandle(SDL_Window* window)
 		return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, nullptr);
 
 #	elif BX_PLATFORM_OSX
-	return GetMacOSMetalLayer(SDL_GetPointerProperty(props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr));
+	return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
 
 #	elif BX_PLATFORM_WINDOWS
 	return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
@@ -413,7 +408,6 @@ struct Context
 		m_mte.m_argv = _argv;
 
 		SDL_Init(SDL_INIT_GAMEPAD | SDL_INIT_VIDEO);
-		ui::Log("SDL3 !!!! WINDOWS TITLE\n");
 
 		m_windowAlloc.alloc();
 		m_window[0] = SDL_CreateWindow("bgfx", m_width, m_height, SDL_WINDOW_RESIZABLE);
@@ -569,7 +563,6 @@ struct Context
 				case SDL_EVENT_KEY_UP:
 				{
 					const SDL_KeyboardEvent& kev = event.key;
-					ui::Log("SDL3/SDL_EVENT_KEY_UP: {}", TO_INT(kev.scancode));
 					WindowHandle handle = findHandle(kev.windowID);
 					if (isValid(handle))
 					{

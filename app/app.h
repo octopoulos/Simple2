@@ -1,6 +1,6 @@
 // app.h
 // @author octopoulos
-// @version 2025-07-15
+// @version 2025-07-16
 
 #pragma once
 
@@ -75,13 +75,13 @@ private:
 	/////
 
 private:
-	UMAP_INT_STR actionFolders            = {};    ///< open image & save screenshot in different folders
-	int          fileAction               = 0;     ///< action to take in OpenedFile
-	std::string  fileFolder               = {};    ///< folder after OpenFile
-	int64_t      keys[SDL_SCANCODE_COUNT] = {};    ///< pushed keys
-	int          lastCode                 = 0;     ///< last pushed key
-	int64_t      now                      = 0;     ///< current timestamp in us
-	bool         showImGuiDemo            = false; ///< show ImGui demo window
+	UMAP_INT_STR actionFolders = {};    ///< open image & save screenshot in different folders
+	int          fileAction    = 0;     ///< action to take in OpenedFile
+	std::string  fileFolder    = {};    ///< folder after OpenFile
+	int64_t      keys[512]     = {};    ///< pushed keys
+	int          lastCode      = 0;     ///< last pushed key
+	int64_t      now           = 0;     ///< current timestamp in us
+	bool         showImGuiDemo = false; ///< show ImGui demo window
 
 	void EventKeyDown(int code);
 	void EventKeyUp(int code);
@@ -94,18 +94,17 @@ private:
 	/////////
 
 private:
-	bool              hasFocus    = true;    ///
-	uint32_t          isDebug     = 0;       ///
-	uint32_t          isReset     = 0;       ///
-	int               mouseButton = 0;       ///< last known mouse button
-	float             mousePos[3] = {};      ///< last known mouse position: x, y
-	int               mouseScroll = 0;       ///< mouse wheel
-	entry::MouseState mouseState  = {};      ///
-	bool              quit        = false;   ///< exit the mainloop
-	uint32_t          screenX     = 1280;    ///
-	uint32_t          screenY     = 800;     ///
-	bool              useGlm      = false;   ///
-	SDL_Window*       window      = nullptr; ///
+	bool              hasFocus    = true;  ///
+	uint32_t          isDebug     = 0;     ///
+	uint32_t          isReset     = 0;     ///
+	int               mouseButton = 0;     ///< last known mouse button
+	float             mousePos[3] = {};    ///< last known mouse position: x, y
+	int               mouseScroll = 0;     ///< mouse wheel
+	entry::MouseState mouseState  = {};    ///
+	bool              quit        = false; ///< exit the mainloop
+	uint32_t          screenX     = 1280;  ///
+	uint32_t          screenY     = 800;   ///
+	bool              useGlm      = false; ///
 
 public:
 	void MainLoop();

@@ -779,7 +779,7 @@ struct Context
 						if (isValid(handle))
 						{
 							SDL_SetWindowSize(m_window[handle.idx], msg->m_width, msg->m_height);
-							ui::Log("SDL_USER_WINDOW_SET_SIZE: %d: %dx%d", m_window[handle.idx], msg->m_width, msg->m_height);
+							ui::Log("SDL_USER_WINDOW_SET_SIZE: {}: {}x{}", (void*)&m_window[handle.idx], msg->m_width, msg->m_height);
 						}
 						delete msg;
 					}

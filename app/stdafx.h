@@ -1,6 +1,6 @@
 // stdafx.h
 // @author octopoulos
-// @version 2025-07-12
+// @version 2025-07-16
 
 #pragma once
 
@@ -22,12 +22,10 @@
 #include <bx/string.h>
 #include <bx/timer.h>
 
-#include <SDL3/SDL.h>
-
 #ifdef __EMSCRIPTEN__
 #	include <emscripten.h>
 #	include <emscripten/html5.h>
-#endif
+#endif // __EMSCRIPTEN__
 
 using namespace std::literals;
 

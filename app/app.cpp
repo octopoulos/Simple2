@@ -1,6 +1,6 @@
 // app.cpp
 // @author octopoulos
-// @version 2025-07-15
+// @version 2025-07-16
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -14,9 +14,6 @@
 
 #ifdef _WIN32
 #	include <windows.h>
-#endif
-#if BX_PLATFORM_OSX
-extern "C" void* GetMacOSMetalLayer(SDL_Window* window);
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -103,8 +100,6 @@ void App::Destroy()
 	bgfx::destroy(ibh);
 	bgfx::destroy(vbh);
 	bgfx::shutdown();
-	SDL_DestroyWindow(window);
-	SDL_Quit();
 }
 
 int App::Initialize()
@@ -272,52 +267,6 @@ void App::EventKeyUp(int code)
 
 void App::MainLoop()
 {
-	SDL_Event event;
-	while (SDL_PollEvent(&event))
-	{
-		switch (event.type)
-		{
-		case SDL_EVENT_KEY_DOWN:
-			EventKeyDown(event.key.scancode);
-			break;
-		case SDL_EVENT_KEY_UP:
-			EventKeyUp(event.key.scancode);
-			break;
-		case SDL_EVENT_MOUSE_WHEEL:
-			mouseScroll += event.wheel.y;
-			break;
-		case SDL_EVENT_MOUSE_BUTTON_DOWN:
-			mouseButton = event.button.button;
-			mousePos[0] = event.motion.x;
-			mousePos[1] = event.motion.y;
-			ui::Log("Mouse button down, resetting cube");
-			break;
-		case SDL_EVENT_MOUSE_BUTTON_UP:
-			mouseButton = 0;
-			break;
-		case SDL_EVENT_MOUSE_MOTION:
-			mousePos[0] = event.motion.x;
-			mousePos[1] = event.motion.y;
-			break;
-		case SDL_EVENT_QUIT:
-			ui::Log("Quit event received");
-			quit = true;
-			break;
-		case SDL_EVENT_TEXT_INPUT:
-			break;
-		case SDL_EVENT_WINDOW_FOCUS_GAINED:
-			hasFocus = true;
-			break;
-		case SDL_EVENT_WINDOW_FOCUS_LOST:
-			hasFocus = false;
-			break;
-		case SDL_EVENT_WINDOW_RESIZED:
-			screenX = event.window.data1;
-			screenY = event.window.data2;
-			// ResizeWindow(event.window.data1, event.window.data2);
-			break;
-		}
-	}
 	Render();
 }
 
