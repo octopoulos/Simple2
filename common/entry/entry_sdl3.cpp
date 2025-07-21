@@ -2,7 +2,6 @@
 // @author octopoulos
 // @version 2025-07-16
 
-#include "stdafx.h"
 #include "entry_p.h"
 
 #if ENTRY_CONFIG_USE_SDL3
@@ -15,20 +14,16 @@
 #	include <SDL3/SDL.h>
 
 #	include <bgfx/platform.h>
-
 #	include <bx/handlealloc.h>
-#	include <bx/mutex.h>
 #	include <bx/os.h>
 #	include <bx/readerwriter.h>
-#	include <bx/tinystl/allocator.h>
-#	include <bx/tinystl/string.h>
 #	include <bx/thread.h>
+#	include <tinystl/allocator.h>
+#	include <tinystl/string.h>
 
 namespace entry
 {
-/**
- * Check SDL_video.h
- */
+///
 static void* sdlNativeWindowHandle(SDL_Window* window)
 {
 	if (!window) return nullptr;
@@ -64,30 +59,34 @@ static void* sdlNativeWindowHandle(SDL_Window* window)
 static uint8_t translateKeyModifiers(uint16_t sdl)
 {
 	uint8_t modifiers = 0;
-	modifiers |= sdl & SDL_KMOD_LALT ? Modifier::LeftAlt : 0;
-	modifiers |= sdl & SDL_KMOD_RALT ? Modifier::RightAlt : 0;
-	modifiers |= sdl & SDL_KMOD_LCTRL ? Modifier::LeftCtrl : 0;
-	modifiers |= sdl & SDL_KMOD_RCTRL ? Modifier::RightCtrl : 0;
-	modifiers |= sdl & SDL_KMOD_LSHIFT ? Modifier::LeftShift : 0;
+	// clang-format off
+	modifiers |= sdl & SDL_KMOD_LALT   ? Modifier::LeftAlt    : 0;
+	modifiers |= sdl & SDL_KMOD_RALT   ? Modifier::RightAlt   : 0;
+	modifiers |= sdl & SDL_KMOD_LCTRL  ? Modifier::LeftCtrl   : 0;
+	modifiers |= sdl & SDL_KMOD_RCTRL  ? Modifier::RightCtrl  : 0;
+	modifiers |= sdl & SDL_KMOD_LSHIFT ? Modifier::LeftShift  : 0;
 	modifiers |= sdl & SDL_KMOD_RSHIFT ? Modifier::RightShift : 0;
-	modifiers |= sdl & SDL_KMOD_LGUI ? Modifier::LeftMeta : 0;
-	modifiers |= sdl & SDL_KMOD_RGUI ? Modifier::RightMeta : 0;
+	modifiers |= sdl & SDL_KMOD_LGUI   ? Modifier::LeftMeta   : 0;
+	modifiers |= sdl & SDL_KMOD_RGUI   ? Modifier::RightMeta  : 0;
+	// clang-format on
 	return modifiers;
 }
 
 static uint8_t translateKeyModifierPress(uint16_t key)
 {
 	uint8_t modifier;
+	// clang-format off
 	switch (key)
 	{
-	case SDL_SCANCODE_LALT: modifier = Modifier::LeftAlt; break;
-	case SDL_SCANCODE_RALT: modifier = Modifier::RightAlt; break;
-	case SDL_SCANCODE_LCTRL: modifier = Modifier::LeftCtrl; break;
-	case SDL_SCANCODE_RCTRL: modifier = Modifier::RightCtrl; break;
-	case SDL_SCANCODE_LSHIFT: modifier = Modifier::LeftShift; break;
+	case SDL_SCANCODE_LALT  : modifier = Modifier::LeftAlt;   break;
+	case SDL_SCANCODE_RALT  : modifier = Modifier::RightAlt;   break;
+	case SDL_SCANCODE_LCTRL : modifier = Modifier::LeftCtrl;   break;
+	case SDL_SCANCODE_RCTRL : modifier = Modifier::RightCtrl;  break;
+	case SDL_SCANCODE_LSHIFT: modifier = Modifier::LeftShift;  break;
 	case SDL_SCANCODE_RSHIFT: modifier = Modifier::RightShift; break;
-	case SDL_SCANCODE_LGUI: modifier = Modifier::LeftMeta; break;
-	case SDL_SCANCODE_RGUI: modifier = Modifier::RightMeta; break;
+	case SDL_SCANCODE_LGUI  : modifier = Modifier::LeftMeta;   break;
+	case SDL_SCANCODE_RGUI  : modifier = Modifier::RightMeta;  break;
+	// clang-format on
 	default: modifier = 0; break;
 	}
 
@@ -200,7 +199,7 @@ struct GamepadSDL
 
 	SDL_Joystick*  m_joystick;
 	SDL_Gamepad*   m_controller;
-	// SDL_Haptic* m_haptic;
+	//SDL_Haptic*  m_haptic;
 	SDL_JoystickID m_jid;
 };
 
@@ -407,7 +406,7 @@ struct Context
 		m_mte.m_argc = _argc;
 		m_mte.m_argv = _argv;
 
-		SDL_Init(SDL_INIT_GAMEPAD | SDL_INIT_VIDEO);
+		SDL_Init(SDL_INIT_GAMEPAD);
 
 		m_windowAlloc.alloc();
 		m_window[0] = SDL_CreateWindow("bgfx", m_width, m_height, SDL_WINDOW_RESIZABLE);
@@ -445,7 +444,7 @@ struct Context
 			((char*)data)[size] = '\0';
 
 			if (SDL_AddGamepadMapping((char*)data) < 0)
-				ui::LogError("SDL game controller add mapping failed: {}", SDL_GetError());
+				DBG("SDL game controller add mapping failed: %s", SDL_GetError());
 
 			bx::free(allocator, data);
 		}
@@ -527,8 +526,13 @@ struct Context
 						uint8_t   modifiers = translateKeyModifiers(kev.mod);
 						Key::Enum key       = translateKey(kev.scancode);
 
-#	if 1
-						ui::Log("SDL scancode {}, key {}, name {}, key name {}", TO_INT(kev.scancode), TO_INT(key), SDL_GetScancodeName(kev.scancode), SDL_GetKeyName(kev.scancode));
+#	if 0
+						DBG("SDL scancode %d, key %d, name %s, key name %s"
+							, kev.scancode
+							, key
+							, SDL_GetScancodeName(kev.scancode)
+							, SDL_GetKeyName(kev.scancode)
+							);
 #	endif // 0
 
 						/// If you only press (e.g.) 'shift' and nothing else, then key == 'shift', modifier == 0.
@@ -562,8 +566,8 @@ struct Context
 
 				case SDL_EVENT_KEY_UP:
 				{
-					const SDL_KeyboardEvent& kev = event.key;
-					WindowHandle handle = findHandle(kev.windowID);
+					const SDL_KeyboardEvent& kev    = event.key;
+					WindowHandle             handle = findHandle(kev.windowID);
 					if (isValid(handle))
 					{
 						uint8_t   modifiers = translateKeyModifiers(kev.mod);
@@ -780,7 +784,7 @@ struct Context
 						if (isValid(handle))
 						{
 							m_flags[handle.idx] ^= ENTRY_WINDOW_FLAG_FRAME;
-							SDL_SetWindowBordered(m_window[handle.idx], (bool)!!(m_flags[handle.idx] & ENTRY_WINDOW_FLAG_FRAME));
+							SDL_SetWindowBordered(m_window[handle.idx], !!(m_flags[handle.idx] & ENTRY_WINDOW_FLAG_FRAME));
 						}
 					}
 					break;

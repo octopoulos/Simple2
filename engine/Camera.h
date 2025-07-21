@@ -1,10 +1,10 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-07-05
+// @version 2025-07-16
 
 #pragma once
 
-class Camera : public Object3d
+class Camera2 : public Object3d
 {
 public:
 	float     aspect           = 1.0f;
@@ -14,8 +14,8 @@ public:
 	glm::mat4 projectionMatrix = glm::mat4(1.0f);
 	glm::mat4 viewMatrix       = glm::mat4(1.0f);
 
-	Camera()  = default;
-	~Camera() = default;
+	Camera2()  = default;
+	~Camera2() = default;
 
 	void UpdateViewProjection(uint8_t viewId)
 	{

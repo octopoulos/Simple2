@@ -11,7 +11,7 @@
 cmake_minimum_required(VERSION 3.20)
 cmake_policy(SET CMP0167 NEW)
 
-project(Simple LANGUAGES C CXX)
+project(Simple LANGUAGES CXX C)
 
 #######################################################################################################################
 # 1) COMPILER
@@ -96,15 +96,16 @@ if(IS_EMSCRIPTEN)
 	# Fix for WebAssembly architecture
 	set(CMAKE_SIZEOF_VOID_P 4)
 	set(VCPKG_TARGET_TRIPLET wasm32-emscripten CACHE STRING "")
+elseif(MSVC)
+	add_compile_options(
+		"/Zc:__cplusplus"
+		"/Zc:preprocessor"
+	)
 endif()
 
 if(NOT DEFINED VCPKG_ROOT AND DEFINED VCPKG_INSTALLED_DIR)
 	get_filename_component(VCPKG_ROOT "${VCPKG_INSTALLED_DIR}" DIRECTORY)
 endif()
-
-# Set vcpkg toolchain and triplet
-# set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
-# set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "/home/ubuntu/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" CACHE STRING "")
 
 if("${CPP_3RDPARTY}" STREQUAL "")
 	set(CPP_3RDPARTY "$ENV{CPP_3RDPARTY}")
@@ -134,7 +135,7 @@ elseif(IS_EMSCRIPTEN)
 	set(EXTRA_INCLUDE_DIR "/usr/local/include")
 elseif(WIN32)
 	if("${CPP_3RDPARTY}" STREQUAL "")
-		set(CPP_PATH "C:/Code/cpp-3rdparty")
+		set(CPP_3RDPARTY "C:/Code/cpp-3rdparty")
 	endif()
 	if("${CPP_PATH}" STREQUAL "")
 		set(CPP_PATH "C:/Code/cpp")
@@ -231,6 +232,8 @@ target_include_directories(Simple PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dear-imgui"
 	"${CMAKE_CURRENT_SOURCE_DIR}/app"
 	"${CMAKE_CURRENT_SOURCE_DIR}/common"
+	"${CPP_3RDPARTY}/bgfx/3rdparty"
+	"${CPP_3RDPARTY}/bgfx/3rdparty/directx-headers/include/directx"
 	"${CPP_3RDPARTY}/bgfx/3rdparty/khronos"
 	"${CPP_3RDPARTY}/bgfx/include"
 	"${CPP_3RDPARTY}/bimg/3rdparty"

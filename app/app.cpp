@@ -120,6 +120,11 @@ int App::Initialize()
 
 int App::InitScene()
 {
+	cursor  = std::make_shared<Mesh>();
+	mapNode = std::make_shared<Object3d>();
+	scene.AddNamedChild(cursor, "cursor");
+	scene.AddNamedChild(mapNode, "map");
+
 	// Define cube vertex layout
 	bgfx::VertexLayout cubeLayout;
 	cubeLayout.begin()

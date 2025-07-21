@@ -1,50 +1,51 @@
-// @version 2025-07-12
+// @version 2025-07-17
 /*
  * Copyright 2013 Dario Manesku. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
-#include <bx/timer.h>
-#include <bx/math.h>
+#include "stdafx.h"
 #include "camera.h"
-#include "entry/entry.h"
 #include "entry/cmd.h"
+#include "entry/entry.h"
 #include "entry/input.h"
 #include <bx/allocator.h>
+#include <bx/math.h>
+#include <bx/timer.h>
+
+enum CustomCommands_
+{
+	Cmd_Invalid = -1,
+	Cmd_Forward,
+	Cmd_Backward,
+	Cmd_Left,
+	Cmd_Right,
+	Cmd_Up,
+	Cmd_Down,
+};
+
+static const UMAP_STR_INT s_cmdMoveMap = {
+	{ "forward",  Cmd_Forward  },
+	{ "backward", Cmd_Backward },
+	{ "left",     Cmd_Left     },
+	{ "right",    Cmd_Right    },
+	{ "up",       Cmd_Up       },
+	{ "down",     Cmd_Down     },
+};
 
 int cmdMove(CmdContext* /*_context*/, void* /*_userData*/, int _argc, char const* const* _argv)
 {
 	if (_argc > 1)
 	{
-		if (0 == bx::strCmp(_argv[1], "forward"))
+		const int command = FindDefault(s_cmdMoveMap, _argv[1], Cmd_Invalid);
+		switch (command)
 		{
-			cameraSetKeyState(CAMERA_KEY_FORWARD, true);
-			return 0;
-		}
-		else if (0 == bx::strCmp(_argv[1], "left"))
-		{
-			cameraSetKeyState(CAMERA_KEY_LEFT, true);
-			return 0;
-		}
-		else if (0 == bx::strCmp(_argv[1], "right"))
-		{
-			cameraSetKeyState(CAMERA_KEY_RIGHT, true);
-			return 0;
-		}
-		else if (0 == bx::strCmp(_argv[1], "backward"))
-		{
-			cameraSetKeyState(CAMERA_KEY_BACKWARD, true);
-			return 0;
-		}
-		else if (0 == bx::strCmp(_argv[1], "up"))
-		{
-			cameraSetKeyState(CAMERA_KEY_UP, true);
-			return 0;
-		}
-		else if (0 == bx::strCmp(_argv[1], "down"))
-		{
-			cameraSetKeyState(CAMERA_KEY_DOWN, true);
-			return 0;
+		case Cmd_Backward: cameraSetKeyState(CAMERA_KEY_BACKWARD, true); break;
+		case Cmd_Down    : cameraSetKeyState(CAMERA_KEY_DOWN    , true); break;
+		case Cmd_Forward : cameraSetKeyState(CAMERA_KEY_FORWARD , true); break;
+		case Cmd_Left    : cameraSetKeyState(CAMERA_KEY_LEFT    , true); break;
+		case Cmd_Right   : cameraSetKeyState(CAMERA_KEY_RIGHT   , true); break;
+		case Cmd_Up      : cameraSetKeyState(CAMERA_KEY_UP      , true); break;
 		}
 	}
 
@@ -56,22 +57,25 @@ static void cmd(const void* _userData)
 	cmdExec((const char*)_userData);
 }
 
-static const InputBinding s_camBindings[] = {
-	{ entry::Key::KeyW,             entry::Modifier::None, 0, cmd, "move forward"  },
-	{ entry::Key::GamepadUp,        entry::Modifier::None, 0, cmd, "move forward"  },
-	{ entry::Key::KeyA,             entry::Modifier::None, 0, cmd, "move left"     },
-	{ entry::Key::GamepadLeft,      entry::Modifier::None, 0, cmd, "move left"     },
-	{ entry::Key::KeyS,             entry::Modifier::None, 0, cmd, "move backward" },
-	{ entry::Key::GamepadDown,      entry::Modifier::None, 0, cmd, "move backward" },
-	{ entry::Key::KeyD,             entry::Modifier::None, 0, cmd, "move right"    },
-	{ entry::Key::GamepadRight,     entry::Modifier::None, 0, cmd, "move right"    },
-	{ entry::Key::KeyQ,             entry::Modifier::None, 0, cmd, "move down"     },
-	{ entry::Key::GamepadShoulderL, entry::Modifier::None, 0, cmd, "move down"     },
-	{ entry::Key::KeyE,             entry::Modifier::None, 0, cmd, "move up"       },
-	{ entry::Key::GamepadShoulderR, entry::Modifier::None, 0, cmd, "move up"       },
+#define INPUT_BINDING(name, command) { entry::Key::name, entry::Modifier::None, 0, cmd, command }
 
+// clang-format off
+static const InputBinding s_camBindings[] = {
+	INPUT_BINDING(KeyW            , "move forward" ),
+	INPUT_BINDING(GamepadUp       , "move forward" ),
+	INPUT_BINDING(KeyA            , "move left"    ),
+	INPUT_BINDING(GamepadLeft     , "move left"    ),
+	INPUT_BINDING(KeyS            , "move backward"),
+	INPUT_BINDING(GamepadDown     , "move backward"),
+	INPUT_BINDING(KeyD            , "move right"   ),
+	INPUT_BINDING(GamepadRight    , "move right"   ),
+	INPUT_BINDING(KeyQ            , "move down"    ),
+	INPUT_BINDING(GamepadShoulderL, "move down"    ),
+	INPUT_BINDING(KeyE            , "move up"      ),
+	INPUT_BINDING(GamepadShoulderR, "move up"      ),
 	INPUT_BINDING_END
 };
+// clang-format on
 
 struct Camera
 {

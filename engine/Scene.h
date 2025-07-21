@@ -1,13 +1,13 @@
 // Scene.h
 // @author octopoulos
-// @version 2025-07-14
+// @version 2025-07-16
 
 #pragma once
 
 class Scene : public Object3d
 {
 public:
-	std::shared_ptr<Camera>           camera = nullptr;
+	std::shared_ptr<Camera2>          camera = nullptr;
 	UMAP_STR<std::weak_ptr<Object3d>> names  = {};
 
 	Scene()  = default;

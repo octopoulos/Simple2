@@ -8,6 +8,15 @@
 #include "engine/TextureManager.h"
 #include "physics/PhysicsWorld.h"
 
+struct Tile
+{
+	sMesh       mesh = nullptr; ///< link to visual node
+	std::string name = "";      ///< resource name
+	float       x    = 0.0f;    ///< right
+	float       y    = 0.0f;    ///< up
+	float       z    = 0.0f;    ///< front
+};
+
 class App : public entry::AppI
 {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,8 +48,10 @@ public:
 	//////
 
 private:
-	MAP_STR<MAP_STR_INT> kitModels = {}; // model database: [title, filename]
-	// tiles
+	sMesh                cursor    = nullptr; ///< current cursor for placing tiles
+	MAP_STR<MAP_STR_INT> kitModels = {};      ///< model database: [title, filename]
+	sObject3d            mapNode   = nullptr; ///< root of the map scene
+	std::vector<Tile>    tiles     = {};      ///< tiles
 
 	void AddObject(const std::string& name);
 	void MapUi();
