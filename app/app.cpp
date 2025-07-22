@@ -1,6 +1,6 @@
 // app.cpp
 // @author octopoulos
-// @version 2025-07-17
+// @version 2025-07-18
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -17,89 +17,11 @@
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ENTRY
-////////
-
-void App::init(int32_t argc, const char* const* argv, uint32_t width, uint32_t height)
-{
-	Args args(argc, argv);
-
-	screenX = width;
-	screenY = height;
-	isDebug = BGFX_DEBUG_NONE;
-	isReset = BGFX_RESET_VSYNC;
-
-	bgfx::Init init;
-	init.type              = args.m_type;
-	init.vendorId          = args.m_pciId;
-	init.platformData.nwh  = entry::getNativeWindowHandle(entry::kDefaultWindowHandle);
-	init.platformData.ndt  = entry::getNativeDisplayHandle();
-	init.platformData.type = entry::getNativeWindowHandleType();
-	init.resolution.width  = screenX;
-	init.resolution.height = screenY;
-	init.resolution.reset  = isReset;
-	bgfx::init(init);
-
-	bgfx::setDebug(isDebug);
-	bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
-
-	Initialize();
-}
-
-int App::shutdown()
-{
-	Destroy();
-	return 0;
-}
-
-bool App::update()
-{
-	if (entry::processEvents(screenX, screenY, isDebug, isReset, &mouseState)) return false;
-
-	// 1) ImGui
-	imguiBeginFrame(mouseState.m_mx, mouseState.m_my, (mouseState.m_buttons[entry::MouseButton::Left] ? IMGUI_MBUT_LEFT : 0) | (mouseState.m_buttons[entry::MouseButton::Right] ? IMGUI_MBUT_RIGHT : 0) | (mouseState.m_buttons[entry::MouseButton::Middle] ? IMGUI_MBUT_MIDDLE : 0), mouseState.m_mz, uint16_t(screenX), uint16_t(screenY));
-	{
-		showExampleDialog(this);
-		MapUi();
-		ShowMainMenu(1.0f);
-		FilesUi();
-
-		if (showImGuiDemo) ImGui::ShowDemoWindow(&showImGuiDemo);
-	}
-	imguiEndFrame();
-
-	// 2) 3d render
-	{
-		curTime   = TO_FLOAT((bx::getHPCounter() - startTime) / TO_DOUBLE(bx::getHPFrequency()));
-		deltaTime = curTime - lastTime;
-
-		cameraUpdate(deltaTime, mouseState, ImGui::MouseOverArea());
-		Render();
-	}
-
-	// Advance to next frame. Rendering thread will be kicked to process submitted rendering primitives
-	bgfx::frame();
-	return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // INIT
 ///////
 
-App::~App()
-{
-	Destroy();
-}
-
 void App::Destroy()
 {
-	imguiDestroy();
-
-	shaderManager.Destroy();
-	bgfx::destroy(program);
-	bgfx::destroy(ibh);
-	bgfx::destroy(vbh);
-	bgfx::shutdown();
 }
 
 int App::Initialize()
@@ -109,12 +31,8 @@ int App::Initialize()
 
 	if (const int result = InitScene(); result < 0) return result;
 
-	imguiCreate();
-
 	cameraCreate();
 	cameraSetPosition({ 0.0f, 0.0, -5.0f });
-	// cameraSetVerticalAngle(-bx::kPi / 1.0f);
-	// cameraSetHorizontalAngle(bx::kPi / 1.0f);
 	return 1;
 }
 
@@ -125,7 +43,7 @@ int App::InitScene()
 	scene.AddNamedChild(cursor, "cursor");
 	scene.AddNamedChild(mapNode, "map");
 
-	physicsWorld = std::make_unique<PhysicsWorld>();
+	//physicsWorld = std::make_unique<PhysicsWorld>();
 
 	// Define cube vertex layout
 	bgfx::VertexLayout cubeLayout;
@@ -176,9 +94,9 @@ int App::InitScene()
 		);
 		scene.AddNamedChild(cubeMesh, "cube");
 
-		Body body(physicsWorld.get());
-		body.CreateBox(1.0f, 1.0f, 1.0f);
-		cubeMesh->bodies.push_back(std::move(body));
+		//Body body(physicsWorld.get());
+		//body.CreateBox(1.0f, 1.0f, 1.0f);
+		//cubeMesh->bodies.push_back(std::move(body));
 	}
 
 	// load BIN model
@@ -253,49 +171,19 @@ int App::InitScene()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// CONTROLS
-///////////
-
-void App::EventKeyDown(int code)
-{
-	const auto repeat = keys[code];
-
-	ui::Log("SDL_EVENT_KEY_DOWN: {} {}", code, repeat);
-
-	// NO REPEAT
-	////////////
-
-	if (!repeat)
-	{
-		switch (code)
-		{
-		case 10: useGlm = !useGlm; break;
-		}
-	}
-
-	// REPEAT ALLOWED
-	/////////////////
-
-	keys[code] = NowMs();
-	lastCode   = code;
-}
-
-void App::EventKeyUp(int code)
-{
-	keys[code] = 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // WINDOW
 /////////
 
-void App::MainLoop()
-{
-	Render();
-}
-
 void App::Render()
 {
+	// 1) update time
+	{
+		curTime   = TO_FLOAT((bx::getHPCounter() - startTime) / TO_DOUBLE(bx::getHPFrequency()));
+		deltaTime = curTime - lastTime;
+
+		cameraUpdate(deltaTime, mouseState, ImGui::MouseOverArea());
+	}
+
 	// camera view
 	{
 		bgfx::setViewRect(0, 0, 0, screenX, screenY);
@@ -309,7 +197,7 @@ void App::Render()
 		bgfx::setViewTransform(0, view, proj);
 	}
 
-	physicsWorld->StepSimulation(deltaTime);
+	//physicsWorld->StepSimulation(deltaTime);
 	lastTime = curTime;
 
 	// Render cube
@@ -353,6 +241,7 @@ void App::Render()
 	}
 
 	// Floor
+	if (1)
 	{
 		btMatrix3x3 scale(10, 0, 0, 0, 0.5, 0, 0, 0, 10);
 		btVector3   trans(0, -2, 0);
@@ -367,6 +256,8 @@ void App::Render()
 		bgfx::setIndexBuffer(ibh);
 		bgfx::submit(0, program);
 	}
+	//return;
+
 	for (auto& child : scene.children)
 	{
 		if (child->name == "bunny")
@@ -383,12 +274,6 @@ void App::Render()
 		}
 		else if (child->name.starts_with("donut3"))
 		{
-			//glm::vec3 position        = glm::vec3(child->transform[3]);
-			//glm::quat currentRotation = glm::quat_cast(child->transform);
-			//glm::quat extraRotation   = glm::quat(glm::vec3(0.001f, child->id * 0.001f, 0.0f));
-			//glm::quat newRotation     = currentRotation * extraRotation;
-			//glm::mat4 rotationMat     = glm::mat4_cast(newRotation);
-
 			const glm::vec3 position = glm::vec3(
 			    child->transform[3][0],
 			    sinf(child->id * 0.5f) + 1.0f + sinf(lastTime) * 2.0f,
@@ -397,11 +282,6 @@ void App::Render()
 			 const glm::quat rotation    = glm::quat(glm::vec3(-lastTime * 0.05f * child->id, 3.0f, 0.0f));
 			 const glm::mat4 rotationMat = glm::mat4_cast(rotation);
 			 child->transform            = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation);
-
-			//child->transform[0] = rotationMat[0];
-			//child->transform[1] = rotationMat[1];
-			//child->transform[2] = rotationMat[2];
-			//child->transform[3] = glm::vec4(position, 1.0f);
 		}
 	}
 
@@ -409,4 +289,104 @@ void App::Render()
 	scene.RenderScene(0, screenX, screenY);
 }
 
-ENTRY_IMPLEMENT_MAIN(App, "App", "Simple app", "https://shark-it.be");
+void App::SynchronizeEvents(uint32_t _screenX, uint32_t _screenY, entry::MouseState& _mouseState)
+{
+	screenX = _screenX;
+	screenY = _screenY;
+	std::memcpy(&mouseState, &_mouseState, sizeof(entry::MouseState));
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ENTRY
+////////
+
+class EntryApp : public entry::AppI
+{
+public:
+	EntryApp(const char* _name, const char* _description, const char* _url)
+		: entry::AppI(_name, _description, _url)
+	{
+	}
+
+	virtual void init(int32_t _argc, const char* const* _argv, uint32_t _width, uint32_t _height) override
+	{
+		Args args(_argc, _argv);
+
+		m_width  = _width;
+		m_height = _height;
+		m_debug  = BGFX_DEBUG_TEXT;
+		m_reset  = BGFX_RESET_VSYNC;
+
+		bgfx::Init init;
+		init.type     = args.m_type;
+		init.vendorId = args.m_pciId;
+		init.platformData.nwh  = entry::getNativeWindowHandle(entry::kDefaultWindowHandle);
+		init.platformData.ndt  = entry::getNativeDisplayHandle();
+		init.platformData.type = entry::getNativeWindowHandleType();
+		init.resolution.width  = m_width;
+		init.resolution.height = m_height;
+		init.resolution.reset  = m_reset;
+		bgfx::init(init);
+
+		bgfx::setDebug(m_debug);
+
+		// set view 0 clear state
+		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
+
+		imguiCreate();
+
+		app = std::make_unique<App>();
+		app->Initialize();
+	}
+
+	virtual int shutdown() override
+	{
+		app.reset();
+
+		imguiDestroy();
+
+		bgfx::shutdown();
+		return 0;
+	}
+
+	virtual bool update() override
+	{
+		// 1) events
+		{
+			if (entry::processEvents(m_width, m_height, m_debug, m_reset, &m_mouseState)) return false;
+			app->SynchronizeEvents(m_width, m_height, m_mouseState);
+		}
+
+		// 2) imGui
+		{
+			imguiBeginFrame(m_mouseState.m_mx, m_mouseState.m_my, (m_mouseState.m_buttons[entry::MouseButton::Left] ? IMGUI_MBUT_LEFT : 0) | (m_mouseState.m_buttons[entry::MouseButton::Right] ? IMGUI_MBUT_RIGHT : 0) | (m_mouseState.m_buttons[entry::MouseButton::Middle] ? IMGUI_MBUT_MIDDLE : 0), m_mouseState.m_mz, uint16_t(m_width), uint16_t(m_height));
+			{
+				showExampleDialog(this);
+				app->MainUi();
+			}
+			imguiEndFrame();
+		}
+
+		// 3) render
+		{
+			bgfx::setViewRect(0, 0, 0, uint16_t(m_width), uint16_t(m_height));
+			bgfx::touch(0);
+			app->Render();
+		}
+
+		// 4) frame
+		bgfx::frame();
+		return true;
+	}
+
+	entry::MouseState m_mouseState = {};
+
+	uint32_t m_width  = 1280;
+	uint32_t m_height = 720;
+	uint32_t m_debug  = 0;
+	uint32_t m_reset  = 0;
+
+	std::unique_ptr<App> app;
+};
+
+ENTRY_IMPLEMENT_MAIN(EntryApp, "App", "Simple App", "https://shark-it.be");

@@ -22,13 +22,13 @@ void Body::CreateBox(float wx, float wy, float wz)
 
 	body = new btRigidBody(ci);
 	body->activate(true);
-	world->addRigidBody(body);
+	if (world) world->addRigidBody(body);
 }
 
 void Body::Destroy()
 {
-	DestroyBody();
 	DestroyShape();
+	DestroyBody();
 }
 
 void Body::DestroyBody()
@@ -36,7 +36,8 @@ void Body::DestroyBody()
 	if (body)
 	{
 		if (world) world->removeRigidBody(body);
-		delete body->getMotionState();
+		const auto& motionState = body->getMotionState();
+		if (motionState) delete motionState;
 		delete body;
 		body = nullptr;
 	}

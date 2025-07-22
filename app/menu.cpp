@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-07-15
+// @version 2025-07-18
 
 #include "stdafx.h"
 #include "app.h"
@@ -31,6 +31,18 @@ void App::FilesUi()
 		instance->Close();
 	}
 #endif
+}
+
+/**
+ * Create additional UI elements
+ */
+void App::MainUi()
+{
+	MapUi();
+	ShowMainMenu(1.0f);
+	FilesUi();
+
+	if (showImGuiDemo) ImGui::ShowDemoWindow(&showImGuiDemo);
 }
 
 /**

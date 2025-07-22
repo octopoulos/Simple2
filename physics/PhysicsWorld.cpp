@@ -1,6 +1,6 @@
 // PhysicsWorld.cpp
 // @author octopoulos
-// @version 2025-07-12
+// @version 2025-07-18
 
 #include "stdafx.h"
 #include "PhysicsWorld.h"
@@ -30,7 +30,7 @@ PhysicsWorld::~PhysicsWorld()
 /**
  * Run a simulation with a delta time step
  */
-void PhysicsWorld::StepSimulation(float dt)
+void PhysicsWorld::StepSimulation(float delta)
 {
-	if (world) world->stepSimulation(dt, MAX_SIMULATION_STEPS);
+	if (world) world->stepSimulation(delta, MAX_SIMULATION_STEPS);
 }

@@ -21,7 +21,7 @@ public:
 	Body(PhysicsWorld* physics)
 	    : physics(physics)
 	{
-		world = physics->GetWorld();
+		world = physics ? physics->GetWorld() : nullptr;
 	}
 
 	~Body() { Destroy(); }
