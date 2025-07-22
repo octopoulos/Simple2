@@ -17,9 +17,9 @@ enum ShapeTypes_
 	ShapeType_Convex2d     = 6,  ///< btConvex2dShape
 	ShapeType_ConvexHull   = 7,  ///< btConvexHullShape
 	ShapeType_Cylinder     = 8,  ///< btCylinderShape
-	ShapeType_Heightfield  = 9,  ///< btHeightfieldTerrainShape
+	ShapeType_Plane        = 9,  ///< btStaticPlaneShape
 	ShapeType_Sphere       = 10, ///< btSphereShape
-	ShapeType_StaticPlane  = 11, ///< btStaticPlaneShape
+	ShapeType_Terrain      = 11, ///< btHeightfieldTerrainShape
 	ShapeType_TriangleMesh = 12, ///< btBvhTriangleMeshShape
 };
 
@@ -44,7 +44,7 @@ public:
 	~Body() { Destroy(); }
 
 	void CreateBody(float _mass, const btVector3& pos, const btQuaternion& quat);
-	void CreateShape(int shapeType, const btVector3& dims);
+	void CreateShape(int shapeType, const btVector4& dims, std::vector<btVector3>* vertices = nullptr, std::vector<int>* indices = nullptr);
 	void Destroy();
 	void DestroyBody();
 	void DestroyShape();

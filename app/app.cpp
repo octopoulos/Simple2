@@ -34,7 +34,7 @@ int App::Initialize()
 	if (const int result = InitScene(); result < 0) return result;
 
 	cameraCreate();
-	cameraSetPosition({ 0.0f, 0.0, -5.0f });
+	cameraSetPosition({ 0.0f, 0.0, -12.0f });
 	return 1;
 }
 
@@ -96,15 +96,15 @@ int App::InitScene()
 			auto cubeMesh      = std::make_shared<Mesh>();
 			cubeMesh->geometry = std::make_shared<Geometry>(vbh, ibh);
 			cubeMesh->material = std::make_shared<Material>(program);
-			bx::mtxSRT(
-			    glm::value_ptr(cubeMesh->transform),
-			    0.5f, 0.5f, 0.5f, // scale
-			    0.0f, 1.5f, 0.0f, // rotation
-			    0.0f, 5.0f, 0.0f  // translation
-			);
+			//bx::mtxSRT(
+			//    glm::value_ptr(cubeMesh->transform),
+			//    0.5f, 0.5f, 0.5f, // scale
+			//    0.0f, 1.5f, 0.0f, // rotation
+			//    0.0f, 5.0f, 0.0f  // translation
+			//);
 
 			auto body = std::make_unique<Body>(physicsWorld.get());
-			body->CreateShape(ShapeType_Box, { 1.0f, 1.0f, 1.0f });
+			body->CreateShape(ShapeType_Box, { 1.0f, 1.0f, 1.0f, 0.0f });
 			body->CreateBody(1.0f, { 0.0f, 5.0f, 0.0f }, quat);
 			cubeMesh->bodies.push_back(std::move(body));
 
@@ -116,17 +116,18 @@ int App::InitScene()
 			auto cubeMesh         = std::make_shared<Mesh>();
 			cubeMesh->geometry    = std::make_shared<Geometry>(vbh, ibh);
 			cubeMesh->material    = std::make_shared<Material>(program);
-			cubeMesh->scale       = { 10.0f, 0.5f, 10.0f };
+			cubeMesh->scale       = { 8.0f, 0.5f, 8.0f };
 			cubeMesh->scaleMatrix = glm::scale(glm::mat4(1.0f), cubeMesh->scale);
-			bx::mtxSRT(
-			    glm::value_ptr(cubeMesh->transform),
-			    10.0f, 0.5f, 10.0f, // scale
-			    0.0f, 0.0f, 0.0f,   // rotation
-			    0.0f, -2.0f, 0.0f   // translation
-			);
+			//bx::mtxSRT(
+			//    glm::value_ptr(cubeMesh->transform),
+			//    8.0f, 0.5f, 8.0f, // scale
+			//    0.0f, 0.0f, 0.0f, // rotation
+			//    0.0f, -2.0f, 0.0f // translation
+			//);
 
 			auto body = std::make_unique<Body>(physicsWorld.get());
-			body->CreateShape(ShapeType_Box, { 10.0f, 0.5f, 10.0f });
+			body->CreateShape(ShapeType_Box, { 8.0f, 0.5f, 8.0f, 0.0f });
+			//body->CreateShape(ShapeType_Plane, { 0.0f, 1.0f, 0.0f, 0.5f });
 			body->CreateBody(0.0f, { 0.0f, -2.0f, 0.0f }, { 0.0f, 0.0f, 0.0f, 1.0f });
 			cubeMesh->bodies.push_back(std::move(body));
 
@@ -186,17 +187,17 @@ int App::InitScene()
 			object->scale       = { 0.5f, 0.5f, 0.5f };
 			object->scaleMatrix = glm::scale(glm::mat4(1.0f), object->scale);
 
-			bx::mtxSRT(
-			    glm::value_ptr(object->transform),
-			    0.5f, 0.5f, 0.5f,                                              // scale
-			    sinf(i * 0.3f), 3.0f, 0.0f,                                    // rotation
-			    i * 0.4f - 2.4f, sinf(i * 0.5f) + 0.1f, -2.5f + MerseneFloat() // translation
-			);
+			//bx::mtxSRT(
+			//    glm::value_ptr(object->transform),
+			//    0.5f, 0.5f, 0.5f,                                              // scale
+			//    sinf(i * 0.3f), 3.0f, 0.0f,                                    // rotation
+			//    i * 0.4f - 2.4f, sinf(i * 0.5f) + 0.1f, -2.5f + MerseneFloat() // translation
+			//);
 
 			auto body = std::make_unique<Body>(physicsWorld.get());
 
 			btQuaternion quat(sinf(i * 0.3f), 3.0f, 0.0f, 1.0f);
-			body->CreateShape(ShapeType_Box, { 0.3f, 0.1f, 0.3f });
+			body->CreateShape(ShapeType_Sphere, { 0.3f, 0.1f, 0.3f, 0.0f });
 			body->CreateBody(0.5f, { i * 0.4f - 2.4f, sinf(i * 0.5f) + 0.1f, -2.5f + MerseneFloat() }, quat);
 			object->bodies.push_back(std::move(body));
 

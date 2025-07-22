@@ -26,7 +26,7 @@ void Body::CreateBody(float _mass, const btVector3& pos, const btQuaternion& qua
 	if (world) world->addRigidBody(body);
 }
 
-void Body::CreateShape(int shapeType, const btVector3& dims)
+void Body::CreateShape(int shapeType, const btVector4& dims, std::vector<btVector3>* vertices, std::vector<int>* indices)
 {
 	DestroyShape();
 	switch (shapeType)
@@ -55,24 +55,26 @@ void Body::CreateShape(int shapeType, const btVector3& dims)
 	case ShapeType_Cylinder:
 		shape = new btCylinderShape(dims);
 		break;
-	case ShapeType_Heightfield:
-		shape = new btHeightfieldTerrainShape(1, 1, (const float*)nullptr, 0.0f, 0.0f, 1, false);
+	case ShapeType_Plane:
+	{
+		shape = new btStaticPlaneShape(dims, dims.w());
+		shape->setLocalScaling(dims);
+		shape->setMargin(0.01f);
 		break;
+	}
 	case ShapeType_Sphere:
 		shape = new btSphereShape(dims.x());
 		break;
-	case ShapeType_StaticPlane:
+	case ShapeType_Terrain:
+		shape = new btHeightfieldTerrainShape(1, 1, (const float*)nullptr, 0.0f, 0.0f, 1, false);
+		break;
+	case ShapeType_TriangleMesh:
 	{
-		btVector3           planeNormal(0.0f, 1.0f, 0.0f);
-		btScalar            planeConstant(0.0f);
-		btStaticPlaneShape* staticPlane = new btStaticPlaneShape(planeNormal, planeConstant);
-		staticPlane->setLocalScaling(dims);
-		staticPlane->setMargin(0.01f);
-		shape = staticPlane;
+		auto meshInterface = nullptr; // new btTriangleIndexVertexArray(...);
+		shape              = new btBvhTriangleMeshShape(meshInterface, true, true);
 		break;
 	}
-	case ShapeType_TriangleMesh:
-	default: THROW_RUNTIME("Unsupported shape type: {}", shapeType);
+	default: ui::LogError("CreateShape: Unknown type: {}", shapeType);
 	}
 }
 
