@@ -1,6 +1,6 @@
 // app.h
 // @author octopoulos
-// @version 2025-07-16
+// @version 2025-07-17
 
 #pragma once
 
@@ -50,6 +50,7 @@ public:
 private:
 	sMesh                cursor    = nullptr; ///< current cursor for placing tiles
 	MAP_STR<MAP_STR_INT> kitModels = {};      ///< model database: [title, filename]
+	int                  iconSize  = 64;      ///< icon size for the map tiles previews
 	sObject3d            mapNode   = nullptr; ///< root of the map scene
 	std::vector<Tile>    tiles     = {};      ///< tiles
 

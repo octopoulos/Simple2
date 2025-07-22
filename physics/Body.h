@@ -1,6 +1,6 @@
 // Body.h
 // @author octopoulos
-// @version 2025-07-12
+// @version 2025-07-17
 
 #pragma once
 
@@ -8,13 +8,13 @@
 
 class Body
 {
-private:
+public:
 	btRigidBody*             body    = nullptr; ///< rigid body
 	PhysicsWorld*            physics = nullptr; ///< physics reference
 	btCollisionShape*        shape   = nullptr; ///< shape
 	btDiscreteDynamicsWorld* world   = nullptr; ///< physical world
 
-	btVector3 inertia = { 1.0f, 1.0f, 1.0f };
+	btVector3 inertia = { 0.0f, 0.0f, 0.0f };
 	float     mass    = 1.0f;
 
 public:

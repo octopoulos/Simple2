@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-07-14
+// @version 2025-07-17
 
 #include "stdafx.h"
 #include "Mesh.h"
@@ -192,16 +192,16 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 
 void Mesh::Render(uint8_t viewId)
 {
-	if (bgfx::isValid(program))
-		Submit(viewId, program, glm::value_ptr(transform), BGFX_STATE_MASK);
-	else if (geometry && material)
+	if (geometry && material)
 	{
-		bgfx::setTransform(glm::value_ptr(worldMatrix));
+		bgfx::setTransform(glm::value_ptr(transform));
 		bgfx::setVertexBuffer(0, geometry->vbh);
 		bgfx::setIndexBuffer(geometry->ibh);
 		material->Apply();
 		bgfx::submit(viewId, material->program);
 	}
+	else if (bgfx::isValid(program))
+		Submit(viewId, program, glm::value_ptr(transform), BGFX_STATE_MASK);
 }
 
 void Mesh::Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, uint64_t state) const

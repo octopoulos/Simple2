@@ -1,6 +1,6 @@
 // Geometry.h
 // @author octopoulos
-// @version 2025-07-05
+// @version 2025-07-17
 
 #pragma once
 
@@ -11,6 +11,12 @@ public:
 	bgfx::VertexBufferHandle vbh = BGFX_INVALID_HANDLE;
 
 	Geometry() = default;
+
+	Geometry(bgfx::VertexBufferHandle vbh, bgfx::IndexBufferHandle ibh)
+	    : vbh(vbh)
+	    , ibh(ibh)
+	{
+	}
 	~Geometry()
 	{
 		if (bgfx::isValid(ibh)) bgfx::destroy(ibh);

@@ -1,6 +1,6 @@
 // app.cpp
 // @author octopoulos
-// @version 2025-07-16
+// @version 2025-07-17
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -125,6 +125,8 @@ int App::InitScene()
 	scene.AddNamedChild(cursor, "cursor");
 	scene.AddNamedChild(mapNode, "map");
 
+	physicsWorld = std::make_unique<PhysicsWorld>();
+
 	// Define cube vertex layout
 	bgfx::VertexLayout cubeLayout;
 	cubeLayout.begin()
@@ -155,18 +157,37 @@ int App::InitScene()
 		0, 4, 1, 4, 5, 1, 2, 3, 6, 6, 3, 7
 	};
 
-	vbh     = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), cubeLayout);
-	ibh     = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
-	program = shaderManager.LoadProgram("vs_cube", "fs_cube");
+	{
+		vbh     = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), cubeLayout);
+		ibh     = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
+		program = shaderManager.LoadProgram("vs_cube", "fs_cube");
 
-	if (!bgfx::isValid(program)) THROW_RUNTIME("Shader program creation failed");
-	ui::Log("Shaders loaded successfully");
+		if (!bgfx::isValid(program)) THROW_RUNTIME("Shader program creation failed");
+		ui::Log("Shaders loaded successfully");
+
+		auto cubeMesh      = std::make_shared<Mesh>();
+		cubeMesh->geometry = std::make_shared<Geometry>(vbh, ibh);
+		cubeMesh->material = std::make_shared<Material>(program);
+		bx::mtxSRT(
+		    glm::value_ptr(cubeMesh->transform),
+		    0.5f, 0.5f, 0.5f, // scale
+		    0.0f, 1.5f, 0.0f, // rotation
+		    0.0f, 1.0f, 0.0f  // translation
+		);
+		scene.AddNamedChild(cubeMesh, "cube");
+
+		Body body(physicsWorld.get());
+		body.CreateBox(1.0f, 1.0f, 1.0f);
+		cubeMesh->bodies.push_back(std::move(body));
+	}
 
 	// load BIN model
 	ModelLoader loader;
 	if (auto object = loader.LoadModel("kenney_car-kit-obj/race-future"))
 	{
 		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
+		textureManager.LoadTexture("fieldstone-rgba.dds");
+		textureManager.LoadTexture("fieldstone-n.dds");
 		bx::mtxRotateXYZ(glm::value_ptr(object->transform), -0.3f, 2.5f, 0.0f);
 		scene.AddNamedChild(object, "car");
 	}
@@ -225,8 +246,6 @@ int App::InitScene()
 		for (int i = -1; const auto& child : scene.children)
 			ui::Log(" {:2}: {}", ++i, child->name);
 	}
-
-	physicsWorld = std::make_unique<PhysicsWorld>();
 
 	startTime = bx::getHPCounter();
 	lastUs    = NowUs();
@@ -293,21 +312,45 @@ void App::Render()
 	physicsWorld->StepSimulation(deltaTime);
 	lastTime = curTime;
 
-	// // Render cube
-	// {
-	// 	btTransform t;
-	// 	physicsWorld->cubeRigidBody->getMotionState()->getWorldTransform(t);
-	// 	float mat[16];
-	// 	t.getBasis().getOpenGLSubMatrix(mat);
-	// 	mat[12] = t.getOrigin().x();
-	// 	mat[13] = t.getOrigin().y();
-	// 	mat[14] = t.getOrigin().z();
-	// 	mat[15] = 1;
-	// 	bgfx::setTransform(mat);
-	// 	bgfx::setVertexBuffer(0, vbh);
-	// 	bgfx::setIndexBuffer(ibh);
-	// 	bgfx::submit(0, program);
-	// }
+	// Render cube
+	if (0)
+	{
+		if (auto cube = scene.GetObjectByName("cube"); cube->type == ObjectType_Mesh)
+		{
+			if (auto mesh = static_cast<Mesh*>(cube); mesh->bodies.size())
+			{
+				const auto& body = mesh->bodies[0];
+				btTransform transform;
+				transform.setIdentity();
+				auto        motionState = body.body->getMotionState();
+				motionState->getWorldTransform(transform);
+
+				float matrix[16];
+				transform.getOpenGLMatrix(matrix);
+				cube->transform = glm::make_mat4(matrix);
+			}
+		}
+	}
+	if (0)
+	{
+		btTransform t;
+		// physicsWorld->cubeRigidBody->getMotionState()->getWorldTransform(t);
+		btMatrix3x3 scale(
+		    1, 0, 0,
+		    0, 1, 0,
+		    0, 0, 1);
+		float mat[16] = {};
+		scale.getOpenGLSubMatrix(mat);
+		// t.getBasis().getOpenGLSubMatrix(mat);
+		mat[12] = 0; // t.getOrigin().x();
+		mat[13] = 0; // t.getOrigin().y();
+		mat[14] = 0; // t.getOrigin().z();
+		mat[15] = 1;
+		bgfx::setTransform(mat);
+		bgfx::setVertexBuffer(0, vbh);
+		bgfx::setIndexBuffer(ibh);
+		bgfx::submit(0, program);
+	}
 
 	// Floor
 	{
@@ -326,7 +369,13 @@ void App::Render()
 	}
 	for (auto& child : scene.children)
 	{
-		if (child->name == "donut")
+		if (child->name == "bunny")
+		{
+			const glm::vec3 position = { -5.0f, 1.0f, -2.0f };
+			const glm::quat rotation = glm::quat(glm::vec3(0.0f, lastTime * 3.0f, 0.0f));
+			child->transform         = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation);
+		}
+		else if (child->name == "car")
 		{
 			const glm::vec3 position = { 0.0f, 1.0f, -2.0f };
 			const glm::quat rotation = glm::quat(glm::vec3(lastTime, 6.0f, 0.0f));
@@ -340,13 +389,18 @@ void App::Render()
 			//glm::quat newRotation     = currentRotation * extraRotation;
 			//glm::mat4 rotationMat     = glm::mat4_cast(newRotation);
 
-			 const glm::vec3 position    = glm::vec3(child->transform[3]);
+			const glm::vec3 position = glm::vec3(
+			    child->transform[3][0],
+			    sinf(child->id * 0.5f) + 1.0f + sinf(lastTime) * 2.0f,
+			    child->transform[3][2]
+			);
 			 const glm::quat rotation    = glm::quat(glm::vec3(-lastTime * 0.05f * child->id, 3.0f, 0.0f));
 			 const glm::mat4 rotationMat = glm::mat4_cast(rotation);
+			 child->transform            = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation);
 
-			child->transform[0] = rotationMat[0];
-			child->transform[1] = rotationMat[1];
-			child->transform[2] = rotationMat[2];
+			//child->transform[0] = rotationMat[0];
+			//child->transform[1] = rotationMat[1];
+			//child->transform[2] = rotationMat[2];
 			//child->transform[3] = glm::vec4(position, 1.0f);
 		}
 	}

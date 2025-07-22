@@ -1,6 +1,6 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-07-15
+// @version 2025-07-17
 
 #include "stdafx.h"
 #include "TextureManager.h"
@@ -81,7 +81,13 @@ bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 	if (const auto& it = textures.find(std::string(name)); it != textures.end())
 		return it->second;
 
-	bgfx::TextureHandle texture = LoadTexture_(bx::FilePath(name.data()));
+	std::string path;
+	if (!IsFile(name) && name.find('/') == std::string_view::npos)
+		path = fmt::format("runtime/textures/{}", name);
+	else
+		path = std::string(name);
+
+	bgfx::TextureHandle texture = LoadTexture_(bx::FilePath(path.c_str()));
 	if (!bgfx::isValid(texture))
 	{
 		ui::LogError("Failed to load texture: {}", name);

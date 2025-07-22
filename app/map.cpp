@@ -22,32 +22,39 @@ void App::MapUi()
 
 	ImGui::Begin("Controls");
 	{
-		const auto& wsize        = ImGui::GetWindowSize();
-		const float imagePadding = 4.0f;
-		const float imageSize    = 64.0f;
-		const int   itemsPerRow  = int((wsize.x - 50.0f - imagePadding) / (imageSize + imagePadding));
+		ImGui::SliderInt("Icon size", &iconSize, 32, 128, "%d px");
+
+		const auto  style        = ImGui::GetStyle();
+		const auto& wsize        = ImGui::GetWindowSize() - style.WindowPadding;
+		const float imagePadding = style.FramePadding.x * 2;
+		const float imageSize    = iconSize;
+		const float spacing      = std::clamp(iconSize / 16.0f, 2.0f, 8.0f);
+		const int   itemsPerRow  = std::max(1, int((wsize.x - style.IndentSpacing - style.ScrollbarSize) / (imageSize + imagePadding + spacing)));
 
 		for (const auto& [kit, models] : kitModels)
 		{
 			if (ImGui::TreeNode(fmt::format("[{}] {}", models.size(), kit.size() ? kit : "*"s).c_str()))
 			{
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(spacing, spacing));
+
 				int       count    = 0;
 				const int numModel = TO_INT(models.size());
 
 				for (const auto& [name, hasPreview] : models)
 				{
-					bool hasImage = false;
+					bool       hasImage = false;
+					const auto kitName  = fmt::format("{}/{}", kit, name);
 					//ImGui::TextUnformatted(name.c_str());
 
 					// display previews here (png files)
 					if (hasPreview)
 					{
-						const auto preview = fmt::format("runtime/models-prev/{}/{}.png", kit, name);
+						const auto preview = fmt::format("runtime/models-prev/{}.png", kitName);
 						const auto handle  = textureManager.LoadTexture(preview);
 						if (bgfx::isValid(handle))
 						{
 							ImTextureID texId = (ImTextureID)(uintptr_t)handle.idx;
-							if (ImGui::ImageButton(fmt::format("##{}", preview).c_str(), texId, ImVec2(imageSize, imageSize)))
+							if (ImGui::ImageButton(fmt::format("##{}", kitName).c_str(), texId, ImVec2(imageSize, imageSize)))
 								AddObject(name);
 
 							if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", name.c_str());
@@ -58,15 +65,12 @@ void App::MapUi()
 					// no image => show text in boxes
 					if (!hasImage)
 					{
-						const ImVec2 boxSize = { imageSize, imageSize };
-						const auto   label   = fmt::format("##btn_{}", name);
-
-						if (ImGui::Button(label.c_str(), boxSize))
+						const ImVec2 boxSize = { imageSize + imagePadding, imageSize + imagePadding };
+						if (ImGui::Button(fmt::format("##{}", kitName).c_str(), boxSize))
 							AddObject(name);
 
 						// draw wrapped text manually inside the button
 						const ImVec2 textMin   = ImGui::GetItemRectMin();
-						const ImVec2 textMax   = ImGui::GetItemRectMax();
 						const ImVec2 textPos   = textMin + ImVec2(4.0f, 4.0f);
 						const float  wrapWidth = boxSize.x - 8.0f;
 
@@ -86,6 +90,8 @@ void App::MapUi()
 					if (count < numModel && (count % itemsPerRow) != 0)
 						ImGui::SameLine();
 				}
+
+				ImGui::PopStyleVar();
 				ImGui::TreePop();
 			}
 		}

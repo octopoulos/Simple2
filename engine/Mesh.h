@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-07-12
+// @version 2025-07-17
 
 #pragma once
 
@@ -67,19 +67,23 @@ struct MeshState
 class Mesh : public Object3d
 {
 public:
-	std::vector<Body>         body     = {};      // one physical body per group
+	std::vector<Body>         bodies   = {};      // one physical body per group
 	std::shared_ptr<Geometry> geometry = nullptr; //
 	std::vector<Group>        groups   = {};      // groups of vertices
 	bgfx::VertexLayout        layout   = {};      //
 	std::shared_ptr<Material> material = nullptr; //
 	bgfx::ProgramHandle       program  = {};      //
 
-	Mesh() = default;
+	Mesh()
+	{
+		type = ObjectType_Mesh;
+	}
 
 	Mesh(std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material)
 	    : geometry(std::move(geometry))
 	    , material(std::move(material))
 	{
+		type = ObjectType_Mesh;
 	}
 
 	~Mesh() { Destroy(); }

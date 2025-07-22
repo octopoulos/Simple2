@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-07-12
+// @version 2025-07-17
 
 #include "stdafx.h"
 #include "Body.h"
@@ -15,11 +15,13 @@ void Body::CreateBox(float wx, float wy, float wz)
 	btQuaternion       randRot(distrib(gen), distrib(gen), distrib(gen), 1.0);
 	randRot.normalize();
 
-	const auto motion = new btDefaultMotionState(btTransform(randRot, btVector3(0, 5, 0)));
-	shape             = new btBoxShape(btVector3(wx, wy, wz));
-	const auto ci     = btRigidBody::btRigidBodyConstructionInfo(mass, motion, shape, inertia);
+	auto motion = new btDefaultMotionState(btTransform(randRot, btVector3(0, 5, 0)));
+	shape       = new btBoxShape(btVector3(wx, wy, wz));
+	if (mass > 0.0f) shape->calculateLocalInertia(mass, inertia);
+	auto ci = btRigidBody::btRigidBodyConstructionInfo(mass, motion, shape, inertia);
 
 	body = new btRigidBody(ci);
+	body->activate(true);
 	world->addRigidBody(body);
 }
 
