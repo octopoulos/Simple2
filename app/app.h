@@ -54,7 +54,7 @@ private:
 
 private:
 	std::unique_ptr<PhysicsWorld> physicsWorld   = nullptr; ///< physics world
-	Scene                         scene          = {};      ///
+	std::unique_ptr<Scene>        scene          = nullptr; ///
 	ShaderManager                 shaderManager  = {};      ///
 	TextureManager                textureManager = {};      ///
 

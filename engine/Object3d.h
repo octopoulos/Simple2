@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-07-17
+// @version 2025-07-18
 
 #pragma once
 
@@ -17,19 +17,18 @@ enum ObjectTypes_
 class Object3d
 {
 public:
-	std::vector<sObject3d> children = {};               ///< sub-objects
-	int                    id       = 0;                ///< unique id
-	std::string            name     = "";               ///< object name (used to find in scene)
-	Object3d*              parent   = nullptr;          ///< parent object
-	int                    type     = ObjectType_Basic; ///< object type
-
-	glm::vec3 position      = {}; ///< x, y, z
-	glm::quat rotation      = {}; ///< quaternion
-	glm::vec3 scale         = {}; ///< sx, sy, sz
-	glm::mat4 transform     = {}; ///< computed from scale * rotation * position
-
-	glm::mat4 localMatrix = glm::mat4(1.0f); ///
-	glm::mat4 worldMatrix = glm::mat4(1.0f); ///
+	std::vector<sObject3d> children    = {};                         ///< sub-objects
+	int                    id          = 0;                          ///< unique id
+	std::string            name        = "";                         ///< object name (used to find in scene)
+	Object3d*              parent      = nullptr;                    ///< parent object
+	int                    type        = ObjectType_Basic;           ///< object type
+	glm::vec3              position    = glm::vec3(0.0f);            ///< x, y, z
+	glm::quat              rotation    = glm::identity<glm::quat>(); ///< quaternion
+	glm::vec3              scale       = glm::vec3(1.0f);            ///< sx, sy, sz
+	glm::mat4              transform   = {};                         ///< computed from S * R * T
+	glm::mat4              localMatrix = glm::mat4(1.0f);            ///< full local transform (S * R * T)
+	glm::mat4              scaleMatrix = glm::mat4(1.0f);            ///< uses scale
+	glm::mat4              worldMatrix = glm::mat4(1.0f);            ///< parent->worldMatrix * localMatrix
 
 	Object3d()          = default;
 	virtual ~Object3d() = default;

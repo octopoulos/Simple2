@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-07-17
+// @version 2025-07-18
 
 #pragma once
 
@@ -67,7 +67,7 @@ struct MeshState
 class Mesh : public Object3d
 {
 public:
-	std::vector<Body>         bodies   = {};      // one physical body per group
+	std::vector<uBody>        bodies   = {};      // one physical body per group
 	std::shared_ptr<Geometry> geometry = nullptr; //
 	std::vector<Group>        groups   = {};      // groups of vertices
 	bgfx::VertexLayout        layout   = {};      //
