@@ -185,7 +185,7 @@ int App::InitScene()
 			    { sinf(i * 0.3f), 3.0f, 0.0f },
 			    { i * 0.4f - 6.0f, sinf(i * 0.5f) + 6.0f, -2.5f + MerseneFloat() }
 			);
-			object->CreateShapeBody(physics.get(), false ? ShapeType_Box : ShapeType_Cylinder, 1.0f, { 0.3f, 0.12f, 0.3f, 0.0f });
+			object->CreateShapeBody(physics.get(), ShapeType_Cylinder, 1.0f, { 0.31f, 0.11f, 0.3f, 0.0f });
 
 			scene->AddNamedChild(object, fmt::format("donut3-{}", i));
 		}
@@ -381,8 +381,8 @@ public:
 
 	entry::MouseState m_mouseState = {};
 
-	uint32_t m_width  = 1376;
-	uint32_t m_height = 864;
+	uint32_t m_width  = 1328;
+	uint32_t m_height = 800;
 	uint32_t m_debug  = 0;
 	uint32_t m_reset  = 0;
 

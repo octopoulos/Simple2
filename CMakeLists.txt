@@ -21,11 +21,13 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 OPTION(WITH_FILE_DIALOG ON )
-OPTION(WITH_SDL         ON )
-OPTION(WITH_SDL3        ON )
+OPTION(WITH_GLFW        OFF)
+OPTION(WITH_SDL         OFF)
+OPTION(WITH_SDL3        OFF)
 
 set(ALL_WITHS
 	WITH_FILE_DIALOG
+	WITH_GLFW
 	WITH_SDL
 	WITH_SDL3
 )
@@ -39,17 +41,32 @@ add_definitions(
 	-DBX_CONFIG_DEBUG=0
 	-DBX_CONFIG_SUPPORTS_THREADING=1
 	-DENTRY_CONFIG_IMPLEMENT_MAIN=1
-	-DENTRY_CONFIG_USE_NATIVE=0
+	-DENTRY_DEFAULT_HEIGHT=800
+	-DENTRY_DEFAULT_WIDTH=1328
 	-DIMGUI_INCLUDE="${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dear-imgui/imgui.h"
 	-DIMGUI_INTERNAL_INCLUDE="${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dear-imgui/imgui_internal.h"
 	-DIMGUI_DEFINE_MATH_OPERATORS
 )
-if(WITH_SDL3)
-	add_definitions(-DENTRY_CONFIG_USE_SDL3=1)
+if(WITH_GLFW)
+	add_definitions(
+		-DENTRY_CONFIG_USE_NATIVE=0
+		-DENTRY_CONFIG_USE_GLFW=1
+	)
+elseif(WITH_SDL3)
+	add_definitions(
+		-DENTRY_CONFIG_USE_NATIVE=0
+		-DENTRY_CONFIG_USE_SDL3=1
+	)
 	set(SDL_USE "-sUSE_SDL=3")
 elseif(WITH_SDL)
-	add_definitions(-DENTRY_CONFIG_USE_SDL=1)
+	add_definitions(
+		-DENTRY_CONFIG_USE_NATIVE=0
+		-DENTRY_CONFIG_USE_SDL=1
+	)
 	set(SDL_USE "-sUSE_SDL=2")
+else()
+	set(ENTRY_CONFIG_USE_NATIVE ON)
+	add_definitions(-DENTRY_CONFIG_USE_NATIVE=1)
 endif()
 
 # Check for Emscripten once and set a variable
@@ -186,7 +203,9 @@ find_package(fmt CONFIG REQUIRED)
 find_package(meshoptimizer CONFIG REQUIRED)
 #find_package(RapidObj CONFIG REQUIRED)
 
-if(NOT IS_EMSCRIPTEN)
+if(WITH_GLFW)
+	find_package(glfw3 CONFIG REQUIRED)
+elseif(NOT IS_EMSCRIPTEN)
 	if(WITH_SDL3)
 		find_package(SDL3 REQUIRED)
 	elseif(WITH_SDL)
@@ -270,7 +289,9 @@ if(WITH_FILE_DIALOG)
 	#target_link_libraries(Simple PRIVATE "${imguifiledialog_SOURCE_DIR}/ImGuiFileDialog.cpp")
 endif()
 
-if(NOT IS_EMSCRIPTEN)
+if(WITH_GLFW)
+	target_link_libraries(Simple PRIVATE glfw)
+elseif(NOT IS_EMSCRIPTEN)
 	if(WITH_SDL3)
 		target_link_libraries(Simple PRIVATE SDL3::SDL3)
 	elseif(WITH_SDL)
@@ -278,7 +299,18 @@ if(NOT IS_EMSCRIPTEN)
 	endif()
 endif()
 
-# target_link_libraries(Simple "-framework GameController")
+ #if(ENTRY_CONFIG_USE_NATIVE)
+if(APPLE)
+	target_link_libraries(Simple PRIVATE
+		"-framework AppKit"
+		"-framework ApplicationServices"
+		"-framework Foundation"
+		"-framework IOKit"
+		"-framework Metal"
+		"-framework QuartzCore"
+	)
+endif()
+#endif()
 
 #######################################################################################################################
 # 6) SHADERS
@@ -480,10 +512,14 @@ source_group(TREE "${SHADER_SRC_DIR}" PREFIX "Assets/Shaders" FILES ${SHADER_SRC
 source_group(TREE "${RUNTIME_DIR}" PREFIX "Assets/Binaries" FILES ${MODEL_BIN_FILES} ${SHADER_BIN_FILES})
 
 set(EXTRA_SRC_FILES)
-if(WITH_SDL3)
+if(WITH_GLFW)
+	list(APPEND EXTRA_SRC_FILES "common/entry/entry_glfw.cpp")
+elseif(WITH_SDL3)
 	list(APPEND EXTRA_SRC_FILES "common/entry/entry_sdl3.cpp")
 elseif(WITH_SDL)
 	list(APPEND EXTRA_SRC_FILES "common/entry/entry_sdl.cpp")
+elseif(APPLE)
+	list(APPEND EXTRA_SRC_FILES "common/entry/entry_osx.mm")
 endif()
 
 # Add compiled models and shaders to the target
@@ -543,11 +579,4 @@ if(IS_EMSCRIPTEN)
 	else()
 		message(WARNING "Brotli or Gzip not found; skipping compression step.")
 	endif()
-endif()
-
-# For Objective-C++ (not needed for Emscripten)
-if(APPLE)
-	set_source_files_properties(src/main.cpp PROPERTIES
-		COMPILE_FLAGS "-ObjC++"
-	)
 endif()

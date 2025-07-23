@@ -1,4 +1,4 @@
-// @version 2025-07-11
+// @version 2025-07-19
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -29,15 +29,17 @@
 #	define ENTRY_CONFIG_USE_SDL3 0
 #endif // ENTRY_CONFIG_USE_SDL3
 
-#if !defined(ENTRY_CONFIG_USE_NATIVE) \
-    && !ENTRY_CONFIG_USE_NOOP         \
-    && !ENTRY_CONFIG_USE_GLFW         \
-    && !ENTRY_CONFIG_USE_SDL          \
-    && !ENTRY_CONFIG_USE_SDL3
-#	define ENTRY_CONFIG_USE_NATIVE 1
-#else
-#	define ENTRY_CONFIG_USE_NATIVE 0
-#endif // ...
+#if !defined(ENTRY_CONFIG_USE_NATIVE)
+	#if 1                         \
+		&& !ENTRY_CONFIG_USE_NOOP \
+		&& !ENTRY_CONFIG_USE_GLFW \
+		&& !ENTRY_CONFIG_USE_SDL  \
+		&& !ENTRY_CONFIG_USE_SDL3
+	#	define ENTRY_CONFIG_USE_NATIVE 1
+	#else
+	#	define ENTRY_CONFIG_USE_NATIVE 0
+	#endif // ...
+#endif // ENTRY_CONFIG_USE_NATIVE
 
 #ifndef ENTRY_CONFIG_MAX_WINDOWS
 #	define ENTRY_CONFIG_MAX_WINDOWS 8

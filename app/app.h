@@ -99,8 +99,8 @@ private:
 	int               mouseScroll = 0;     ///< mouse wheel
 	entry::MouseState mouseState  = {};    ///
 	bool              quit        = false; ///< exit the mainloop
-	uint32_t          screenX     = 1376;  ///
-	uint32_t          screenY     = 864;   ///
+	uint32_t          screenX     = 1328;  ///
+	uint32_t          screenY     = 800;   ///
 	bool              useGlm      = false; ///
 
 public:
