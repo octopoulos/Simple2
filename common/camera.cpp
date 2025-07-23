@@ -17,6 +17,7 @@ enum CustomCommands_
 {
 	Cmd_Invalid = -1,
 	Cmd_Forward,
+	Cmd_Forward2,
 	Cmd_Backward,
 	Cmd_Left,
 	Cmd_Right,
@@ -24,14 +25,17 @@ enum CustomCommands_
 	Cmd_Down,
 };
 
+// clang-format off
 static const UMAP_STR_INT s_cmdMoveMap = {
-	{ "forward",  Cmd_Forward  },
+	{ "forward" , Cmd_Forward  },
+	{ "forward2", Cmd_Forward2 },
 	{ "backward", Cmd_Backward },
-	{ "left",     Cmd_Left     },
-	{ "right",    Cmd_Right    },
-	{ "up",       Cmd_Up       },
-	{ "down",     Cmd_Down     },
+	{ "left"    , Cmd_Left     },
+	{ "right"   , Cmd_Right    },
+	{ "up"      , Cmd_Up       },
+	{ "down"    , Cmd_Down     },
 };
+// clang-format on
 
 int cmdMove(CmdContext* /*_context*/, void* /*_userData*/, int _argc, char const* const* _argv)
 {
@@ -43,6 +47,7 @@ int cmdMove(CmdContext* /*_context*/, void* /*_userData*/, int _argc, char const
 		case Cmd_Backward: cameraSetKeyState(CAMERA_KEY_BACKWARD, true); break;
 		case Cmd_Down    : cameraSetKeyState(CAMERA_KEY_DOWN    , true); break;
 		case Cmd_Forward : cameraSetKeyState(CAMERA_KEY_FORWARD , true); break;
+		case Cmd_Forward2: cameraSetKeyState(CAMERA_KEY_FORWARD , true); break;
 		case Cmd_Left    : cameraSetKeyState(CAMERA_KEY_LEFT    , true); break;
 		case Cmd_Right   : cameraSetKeyState(CAMERA_KEY_RIGHT   , true); break;
 		case Cmd_Up      : cameraSetKeyState(CAMERA_KEY_UP      , true); break;
@@ -57,22 +62,21 @@ static void cmd(const void* _userData)
 	cmdExec((const char*)_userData);
 }
 
-#define INPUT_BINDING(name, command) { entry::Key::name, entry::Modifier::None, 0, cmd, command }
-
 // clang-format off
 static const InputBinding s_camBindings[] = {
-	INPUT_BINDING(KeyW            , "move forward" ),
-	INPUT_BINDING(GamepadUp       , "move forward" ),
-	INPUT_BINDING(KeyA            , "move left"    ),
-	INPUT_BINDING(GamepadLeft     , "move left"    ),
-	INPUT_BINDING(KeyS            , "move backward"),
-	INPUT_BINDING(GamepadDown     , "move backward"),
-	INPUT_BINDING(KeyD            , "move right"   ),
-	INPUT_BINDING(GamepadRight    , "move right"   ),
-	INPUT_BINDING(KeyQ            , "move down"    ),
-	INPUT_BINDING(GamepadShoulderL, "move down"    ),
-	INPUT_BINDING(KeyE            , "move up"      ),
-	INPUT_BINDING(GamepadShoulderR, "move up"      ),
+	INPUT_BINDING_SHIFT(KeyW            , "move forward2"),
+	INPUT_BINDING      (KeyW            , "move forward" ),
+	INPUT_BINDING      (GamepadUp       , "move forward" ),
+	INPUT_BINDING      (KeyA            , "move left"    ),
+	INPUT_BINDING      (GamepadLeft     , "move left"    ),
+	INPUT_BINDING      (KeyS            , "move backward"),
+	INPUT_BINDING      (GamepadDown     , "move backward"),
+	INPUT_BINDING      (KeyD            , "move right"   ),
+	INPUT_BINDING      (GamepadRight    , "move right"   ),
+	INPUT_BINDING      (KeyQ            , "move down"    ),
+	INPUT_BINDING      (GamepadShoulderL, "move down"    ),
+	INPUT_BINDING      (KeyE            , "move up"      ),
+	INPUT_BINDING      (GamepadShoulderR, "move up"      ),
 	INPUT_BINDING_END
 };
 // clang-format on

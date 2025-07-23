@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-07-17
+// @version 2025-07-19
 
 #include "stdafx.h"
 #include "app.h"
@@ -15,7 +15,7 @@ void App::AddObject(const std::string& name)
 void App::MapUi()
 {
 	const ImVec2 displaySize = ImGui::GetIO().DisplaySize;
-	const ImVec2 firstSize   = { 300.0f, displaySize.y - 100.0f };
+	const ImVec2 firstSize   = { 250.0f, displaySize.y - 100.0f };
 
 	ImGui::SetNextWindowPos(ImVec2(displaySize.x - firstSize.x - 10.0f, 50.0f), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(firstSize, ImGuiCond_FirstUseEver);

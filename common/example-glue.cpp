@@ -1,4 +1,4 @@
-// @version 2025-07-14
+// @version 2025-07-19
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -121,7 +121,7 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 	bx::snprintf(temp, BX_COUNTOF(temp), "Example: %s", _app ? _app->getName() : "NAME");
 
 	ImGui::SetNextWindowPos(ImVec2(10.0f, 50.0f), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(300.0f, 210.0f), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(250.0f, 210.0f), ImGuiCond_FirstUseEver);
 
 	ImGui::Begin(temp);
 

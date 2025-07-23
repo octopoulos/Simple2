@@ -1,4 +1,4 @@
-// @version 2025-07-11
+// @version 2025-07-19
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -37,7 +37,11 @@ struct InputBinding
 	const void*      m_userData;
 };
 
-#define INPUT_BINDING_END { entry::Key::None, entry::Modifier::None, 0, nullptr, nullptr }
+#define INPUT_BINDING(name, command)       { entry::Key::name, entry::Modifier::None, 0, cmd, command }
+#define INPUT_BINDING_ALT(name, command)   { entry::Key::name, entry::Modifier::LeftAlt | entry::Modifier::RightAlt, 0, cmd, command }
+#define INPUT_BINDING_CTRL(name, command)  { entry::Key::name, entry::Modifier::LeftCtrl | entry::Modifier::RightCtrl, 0, cmd, command }
+#define INPUT_BINDING_SHIFT(name, command) { entry::Key::name, entry::Modifier::LeftShift | entry::Modifier::RightShift, 0, cmd, command }
+#define INPUT_BINDING_END                  { entry::Key::None, entry::Modifier::None, 0, nullptr, nullptr }
 
 ///
 void inputInit();

@@ -42,7 +42,9 @@ private:
 	sObject3d            mapNode   = nullptr; ///< root of the map scene
 	std::vector<Tile>    tiles     = {};      ///< tiles
 
+	/// Insert an object into the map
 	void AddObject(const std::string& name);
+
 	void MapUi();
 	bool OpenMap(const std::filesystem::path& filename);
 	bool SaveMap(const std::filesystem::path& filename);

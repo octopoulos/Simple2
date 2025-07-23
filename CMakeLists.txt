@@ -2,6 +2,7 @@
 # cmake -B . -S .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=~/Code/vcpkg/scripts/buildsystems/vcpkg.cmake
 # cmake -B . -S .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=~/Code/vcpkg/scripts/buildsystems/vcpkg.cmake
 # cmake --build . -j8
+# cmake --build . --target AssetsBin
 #
 # http-server -p 9999 -bg
 # 1
@@ -338,7 +339,7 @@ if(APPLE)
 	list(APPEND SHADER_CONFIGS "metal:osx:metal")
 endif()
 if(WIN32)
-	list(APPEND SHADER_CONFIGS "dx11:windows:s_5_0")
+	list(APPEND SHADER_CONFIGS "dx11:windows:s_5_0" "dx12:windows:s_5_0")
 endif()
 
 # Define directories
@@ -518,8 +519,18 @@ elseif(WITH_SDL3)
 	list(APPEND EXTRA_SRC_FILES "common/entry/entry_sdl3.cpp")
 elseif(WITH_SDL)
 	list(APPEND EXTRA_SRC_FILES "common/entry/entry_sdl.cpp")
+elseif(ANDROID)
+	list(APPEND EXTRA_SRC_FILES "common/entry/entry_android.cpp")
+elseif(EMSCRIPTEN)
+	list(APPEND EXTRA_SRC_FILES "common/entry/entry_html5.cpp")
+elseif(IOS)
+	list(APPEND EXTRA_SRC_FILES "common/entry/entry_ios.mm")
 elseif(APPLE)
 	list(APPEND EXTRA_SRC_FILES "common/entry/entry_osx.mm")
+elseif(UNIX)
+	list(APPEND EXTRA_SRC_FILES "common/entry/entry_x11.cpp")
+elseif(WIN32)
+	list(APPEND EXTRA_SRC_FILES "common/entry/entry_windows.cpp")
 endif()
 
 # Add compiled models and shaders to the target
@@ -580,3 +591,8 @@ if(IS_EMSCRIPTEN)
 		message(WARNING "Brotli or Gzip not found; skipping compression step.")
 	endif()
 endif()
+
+add_custom_target(assets
+	DEPENDS ${MODEL_BIN_FILES} ${SHADER_BIN_FILES}
+	COMMENT "Building shaders and models only"
+)

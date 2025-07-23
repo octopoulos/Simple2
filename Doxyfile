@@ -993,9 +993,10 @@ WARN_LOGFILE           =
 
 INPUT                  = app \
                          common \
-                         common/entry
-                         common/imgui
-                         engine
+                         common/entry \
+                         common/imgui \
+                         engine \
+                         physics
 
 # This tag can be used to specify the character encoding of the source files
 # that Doxygen parses. Internally Doxygen uses the UTF-8 encoding. Doxygen uses
