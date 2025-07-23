@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-07-18
+// @version 2025-07-19
 
 #pragma once
 
@@ -23,49 +23,22 @@ public:
 	Object3d*              parent      = nullptr;                    ///< parent object
 	int                    type        = ObjectType_Basic;           ///< object type
 	glm::vec3              position    = glm::vec3(0.0f);            ///< x, y, z
-	glm::quat              rotation    = glm::identity<glm::quat>(); ///< quaternion
+	glm::quat              quaternion  = glm::identity<glm::quat>(); ///< quaternion
+	glm::quat              rotation    = glm::vec3(0.0f);            ///< rotation: Euler angles
 	glm::vec3              scale       = glm::vec3(1.0f);            ///< sx, sy, sz
+	glm::mat4              scaleMatrix = glm::mat4(1.0f);            ///< uses scale
 	glm::mat4              transform   = {};                         ///< computed from S * R * T
 	glm::mat4              localMatrix = glm::mat4(1.0f);            ///< full local transform (S * R * T)
-	glm::mat4              scaleMatrix = glm::mat4(1.0f);            ///< uses scale
 	glm::mat4              worldMatrix = glm::mat4(1.0f);            ///< parent->worldMatrix * localMatrix
 
 	Object3d()          = default;
 	virtual ~Object3d() = default;
 
-	virtual void AddChild(sObject3d child)
-	{
-		child->parent = this;
-		children.push_back(std::move(child));
-	}
-
-	virtual void RemoveChild(const sObject3d& child)
-	{
-		if (const auto& it = std::find(children.begin(), children.end(), child); it != children.end())
-		{
-			(*it)->parent = nullptr;
-			children.erase(it);
-		}
-	}
-
-	virtual void Render(uint8_t viewId) {}
-
-	void TraverseAndRender(uint8_t viewId)
-	{
-		UpdateMatrix();
-		Render(viewId);
-		for (const auto& child : children)
-			child->TraverseAndRender(viewId);
-	}
-
-	virtual void UpdateMatrix()
-	{
-		if (parent)
-			worldMatrix = parent->worldMatrix * localMatrix;
-		else
-			worldMatrix = localMatrix;
-
-		for (auto& child : children)
-			child->UpdateMatrix();
-	}
+	virtual void AddChild(sObject3d child);
+	virtual void RemoveChild(const sObject3d& child);
+	virtual void Render(uint8_t viewId);
+	void         ScaleRotationPosition(const glm::vec3& _scale, const glm::vec3& _rotation, const glm::vec3& _position);
+	void         ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat& _quaternion, const glm::vec3& _position);
+	void         TraverseAndRender(uint8_t viewId);
+	void         UpdateMatrix();
 };

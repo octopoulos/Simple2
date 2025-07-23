@@ -1,6 +1,6 @@
 // app.cpp
 // @author octopoulos
-// @version 2025-07-18
+// @version 2025-07-19
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -23,7 +23,7 @@
 void App::Destroy()
 {
 	scene.reset();
-	physicsWorld.reset();
+	physics.reset();
 }
 
 int App::Initialize()
@@ -33,8 +33,13 @@ int App::Initialize()
 
 	if (const int result = InitScene(); result < 0) return result;
 
-	cameraCreate();
-	cameraSetPosition({ 0.0f, 0.0, -12.0f });
+	// camera
+	{
+		cameraCreate();
+		cameraSetPosition({ -6.0f, 2.0f, -10.0f });
+		cameraSetHorizontalAngle(0.7f);
+		cameraSetVerticalAngle(-0.4f);
+	}
 	return 1;
 }
 
@@ -47,7 +52,7 @@ int App::InitScene()
 	scene->AddNamedChild(cursor, "cursor");
 	scene->AddNamedChild(mapNode, "map");
 
-	physicsWorld = std::make_unique<PhysicsWorld>();
+	physics = std::make_unique<PhysicsWorld>();
 
 	// cube vertex layout
 	{
@@ -87,49 +92,32 @@ int App::InitScene()
 
 		// cube
 		{
-			std::random_device rd;
-			std::mt19937       gen(rd());
-			auto               distrib = std::uniform_real_distribution<>(0.0, 2.0 * bx::kPi);
-			btQuaternion       quat(distrib(gen), distrib(gen), distrib(gen), 1.0);
-			quat.normalize();
-
 			auto cubeMesh      = std::make_shared<Mesh>();
 			cubeMesh->geometry = std::make_shared<Geometry>(vbh, ibh);
 			cubeMesh->material = std::make_shared<Material>(program);
-			//bx::mtxSRT(
-			//    glm::value_ptr(cubeMesh->transform),
-			//    0.5f, 0.5f, 0.5f, // scale
-			//    0.0f, 1.5f, 0.0f, // rotation
-			//    0.0f, 5.0f, 0.0f  // translation
-			//);
 
-			auto body = std::make_unique<Body>(physicsWorld.get());
-			body->CreateShape(ShapeType_Box, { 1.0f, 1.0f, 1.0f, 0.0f });
-			body->CreateBody(1.0f, { 0.0f, 5.0f, 0.0f }, quat);
-			cubeMesh->bodies.push_back(std::move(body));
+			cubeMesh->ScaleRotationPosition(
+			    { 0.5f, 0.5f, 0.5f },
+			    { MerseneFloat(0.0f, bx::kPi2), MerseneFloat(0.0f, bx::kPi2), MerseneFloat(0.0f, bx::kPi2) },
+			    { 0.0f, 5.0f, 0.0f }
+			);
+			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 1.0f, { 0.5f, 0.5f, 0.5f, 0.0f });
 
 			scene->AddNamedChild(std::move(cubeMesh), "cube");
 		}
 
 		// floor
 		{
-			auto cubeMesh         = std::make_shared<Mesh>();
-			cubeMesh->geometry    = std::make_shared<Geometry>(vbh, ibh);
-			cubeMesh->material    = std::make_shared<Material>(program);
-			cubeMesh->scale       = { 8.0f, 0.5f, 8.0f };
-			cubeMesh->scaleMatrix = glm::scale(glm::mat4(1.0f), cubeMesh->scale);
-			//bx::mtxSRT(
-			//    glm::value_ptr(cubeMesh->transform),
-			//    8.0f, 0.5f, 8.0f, // scale
-			//    0.0f, 0.0f, 0.0f, // rotation
-			//    0.0f, -2.0f, 0.0f // translation
-			//);
+			auto cubeMesh      = std::make_shared<Mesh>();
+			cubeMesh->geometry = std::make_shared<Geometry>(vbh, ibh);
+			cubeMesh->material = std::make_shared<Material>(program);
 
-			auto body = std::make_unique<Body>(physicsWorld.get());
-			body->CreateShape(ShapeType_Box, { 8.0f, 0.5f, 8.0f, 0.0f });
-			//body->CreateShape(ShapeType_Plane, { 0.0f, 1.0f, 0.0f, 0.5f });
-			body->CreateBody(0.0f, { 0.0f, -2.0f, 0.0f }, { 0.0f, 0.0f, 0.0f, 1.0f });
-			cubeMesh->bodies.push_back(std::move(body));
+			cubeMesh->ScaleRotationPosition(
+			    { 5.5f, 0.5f, 5.5f },
+			    { 0.0f, 0.0f, 0.0f },
+			    { 0.0f, -2.0f, 0.0f }
+			);
+			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f, { 5.5f, 0.5f, 5.5f, 0.0f });
 
 			scene->AddNamedChild(std::move(cubeMesh), "floor");
 		}
@@ -137,49 +125,54 @@ int App::InitScene()
 
 	// load BIN model
 	ModelLoader loader;
-	if (auto object = loader.LoadModel("kenney_car-kit-obj/race-future"))
+	if (auto object = loader.LoadModel("kenney_car-kit-obj/race-future", true))
 	{
 		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
-		textureManager.LoadTexture("fieldstone-rgba.dds");
-		textureManager.LoadTexture("fieldstone-n.dds");
-		bx::mtxRotateXYZ(glm::value_ptr(object->transform), -0.3f, 2.5f, 0.0f);
+		//textureManager.LoadTexture("fieldstone-rgba.dds");
+		//textureManager.LoadTexture("fieldstone-n.dds");
+		object->ScaleRotationPosition(
+		    { 1.0f, 1.0f, 1.0f },
+		    { -0.3f, 2.5f, 0.0f },
+		    { 0.0f, 1.0f, 0.0f }
+		);
+		object->CreateShapeBody(physics.get(), ShapeType_ConvexHull, 3.0f, { 1.0f, 0.5f, 1.0f, 0.0f });
 		scene->AddNamedChild(object, "car");
 	}
-	if (auto object = loader.LoadModel("building-n"))
+	if (auto object = loader.LoadModel("building-n", true))
 	{
 		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
-		bx::mtxSRT(
-		    glm::value_ptr(object->transform),
-		    1.0f, 1.0f, 1.0f, // scale
-		    0.0f, 1.5f, 0.0f, // rotation
-		    3.0f, -1.0f, 0.0f // translation
+		object->ScaleRotationPosition(
+		    { 1.0f, 1.0f, 1.0f },
+		    { 0.0f, 1.5f, 0.0f },
+		    { 3.0f, -1.5f, -2.5f }
 		);
+		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh, 0.0f, { 1.0f, 2.1f, 1.0f, 0.0f });
 		scene->AddNamedChild(object, "building");
 	}
-	if (auto object = loader.LoadModel("bunny"))
+	if (auto object = loader.LoadModel("bunny", true))
 	{
 		object->program = shaderManager.LoadProgram("vs_mesh", "fs_mesh");
-		bx::mtxSRT(
-		    glm::value_ptr(object->transform),
-		    1.0f, 1.0f, 1.0f, // scale
-		    0.0f, 1.5f, 0.0f, // rotation
-		    -3.0f, 0.0f, 0.0f // translation
+		object->ScaleRotationPosition(
+		    { 1.0f, 1.0f, 1.0f },
+		    { 0.0f, 1.5f, 0.0f },
+		    { -3.0f, 5.0f, 0.0f }
 		);
+		object->CreateShapeBody(physics.get(), ShapeType_ConvexHull, 3.0f, { 1.0f, 1.0f, 1.0f, 0.0f });
 		scene->AddNamedChild(object, "bunny");
 	}
 	if (auto object = loader.LoadModel("donut"))
 	{
 		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
-		bx::mtxSRT(
-		    glm::value_ptr(object->transform),
-		    1.5f, 1.5f, 1.5f, // scale
-		    0.0f, 3.0f, 0.0f, // rotation
-		    0.0f, 1.0f, -2.0f // translation
+		object->ScaleRotationPosition(
+		    { 1.5f, 1.5f, 1.5f },
+		    { 0.0f, 3.0f, 0.0f },
+		    { 0.0f, 1.0f, -2.0f }
 		);
+		object->CreateShapeBody(physics.get(), ShapeType_Cylinder, 1.0f, { 0.45f, 0.2f, 0.0f, 0.0f });
 		scene->AddNamedChild(object, "donut");
 	}
 
-	for (int i = 0; i < 15; ++i)
+	for (int i = 0; i < 30; ++i)
 	{
 		if (auto object = loader.LoadModel("donut3"))
 		{
@@ -187,19 +180,12 @@ int App::InitScene()
 			object->scale       = { 0.5f, 0.5f, 0.5f };
 			object->scaleMatrix = glm::scale(glm::mat4(1.0f), object->scale);
 
-			//bx::mtxSRT(
-			//    glm::value_ptr(object->transform),
-			//    0.5f, 0.5f, 0.5f,                                              // scale
-			//    sinf(i * 0.3f), 3.0f, 0.0f,                                    // rotation
-			//    i * 0.4f - 2.4f, sinf(i * 0.5f) + 0.1f, -2.5f + MerseneFloat() // translation
-			//);
-
-			auto body = std::make_unique<Body>(physicsWorld.get());
-
-			btQuaternion quat(sinf(i * 0.3f), 3.0f, 0.0f, 1.0f);
-			body->CreateShape(ShapeType_Sphere, { 0.3f, 0.1f, 0.3f, 0.0f });
-			body->CreateBody(0.5f, { i * 0.4f - 2.4f, sinf(i * 0.5f) + 0.1f, -2.5f + MerseneFloat() }, quat);
-			object->bodies.push_back(std::move(body));
+			object->ScaleRotationPosition(
+			    { 0.5f, 0.5f, 0.5f },
+			    { sinf(i * 0.3f), 3.0f, 0.0f },
+			    { i * 0.4f - 6.0f, sinf(i * 0.5f) + 6.0f, -2.5f + MerseneFloat() }
+			);
+			object->CreateShapeBody(physics.get(), false ? ShapeType_Box : ShapeType_Cylinder, 1.0f, { 0.3f, 0.12f, 0.3f, 0.0f });
 
 			scene->AddNamedChild(object, fmt::format("donut3-{}", i));
 		}
@@ -245,52 +231,51 @@ void App::Render()
 	}
 
 	// 3) physics
-	physicsWorld->StepSimulation(deltaTime);
-	lastTime = curTime;
-
-	for (auto& child : scene->children)
 	{
-		if (child->type == ObjectType_Mesh)
-		{
-			if (auto mesh = static_cast<Mesh*>(child.get()); mesh->bodies.size())
-			{
-				const auto& body = mesh->bodies[0];
-				if (body->mass >= 0.0f)
-				{
-					btTransform transform;
-					// transform.setIdentity();
-					auto        motionState = body->body->getMotionState();
-					motionState->getWorldTransform(transform);
+		physics->StepSimulation(deltaTime);
+		lastTime = curTime;
 
-					float matrix[16];
-					transform.getOpenGLMatrix(matrix);
-					mesh->transform = glm::make_mat4(matrix) * mesh->scaleMatrix;
+		for (auto& child : scene->children)
+		{
+			if (child->type == ObjectType_Mesh)
+			{
+				if (auto mesh = static_cast<Mesh*>(child.get()); mesh->bodies.size())
+				{
+					const auto& body = mesh->bodies[0];
+					if (body->mass >= 0.0f)
+					{
+						btTransform transform;
+						auto        motionState = body->body->getMotionState();
+						motionState->getWorldTransform(transform);
+
+						float matrix[16];
+						transform.getOpenGLMatrix(matrix);
+						mesh->transform = glm::make_mat4(matrix) * mesh->scaleMatrix;
+						// mesh->position  = glm::vec3(mesh->transform[3]);
+					}
+					continue;
 				}
+			}
+
+			if (child->name == "donut")
+			{
+				child->ScaleRotationPosition(
+				    { 1.5f, 1.5f, 1.5f },
+				    { 0.0f, lastTime * 3.0f, 0.0f },
+				    { -5.0f, 1.0f, -2.0f }
+				);
+			}
+			else if (child->name == "car")
+			{
+				child->ScaleRotationPosition(
+				    { 1.0f, 1.0f, 1.0f },
+				    { lastTime, 6.0f, 0.0f },
+				    { 0.0f, 1.0f, -2.0f }
+				);
 			}
 		}
 
-		if (child->name == "bunny")
-		{
-			const glm::vec3 position = { -5.0f, 1.0f, -2.0f };
-			const glm::quat rotation = glm::quat(glm::vec3(0.0f, lastTime * 3.0f, 0.0f));
-			child->transform         = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation);
-		}
-		else if (child->name == "car")
-		{
-			const glm::vec3 position = { 0.0f, 1.0f, -2.0f };
-			const glm::quat rotation = glm::quat(glm::vec3(lastTime, 6.0f, 0.0f));
-			child->transform         = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation);
-		}
-		else if (child->name.starts_with("donut34"))
-		{
-			const glm::vec3 position = glm::vec3(
-			    child->transform[3][0],
-			    sinf(child->id * 0.5f) + 1.0f + sinf(lastTime) * 2.0f,
-			    child->transform[3][2]);
-			const glm::quat rotation    = glm::quat(glm::vec3(-lastTime * 0.05f * child->id, 3.0f, 0.0f));
-			const glm::mat4 rotationMat = glm::mat4_cast(rotation);
-			child->transform            = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation);
-		}
+		physics->DrawDebug();
 	}
 
 	// 4) draw the scene
@@ -322,8 +307,15 @@ public:
 
 		m_width  = _width;
 		m_height = _height;
-		m_debug  = BGFX_DEBUG_TEXT;
-		m_reset  = BGFX_RESET_VSYNC;
+		m_debug  = 0
+		    | BGFX_DEBUG_PROFILER
+			| BGFX_DEBUG_TEXT
+			;
+		m_reset  = 0
+		    //| BGFX_RESET_HDR10
+		    | BGFX_RESET_MSAA_X8
+		    | BGFX_RESET_VSYNC
+			;
 
 		bgfx::Init init;
 		init.type              = args.m_type;
@@ -389,8 +381,8 @@ public:
 
 	entry::MouseState m_mouseState = {};
 
-	uint32_t m_width  = 1280;
-	uint32_t m_height = 720;
+	uint32_t m_width  = 1376;
+	uint32_t m_height = 864;
 	uint32_t m_debug  = 0;
 	uint32_t m_reset  = 0;
 

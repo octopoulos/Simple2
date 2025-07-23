@@ -1,6 +1,6 @@
 // app.h
 // @author octopoulos
-// @version 2025-07-18
+// @version 2025-07-19
 
 #pragma once
 
@@ -53,7 +53,7 @@ private:
 	////////
 
 private:
-	std::unique_ptr<PhysicsWorld> physicsWorld   = nullptr; ///< physics world
+	std::unique_ptr<PhysicsWorld> physics        = nullptr; ///< physics world
 	std::unique_ptr<Scene>        scene          = nullptr; ///
 	ShaderManager                 shaderManager  = {};      ///
 	TextureManager                textureManager = {};      ///
@@ -99,8 +99,8 @@ private:
 	int               mouseScroll = 0;     ///< mouse wheel
 	entry::MouseState mouseState  = {};    ///
 	bool              quit        = false; ///< exit the mainloop
-	uint32_t          screenX     = 1280;  ///
-	uint32_t          screenY     = 800;   ///
+	uint32_t          screenX     = 1376;  ///
+	uint32_t          screenY     = 864;   ///
 	bool              useGlm      = false; ///
 
 public:

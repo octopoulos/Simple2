@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-07-17
+// @version 2025-07-19
 
 #include "stdafx.h"
 #include "Mesh.h"
@@ -10,6 +10,14 @@
 namespace bgfx
 {
 	int32_t read(bx::ReaderI* reader, bgfx::VertexLayout& layout, bx::Error* err);
+}
+
+void Mesh::CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, const btVector4& dims)
+{
+	auto body = std::make_unique<Body>(physics);
+	body->CreateShape(shapeType, dims, this);
+	body->CreateBody(mass, btVector3(position.x, position.y, position.z), btQuaternion(rotation.x, rotation.y, rotation.z, rotation.w));
+	bodies.push_back(std::move(body));
 }
 
 void Mesh::Destroy()

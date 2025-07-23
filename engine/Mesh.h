@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-07-18
+// @version 2025-07-19
 
 #pragma once
 
@@ -10,14 +10,14 @@
 
 struct Primitive
 {
-	uint32_t m_startIndex;
-	uint32_t m_numIndices;
-	uint32_t m_startVertex;
-	uint32_t m_numVertices;
+	uint32_t m_startIndex;  ///
+	uint32_t m_numIndices;  ///
+	uint32_t m_startVertex; ///
+	uint32_t m_numVertices; ///
 
-	bx::Sphere m_sphere;
-	bx::Aabb   m_aabb;
-	bx::Obb    m_obb;
+	bx::Sphere m_sphere; ///
+	bx::Aabb   m_aabb;   ///
+	bx::Obb    m_obb;    ///
 };
 
 struct Group
@@ -35,44 +35,44 @@ struct Group
 		m_prims.clear();
 	}
 
-	bx::Aabb                 m_aabb;
-	bgfx::IndexBufferHandle  m_ibh;
-	uint16_t*                m_indices;
-	uint32_t                 m_numIndices;
-	uint16_t                 m_numVertices;
-	bx::Obb                  m_obb;
-	std::vector<Primitive>   m_prims;
-	bx::Sphere               m_sphere;
-	bgfx::VertexBufferHandle m_vbh;
-	uint8_t*                 m_vertices;
+	bx::Aabb                 m_aabb;        ///
+	bgfx::IndexBufferHandle  m_ibh;         ///
+	uint16_t*                m_indices;     ///
+	uint32_t                 m_numIndices;  ///
+	uint16_t                 m_numVertices; ///
+	bx::Obb                  m_obb;         ///
+	std::vector<Primitive>   m_prims;       ///
+	bx::Sphere               m_sphere;      ///
+	bgfx::VertexBufferHandle m_vbh;         ///
+	uint8_t*                 m_vertices;    ///
 };
 
 struct MeshState
 {
 	struct Texture
 	{
-		uint32_t            m_flags;
-		bgfx::UniformHandle m_sampler;
-		uint8_t             m_stage;
-		bgfx::TextureHandle m_texture;
+		uint32_t            m_flags;   ///
+		bgfx::UniformHandle m_sampler; ///
+		uint8_t             m_stage;   ///
+		bgfx::TextureHandle m_texture; ///
 	};
 
-	bgfx::ProgramHandle m_program;
-	uint8_t             m_numTextures;
-	uint64_t            m_state;
-	Texture             m_textures[4];
-	uint16_t            m_viewId;
+	bgfx::ProgramHandle m_program;     ///
+	uint8_t             m_numTextures; ///
+	uint64_t            m_state;       ///
+	Texture             m_textures[4]; ///
+	uint16_t            m_viewId;      ///
 };
 
 class Mesh : public Object3d
 {
 public:
-	std::vector<uBody>        bodies   = {};      // one physical body per group
-	std::shared_ptr<Geometry> geometry = nullptr; //
-	std::vector<Group>        groups   = {};      // groups of vertices
-	bgfx::VertexLayout        layout   = {};      //
-	std::shared_ptr<Material> material = nullptr; //
-	bgfx::ProgramHandle       program  = {};      //
+	std::vector<uBody>        bodies   = {};      ///< one physical body per group
+	std::shared_ptr<Geometry> geometry = nullptr; ///
+	std::vector<Group>        groups   = {};      ///< groups of vertices
+	bgfx::VertexLayout        layout   = {};      ///
+	std::shared_ptr<Material> material = nullptr; ///
+	bgfx::ProgramHandle       program  = {};      ///
 
 	Mesh()
 	{
@@ -88,6 +88,7 @@ public:
 
 	~Mesh() { Destroy(); }
 
+	void CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, const btVector4& dims);
 	void Destroy();
 	void Load(bx::ReaderSeekerI* reader, bool ramcopy);
 	void Render(uint8_t viewId) override;

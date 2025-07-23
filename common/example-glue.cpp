@@ -4,6 +4,7 @@
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
+#include "stdafx.h"
 #include "imgui/imgui.h"
 #include "entry/entry.h"
 #include "entry/cmd.h"
@@ -63,7 +64,7 @@ struct SampleData
 
 static SampleData s_frameTime;
 
-static bool bar(float _width, float _maxWidth, float _height, const ImVec4& _color)
+static bool bar(std::string_view _name, int _id, float _width, float _maxWidth, float _height, const ImVec4& _color)
 {
 	const ImGuiStyle& style = ImGui::GetStyle();
 
@@ -78,11 +79,11 @@ static bool bar(float _width, float _maxWidth, float _height, const ImVec4& _col
 
 	bool itemHovered = false;
 
-	ImGui::Button("##", ImVec2(_width, _height));
+	ImGui::Button(fmt::format("##_{}_1_{}", _name, _id).c_str(), ImVec2(_width, _height));
 	itemHovered |= ImGui::IsItemHovered();
 
 	ImGui::SameLine();
-	ImGui::InvisibleButton("##", ImVec2(bx::max(1.0f, _maxWidth - _width), _height));
+	ImGui::InvisibleButton(fmt::format("##_{}_2_{}", _name, _id).c_str(), ImVec2(bx::max(1.0f, _maxWidth - _width), _height));
 	itemHovered |= ImGui::IsItemHovered();
 
 	ImGui::PopStyleVar(2);
@@ -103,7 +104,7 @@ static void resourceBar(const char* _name, const char* _tooltip, uint32_t _num, 
 
 	const float percentage = float(_num) / float(_max);
 
-	itemHovered |= bar(bx::max(1.0f, percentage * _maxWidth), _maxWidth, _height, s_resourceColor);
+	itemHovered |= bar(_name, 0, bx::max(1.0f, percentage * _maxWidth), _maxWidth, _height, s_resourceColor);
 	ImGui::SameLine();
 
 	ImGui::Text("%5.2f%%", percentage * 100.0f);
@@ -339,7 +340,7 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 									const float cpuMs    = float((encoderStats.cpuTimeEnd - encoderStats.cpuTimeBegin) * toCpuMs);
 									const float cpuWidth = bx::clamp(cpuMs * scale, 1.0f, maxWidth);
 
-									if (bar(cpuWidth, maxWidth, itemHeight, cpuColor))
+									if (bar("encoder", pos, cpuWidth, maxWidth, itemHeight, cpuColor))
 										ImGui::SetTooltip("Encoder %d, CPU: %f [ms]", pos, cpuMs);
 								}
 							}
@@ -370,11 +371,11 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 
 									ImGui::SameLine(64.0f);
 
-									if (bar(cpuWidth, maxWidth, itemHeight, cpuColor))
+									if (bar("viewCpu", pos, cpuWidth, maxWidth, itemHeight, cpuColor))
 										ImGui::SetTooltip("View %d \"%s\", CPU: %f [ms]", pos, viewStats.name, cpuTimeElapsed);
 
 									ImGui::SameLine();
-									if (bar(gpuWidth, maxWidth, itemHeight, gpuColor))
+									if (bar("viewGpu", pos, gpuWidth, maxWidth, itemHeight, gpuColor))
 										ImGui::SetTooltip("View: %d \"%s\", GPU: %f [ms]", pos, viewStats.name, gpuTimeElapsed);
 								}
 							}

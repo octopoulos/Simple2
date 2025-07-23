@@ -232,6 +232,7 @@ target_include_directories(Simple PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dear-imgui"
 	"${CMAKE_CURRENT_SOURCE_DIR}/app"
 	"${CMAKE_CURRENT_SOURCE_DIR}/common"
+	"${CPP_3RDPARTY}"
 	"${CPP_3RDPARTY}/bgfx/3rdparty"
 	"${CPP_3RDPARTY}/bgfx/3rdparty/directx-headers/include/directx"
 	"${CPP_3RDPARTY}/bgfx/3rdparty/khronos"

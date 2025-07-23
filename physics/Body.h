@@ -1,6 +1,6 @@
 // Body.h
 // @author octopoulos
-// @version 2025-07-18
+// @version 2025-07-19
 
 #pragma once
 
@@ -23,6 +23,8 @@ enum ShapeTypes_
 	ShapeType_TriangleMesh = 12, ///< btBvhTriangleMeshShape
 };
 
+class Mesh;
+
 class Body
 {
 public:
@@ -44,7 +46,7 @@ public:
 	~Body() { Destroy(); }
 
 	void CreateBody(float _mass, const btVector3& pos, const btQuaternion& quat);
-	void CreateShape(int shapeType, const btVector4& dims, std::vector<btVector3>* vertices = nullptr, std::vector<int>* indices = nullptr);
+	void CreateShape(int shapeType, const btVector4& dims, Mesh* mesh = nullptr);
 	void Destroy();
 	void DestroyBody();
 	void DestroyShape();
