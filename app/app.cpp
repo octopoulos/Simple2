@@ -295,6 +295,15 @@ void App::SynchronizeEvents(uint32_t _screenX, uint32_t _screenY, entry::MouseSt
 
 class EntryApp : public entry::AppI
 {
+private:
+	uint32_t m_debug  = 0;
+	uint32_t m_height = 800;
+	uint32_t m_reset  = 0;
+	uint32_t m_width  = 1328;
+
+	std::unique_ptr<App> app;
+	entry::MouseState    m_mouseState = {};
+
 public:
 	EntryApp(const char* _name, const char* _description, const char* _url)
 	    : entry::AppI(_name, _description, _url)
@@ -305,46 +314,55 @@ public:
 	{
 		Args args(_argc, _argv);
 
-		m_width  = _width;
-		m_height = _height;
-		m_debug  = 0
-		    | BGFX_DEBUG_PROFILER
-			| BGFX_DEBUG_TEXT
-			;
-		m_reset  = 0
-		    //| BGFX_RESET_HDR10
-		    | BGFX_RESET_MSAA_X8
-		    | BGFX_RESET_VSYNC
-			;
+		// 1) bgfx
+		{
+			m_width  = _width;
+			m_height = _height;
+			m_debug  = 0
+			    | BGFX_DEBUG_PROFILER
+			    | BGFX_DEBUG_TEXT;
+			m_reset = 0
+			    //| BGFX_RESET_HDR10
+			    | BGFX_RESET_MSAA_X8
+			    | BGFX_RESET_VSYNC;
 
-		bgfx::Init init;
-		init.type              = args.m_type;
-		init.vendorId          = args.m_pciId;
-		init.platformData.nwh  = entry::getNativeWindowHandle(entry::kDefaultWindowHandle);
-		init.platformData.ndt  = entry::getNativeDisplayHandle();
-		init.platformData.type = entry::getNativeWindowHandleType();
-		init.resolution.width  = m_width;
-		init.resolution.height = m_height;
-		init.resolution.reset  = m_reset;
-		bgfx::init(init);
+			bgfx::Init init;
+			init.type              = args.m_type;
+			init.vendorId          = args.m_pciId;
+			init.platformData.nwh  = entry::getNativeWindowHandle(entry::kDefaultWindowHandle);
+			init.platformData.ndt  = entry::getNativeDisplayHandle();
+			init.platformData.type = entry::getNativeWindowHandleType();
+			init.resolution.width  = m_width;
+			init.resolution.height = m_height;
+			init.resolution.reset  = m_reset;
+			bgfx::init(init);
 
-		bgfx::setDebug(m_debug);
+			bgfx::setDebug(m_debug);
 
-		// set view 0 clear state
-		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
+			// set view 0 clear state
+			bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
+		}
 
+		// 2) imGui
 		imguiCreate();
 
-		app = std::make_unique<App>();
-		app->Initialize();
+		// 3) app
+		{
+			app = std::make_unique<App>();
+			app->Initialize();
+		}
 	}
 
 	virtual int shutdown() override
 	{
+		// Reversed order:
+		// 3) app
 		app.reset();
 
+		// 2) imGui
 		imguiDestroy();
 
+		// 1) bgfx
 		bgfx::shutdown();
 		return 0;
 	}
@@ -378,15 +396,6 @@ public:
 		bgfx::frame();
 		return true;
 	}
-
-	entry::MouseState m_mouseState = {};
-
-	uint32_t m_width  = 1328;
-	uint32_t m_height = 800;
-	uint32_t m_debug  = 0;
-	uint32_t m_reset  = 0;
-
-	std::unique_ptr<App> app;
 };
 
 ENTRY_IMPLEMENT_MAIN(EntryApp, "App", "Simple App", "https://shark-it.be");

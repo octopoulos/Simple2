@@ -5,9 +5,6 @@
 #include "stdafx.h"
 #include "ModelLoader.h"
 
-/**
- * Loads mesh from file, creates Object3D with that mesh, and returns it
- */
 sMesh ModelLoader::LoadModel(std::string_view name, bool ramcopy)
 {
 	std::filesystem::path path = "runtime/models";

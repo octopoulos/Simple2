@@ -45,9 +45,16 @@ private:
 	/// Insert an object into the map
 	void AddObject(const std::string& name);
 
+	/// UI for the map maker
 	void MapUi();
+
+	/// Open a map file
 	bool OpenMap(const std::filesystem::path& filename);
+
+	/// Save a map file
 	bool SaveMap(const std::filesystem::path& filename);
+
+	/// Scan models in the given folder and its subfolders
 	void ScanModels(const std::filesystem::path& folder, const std::filesystem::path& folderPrev, int depth = 0, const std::string& relative = "");
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,6 +77,7 @@ private:
 	int64_t lastUs    = 0;    ///< microseconds
 	int64_t startTime = 0;    ///< initial time
 
+	/// Create scene and physics
 	int InitScene();
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -83,11 +91,17 @@ private:
 	int64_t      now           = 0;     ///< current timestamp in us
 	bool         showImGuiDemo = false; ///< show ImGui demo window
 
+	/// Handle file dialogs
 	void FilesUi();
+
+	/// Open an ImGuiFileDialog
 	void OpenFile(int action);
+
+	/// Show the menu bar
 	void ShowMainMenu(float alpha);
 
 public:
+	/// Show all custom UI elements
 	void MainUi();
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,6 +120,9 @@ private:
 	bool              useGlm      = false; ///
 
 public:
+	/// Render everything except UI
 	void Render();
+
+	/// Synchronization with entry
 	void SynchronizeEvents(uint32_t _screenX, uint32_t _screenY, entry::MouseState& _mouseState);
 };

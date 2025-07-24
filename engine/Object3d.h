@@ -34,11 +34,24 @@ public:
 	Object3d()          = default;
 	virtual ~Object3d() = default;
 
+	/// Add a child to the object
 	virtual void AddChild(sObject3d child);
+
+	/// Remove a child from the object
 	virtual void RemoveChild(const sObject3d& child);
+
+	/// Render the object
 	virtual void Render(uint8_t viewId);
-	void         ScaleRotationPosition(const glm::vec3& _scale, const glm::vec3& _rotation, const glm::vec3& _position);
-	void         ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat& _quaternion, const glm::vec3& _position);
-	void         TraverseAndRender(uint8_t viewId);
-	void         UpdateMatrix();
+
+	/// Apply scale then rotation then translation
+	void ScaleRotationPosition(const glm::vec3& _scale, const glm::vec3& _rotation, const glm::vec3& _position);
+
+	/// Apply scale then quaternion then translation
+	void ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat& _quaternion, const glm::vec3& _position);
+
+	/// Render the object + recursively for all children
+	void TraverseAndRender(uint8_t viewId);
+
+	/// Calculate world matrix + recursively for all children
+	void UpdateMatrix();
 };

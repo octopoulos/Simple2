@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-07-18
+// @version 2025-07-19
 
 #include "stdafx.h"
 #include "app.h"
@@ -13,10 +13,7 @@
 #	include "ImGuiFileDialog/ImGuiFileDialog.h"
 #endif // WITH_FILE_DIALOG
 
-/**
- * Handle file dialogs
- * https://github.com/octopoulos/ImGuiFileDialog/blob/master/Documentation.md
- */
+/// https://github.com/octopoulos/ImGuiFileDialog/blob/master/Documentation.md
 void App::FilesUi()
 {
 #ifdef WITH_FILE_DIALOG
@@ -33,9 +30,6 @@ void App::FilesUi()
 #endif
 }
 
-/**
- * Create additional UI elements
- */
 void App::MainUi()
 {
 	MapUi();
@@ -45,9 +39,6 @@ void App::MainUi()
 	if (showImGuiDemo) ImGui::ShowDemoWindow(&showImGuiDemo);
 }
 
-/**
- * Open an ImGuiFileDialog
- */
 void App::OpenFile(int action)
 {
 	static const UMAP_INT_STR titles = {
@@ -67,9 +58,6 @@ void App::OpenFile(int action)
 #endif // WITH_FILE_DIALOG
 }
 
-/**
- * Show the menu bar
- */
 void App::ShowMainMenu(float alpha)
 {
 	// if (!SetAlpha(alpha))

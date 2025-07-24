@@ -88,11 +88,23 @@ public:
 
 	~Mesh() { Destroy(); }
 
+	/// Utility to create a shape then a body
 	void CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, const btVector4& dims);
+
+	/// Delete all groups including indices + vertices
 	void Destroy();
+
+	/// Load a mesh
+	/// @param ramcopy: populate indices and vertices in groups
 	void Load(bx::ReaderSeekerI* reader, bool ramcopy);
+
+	/// Render the mesh, if geometry & material program exist, or if program is set
 	void Render(uint8_t viewId) override;
+
+	/// Submit for render pass
 	void Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, uint64_t state) const;
+
+	/// Submit for multi passes
 	void Submit(const MeshState* const* state, uint8_t numPasses, const float* mtx, uint16_t numMatrices) const;
 };
 

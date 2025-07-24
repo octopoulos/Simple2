@@ -1,6 +1,6 @@
 // TextureManager.h
 // @author octopoulos
-// @version 2025-07-05
+// @version 2025-07-19
 
 #pragma once
 
@@ -15,7 +15,6 @@ public:
 	TextureManager() = default;
 	~TextureManager() { Destroy(); }
 
-	/// Release all loaded shaders and programs
 	void Destroy();
 
 	/// Load or retrieve a texture by name

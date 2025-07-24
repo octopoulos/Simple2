@@ -1,6 +1,6 @@
 // ShaderManager.cpp
 // @author octopoulos
-// @version 2025-07-14
+// @version 2025-07-19
 
 #include "stdafx.h"
 #include "ShaderManager.h"
@@ -64,9 +64,6 @@ static bgfx::ProgramHandle LoadProgram_(std::string_view vsName, std::string_vie
 // MAIN
 ///////
 
-/**
- * Release all loaded shaders and programs
- */
 void ShaderManager::Destroy()
 {
 	for (auto& [name, program] : programs)
@@ -78,11 +75,6 @@ void ShaderManager::Destroy()
 	shaders.clear();
 }
 
-/**
- * Retrieve a loaded program by key
- * @param name "vsName|fsName"
- * @returns valid program handle or BGFX_INVALID_HANDLE
- */
 bgfx::ProgramHandle ShaderManager::GetProgram(std::string_view name) const
 {
 	if (const auto& it = programs.find(std::string(name)); it != programs.end())
@@ -91,11 +83,6 @@ bgfx::ProgramHandle ShaderManager::GetProgram(std::string_view name) const
 		return BGFX_INVALID_HANDLE;
 }
 
-/**
- * Load or retrieve a program composed of vertex + fragment shaders
- * + caches program internally
- * @returns valid program handle or BGFX_INVALID_HANDLE
- */
 bgfx::ProgramHandle ShaderManager::LoadProgram(std::string_view vsName, std::string_view fsName)
 {
 	std::string key = fmt::format("{}|{}", vsName, fsName);
@@ -121,11 +108,6 @@ bgfx::ProgramHandle ShaderManager::LoadProgram(std::string_view vsName, std::str
 	return program;
 }
 
-/**
- * Load or retrieve a shader by name
- * + caches shader internally
- * @returns valid shader handle or BGFX_INVALID_HANDLE.
- */
 bgfx::ShaderHandle ShaderManager::LoadShader(std::string_view name)
 {
 	if (const auto& it = shaders.find(std::string(name)); it != shaders.end())

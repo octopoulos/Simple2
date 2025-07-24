@@ -55,6 +55,7 @@ public:
 	PhysicsWorld();
 	~PhysicsWorld();
 
+	/// Draw physical shapes used by bullet3
 	void DrawDebug();
 
 	/// Run a simulation with a delta time step

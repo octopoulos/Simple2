@@ -45,10 +45,19 @@ public:
 
 	~Body() { Destroy(); }
 
+	/// Create a body after a shape has been created
 	void CreateBody(float _mass, const btVector3& pos, const btQuaternion& quat);
+
+	/// Create a collision shape, before the body
 	void CreateShape(int shapeType, const btVector4& dims, Mesh* mesh = nullptr);
+
+	/// Destroy shape then body
 	void Destroy();
+
+	/// Destroy body + resets the pointer
 	void DestroyBody();
+
+	/// Destroy shape + resets the pointer
 	void DestroyShape();
 };
 

@@ -98,9 +98,6 @@ void PhysicsWorld::DrawDebug()
 	world->debugDrawWorld();
 }
 
-/**
- * Run a simulation with a delta time step
- */
 void PhysicsWorld::StepSimulation(float delta)
 {
 	if (world) world->stepSimulation(delta, maxSimulationSteps, 1.0f / 120.0f);
