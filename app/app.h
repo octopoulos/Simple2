@@ -1,9 +1,10 @@
 // app.h
 // @author octopoulos
-// @version 2025-07-19
+// @version 2025-07-20
 
 #pragma once
 
+#include "engine/Mesh.h"
 #include "engine/ShaderManager.h"
 #include "engine/TextureManager.h"
 #include "physics/PhysicsWorld.h"

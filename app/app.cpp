@@ -1,6 +1,6 @@
 // app.cpp
 // @author octopoulos
-// @version 2025-07-19
+// @version 2025-07-20
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -113,11 +113,11 @@ int App::InitScene()
 			cubeMesh->material = std::make_shared<Material>(program);
 
 			cubeMesh->ScaleRotationPosition(
-			    { 5.5f, 0.5f, 5.5f },
+			    { 8.0f, 0.5f, 8.0f },
 			    { 0.0f, 0.0f, 0.0f },
 			    { 0.0f, -2.0f, 0.0f }
 			);
-			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f, { 5.5f, 0.5f, 5.5f, 0.0f });
+			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f, { 8.0f, 0.5f, 8.0f, 0.0f });
 
 			scene->AddNamedChild(std::move(cubeMesh), "floor");
 		}
@@ -135,7 +135,7 @@ int App::InitScene()
 		    { -0.3f, 2.5f, 0.0f },
 		    { 0.0f, 1.0f, 0.0f }
 		);
-		object->CreateShapeBody(physics.get(), ShapeType_ConvexHull, 3.0f, { 1.0f, 0.5f, 1.0f, 0.0f });
+		object->CreateShapeBody(physics.get(), ShapeType_ConvexHull, 3.0f);
 		scene->AddNamedChild(object, "car");
 	}
 	if (auto object = loader.LoadModel("building-n", true))
@@ -146,10 +146,10 @@ int App::InitScene()
 		    { 0.0f, 1.5f, 0.0f },
 		    { 3.0f, -1.5f, -2.5f }
 		);
-		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh, 0.0f, { 1.0f, 2.1f, 1.0f, 0.0f });
+		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh, 0.0f);
 		scene->AddNamedChild(object, "building");
 	}
-	if (auto object = loader.LoadModel("bunny", true))
+	if (auto object = loader.LoadModel("bunny_decimated", true))
 	{
 		object->program = shaderManager.LoadProgram("vs_mesh", "fs_mesh");
 		object->ScaleRotationPosition(
@@ -157,7 +157,7 @@ int App::InitScene()
 		    { 0.0f, 1.5f, 0.0f },
 		    { -3.0f, 5.0f, 0.0f }
 		);
-		object->CreateShapeBody(physics.get(), ShapeType_ConvexHull, 3.0f, { 1.0f, 1.0f, 1.0f, 0.0f });
+		object->CreateShapeBody(physics.get(), ShapeType_Cylinder, 3.0f);
 		scene->AddNamedChild(object, "bunny");
 	}
 	if (auto object = loader.LoadModel("donut"))
@@ -168,24 +168,23 @@ int App::InitScene()
 		    { 0.0f, 3.0f, 0.0f },
 		    { 0.0f, 1.0f, -2.0f }
 		);
-		object->CreateShapeBody(physics.get(), ShapeType_Cylinder, 1.0f, { 0.45f, 0.2f, 0.0f, 0.0f });
+		object->CreateShapeBody(physics.get(), ShapeType_Box, 1.0f);
 		scene->AddNamedChild(object, "donut");
 	}
 
-	for (int i = 0; i < 30; ++i)
+	for (int i = 0; i < 300; ++i)
 	{
 		if (auto object = loader.LoadModel("donut3"))
 		{
-			object->program     = shaderManager.LoadProgram("vs_model", "fs_model");
-			object->scale       = { 0.5f, 0.5f, 0.5f };
-			object->scaleMatrix = glm::scale(glm::mat4(1.0f), object->scale);
+			float radius = 5.0f;
 
+			object->program = shaderManager.LoadProgram("vs_model", "fs_model");
 			object->ScaleRotationPosition(
 			    { 0.5f, 0.5f, 0.5f },
 			    { sinf(i * 0.3f), 3.0f, 0.0f },
-			    { i * 0.4f - 6.0f, sinf(i * 0.5f) + 6.0f, -2.5f + MerseneFloat() }
+			    { cosf(i * 0.4f) * radius, 6.0f + i * 0.5f, sinf(i * 0.4f) * radius }
 			);
-			object->CreateShapeBody(physics.get(), ShapeType_Cylinder, 1.0f, { 0.31f, 0.11f, 0.3f, 0.0f });
+			object->CreateShapeBody(physics.get(), ShapeType_Cylinder, 1.0f);
 
 			scene->AddNamedChild(object, fmt::format("donut3-{}", i));
 		}

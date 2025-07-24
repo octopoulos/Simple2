@@ -1,6 +1,6 @@
 // Body.h
 // @author octopoulos
-// @version 2025-07-19
+// @version 2025-07-20
 
 #pragma once
 
@@ -10,17 +10,18 @@ enum ShapeTypes_
 {
 	ShapeType_None         = 0,  ///< btEmptyShape
 	ShapeType_Box          = 1,  ///< btBox2dShape
-	ShapeType_Box2d        = 2,  ///< btBox2dShape
-	ShapeType_Capsule      = 3,  ///< btCapsuleShape
-	ShapeType_Compound     = 4,  ///< btCompoundShape
-	ShapeType_Cone         = 5,  ///< btConeShape
-	ShapeType_Convex2d     = 6,  ///< btConvex2dShape
-	ShapeType_ConvexHull   = 7,  ///< btConvexHullShape
-	ShapeType_Cylinder     = 8,  ///< btCylinderShape
-	ShapeType_Plane        = 9,  ///< btStaticPlaneShape
-	ShapeType_Sphere       = 10, ///< btSphereShape
-	ShapeType_Terrain      = 11, ///< btHeightfieldTerrainShape
-	ShapeType_TriangleMesh = 12, ///< btBvhTriangleMeshShape
+	ShapeType_Box2d        = 2,  ///< btBox2dShape (default: AABB)
+	ShapeType_BoxObb       = 3,  ///< btBox2dShape (OBB)
+	ShapeType_Capsule      = 4,  ///< btCapsuleShape
+	ShapeType_Compound     = 5,  ///< btCompoundShape
+	ShapeType_Cone         = 6,  ///< btConeShape
+	ShapeType_Convex2d     = 7,  ///< btConvex2dShape
+	ShapeType_ConvexHull   = 8,  ///< btConvexHullShape
+	ShapeType_Cylinder     = 9,  ///< btCylinderShape
+	ShapeType_Plane        = 10, ///< btStaticPlaneShape
+	ShapeType_Sphere       = 11, ///< btSphereShape (default bounding)
+	ShapeType_Terrain      = 12, ///< btHeightfieldTerrainShape
+	ShapeType_TriangleMesh = 13, ///< btBvhTriangleMeshShape
 };
 
 class Mesh;
@@ -33,8 +34,8 @@ public:
 	btCollisionShape*        shape   = nullptr; ///< shape
 	btDiscreteDynamicsWorld* world   = nullptr; ///< physical world
 
-	btVector3 inertia = { 0.0f, 0.0f, 0.0f };
-	float     mass    = 0.0f;
+	btVector3 inertia = { 0.0f, 0.0f, 0.0f }; ///
+	float     mass    = 0.0f;                 ///
 
 public:
 	Body(PhysicsWorld* physics)
@@ -49,7 +50,7 @@ public:
 	void CreateBody(float _mass, const btVector3& pos, const btQuaternion& quat);
 
 	/// Create a collision shape, before the body
-	void CreateShape(int shapeType, const btVector4& dims, Mesh* mesh = nullptr);
+	void CreateShape(int type, Mesh* mesh = nullptr, const btVector4& dims = {});
 
 	/// Destroy shape then body
 	void Destroy();
