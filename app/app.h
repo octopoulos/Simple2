@@ -114,20 +114,18 @@ public:
 	/////////
 
 private:
-	bool              hasFocus      = true;  ///
-	uint32_t          isDebug       = 0;     ///
-	uint32_t          isReset       = 0;     ///
-	int               mouseScroll   = 0;     ///< mouse wheel
-	entry::MouseState mouseState    = {};    ///
-	bool              isPerspective = true;  ///< perspective or orthogonal
-	bool              quit          = false; ///< exit the mainloop
-	uint32_t          screenX       = 1328;  ///
-	uint32_t          screenY       = 800;   ///
+	bool     hasFocus      = true;  ///
+	uint32_t isDebug       = 0;     ///
+	uint32_t isReset       = 0;     ///
+	bool     isPerspective = true;  ///< perspective or orthogonal
+	bool     quit          = false; ///< exit the mainloop
+	uint32_t screenX       = 1328;  ///
+	uint32_t screenY       = 800;   ///
 
 public:
 	/// Render everything except UI
 	void Render();
 
 	/// Synchronization with entry
-	void SynchronizeEvents(uint32_t _screenX, uint32_t _screenY, entry::MouseState& _mouseState);
+	void SynchronizeEvents(uint32_t _screenX, uint32_t _screenY);
 };

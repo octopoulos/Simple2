@@ -129,10 +129,10 @@ int App::InitScene()
 			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_base", "fs_base"));
 
 			cubeMesh->ScaleRotationPosition(
-			    { 100.0f, 0.1f, 100.0f },
+			    { 40.0f, 1.0f, 40.0f },
 			    { 0.0f, 0.0f, 0.0f },
 			    { 0.0f, -10.0f, 0.0f });
-			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Plane, 0.0f, { 0.0f, 1.0f, 0.0f, 0.1f });
+			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f, { 40.0f, 1.0f, 40.0f, 0.1f });
 
 			scene->AddNamedChild(std::move(cubeMesh), "base");
 		}
@@ -190,7 +190,7 @@ int App::InitScene()
 	// donuts
 	if (auto parent = loader.LoadModel("donut3"))
 	{
-		parent->type |= ObjectType_Group;
+		//parent->type |= ObjectType_Group;
 		parent->type |= ObjectType_Group | ObjectType_Instance;
 		parent->program = shaderManager.LoadProgram("vs_instancing", "fs_instancing");
 		scene->AddNamedChild(parent, "donut3-group");
@@ -244,8 +244,6 @@ void App::Render()
 	{
 		curTime   = TO_FLOAT((bx::getHPCounter() - startTime) / TO_DOUBLE(bx::getHPFrequency()));
 		deltaTime = curTime - lastTime;
-
-		cameraUpdate(deltaTime, mouseState, ImGui::MouseOverArea());
 	}
 
 	// 2) controls
@@ -293,11 +291,14 @@ void App::Render()
 	scene->RenderScene(0, screenX, screenY);
 }
 
-void App::SynchronizeEvents(uint32_t _screenX, uint32_t _screenY, entry::MouseState& _mouseState)
+void App::SynchronizeEvents(uint32_t _screenX, uint32_t _screenY)
 {
-	screenX = _screenX;
-	screenY = _screenY;
-	std::memcpy(&mouseState, &_mouseState, sizeof(entry::MouseState));
+	if (screenX != _screenX || screenY != _screenY)
+	{
+		ui::Log("Resize {}x{} => {}x{}", screenX, screenY, _screenX, _screenY);
+		screenX = _screenX;
+		screenY = _screenY;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -384,8 +385,7 @@ public:
 		{
 			if (entry::processEvents(m_width, m_height, m_debug, m_reset, &m_mouseState)) return false;
 
-			// TODO: remove
-			app->SynchronizeEvents(m_width, m_height, m_mouseState);
+			app->SynchronizeEvents(m_width, m_height);
 		}
 
 		// 2) imGui

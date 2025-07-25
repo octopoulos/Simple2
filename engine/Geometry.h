@@ -1,6 +1,6 @@
 // Geometry.h
 // @author octopoulos
-// @version 2025-07-17
+// @version 2025-07-21
 
 #pragma once
 
@@ -19,7 +19,7 @@ public:
 	}
 	~Geometry()
 	{
-		if (bgfx::isValid(ibh)) bgfx::destroy(ibh);
-		if (bgfx::isValid(vbh)) bgfx::destroy(vbh);
+		//if (bgfx::isValid(ibh)) bgfx::destroy(ibh);
+		//if (bgfx::isValid(vbh)) bgfx::destroy(vbh);
 	}
 };

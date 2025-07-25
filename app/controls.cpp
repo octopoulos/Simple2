@@ -4,7 +4,9 @@
 
 #include "stdafx.h"
 #include "app.h"
+#include "common/camera.h"
 #include "entry/input.h"
+#include "imgui/imgui.h"
 
 void App::Controls()
 {
@@ -26,6 +28,17 @@ void App::Controls()
 		if (news[Key::F5] & KeyNew_Down)
 			isPerspective = !isPerspective;
 	}
+
+	MouseState mouseState;
+	mouseState.m_buttons[0] = ginput.buttons[0];
+	mouseState.m_buttons[1] = ginput.buttons[1];
+	mouseState.m_buttons[2] = ginput.buttons[2];
+	mouseState.m_buttons[3] = ginput.buttons[3];
+	mouseState.m_mx         = ginput.mouseAbs[0];
+	mouseState.m_my         = ginput.mouseAbs[1];
+	mouseState.m_mz         = ginput.mouseAbs[2];
+
+	cameraUpdate(deltaTime, mouseState, ImGui::MouseOverArea());
 
 	GetGlobalInput().ResetNews();
 }
