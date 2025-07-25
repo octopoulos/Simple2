@@ -1,17 +1,20 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-07-19
+// @version 2025-07-21
 
 #pragma once
 
 class Object3d;
 using sObject3d = std::shared_ptr<Object3d>;
 
+/// An object can have multiple types (like a flag)
 enum ObjectTypes_
 {
-	ObjectType_Basic  = 0, ///< basic object
-	ObjectType_Camera = 1, ///< camera object
-	ObjectType_Mesh   = 2, ///< mesh
+	ObjectType_Basic    = 1 << 0, ///< basic object
+	ObjectType_Camera   = 1 << 1, ///< camera object
+	ObjectType_Group    = 1 << 2, ///< group (no render)
+	ObjectType_Instance = 1 << 3, ///< instance
+	ObjectType_Mesh     = 1 << 4, ///< mesh
 };
 
 class Object3d
@@ -54,4 +57,7 @@ public:
 
 	/// Calculate world matrix + recursively for all children
 	void UpdateMatrix();
+
+	/// Update physics transform
+	virtual void UpdatePhysics();
 };

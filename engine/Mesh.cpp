@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-07-20
+// @version 2025-07-21
 
 #include "stdafx.h"
 #include "Mesh.h"
@@ -60,7 +60,7 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 
 			read(reader, layout, &err);
 
-			uint16_t stride = layout.getStride();
+			const uint16_t stride = layout.getStride();
 
 			read(reader, group.m_numVertices, &err);
 			const bgfx::Memory* mem = bgfx::alloc(group.m_numVertices * stride);
@@ -84,7 +84,7 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 
 			read(reader, layout, &err);
 
-			uint16_t stride = layout.getStride();
+			const uint16_t stride = layout.getStride();
 
 			read(reader, group.m_numVertices, &err);
 
@@ -200,7 +200,81 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 
 void Mesh::Render(uint8_t viewId)
 {
-	if (geometry && material)
+	//if (type & ObjectType_Instance) return;
+	//ui::Log("Render: {} {}", type, name);
+
+	if (type & ObjectType_Group)
+	{
+		if (const uint32_t numChild = TO_UINT32(children.size()))
+		{
+			if (type & ObjectType_Instance)
+			{
+				// 64 bytes for 4x4 matrix
+				const uint16_t stride = 64 + 16;
+
+				// figure out how big of a buffer is available
+				const uint32_t drawnChild = bgfx::getAvailInstanceDataBuffer(numChild, stride);
+				const auto     missing    = numChild - drawnChild;
+				//ui::Log("numChild={} missing={} layout={}", numChild, missing, layout.getStride());
+
+				bgfx::InstanceDataBuffer idb;
+				bgfx::allocInstanceDataBuffer(&idb, drawnChild, stride);
+
+				// collect instance data
+				if (uint8_t* data = idb.data)
+				{
+					for (const auto& child : children)
+					{
+						float* mtx = (float*)data;
+						std::memcpy(mtx, glm::value_ptr(child->transform), 64);
+
+						float* color = (float*)&data[64];
+						{
+							color[0] = 1.0f;
+							color[1] = 1.0f;
+							color[2] = 1.0f;
+							color[3] = 1.0f;
+						}
+
+						data += stride;
+					}
+				}
+				else ui::LogError("allocInstanceDataBuffer");
+
+				// render
+				if (geometry && material)
+				{
+					bgfx::setVertexBuffer(0, geometry->vbh);
+					bgfx::setIndexBuffer(geometry->ibh);
+					bgfx::setInstanceDataBuffer(&idb);
+
+					bgfx::setState(BGFX_STATE_DEFAULT);
+					bgfx::submit(viewId, material->program);
+				}
+				else if (bgfx::isValid(program))
+				{
+					for (const auto& group : groups)
+					{
+						bgfx::setIndexBuffer(group.m_ibh);
+						bgfx::setVertexBuffer(0, group.m_vbh);
+						bgfx::setInstanceDataBuffer(&idb);
+
+						bgfx::setState(BGFX_STATE_DEFAULT);
+						bgfx::submit(0, program);
+						//ui::Log("SUBMIT: {}", id);
+						//break;
+					}
+				}
+			}
+			else
+			{
+				ui::Log("Render children!");
+				for (const auto& child : children)
+					child->Render(viewId);
+			}
+		}
+	}
+	else if (geometry && material)
 	{
 		bgfx::setTransform(glm::value_ptr(transform));
 		bgfx::setVertexBuffer(0, geometry->vbh);
@@ -264,6 +338,29 @@ void Mesh::Submit(const MeshState* const* _state, uint8_t numPasses, const float
 	}
 
 	bgfx::discard();
+}
+
+void Mesh::UpdatePhysics()
+{
+	if (type & ObjectType_Group)
+	{
+		for (auto& child : children)
+			child->UpdatePhysics();
+	}
+	else if (bodies.size())
+	{
+		const auto& body = bodies[0];
+		if (body->mass >= 0.0f)
+		{
+			btTransform bTransform;
+			auto        motionState = body->body->getMotionState();
+			motionState->getWorldTransform(bTransform);
+
+			float matrix[16];
+			bTransform.getOpenGLMatrix(matrix);
+			transform = glm::make_mat4(matrix) * scaleMatrix;
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-07-19
+// @version 2025-07-21
 
 #include "stdafx.h"
 #include "Object3d.h"
@@ -52,6 +52,9 @@ void Object3d::ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat&
 
 void Object3d::TraverseAndRender(uint8_t viewId)
 {
+	if (!(type & ObjectType_Group))
+		if (type & ObjectType_Instance) return;
+
 	UpdateMatrix();
 	Render(viewId);
 	for (const auto& child : children)
@@ -67,4 +70,8 @@ void Object3d::UpdateMatrix()
 
 	for (auto& child : children)
 		child->UpdateMatrix();
+}
+
+void Object3d::UpdatePhysics()
+{
 }

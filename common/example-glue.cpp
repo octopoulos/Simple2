@@ -1,10 +1,11 @@
-// @version 2025-07-19
+// @version 2025-07-21
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
 #include "stdafx.h"
+#include "camera.h"
 #include "imgui/imgui.h"
 #include "entry/entry.h"
 #include "entry/cmd.h"
@@ -121,7 +122,7 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 	bx::snprintf(temp, BX_COUNTOF(temp), "Example: %s", _app ? _app->getName() : "NAME");
 
 	ImGui::SetNextWindowPos(ImVec2(10.0f, 50.0f), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(250.0f, 210.0f), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(250.0f, 300.0f), ImGuiCond_FirstUseEver);
 
 	ImGui::Begin(temp);
 
@@ -391,6 +392,15 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 			}
 		}
 		ImGui::End();
+	}
+
+	// camera info
+	if (1)
+	{
+		const auto at  = cameraGetAt();
+		const auto pos = cameraGetPosition();
+		ImGui::Text("Camera at : %.2f %.2f %.2f", at.x, at.y, at.z);
+		ImGui::Text("Camera pos: %.2f %.2f %.2f", pos.x, pos.y, pos.z);
 	}
 
 	ImGui::End();

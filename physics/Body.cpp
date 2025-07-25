@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-07-20
+// @version 2025-07-21
 
 #include "stdafx.h"
 #include "Body.h"
@@ -88,9 +88,11 @@ void Body::CreateBody(float _mass, const btVector3& pos, const btQuaternion& qua
 
 	body = new btRigidBody(ci);
 	//ui::Log("friction={} rollingFriction={} spinningFriction={}", body->getFriction(), body->getRollingFriction(), body->getSpinningFriction());
+	body->setDamping(0.25f, 0.1f);
 	body->setFriction(0.4f);
 	body->setRollingFriction(0.015f);
 	body->setSpinningFriction(0.02f);
+	body->setSleepingThresholds(1.2f, 1.5f);
 
 	if (world) world->addRigidBody(body);
 }
@@ -266,7 +268,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 		if (dims.x() != 0.0f || dims.y() != 0.0f || dims.z() != 0.0f)
 		{
 			shape = new btStaticPlaneShape(dims, dims.w());
-			shape->setLocalScaling(dims);
+			//shape->setLocalScaling(dims);
 			shape->setMargin(0.01f);
 		}
 		else ui::LogError("CreateShape/ShapeType_Plane: invalid dims");

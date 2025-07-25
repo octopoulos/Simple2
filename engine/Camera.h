@@ -1,8 +1,10 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-07-17
+// @version 2025-07-21
 
 #pragma once
+
+#include "Object3d.h"
 
 class Camera2 : public Object3d
 {

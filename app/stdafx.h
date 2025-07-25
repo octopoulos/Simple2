@@ -1,6 +1,6 @@
 // stdafx.h
 // @author octopoulos
-// @version 2025-07-20
+// @version 2025-07-21
 
 #pragma once
 
@@ -37,9 +37,3 @@ using namespace std::literals;
 
 #include "entry/entry.h"
 #include "loader.h"
-
-#include "engine/Geometry.h"
-#include "engine/Material.h"
-#include "engine/Object3d.h"
-#include "engine/Camera.h"
-#include "engine/Scene.h"

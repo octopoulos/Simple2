@@ -1,12 +1,15 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-07-20
+// @version 2025-07-21
 
 #pragma once
 
-#include <bx/bounds.h>
-
+#include "Geometry.h"
+#include "Material.h"
+#include "Object3d.h"
 #include "physics/Body.h"
+
+#include <bx/bounds.h>
 
 struct Primitive
 {
@@ -99,6 +102,7 @@ public:
 	void Load(bx::ReaderSeekerI* reader, bool ramcopy);
 
 	/// Render the mesh, if geometry & material program exist, or if program is set
+	/// - if a group => render the children only
 	void Render(uint8_t viewId) override;
 
 	/// Submit for render pass
@@ -106,6 +110,10 @@ public:
 
 	/// Submit for multi passes
 	void Submit(const MeshState* const* state, uint8_t numPasses, const float* mtx, uint16_t numMatrices) const;
+
+	/// Update physics transform
+	/// - if a group => update the children only
+	void UpdatePhysics();
 };
 
 using sMesh = std::shared_ptr<Mesh>;

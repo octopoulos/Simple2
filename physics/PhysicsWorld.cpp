@@ -1,6 +1,6 @@
 // PhysicsWorld.cpp
 // @author octopoulos
-// @version 2025-07-19
+// @version 2025-07-21
 
 #include "stdafx.h"
 #include "PhysicsWorld.h"
@@ -100,5 +100,6 @@ void PhysicsWorld::DrawDebug()
 
 void PhysicsWorld::StepSimulation(float delta)
 {
-	if (world) world->stepSimulation(delta, maxSimulationSteps, 1.0f / 120.0f);
+	//if (world) world->stepSimulation(delta, maxSimulationSteps, 1.0f / 120.0f);
+	if (world) world->stepSimulation(delta, 5, 1.0f / 120.0f);
 }

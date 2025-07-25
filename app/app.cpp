@@ -1,6 +1,6 @@
 // app.cpp
 // @author octopoulos
-// @version 2025-07-20
+// @version 2025-07-21
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -36,9 +36,9 @@ int App::Initialize()
 	// camera
 	{
 		cameraCreate();
-		cameraSetPosition({ -6.0f, 2.0f, -10.0f });
+		cameraSetPosition({ -11.77f, 6.74f, -15.57f });
 		cameraSetHorizontalAngle(0.7f);
-		cameraSetVerticalAngle(-0.4f);
+		cameraSetVerticalAngle(-0.45f);
 	}
 	return 1;
 }
@@ -57,10 +57,12 @@ int App::InitScene()
 	// cube vertex layout
 	{
 		bgfx::VertexLayout cubeLayout;
+		// clang-format off
 		cubeLayout.begin()
 		    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-		    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
+		    .add(bgfx::Attrib::Color0  , 4, bgfx::AttribType::Uint8, true)
 		    .end();
+		// clang-format on
 
 		struct PosColorVertex
 		{
@@ -85,16 +87,14 @@ int App::InitScene()
 			0, 4, 1, 4, 5, 1, 2, 3, 6, 6, 3, 7
 		};
 
-		vbh     = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), cubeLayout);
-		ibh     = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
-		program = shaderManager.LoadProgram("vs_cube", "fs_cube");
-		if (!bgfx::isValid(program)) THROW_RUNTIME("Shader program creation failed");
+		vbh = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), cubeLayout);
+		ibh = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
 
 		// cube
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
 			cubeMesh->geometry = std::make_shared<Geometry>(vbh, ibh);
-			cubeMesh->material = std::make_shared<Material>(program);
+			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cube", "fs_cube"));
 
 			cubeMesh->ScaleRotationPosition(
 			    { 0.5f, 0.5f, 0.5f },
@@ -110,7 +110,7 @@ int App::InitScene()
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
 			cubeMesh->geometry = std::make_shared<Geometry>(vbh, ibh);
-			cubeMesh->material = std::make_shared<Material>(program);
+			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cube", "fs_cube"));
 
 			cubeMesh->ScaleRotationPosition(
 			    { 8.0f, 0.5f, 8.0f },
@@ -120,6 +120,21 @@ int App::InitScene()
 			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f, { 8.0f, 0.5f, 8.0f, 0.0f });
 
 			scene->AddNamedChild(std::move(cubeMesh), "floor");
+		}
+
+		// base
+		{
+			auto cubeMesh      = std::make_shared<Mesh>();
+			cubeMesh->geometry = std::make_shared<Geometry>(vbh, ibh);
+			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_base", "fs_base"));
+
+			cubeMesh->ScaleRotationPosition(
+			    { 100.0f, 0.1f, 100.0f },
+			    { 0.0f, 0.0f, 0.0f },
+			    { 0.0f, -10.0f, 0.0f });
+			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Plane, 0.0f, { 0.0f, 1.0f, 0.0f, 0.1f });
+
+			scene->AddNamedChild(std::move(cubeMesh), "base");
 		}
 	}
 
@@ -172,21 +187,38 @@ int App::InitScene()
 		scene->AddNamedChild(object, "donut");
 	}
 
-	for (int i = 0; i < 300; ++i)
+	// donuts
+	if (auto parent = loader.LoadModel("donut3"))
 	{
-		if (auto object = loader.LoadModel("donut3"))
+		parent->type |= ObjectType_Group;
+		parent->type |= ObjectType_Group | ObjectType_Instance;
+		parent->program = shaderManager.LoadProgram("vs_instancing", "fs_instancing");
+		scene->AddNamedChild(parent, "donut3-group");
+
+		for (int i = 0; i < 1200; ++i)
 		{
-			float radius = 5.0f;
+			//if (auto object = std::make_shared<Mesh>())
+			if (auto object = loader.LoadModel("donut3"))
+			{
+				object->type |= ObjectType_Instance;
+				
+				const float radius = sinf(i * 0.02f) * 7.0f;
+				const float scale  = MerseneFloat(0.25f, 0.75f);
+				const float scaleY = scale * MerseneFloat(0.7f, 1.5f);
 
-			object->program = shaderManager.LoadProgram("vs_model", "fs_model");
-			object->ScaleRotationPosition(
-			    { 0.5f, 0.5f, 0.5f },
-			    { sinf(i * 0.3f), 3.0f, 0.0f },
-			    { cosf(i * 0.4f) * radius, 6.0f + i * 0.5f, sinf(i * 0.4f) * radius }
-			);
-			object->CreateShapeBody(physics.get(), ShapeType_Cylinder, 1.0f);
+				//object->program = shaderManager.LoadProgram("vs_model", "fs_model");
+				//object->program = shaderManager.LoadProgram("vs_cube", "fs_cube");
+				object->ScaleRotationPosition(
+				    { scale, scaleY, scale },
+				    { sinf(i * 0.3f), 3.0f, 0.0f },
+				    { cosf(i * 0.2f) * radius, 6.0f + i * 0.5f, sinf(i * 0.2f) * radius });
+				// TODO: allow to reuse the parent mesh
+				object->CreateShapeBody(physics.get(), (i & 7) ? ShapeType_Box : ShapeType_Cylinder, 1.0f);
 
-			scene->AddNamedChild(object, fmt::format("donut3-{}", i));
+				object->name = fmt::format("donut3-{}", i);
+				parent->AddChild(object);
+				//scene->AddNamedChild(object, fmt::format("donut3-{}", i));
+			}
 		}
 	}
 
@@ -235,46 +267,9 @@ void App::Render()
 		lastTime = curTime;
 
 		for (auto& child : scene->children)
-		{
-			if (child->type == ObjectType_Mesh)
-			{
-				if (auto mesh = static_cast<Mesh*>(child.get()); mesh->bodies.size())
-				{
-					const auto& body = mesh->bodies[0];
-					if (body->mass >= 0.0f)
-					{
-						btTransform transform;
-						auto        motionState = body->body->getMotionState();
-						motionState->getWorldTransform(transform);
+			child->UpdatePhysics();
 
-						float matrix[16];
-						transform.getOpenGLMatrix(matrix);
-						mesh->transform = glm::make_mat4(matrix) * mesh->scaleMatrix;
-						// mesh->position  = glm::vec3(mesh->transform[3]);
-					}
-					continue;
-				}
-			}
-
-			if (child->name == "donut")
-			{
-				child->ScaleRotationPosition(
-				    { 1.5f, 1.5f, 1.5f },
-				    { 0.0f, lastTime * 3.0f, 0.0f },
-				    { -5.0f, 1.0f, -2.0f }
-				);
-			}
-			else if (child->name == "car")
-			{
-				child->ScaleRotationPosition(
-				    { 1.0f, 1.0f, 1.0f },
-				    { lastTime, 6.0f, 0.0f },
-				    { 0.0f, 1.0f, -2.0f }
-				);
-			}
-		}
-
-		physics->DrawDebug();
+		//physics->DrawDebug();
 	}
 
 	// 4) draw the scene

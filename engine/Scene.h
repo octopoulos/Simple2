@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include "Camera.h"
+#include "Object3d.h"
+
 class Scene : public Object3d
 {
 public:
@@ -58,12 +61,14 @@ public:
 
 	void RenderScene(uint8_t viewId, uint16_t width, uint16_t height)
 	{
+		for (const auto& child : children)
+			child->Render(viewId);
 		//if (camera)
 		//{
 		//	camera->aspect = height ? static_cast<float>(width) / height : 1.0f;
 		//	camera->UpdateViewProjection(viewId);
 		//}
 		//bgfx::setViewRect(viewId, 0, 0, width, height);
-		TraverseAndRender(viewId);
+		//TraverseAndRender(viewId);
 	}
 };

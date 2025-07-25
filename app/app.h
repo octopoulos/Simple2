@@ -1,10 +1,11 @@
 // app.h
 // @author octopoulos
-// @version 2025-07-20
+// @version 2025-07-21
 
 #pragma once
 
 #include "engine/Mesh.h"
+#include "engine/Scene.h"
 #include "engine/ShaderManager.h"
 #include "engine/TextureManager.h"
 #include "physics/PhysicsWorld.h"
@@ -68,9 +69,8 @@ private:
 	ShaderManager                 shaderManager  = {};      ///
 	TextureManager                textureManager = {};      ///
 
-	bgfx::IndexBufferHandle  ibh     = {}; ///
-	bgfx::VertexBufferHandle vbh     = {}; ///
-	bgfx::ProgramHandle      program = {}; ///< For cube and floor
+	bgfx::IndexBufferHandle  ibh = {}; /// TODO: delete
+	bgfx::VertexBufferHandle vbh = {}; /// TODO: delete
 
 	float   curTime   = 0.0f; ///< current time
 	float   deltaTime = 0.0f; ///< last delta (current - last)
