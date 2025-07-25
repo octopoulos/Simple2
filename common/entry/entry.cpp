@@ -1,4 +1,4 @@
-// @version 2025-07-15
+// @version 2025-07-21
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -170,6 +170,16 @@ static const char* s_keyName[] = {
 	"KeyX",
 	"KeyY",
 	"KeyZ",
+	// !NEW
+	"LeftAlt",
+	"RightAlt",
+	"LeftCtrl",
+	"RightCtrl",
+	"LeftShift",
+	"RightShift",
+	"LeftMeta",
+	"RightMeta",
+	//
 	"GamepadA",
 	"GamepadB",
 	"GamepadX",
@@ -899,7 +909,6 @@ bool processWindowEvents(WindowState& _state, uint32_t& _debug, uint32_t& _reset
 				win.m_height          = size->m_height;
 
 				needReset = win.m_handle.idx == 0 ? true : needReset;
-				ui::Log("processWindowEvents/Event::Size: {}: {}x{}", (void*)&size->m_handle, size->m_width, size->m_height);
 			}
 			break;
 

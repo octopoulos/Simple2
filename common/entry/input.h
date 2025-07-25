@@ -1,4 +1,4 @@
-// @version 2025-07-19
+// @version 2025-07-21
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -99,3 +99,57 @@ void inputSetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::Enum 
 
 ///
 int32_t inputGetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::Enum _axis);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// GlobalInput
+//////////////
+
+enum KeyNews_
+{
+	KeyNew_Down = 1, ///< key was just pushed
+	KeyNew_Up   = 2, ///< key was just released
+};
+
+struct KeyState
+{
+	int     key;   ///< key code
+	bool    down;  ///< key down or up
+	int64_t stamp; ///< timestamp in us
+};
+
+struct GlobalInput
+{
+	uint8_t  buttons[8]      = {};                          ///< mouse buttons
+	int      keyChangeId     = 0;                           ///< index of current history
+	KeyState keyChanges[128] = {};                          ///< history of key changes
+	uint8_t  keyNews[256]    = {};                          ///< those keys were changed this frame
+	bool     keys[256]       = {};                          ///< are keys pushed?
+	int64_t  keyTimes[256]   = {};                          ///< when the key was pushed last time (in us)
+	int      mouseAbs[3]     = { 640, 360, 0 };             ///< mouse absolute coordinates
+	bool     mouseLock       = false;                       ///< mouse is locked?
+	float    mouseNorm[3]    = {};                          ///< mouse normalized coordinates
+	float    resolution[3]   = { 1280.0f, 720.0f, 120.0f }; ///< used to normalize mouse coords
+
+	/// Keyboard key down/up
+	void KeyDownUp(int key, bool down);
+
+	/// Mouse button change
+	void MouseButton(int button, uint8_t state);
+
+	/// Mouse locked or unlocked
+	void MouseLock(bool lock);
+
+	/// Mouse motion
+	void MouseMove(int mx, int my, int mz);
+
+	/// Reset data to initial state
+	void Reset();
+
+	/// Reset the keyNews only, must do this every frame
+	void ResetNews();
+
+	/// Set resolution to calculate mouseNorm
+	void SetResolution(int width, int height, int wheelDelta);
+};
+
+GlobalInput& GetGlobalInput();

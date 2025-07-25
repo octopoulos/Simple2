@@ -1,4 +1,4 @@
-// @version 2025-07-11
+// @version 2025-07-21
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -195,7 +195,16 @@ struct Key
 		KeyX,
 		KeyY,
 		KeyZ,
-
+		// !NEW
+		LeftAlt,
+		RightAlt,
+		LeftCtrl,
+		RightCtrl,
+		LeftShift,
+		RightShift,
+		LeftMeta,
+		RightMeta,
+		//
 		GamepadA,
 		GamepadB,
 		GamepadX,

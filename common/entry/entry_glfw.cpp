@@ -1,3 +1,4 @@
+// @version 2025-07-21
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -381,7 +382,16 @@ namespace entry
 			s_translateKey[GLFW_KEY_X]            = Key::KeyX;
 			s_translateKey[GLFW_KEY_Y]            = Key::KeyY;
 			s_translateKey[GLFW_KEY_Z]            = Key::KeyZ;
-		}
+			//
+			s_translateKey[GLFW_KEY_LEFT_ALT]     = Key::LeftAlt);
+			s_translateKey[GLFW_KEY_RIGHT_ALT]    = Key::RightAlt);
+			s_translateKey[GLFW_KEY_LEFT_CONTROL] = Key::LeftCtrl);
+			s_translateKey[GLFW_KEY_RIGHT_CONTROL]= Key::RightCtrl);
+			s_translateKey[GLFW_KEY_LEFT_SHIFT]   = Key::LeftShift);
+			s_translateKey[GLFW_KEY_RIGHT_SHIFT]  = Key::RightShift);
+			s_translateKey[GLFW_KEY_LEFT_SUPER]   = Key::LeftMeta);
+			s_translateKey[GLFW_KEY_RIGHT_SUPER]  = Key::RightMeta);
+	    }
 
 		int run(int _argc, const char* const* _argv)
 		{

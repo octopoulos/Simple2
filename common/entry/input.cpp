@@ -1,4 +1,4 @@
-// @version 2025-07-11
+// @version 2025-07-21
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -243,6 +243,9 @@ struct Input
 		m_keyboard.reset();
 		for (uint32_t ii = 0; ii < BX_COUNTOF(m_gamepad); ++ii)
 			m_gamepad[ii].reset();
+
+		// !NEW
+		GetGlobalInput().Reset();
 	}
 
 	UMAP_STR<const InputBinding*> m_inputBindingsMap;
@@ -281,11 +284,15 @@ void inputProcess()
 void inputSetMouseResolution(uint16_t _width, uint16_t _height)
 {
 	s_input->m_mouse.setResolution(_width, _height);
+	// !NEW
+	GetGlobalInput().SetResolution(_width, _height, s_input->m_mouse.m_wheelDelta);
 }
 
 void inputSetKeyState(entry::Key::Enum _key, uint8_t _modifiers, bool _down)
 {
 	s_input->m_keyboard.setKeyState(_key, _modifiers, _down);
+	// !NEW
+	GetGlobalInput().KeyDownUp(TO_INT(_key), _down);
 }
 
 bool inputGetKeyState(entry::Key::Enum _key, uint8_t* _modifiers)
@@ -316,11 +323,15 @@ void inputCharFlush()
 void inputSetMousePos(int32_t _mx, int32_t _my, int32_t _mz)
 {
 	s_input->m_mouse.setPos(_mx, _my, _mz);
+	// !NEW
+	GetGlobalInput().MouseMove(_mx, _my, _mz);
 }
 
 void inputSetMouseButtonState(entry::MouseButton::Enum _button, uint8_t _state)
 {
 	s_input->m_mouse.setButtonState(_button, _state);
+	// !NEW
+	GetGlobalInput().MouseButton(_button, _state);
 }
 
 void inputGetMouse(float _mouse[3])
@@ -353,6 +364,9 @@ void inputSetMouseLock(bool _lock)
 			s_input->m_mouse.m_norm[2] = 0.0f;
 		}
 	}
+
+	// !NEW
+	GetGlobalInput().MouseLock(_lock);
 }
 
 void inputSetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::Enum _axis, int32_t _value)
@@ -363,4 +377,81 @@ void inputSetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::Enum 
 int32_t inputGetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::Enum _axis)
 {
 	return s_input->m_gamepad[_handle.idx].getAxis(_axis);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// GlobalInput
+//////////////
+
+void GlobalInput::KeyDownUp(int key, bool down)
+{
+	if (keys[key] != down)
+	{
+		const int64_t now = NowUs();
+
+		keys[key]               = down;
+		keyTimes[key]           = now;
+		keyChanges[keyChangeId] = { key, down, now };
+		keyChangeId             = (keyChangeId + 1) & 127;
+		keyNews[key]            = down ? KeyNew_Down : KeyNew_Up;
+	}
+}
+
+void GlobalInput::MouseButton(int button, uint8_t state)
+{
+	if (button >= 0 && button < 8)
+		buttons[button] = state;
+}
+
+void GlobalInput::MouseLock(bool lock)
+{
+	if (mouseLock != lock)
+	{
+		mouseLock = lock;
+		std::memset(mouseNorm, 0, sizeof(mouseNorm));
+	}
+}
+
+void GlobalInput::MouseMove(int mx, int my, int mz)
+{
+	mouseAbs[0]  = mx;
+	mouseAbs[1]  = my;
+	mouseAbs[2]  = mz;
+	mouseNorm[0] = TO_FLOAT(mx) / resolution[0];
+	mouseNorm[1] = TO_FLOAT(my) / resolution[1];
+	mouseNorm[2] = TO_FLOAT(mz) / resolution[2];
+}
+
+void GlobalInput::Reset()
+{
+	// clang-format off
+	std::memset(buttons   , 0, sizeof(buttons   ));
+	std::memset(keyChanges, 0, sizeof(keyChanges));
+	std::memset(keys      , 0, sizeof(keys      ));
+	std::memset(keyTimes  , 0, sizeof(keyTimes  ));
+	std::memset(mouseAbs  , 0, sizeof(mouseAbs  ));
+	std::memset(mouseNorm , 0, sizeof(mouseNorm ));
+	// clang-format on
+
+	keyChangeId = 0;
+	mouseLock   = false;
+	ResetNews();
+}
+
+void GlobalInput::ResetNews()
+{
+	std::memset(keyNews, 0, sizeof(keyNews));
+}
+
+void GlobalInput::SetResolution(int width, int height, int wheelDelta)
+{
+	resolution[0] = TO_FLOAT(width);
+	resolution[1] = TO_FLOAT(height);
+	resolution[2] = TO_FLOAT(wheelDelta);
+}
+
+GlobalInput& GetGlobalInput()
+{
+	static GlobalInput globalInput;
+	return globalInput;
 }

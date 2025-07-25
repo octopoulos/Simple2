@@ -1,3 +1,4 @@
+// @version 2025-07-21
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -450,6 +451,15 @@ namespace entry
 			s_translateKey[uint8_t('X')]  = Key::KeyX;
 			s_translateKey[uint8_t('Y')]  = Key::KeyY;
 			s_translateKey[uint8_t('Z')]  = Key::KeyZ;
+			// !NEW
+			s_translateKey[VK_LMENU]      = Key::LeftAlt);
+			s_translateKey[VK_RMENU]      = Key::RightAlt);
+			s_translateKey[VK_LCONTROL]   = Key::LeftCtrl);
+			s_translateKey[VK_RCONTROL]   = Key::RightCtrl);
+			s_translateKey[VK_LSHIFT]     = Key::LeftShift);
+			s_translateKey[VK_RSHIFT]     = Key::RightShift);
+			s_translateKey[VK_LWIN]       = Key::LeftMeta);
+			s_translateKey[VK_RWIN]       = Key::RightMeta);
 		}
 
 		int32_t run(int _argc, const char* const* _argv)

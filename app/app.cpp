@@ -201,7 +201,7 @@ int App::InitScene()
 			if (auto object = loader.LoadModel("donut3"))
 			{
 				object->type |= ObjectType_Instance;
-				
+
 				const float radius = sinf(i * 0.02f) * 7.0f;
 				const float scale  = MerseneFloat(0.25f, 0.75f);
 				const float scaleY = scale * MerseneFloat(0.7f, 1.5f);
@@ -248,20 +248,37 @@ void App::Render()
 		cameraUpdate(deltaTime, mouseState, ImGui::MouseOverArea());
 	}
 
-	// 2) camera view
+	// 2) controls
+	Controls();
+
+	// 3) camera view
 	{
 		bgfx::setViewRect(0, 0, 0, screenX, screenY);
 
+		// view
 		float view[16];
 		cameraGetViewMtx(view);
 
-		float proj[16];
-		bx::mtxProj(proj, 60.0f, float(screenX) / float(screenY), 0.1f, 2000.0f, bgfx::getCaps()->homogeneousDepth);
+		// projection
+		const float fscreenX  = TO_FLOAT(screenX);
+		const float fscreenY  = TO_FLOAT(screenY);
+		const bool  homoDepth = bgfx::getCaps()->homogeneousDepth;
+		float       proj[16];
+
+		if (isPerspective)
+			bx::mtxProj(proj, 60.0f, fscreenX / fscreenY, 0.1f, 2000.0f, homoDepth);
+		else
+		{
+			float       zoom  = 0.02f;
+			const float zoomX = fscreenX * zoom;
+			const float zoomY = fscreenY * zoom;
+			bx::mtxOrtho(proj, -zoomX, zoomX, -zoomY, zoomY, -1000.0f, 1000.0f, 0.0f, homoDepth);
+		}
 
 		bgfx::setViewTransform(0, view, proj);
 	}
 
-	// 3) physics
+	// 4) physics
 	{
 		physics->StepSimulation(deltaTime);
 		lastTime = curTime;
@@ -272,7 +289,7 @@ void App::Render()
 		//physics->DrawDebug();
 	}
 
-	// 4) draw the scene
+	// 5) draw the scene
 	scene->RenderScene(0, screenX, screenY);
 }
 
@@ -366,6 +383,8 @@ public:
 		// 1) events
 		{
 			if (entry::processEvents(m_width, m_height, m_debug, m_reset, &m_mouseState)) return false;
+
+			// TODO: remove
 			app->SynchronizeEvents(m_width, m_height, m_mouseState);
 		}
 

@@ -1,4 +1,4 @@
-// @version 2025-07-15
+// @version 2025-07-21
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -377,6 +377,15 @@ struct Context
 		initTranslateKey(SDL_SCANCODE_X, Key::KeyX);
 		initTranslateKey(SDL_SCANCODE_Y, Key::KeyY);
 		initTranslateKey(SDL_SCANCODE_Z, Key::KeyZ);
+		// !NEW
+		initTranslateKey(SDL_SCANCODE_LALT, Key::LeftAlt);
+		initTranslateKey(SDL_SCANCODE_RALT, Key::RightAlt);
+		initTranslateKey(SDL_SCANCODE_LCTRL, Key::LeftCtrl);
+		initTranslateKey(SDL_SCANCODE_RCTRL, Key::RightCtrl);
+		initTranslateKey(SDL_SCANCODE_LSHIFT, Key::LeftShift);
+		initTranslateKey(SDL_SCANCODE_RSHIFT, Key::RightShift);
+		initTranslateKey(SDL_SCANCODE_LGUI, Key::LeftMeta);
+		initTranslateKey(SDL_SCANCODE_RGUI, Key::RightMeta);
 
 		bx::memSet(s_translateGamepad, uint8_t(Key::Count), sizeof(s_translateGamepad));
 		initTranslateGamepad(SDL_CONTROLLER_BUTTON_A, Key::GamepadA);

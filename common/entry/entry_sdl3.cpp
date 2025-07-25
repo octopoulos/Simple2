@@ -1,6 +1,6 @@
 // entry_sdl3.cpp
 // @author octopoulos
-// @version 2025-07-16
+// @version 2025-07-21
 
 #include "entry_p.h"
 
@@ -374,6 +374,15 @@ struct Context
 		initTranslateKey(SDL_SCANCODE_X, Key::KeyX);
 		initTranslateKey(SDL_SCANCODE_Y, Key::KeyY);
 		initTranslateKey(SDL_SCANCODE_Z, Key::KeyZ);
+		// !NEW
+		initTranslateKey(SDL_SCANCODE_LALT, Key::LeftAlt);
+		initTranslateKey(SDL_SCANCODE_RALT, Key::RightAlt);
+		initTranslateKey(SDL_SCANCODE_LCTRL, Key::LeftCtrl);
+		initTranslateKey(SDL_SCANCODE_RCTRL, Key::RightCtrl);
+		initTranslateKey(SDL_SCANCODE_LSHIFT, Key::LeftShift);
+		initTranslateKey(SDL_SCANCODE_RSHIFT, Key::RightShift);
+		initTranslateKey(SDL_SCANCODE_LGUI, Key::LeftMeta);
+		initTranslateKey(SDL_SCANCODE_RGUI, Key::RightMeta);
 
 		bx::memSet(s_translateGamepad, uint8_t(Key::Count), sizeof(s_translateGamepad));
 		initTranslateGamepad(SDL_GAMEPAD_BUTTON_SOUTH, Key::GamepadA);

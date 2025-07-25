@@ -1,3 +1,4 @@
+// @version 2025-07-21
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -323,6 +324,15 @@ namespace entry
 			initTranslateKey('x',             Key::KeyX);
 			initTranslateKey('y',             Key::KeyY);
 			initTranslateKey('z',             Key::KeyZ);
+			// !NEW
+			initTranslateKey(XK_Alt_L,        Key::LeftAlt);
+			initTranslateKey(XK_Alt_R,        Key::RightAlt);
+			initTranslateKey(XK_Control_L,    Key::LeftCtrl);
+			initTranslateKey(XK_Control_R,    Key::RightCtrl);
+			initTranslateKey(XK_Shift_L,      Key::LeftShift);
+			initTranslateKey(XK_Shift_R,      Key::RightShift);
+			initTranslateKey(XK_Meta_L,       Key::LeftMeta);
+			initTranslateKey(XK_Meta_R,       Key::RightMeta);
 
 			m_mx = 0;
 			m_my = 0;
