@@ -87,6 +87,7 @@ private:
 
 private:
 	UMAP_INT_STR actionFolders = {};    ///< open image & save screenshot in different folders
+	bool         bulletDebug   = false; ///< bullet debug draw
 	int          fileAction    = 0;     ///< action to take in OpenedFile
 	std::string  fileFolder    = {};    ///< folder after OpenFile
 	int64_t      now           = 0;     ///< current timestamp in us

@@ -195,7 +195,7 @@ int App::InitScene()
 		parent->program = shaderManager.LoadProgram("vs_instancing", "fs_instancing");
 		scene->AddNamedChild(parent, "donut3-group");
 
-		for (int i = 0; i < 1200; ++i)
+		for (int i = 0; i < 120; ++i)
 		{
 			//if (auto object = std::make_shared<Mesh>())
 			if (auto object = loader.LoadModel("donut3"))
@@ -286,7 +286,7 @@ void App::Render()
 		for (auto& child : scene->children)
 			child->SynchronizePhysics();
 
-		//physics->DrawDebug();
+		if (bulletDebug) physics->DrawDebug();
 	}
 
 	// 5) draw the scene

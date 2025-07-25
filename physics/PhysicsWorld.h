@@ -1,6 +1,6 @@
 // PhysicsWorld.h
 // @author octopoulos
-// @version 2025-07-19
+// @version 2025-07-21
 
 #pragma once
 
@@ -11,12 +11,21 @@
 // BulletDebugDraw
 //////////////////
 
+struct PosColorVertex
+{
+	float    m_x, m_y, m_z;
+	uint32_t m_abgr;
+
+	static bgfx::VertexLayout ms_layout;
+};
+
 class BulletDebugDraw : public btIDebugDraw
 {
 public:
-	int          _debugMode       = 0;  ///
-	float        bgfxModelMtx[16] = {}; ///
-	bgfx::ViewId viewId           = 0;  ///
+	float                       bgfxModelMtx[16] = {}; ///
+	int                         debugMode        = 0;  ///
+	std::vector<PosColorVertex> lines            = {}; ///< collect all lines
+	bgfx::ViewId                viewId           = 0;  ///< view ID for rendering
 
 	BulletDebugDraw()
 	    : btIDebugDraw()
@@ -29,11 +38,14 @@ public:
 
 	virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override;
 
-	virtual int getDebugMode() const override { return _debugMode; }
+	virtual int getDebugMode() const override { return debugMode; }
 
 	virtual void reportErrorWarning(const char* warningString) override {}
 
-	virtual void setDebugMode(int debugMode) override { _debugMode = debugMode; }
+	virtual void setDebugMode(int debugMode_) override { debugMode = debugMode_; }
+
+	/// Submit all collected lines
+	void FlushLines();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
