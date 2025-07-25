@@ -111,9 +111,9 @@ public:
 	/// Submit for multi passes
 	void Submit(const MeshState* const* state, uint8_t numPasses, const float* mtx, uint16_t numMatrices) const;
 
-	/// Update physics transform
+	/// Synchronize physics transform
 	/// - if a group => update the children only
-	void UpdatePhysics();
+	virtual void SynchronizePhysics() override;
 };
 
 using sMesh = std::shared_ptr<Mesh>;

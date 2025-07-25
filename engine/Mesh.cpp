@@ -340,12 +340,12 @@ void Mesh::Submit(const MeshState* const* _state, uint8_t numPasses, const float
 	bgfx::discard();
 }
 
-void Mesh::UpdatePhysics()
+void Mesh::SynchronizePhysics()
 {
 	if (type & ObjectType_Group)
 	{
 		for (auto& child : children)
-			child->UpdatePhysics();
+			child->SynchronizePhysics();
 	}
 	else if (bodies.size())
 	{

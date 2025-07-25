@@ -50,6 +50,10 @@ void Object3d::ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat&
 	worldMatrix = transform;
 }
 
+void Object3d::SynchronizePhysics()
+{
+}
+
 void Object3d::TraverseAndRender(uint8_t viewId)
 {
 	if (!(type & ObjectType_Group))
@@ -70,8 +74,4 @@ void Object3d::UpdateMatrix()
 
 	for (auto& child : children)
 		child->UpdateMatrix();
-}
-
-void Object3d::UpdatePhysics()
-{
 }

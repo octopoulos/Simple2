@@ -52,12 +52,12 @@ public:
 	/// Apply scale then quaternion then translation
 	void ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat& _quaternion, const glm::vec3& _position);
 
+	/// Synchronize physics transform
+	virtual void SynchronizePhysics();
+
 	/// Render the object + recursively for all children
 	void TraverseAndRender(uint8_t viewId);
 
 	/// Calculate world matrix + recursively for all children
 	void UpdateMatrix();
-
-	/// Update physics transform
-	virtual void UpdatePhysics();
 };

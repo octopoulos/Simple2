@@ -267,7 +267,7 @@ void App::Render()
 		lastTime = curTime;
 
 		for (auto& child : scene->children)
-			child->UpdatePhysics();
+			child->SynchronizePhysics();
 
 		//physics->DrawDebug();
 	}
