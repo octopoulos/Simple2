@@ -60,6 +60,18 @@ private:
 	void ScanModels(const std::filesystem::path& folder, const std::filesystem::path& folderPrev, int depth = 0, const std::string& relative = "");
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// RENDER
+	/////////
+
+private:
+	bool isPerspective = true;               ///< perspective or orthogonal
+	int  renderFlags   = RenderFlag_Default; ///< render flags
+
+public:
+	/// Render everything except UI
+	void Render();
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// SCENE
 	////////
 
@@ -114,18 +126,14 @@ public:
 	/////////
 
 private:
-	bool     hasFocus      = true;  ///
-	uint32_t isDebug       = 0;     ///
-	uint32_t isReset       = 0;     ///
-	bool     isPerspective = true;  ///< perspective or orthogonal
-	bool     quit          = false; ///< exit the mainloop
-	uint32_t screenX       = 1328;  ///
-	uint32_t screenY       = 800;   ///
+	bool     hasFocus = true;  ///
+	uint32_t isDebug  = 0;     ///
+	uint32_t isReset  = 0;     ///
+	bool     quit     = false; ///< exit the mainloop
+	uint32_t screenX  = 1328;  ///
+	uint32_t screenY  = 800;   ///
 
 public:
-	/// Render everything except UI
-	void Render();
-
 	/// Synchronization with entry
 	void SynchronizeEvents(uint32_t _screenX, uint32_t _screenY);
 };

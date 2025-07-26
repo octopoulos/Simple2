@@ -198,7 +198,7 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 	}
 }
 
-void Mesh::Render(uint8_t viewId)
+void Mesh::Render(uint8_t viewId, int renderFlags)
 {
 	//if (type & ObjectType_Instance) return;
 	//ui::Log("Render: {} {}", type, name);
@@ -207,7 +207,7 @@ void Mesh::Render(uint8_t viewId)
 	{
 		if (const uint32_t numChild = TO_UINT32(children.size()))
 		{
-			if (type & ObjectType_Instance)
+			if ((type & ObjectType_Instance) && renderFlags & RenderFlag_Instancing)
 			{
 				// 64 bytes for 4x4 matrix
 				const uint16_t stride = 64 + 16;
@@ -253,24 +253,31 @@ void Mesh::Render(uint8_t viewId)
 				}
 				else if (bgfx::isValid(program))
 				{
+					uint64_t state = 0
+					    | BGFX_STATE_WRITE_RGB
+					    | BGFX_STATE_WRITE_A
+					    | BGFX_STATE_WRITE_Z
+					    | BGFX_STATE_DEPTH_TEST_LESS
+					    | BGFX_STATE_CULL_CCW
+					    | BGFX_STATE_MSAA;
+
 					for (const auto& group : groups)
 					{
 						bgfx::setIndexBuffer(group.m_ibh);
 						bgfx::setVertexBuffer(0, group.m_vbh);
 						bgfx::setInstanceDataBuffer(&idb);
 
-						bgfx::setState(BGFX_STATE_DEFAULT);
+						bgfx::setState(state);
 						bgfx::submit(0, program);
 						//ui::Log("SUBMIT: {}", id);
-						//break;
+						break;
 					}
 				}
 			}
 			else
 			{
-				ui::Log("Render children!");
 				for (const auto& child : children)
-					child->Render(viewId);
+					child->Render(viewId, renderFlags);
 			}
 		}
 	}

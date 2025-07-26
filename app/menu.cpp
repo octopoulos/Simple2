@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-07-19
+// @version 2025-07-21
 
 #include "stdafx.h"
 #include "app.h"
@@ -105,8 +105,19 @@ void App::ShowMainMenu(float alpha)
 			//ImGui::Separator();
 			// if (ImGui::MenuItem(fmt::format("Save {} Defaults", GameName()).c_str())) SaveGameSettings("", true, "-def");
 			// if (ImGui::MenuItem("Save Screenshot...", xsettings.shortcutScreenshot)) app->OpenFile(OpenAction_Screenshot);
-			//ImGui::Separator();
-			// if (ImGui::MenuItem("Exit")) app->Quit();
+			ImGui::Separator();
+			if (ImGui::MenuItem("Exit")) quit = true;
+			ImGui::EndMenu();
+		}
+
+		// windows
+		if (ImGui::BeginMenu("Render"))
+		{
+			ImGui::MenuItem("Perspective projection", nullptr, &isPerspective);
+			{
+				bool selected = renderFlags & RenderFlag_Instancing;
+				if (ImGui::MenuItem("Use instancing", nullptr, selected)) renderFlags ^= RenderFlag_Instancing;
+			}
 			ImGui::EndMenu();
 		}
 

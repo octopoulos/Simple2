@@ -20,7 +20,7 @@ void Object3d::RemoveChild(const sObject3d& child)
 	}
 }
 
-void Object3d::Render(uint8_t viewId)
+void Object3d::Render(uint8_t viewId, int renderFlags)
 {
 }
 
@@ -54,15 +54,15 @@ void Object3d::SynchronizePhysics()
 {
 }
 
-void Object3d::TraverseAndRender(uint8_t viewId)
+void Object3d::TraverseAndRender(uint8_t viewId, int renderFlags)
 {
 	if (!(type & ObjectType_Group))
 		if (type & ObjectType_Instance) return;
 
 	UpdateMatrix();
-	Render(viewId);
+	Render(viewId, renderFlags);
 	for (const auto& child : children)
-		child->TraverseAndRender(viewId);
+		child->TraverseAndRender(viewId, renderFlags);
 }
 
 void Object3d::UpdateMatrix()

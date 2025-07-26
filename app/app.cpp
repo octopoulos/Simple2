@@ -16,6 +16,8 @@
 #	include <windows.h>
 #endif
 
+extern std::string VERSION;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // INIT
 ///////
@@ -195,7 +197,7 @@ int App::InitScene()
 		parent->program = shaderManager.LoadProgram("vs_instancing", "fs_instancing");
 		scene->AddNamedChild(parent, "donut3-group");
 
-		for (int i = 0; i < 120; ++i)
+		for (int i = 0; i < 1200; ++i)
 		{
 			//if (auto object = std::make_shared<Mesh>())
 			if (auto object = loader.LoadModel("donut3"))
@@ -235,7 +237,7 @@ int App::InitScene()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WINDOW
+// RENDER
 /////////
 
 void App::Render()
@@ -288,8 +290,12 @@ void App::Render()
 	}
 
 	// 5) draw the scene
-	scene->RenderScene(0, screenX, screenY);
+	scene->RenderScene(0, renderFlags);
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WINDOW
+/////////
 
 void App::SynchronizeEvents(uint32_t _screenX, uint32_t _screenY)
 {
@@ -411,4 +417,4 @@ public:
 	}
 };
 
-ENTRY_IMPLEMENT_MAIN(EntryApp, "App", "Simple App", "https://shark-it.be");
+ENTRY_IMPLEMENT_MAIN(EntryApp, "App", VERSION.c_str(), "https://shark-it.be");

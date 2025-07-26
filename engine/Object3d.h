@@ -17,6 +17,13 @@ enum ObjectTypes_
 	ObjectType_Mesh     = 1 << 4, ///< mesh
 };
 
+enum RenderFlags_
+{
+	RenderFlag_Instancing = 1 << 0,
+
+	RenderFlag_Default = RenderFlag_Instancing,
+};
+
 class Object3d
 {
 public:
@@ -44,7 +51,7 @@ public:
 	virtual void RemoveChild(const sObject3d& child);
 
 	/// Render the object
-	virtual void Render(uint8_t viewId);
+	virtual void Render(uint8_t viewId, int renderFlags);
 
 	/// Apply scale then rotation then translation
 	void ScaleRotationPosition(const glm::vec3& _scale, const glm::vec3& _rotation, const glm::vec3& _position);
@@ -56,7 +63,7 @@ public:
 	virtual void SynchronizePhysics();
 
 	/// Render the object + recursively for all children
-	void TraverseAndRender(uint8_t viewId);
+	void TraverseAndRender(uint8_t viewId, int renderFlags);
 
 	/// Calculate world matrix + recursively for all children
 	void UpdateMatrix();

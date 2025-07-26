@@ -103,7 +103,7 @@ public:
 
 	/// Render the mesh, if geometry & material program exist, or if program is set
 	/// - if a group => render the children only
-	void Render(uint8_t viewId) override;
+	virtual void Render(uint8_t viewId, int renderFlags) override;
 
 	/// Submit for render pass
 	void Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, uint64_t state) const;

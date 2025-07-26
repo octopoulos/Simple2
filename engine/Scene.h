@@ -1,6 +1,6 @@
 // Scene.h
 // @author octopoulos
-// @version 2025-07-16
+// @version 2025-07-21
 
 #pragma once
 
@@ -59,16 +59,10 @@ public:
 		Object3d::RemoveChild(child);
 	}
 
-	void RenderScene(uint8_t viewId, uint16_t width, uint16_t height)
+	void RenderScene(uint8_t viewId, int renderFlags)
 	{
 		for (const auto& child : children)
-			child->Render(viewId);
-		//if (camera)
-		//{
-		//	camera->aspect = height ? static_cast<float>(width) / height : 1.0f;
-		//	camera->UpdateViewProjection(viewId);
-		//}
-		//bgfx::setViewRect(viewId, 0, 0, width, height);
-		//TraverseAndRender(viewId);
+			child->Render(viewId, renderFlags);
+		//TraverseAndRender(viewId, renderFlags);
 	}
 };
