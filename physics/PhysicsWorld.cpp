@@ -1,6 +1,6 @@
 // PhysicsWorld.cpp
 // @author octopoulos
-// @version 2025-07-21
+// @version 2025-07-22
 
 #include "stdafx.h"
 #include "PhysicsWorld.h"
@@ -18,7 +18,7 @@ void BulletDebugDraw::drawLine(const btVector3& from, const btVector3& to, const
 {
 	// new method
 	if (1)
-	{	
+	{
 		// Convert color to ABGR
 		const uint8_t  r    = 255 * color.x();
 		const uint8_t  g    = 255 * color.y();
@@ -30,7 +30,7 @@ void BulletDebugDraw::drawLine(const btVector3& from, const btVector3& to, const
 		// Add vertices
 		lines.push_back({ from.x(), from.y(), from.z(), rgba });
 		lines.push_back({ to.x(), to.y(), to.z(), rgba });
-		
+
 		if (lines.size() >= 8192) FlushLines();
 		return;
 	}

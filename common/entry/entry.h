@@ -227,7 +227,9 @@ struct Key
 		VolumeDown,
 		NumPadComma,
 
-		LeftCtrl, // 108 (SDL3: 224)
+		Clear,
+
+		LeftCtrl, // 109 (SDL3: 224)
 		LeftShift,
 		LeftAlt,
 		LeftMeta,
@@ -236,7 +238,7 @@ struct Key
 		RightAlt,
 		RightMeta,
 
-		MediaPlay, // 116 (SDL3: 262)
+		MediaPlay, // 117 (SDL3: 262)
 		MediaPause,
 		MediaRecord,
 		MediaFastFoward,
@@ -248,7 +250,10 @@ struct Key
 		MediaPlayPause,
 		MediaSelect,
 
-		GamepadA, // 127 (???)
+		App1, // 128 (SDL3: 283)
+		App2,
+
+		GamepadA, // 130 (???)
 		GamepadB,
 		GamepadX,
 		GamepadY,

@@ -204,7 +204,9 @@ static const char* s_keyName[] = {
 	"VolumeDown",
 	"NumPadComma",
 
-	"LeftCtrl", // 108 (SDL3: 224)
+	"Clear", // 108 (SDL3: 156)
+
+	"LeftCtrl", // 109 (SDL3: 224)
 	"LeftShift",
 	"LeftAlt",
 	"LeftMeta",
@@ -213,7 +215,7 @@ static const char* s_keyName[] = {
 	"RightAlt",
 	"RightMeta",
 
-	"MediaPlay", // 116 (SDL3: 262)
+	"MediaPlay", // 117 (SDL3: 262)
 	"MediaPause",
 	"MediaRecord",
 	"MediaFastFoward",
@@ -225,7 +227,10 @@ static const char* s_keyName[] = {
 	"MediaPlayPause",
 	"MediaSelect",
 
-	"GamepadA", // 127 (???)
+	"App1", // 128 (SDL3: 283)
+	"App2",
+
+	"GamepadA", // 130 (???)
 	"GamepadB",
 	"GamepadX",
 	"GamepadY",
