@@ -216,7 +216,7 @@ int App::InitScene()
 	{
 		//parent->type |= ObjectType_Group;
 		parent->type |= ObjectType_Group | ObjectType_Instance;
-		parent->program = shaderManager.LoadProgram("vs_instancing", "fs_instancing");
+		parent->program = shaderManager.LoadProgram("vs_model_instance", "fs_model_instance");
 		scene->AddNamedChild(parent, "donut3-group");
 
 		for (int i = 0; i < 120; ++i)
@@ -230,8 +230,7 @@ int App::InitScene()
 				const float scale  = MerseneFloat(0.25f, 0.75f);
 				const float scaleY = scale * MerseneFloat(0.7f, 1.5f);
 
-				//object->program = shaderManager.LoadProgram("vs_model", "fs_model");
-				//object->program = shaderManager.LoadProgram("vs_cube", "fs_cube");
+				object->program = shaderManager.LoadProgram("vs_model", "fs_model");
 				object->ScaleRotationPosition(
 				    { scale, scaleY, scale },
 				    { sinf(i * 0.3f), 3.0f, 0.0f },
