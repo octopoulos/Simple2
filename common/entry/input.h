@@ -1,4 +1,4 @@
-// @version 2025-07-21
+// @version 2025-07-22
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -104,12 +104,6 @@ int32_t inputGetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::En
 // GlobalInput
 //////////////
 
-enum KeyNews_
-{
-	KeyNew_Down = 1, ///< key was just pushed
-	KeyNew_Up   = 2, ///< key was just released
-};
-
 struct KeyState
 {
 	int     key;   ///< key code
@@ -122,9 +116,10 @@ struct GlobalInput
 	uint8_t  buttons[8]      = {};                          ///< mouse buttons
 	int      keyChangeId     = 0;                           ///< index of current history
 	KeyState keyChanges[128] = {};                          ///< history of key changes
-	uint8_t  keyNews[256]    = {};                          ///< those keys were changed this frame
+	uint8_t  keyDowns[256]   = {};                          ///< those keys were pushed this frame
 	bool     keys[256]       = {};                          ///< are keys pushed?
 	int64_t  keyTimes[256]   = {};                          ///< when the key was pushed last time (in us)
+	uint8_t  keyUps[256]     = {};                          ///< those keys were released this frame
 	int      mouseAbs[3]     = { 640, 360, 0 };             ///< mouse absolute coordinates
 	bool     mouseLock       = false;                       ///< mouse is locked?
 	float    mouseNorm[3]    = {};                          ///< mouse normalized coordinates

@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-07-21
+// @version 2025-07-22
 
 #include "stdafx.h"
 #include "Body.h"
@@ -23,9 +23,6 @@ static const USET_INT shapesNoOffsets = {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // HELPERS
 //////////
-
-inline btVector3 BxToBullet(const bx::Vec3& vec) { return btVector3(vec.x, vec.y, vec.z); }
-inline btVector3 GlmToBullet(const glm::vec3& vec) { return btVector3(vec.x, vec.y, vec.z); }
 
 /// Helper function to compute AABB-based radius and height for Capsule, Cone, Cylinder
 /// @returns {dims, center}

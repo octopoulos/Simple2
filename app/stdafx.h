@@ -1,6 +1,6 @@
 // stdafx.h
 // @author octopoulos
-// @version 2025-07-21
+// @version 2025-07-22
 
 #pragma once
 
@@ -37,3 +37,9 @@ using namespace std::literals;
 
 #include "entry/entry.h"
 #include "loader.h"
+
+// clang-format off
+inline btVector3    BxToBullet (const bx::Vec3& vec )  { return btVector3(vec.x, vec.y, vec.z); }
+inline btVector3    GlmToBullet(const glm::vec3& vec)  { return btVector3(vec.x, vec.y, vec.z); }
+inline btQuaternion GlmToBullet(const glm::quat& quat) { return btQuaternion(quat.x, quat.y, quat.z, quat.w); }
+// clang-format on

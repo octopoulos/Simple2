@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-07-21
+// @version 2025-07-22
 
 #pragma once
 
@@ -65,6 +65,9 @@ public:
 	/// Render the object + recursively for all children
 	void TraverseAndRender(uint8_t viewId, int renderFlags);
 
+	/// Update local matrix from scale * quaternion * position
+	void UpdateLocalMatrix();
+
 	/// Calculate world matrix + recursively for all children
-	void UpdateMatrix();
+	void UpdateWorldMatrix();
 };

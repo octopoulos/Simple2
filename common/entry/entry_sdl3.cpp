@@ -1,7 +1,8 @@
 // entry_sdl3.cpp
 // @author octopoulos
-// @version 2025-07-21
+// @version 2025-07-22
 
+#include "stdafx.h"
 #include "entry_p.h"
 
 #if ENTRY_CONFIG_USE_SDL3
@@ -78,7 +79,7 @@ static uint8_t translateKeyModifierPress(uint16_t key)
 	// clang-format off
 	switch (key)
 	{
-	case SDL_SCANCODE_LALT  : modifier = Modifier::LeftAlt;   break;
+	case SDL_SCANCODE_LALT  : modifier = Modifier::LeftAlt;    break;
 	case SDL_SCANCODE_RALT  : modifier = Modifier::RightAlt;   break;
 	case SDL_SCANCODE_LCTRL : modifier = Modifier::LeftCtrl;   break;
 	case SDL_SCANCODE_RCTRL : modifier = Modifier::RightCtrl;  break;
@@ -93,17 +94,17 @@ static uint8_t translateKeyModifierPress(uint16_t key)
 	return modifier;
 }
 
-static uint8_t s_translateKey[256];
+static uint8_t s_translateKey[512];
 
 static void initTranslateKey(uint16_t _sdl, Key::Enum _key)
 {
 	BX_ASSERT(_sdl < BX_COUNTOF(s_translateKey), "Out of bounds %d.", _sdl);
-	s_translateKey[_sdl & 0xff] = (uint8_t)_key;
+	s_translateKey[_sdl & 0x1ff] = (uint8_t)_key;
 }
 
 static Key::Enum translateKey(SDL_Scancode _sdl)
 {
-	return (Key::Enum)s_translateKey[_sdl & 0xff];
+	return (Key::Enum)s_translateKey[_sdl & 0x1ff];
 }
 
 static uint8_t s_translateGamepad[256];
@@ -292,62 +293,6 @@ struct Context
 	    , m_fullscreen(false)
 	{
 		bx::memSet(s_translateKey, 0, sizeof(s_translateKey));
-		initTranslateKey(SDL_SCANCODE_ESCAPE, Key::Esc);
-		initTranslateKey(SDL_SCANCODE_RETURN, Key::Return);
-		initTranslateKey(SDL_SCANCODE_TAB, Key::Tab);
-		initTranslateKey(SDL_SCANCODE_BACKSPACE, Key::Backspace);
-		initTranslateKey(SDL_SCANCODE_SPACE, Key::Space);
-		initTranslateKey(SDL_SCANCODE_UP, Key::Up);
-		initTranslateKey(SDL_SCANCODE_DOWN, Key::Down);
-		initTranslateKey(SDL_SCANCODE_LEFT, Key::Left);
-		initTranslateKey(SDL_SCANCODE_RIGHT, Key::Right);
-		initTranslateKey(SDL_SCANCODE_PAGEUP, Key::PageUp);
-		initTranslateKey(SDL_SCANCODE_PAGEDOWN, Key::PageDown);
-		initTranslateKey(SDL_SCANCODE_HOME, Key::Home);
-		initTranslateKey(SDL_SCANCODE_END, Key::End);
-		initTranslateKey(SDL_SCANCODE_PRINTSCREEN, Key::Print);
-		initTranslateKey(SDL_SCANCODE_KP_PLUS, Key::Plus);
-		initTranslateKey(SDL_SCANCODE_EQUALS, Key::Plus);
-		initTranslateKey(SDL_SCANCODE_KP_MINUS, Key::Minus);
-		initTranslateKey(SDL_SCANCODE_MINUS, Key::Minus);
-		initTranslateKey(SDL_SCANCODE_GRAVE, Key::Tilde);
-		initTranslateKey(SDL_SCANCODE_KP_COMMA, Key::Comma);
-		initTranslateKey(SDL_SCANCODE_COMMA, Key::Comma);
-		initTranslateKey(SDL_SCANCODE_KP_PERIOD, Key::Period);
-		initTranslateKey(SDL_SCANCODE_PERIOD, Key::Period);
-		initTranslateKey(SDL_SCANCODE_SLASH, Key::Slash);
-		initTranslateKey(SDL_SCANCODE_F1, Key::F1);
-		initTranslateKey(SDL_SCANCODE_F2, Key::F2);
-		initTranslateKey(SDL_SCANCODE_F3, Key::F3);
-		initTranslateKey(SDL_SCANCODE_F4, Key::F4);
-		initTranslateKey(SDL_SCANCODE_F5, Key::F5);
-		initTranslateKey(SDL_SCANCODE_F6, Key::F6);
-		initTranslateKey(SDL_SCANCODE_F7, Key::F7);
-		initTranslateKey(SDL_SCANCODE_F8, Key::F8);
-		initTranslateKey(SDL_SCANCODE_F9, Key::F9);
-		initTranslateKey(SDL_SCANCODE_F10, Key::F10);
-		initTranslateKey(SDL_SCANCODE_F11, Key::F11);
-		initTranslateKey(SDL_SCANCODE_F12, Key::F12);
-		initTranslateKey(SDL_SCANCODE_KP_0, Key::NumPad0);
-		initTranslateKey(SDL_SCANCODE_KP_1, Key::NumPad1);
-		initTranslateKey(SDL_SCANCODE_KP_2, Key::NumPad2);
-		initTranslateKey(SDL_SCANCODE_KP_3, Key::NumPad3);
-		initTranslateKey(SDL_SCANCODE_KP_4, Key::NumPad4);
-		initTranslateKey(SDL_SCANCODE_KP_5, Key::NumPad5);
-		initTranslateKey(SDL_SCANCODE_KP_6, Key::NumPad6);
-		initTranslateKey(SDL_SCANCODE_KP_7, Key::NumPad7);
-		initTranslateKey(SDL_SCANCODE_KP_8, Key::NumPad8);
-		initTranslateKey(SDL_SCANCODE_KP_9, Key::NumPad9);
-		initTranslateKey(SDL_SCANCODE_0, Key::Key0);
-		initTranslateKey(SDL_SCANCODE_1, Key::Key1);
-		initTranslateKey(SDL_SCANCODE_2, Key::Key2);
-		initTranslateKey(SDL_SCANCODE_3, Key::Key3);
-		initTranslateKey(SDL_SCANCODE_4, Key::Key4);
-		initTranslateKey(SDL_SCANCODE_5, Key::Key5);
-		initTranslateKey(SDL_SCANCODE_6, Key::Key6);
-		initTranslateKey(SDL_SCANCODE_7, Key::Key7);
-		initTranslateKey(SDL_SCANCODE_8, Key::Key8);
-		initTranslateKey(SDL_SCANCODE_9, Key::Key9);
 		initTranslateKey(SDL_SCANCODE_A, Key::KeyA);
 		initTranslateKey(SDL_SCANCODE_B, Key::KeyB);
 		initTranslateKey(SDL_SCANCODE_C, Key::KeyC);
@@ -374,15 +319,113 @@ struct Context
 		initTranslateKey(SDL_SCANCODE_X, Key::KeyX);
 		initTranslateKey(SDL_SCANCODE_Y, Key::KeyY);
 		initTranslateKey(SDL_SCANCODE_Z, Key::KeyZ);
-		// !NEW
-		initTranslateKey(SDL_SCANCODE_LALT, Key::LeftAlt);
-		initTranslateKey(SDL_SCANCODE_RALT, Key::RightAlt);
+
+		initTranslateKey(SDL_SCANCODE_1, Key::Key1);
+		initTranslateKey(SDL_SCANCODE_2, Key::Key2);
+		initTranslateKey(SDL_SCANCODE_3, Key::Key3);
+		initTranslateKey(SDL_SCANCODE_4, Key::Key4);
+		initTranslateKey(SDL_SCANCODE_5, Key::Key5);
+		initTranslateKey(SDL_SCANCODE_6, Key::Key6);
+		initTranslateKey(SDL_SCANCODE_7, Key::Key7);
+		initTranslateKey(SDL_SCANCODE_8, Key::Key8);
+		initTranslateKey(SDL_SCANCODE_9, Key::Key9);
+		initTranslateKey(SDL_SCANCODE_0, Key::Key0);
+
+		initTranslateKey(SDL_SCANCODE_RETURN, Key::Return);
+		initTranslateKey(SDL_SCANCODE_ESCAPE, Key::Esc);
+		initTranslateKey(SDL_SCANCODE_BACKSPACE, Key::Backspace);
+		initTranslateKey(SDL_SCANCODE_TAB, Key::Tab);
+		initTranslateKey(SDL_SCANCODE_SPACE, Key::Space);
+
+		initTranslateKey(SDL_SCANCODE_MINUS, Key::Minus);
+		initTranslateKey(SDL_SCANCODE_EQUALS, Key::Equals);
+		initTranslateKey(SDL_SCANCODE_LEFTBRACKET, Key::LeftBracket);
+		initTranslateKey(SDL_SCANCODE_RIGHTBRACKET, Key::RightBracket);
+		initTranslateKey(SDL_SCANCODE_BACKSLASH, Key::Backslash);
+		initTranslateKey(SDL_SCANCODE_NONUSHASH, Key::NonUsHash);
+		initTranslateKey(SDL_SCANCODE_SEMICOLON, Key::Semicolon);
+		initTranslateKey(SDL_SCANCODE_APOSTROPHE, Key::Quote);
+		initTranslateKey(SDL_SCANCODE_GRAVE, Key::Tilde);
+		initTranslateKey(SDL_SCANCODE_COMMA, Key::Comma);
+		initTranslateKey(SDL_SCANCODE_PERIOD, Key::Period);
+		initTranslateKey(SDL_SCANCODE_SLASH, Key::Slash);
+
+		initTranslateKey(SDL_SCANCODE_CAPSLOCK, Key::CapsLock);
+
+		initTranslateKey(SDL_SCANCODE_F1, Key::F1);
+		initTranslateKey(SDL_SCANCODE_F2, Key::F2);
+		initTranslateKey(SDL_SCANCODE_F3, Key::F3);
+		initTranslateKey(SDL_SCANCODE_F4, Key::F4);
+		initTranslateKey(SDL_SCANCODE_F5, Key::F5);
+		initTranslateKey(SDL_SCANCODE_F6, Key::F6);
+		initTranslateKey(SDL_SCANCODE_F7, Key::F7);
+		initTranslateKey(SDL_SCANCODE_F8, Key::F8);
+		initTranslateKey(SDL_SCANCODE_F9, Key::F9);
+		initTranslateKey(SDL_SCANCODE_F10, Key::F10);
+		initTranslateKey(SDL_SCANCODE_F11, Key::F11);
+		initTranslateKey(SDL_SCANCODE_F12, Key::F12);
+
+		initTranslateKey(SDL_SCANCODE_PRINTSCREEN, Key::Print);
+		initTranslateKey(SDL_SCANCODE_SCROLLLOCK, Key::ScrollLock);
+		initTranslateKey(SDL_SCANCODE_PAUSE, Key::Pause);
+		initTranslateKey(SDL_SCANCODE_INSERT, Key::Insert);
+		initTranslateKey(SDL_SCANCODE_HOME, Key::Home);
+		initTranslateKey(SDL_SCANCODE_PAGEUP, Key::PageUp);
+		initTranslateKey(SDL_SCANCODE_DELETE, Key::Delete);
+		initTranslateKey(SDL_SCANCODE_END, Key::End);
+		initTranslateKey(SDL_SCANCODE_PAGEDOWN, Key::PageDown);
+		initTranslateKey(SDL_SCANCODE_RIGHT, Key::Right);
+		initTranslateKey(SDL_SCANCODE_LEFT, Key::Left);
+		initTranslateKey(SDL_SCANCODE_DOWN, Key::Down);
+		initTranslateKey(SDL_SCANCODE_UP, Key::Up);
+
+		initTranslateKey(SDL_SCANCODE_NUMLOCKCLEAR, Key::NumLockClear);
+		initTranslateKey(SDL_SCANCODE_KP_DIVIDE, Key::NumPadDivide);
+		initTranslateKey(SDL_SCANCODE_KP_MULTIPLY, Key::NumPadMultiply);
+		initTranslateKey(SDL_SCANCODE_KP_MINUS, Key::NumPadMinus);
+		initTranslateKey(SDL_SCANCODE_KP_PLUS, Key::NumPadPlus);
+		initTranslateKey(SDL_SCANCODE_KP_ENTER, Key::NumPadEnter);
+		initTranslateKey(SDL_SCANCODE_KP_1, Key::NumPad1);
+		initTranslateKey(SDL_SCANCODE_KP_2, Key::NumPad2);
+		initTranslateKey(SDL_SCANCODE_KP_3, Key::NumPad3);
+		initTranslateKey(SDL_SCANCODE_KP_4, Key::NumPad4);
+		initTranslateKey(SDL_SCANCODE_KP_5, Key::NumPad5);
+		initTranslateKey(SDL_SCANCODE_KP_6, Key::NumPad6);
+		initTranslateKey(SDL_SCANCODE_KP_7, Key::NumPad7);
+		initTranslateKey(SDL_SCANCODE_KP_8, Key::NumPad8);
+		initTranslateKey(SDL_SCANCODE_KP_9, Key::NumPad9);
+		initTranslateKey(SDL_SCANCODE_KP_0, Key::NumPad0);
+		initTranslateKey(SDL_SCANCODE_KP_PERIOD, Key::NumPadPeriod);
+
+		initTranslateKey(SDL_SCANCODE_NONUSBACKSLASH, Key::NonUsBackslash);
+		initTranslateKey(SDL_SCANCODE_APPLICATION, Key::Application);
+		initTranslateKey(SDL_SCANCODE_POWER, Key::Power);
+		initTranslateKey(SDL_SCANCODE_KP_EQUALS, Key::NumPadEquals);
+		initTranslateKey(SDL_SCANCODE_MUTE, Key::Mute);
+		initTranslateKey(SDL_SCANCODE_VOLUMEUP, Key::VolumeUp);
+		initTranslateKey(SDL_SCANCODE_VOLUMEDOWN, Key::VolumeDown);
+		initTranslateKey(SDL_SCANCODE_KP_COMMA, Key::NumPadComma);
+
 		initTranslateKey(SDL_SCANCODE_LCTRL, Key::LeftCtrl);
-		initTranslateKey(SDL_SCANCODE_RCTRL, Key::RightCtrl);
 		initTranslateKey(SDL_SCANCODE_LSHIFT, Key::LeftShift);
-		initTranslateKey(SDL_SCANCODE_RSHIFT, Key::RightShift);
+		initTranslateKey(SDL_SCANCODE_LALT, Key::LeftAlt);
 		initTranslateKey(SDL_SCANCODE_LGUI, Key::LeftMeta);
+		initTranslateKey(SDL_SCANCODE_RCTRL, Key::RightCtrl);
+		initTranslateKey(SDL_SCANCODE_RSHIFT, Key::RightShift);
+		initTranslateKey(SDL_SCANCODE_RALT, Key::RightAlt);
 		initTranslateKey(SDL_SCANCODE_RGUI, Key::RightMeta);
+
+		initTranslateKey(SDL_SCANCODE_MEDIA_PLAY, Key::MediaPlay);
+		initTranslateKey(SDL_SCANCODE_MEDIA_PAUSE, Key::MediaPause);
+		initTranslateKey(SDL_SCANCODE_MEDIA_RECORD, Key::MediaRecord);
+		initTranslateKey(SDL_SCANCODE_MEDIA_FAST_FORWARD, Key::MediaFastFoward);
+		initTranslateKey(SDL_SCANCODE_MEDIA_REWIND, Key::MediaRewind);
+		initTranslateKey(SDL_SCANCODE_MEDIA_NEXT_TRACK, Key::MediaNext);
+		initTranslateKey(SDL_SCANCODE_MEDIA_PREVIOUS_TRACK, Key::MediaPrevious);
+		initTranslateKey(SDL_SCANCODE_MEDIA_STOP, Key::MediaStop);
+		initTranslateKey(SDL_SCANCODE_MEDIA_EJECT, Key::MediaEject);
+		initTranslateKey(SDL_SCANCODE_MEDIA_PLAY_PAUSE, Key::MediaPlayPause);
+		initTranslateKey(SDL_SCANCODE_MEDIA_SELECT, Key::MediaSelect);
 
 		bx::memSet(s_translateGamepad, uint8_t(Key::Count), sizeof(s_translateGamepad));
 		initTranslateGamepad(SDL_GAMEPAD_BUTTON_SOUTH, Key::GamepadA);
@@ -534,6 +577,7 @@ struct Context
 					{
 						uint8_t   modifiers = translateKeyModifiers(kev.mod);
 						Key::Enum key       = translateKey(kev.scancode);
+						if (!key) ui::Log("SDL3: Unknown code: {} {}", TO_INT(kev.scancode), SDL_GetScancodeName(kev.scancode));
 
 #	if 0
 						DBG("SDL scancode %d, key %d, name %s, key name %s"

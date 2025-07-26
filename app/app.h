@@ -1,6 +1,6 @@
 // app.h
 // @author octopoulos
-// @version 2025-07-21
+// @version 2025-07-22
 
 #pragma once
 
@@ -64,8 +64,9 @@ private:
 	/////////
 
 private:
-	bool isPerspective = true;               ///< perspective or orthogonal
-	int  renderFlags   = RenderFlag_Default; ///< render flags
+	bool  isPerspective = true;               ///< perspective or orthogonal
+	float orthoZoom     = 0.02f;              ///< zoom in orthogonal projection
+	int   renderFlags   = RenderFlag_Default; ///< render flags
 
 public:
 	/// Render everything except UI

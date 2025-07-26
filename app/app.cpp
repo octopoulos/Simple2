@@ -1,6 +1,6 @@
 // app.cpp
 // @author octopoulos
-// @version 2025-07-21
+// @version 2025-07-22
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -108,6 +108,17 @@ int App::InitScene()
 			scene->AddNamedChild(std::move(cubeMesh), "cube");
 		}
 
+		// cursor
+		{
+			cursor->geometry = std::make_shared<Geometry>(vbh, ibh);
+			cursor->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cube", "fs_cube"));
+
+			cursor->ScaleRotationPosition(
+			    { 1.0f, 1.0f, 1.0f },
+			    { 0.0f, 0.0f, 0.0f },
+			    { 0.0f, 0.0f, 0.0f });
+		}
+
 		// floor
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
@@ -115,11 +126,11 @@ int App::InitScene()
 			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cube", "fs_cube"));
 
 			cubeMesh->ScaleRotationPosition(
-			    { 8.0f, 0.5f, 8.0f },
+			    { 9.0f, 1.0f, 9.0f },
 			    { 0.0f, 0.0f, 0.0f },
 			    { 0.0f, -2.0f, 0.0f }
 			);
-			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f, { 8.0f, 0.5f, 8.0f, 0.0f });
+			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f, { 9.0f, 1.0f, 9.0f, 0.0f });
 
 			scene->AddNamedChild(std::move(cubeMesh), "floor");
 		}
@@ -161,7 +172,7 @@ int App::InitScene()
 		object->ScaleRotationPosition(
 		    { 1.0f, 1.0f, 1.0f },
 		    { 0.0f, 1.5f, 0.0f },
-		    { 3.0f, -1.5f, -2.5f }
+		    { 4.0f, -1.0f, -2.0f }
 		);
 		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh, 0.0f);
 		scene->AddNamedChild(object, "building");
@@ -197,7 +208,7 @@ int App::InitScene()
 		parent->program = shaderManager.LoadProgram("vs_instancing", "fs_instancing");
 		scene->AddNamedChild(parent, "donut3-group");
 
-		for (int i = 0; i < 1200; ++i)
+		for (int i = 0; i < 120; ++i)
 		{
 			//if (auto object = std::make_shared<Mesh>())
 			if (auto object = loader.LoadModel("donut3"))
@@ -269,9 +280,8 @@ void App::Render()
 			bx::mtxProj(proj, 60.0f, fscreenX / fscreenY, 0.1f, 2000.0f, homoDepth);
 		else
 		{
-			float       zoom  = 0.02f;
-			const float zoomX = fscreenX * zoom;
-			const float zoomY = fscreenY * zoom;
+			const float zoomX = fscreenX * orthoZoom;
+			const float zoomY = fscreenY * orthoZoom;
 			bx::mtxOrtho(proj, -zoomX, zoomX, -zoomY, zoomY, -1000.0f, 1000.0f, 0.0f, homoDepth);
 		}
 

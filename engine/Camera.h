@@ -1,6 +1,6 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-07-21
+// @version 2025-07-22
 
 #pragma once
 
@@ -25,7 +25,7 @@ public:
 
 	void UpdateViewProjection(uint8_t viewId)
 	{
-		UpdateMatrix();
+		UpdateWorldMatrix();
 		projectionMatrix = glm::perspective(glm::radians(fovY), aspect, nearPlane, farPlane);
 		viewMatrix       = glm::inverse(worldMatrix);
 

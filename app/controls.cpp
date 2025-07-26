@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-07-21
+// @version 2025-07-22
 
 #include "stdafx.h"
 #include "app.h"
@@ -15,14 +15,39 @@ void App::Controls()
 	const auto& ginput = GetGlobalInput();
 
 	for (int id = 0; id < Key::Count; ++id)
-		if (ginput.keyNews[id]) ui::Log("Controls: {} : {} : {} : {}", ginput.keyTimes[id], id, ginput.keyNews[id], ginput.keys[id]);
+		if (ginput.keyDowns[id]) ui::Log("Controls: {} {:3} {:5} {}", ginput.keyTimes[id], id, ginput.keys[id], getName((Key::Enum)id));
 
 	// new keys
-	if (const auto& news = ginput.keyNews)
+	if (const auto& downs = ginput.keyDowns)
 	{
-		if (news[Key::F4] & KeyNew_Down) bulletDebug = !bulletDebug;
-		if (news[Key::F5] & KeyNew_Down) isPerspective = !isPerspective;
-		if (news[Key::F6] & KeyNew_Down) renderFlags ^= RenderFlag_Instancing;
+		if (downs[Key::Down])
+		{
+			cursor->position.z = std::roundf(cursor->position.z - 2.0f);
+			cursor->UpdateLocalMatrix();
+		}
+		if (downs[Key::Left])
+		{
+			cursor->position.x = std::roundf(cursor->position.x - 2.0f);
+			cursor->UpdateLocalMatrix();
+		}
+		if (downs[Key::Right])
+		{
+			cursor->position.x = std::roundf(cursor->position.x + 2.0f);
+			cursor->UpdateLocalMatrix();
+		}
+		if (downs[Key::Up])
+		{
+			cursor->position.z = std::roundf(cursor->position.z + 2.0f);
+			cursor->UpdateLocalMatrix();
+		}
+
+		//if (news[Key::] & KeyNew_Down) orthoZoom *= 2.0f;
+		if (downs[Key::NumPadMinus] || downs[Key::Minus]) orthoZoom *= 2.0f;
+		if (downs[Key::NumPadPlus] || downs[Key::Equals]) orthoZoom *= 0.5f;
+
+		if (downs[Key::F4]) bulletDebug = !bulletDebug;
+		if (downs[Key::F5]) isPerspective = !isPerspective;
+		if (downs[Key::F11]) renderFlags ^= RenderFlag_Instancing;
 	}
 
 	// camera

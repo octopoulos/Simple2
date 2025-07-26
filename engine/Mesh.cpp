@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-07-21
+// @version 2025-07-22
 
 #include "stdafx.h"
 #include "Mesh.h"
@@ -16,7 +16,7 @@ void Mesh::CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, con
 {
 	auto body = std::make_unique<Body>(physics);
 	body->CreateShape(shapeType, this, dims);
-	body->CreateBody(mass, btVector3(position.x, position.y, position.z), btQuaternion(rotation.x, rotation.y, rotation.z, rotation.w));
+	body->CreateBody(mass, GlmToBullet(position), GlmToBullet(quaternion));
 	bodies.push_back(std::move(body));
 }
 

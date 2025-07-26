@@ -1,4 +1,4 @@
-// @version 2025-07-21
+// @version 2025-07-22
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -393,7 +393,10 @@ void GlobalInput::KeyDownUp(int key, bool down)
 		keyTimes[key]           = now;
 		keyChanges[keyChangeId] = { key, down, now };
 		keyChangeId             = (keyChangeId + 1) & 127;
-		keyNews[key]            = down ? KeyNew_Down : KeyNew_Up;
+		if (down)
+			keyDowns[key] = true;
+		else
+			keyUps[key] = true;
 	}
 }
 
@@ -440,7 +443,8 @@ void GlobalInput::Reset()
 
 void GlobalInput::ResetNews()
 {
-	std::memset(keyNews, 0, sizeof(keyNews));
+	std::memset(keyDowns, 0, sizeof(keyDowns));
+	std::memset(keyUps, 0, sizeof(keyUps));
 }
 
 void GlobalInput::SetResolution(int width, int height, int wheelDelta)

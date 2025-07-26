@@ -389,7 +389,7 @@ foreach(CONFIG ${SHADER_CONFIGS})
 
 		# Define output binary path
 		set(SHADER_BIN "${SHADER_OUT_DIR}/${SHADER_NAME}.bin")
-		message(STATUS "SHADER_SRC=${SHADER_SRC} -> ${SHADER_BIN}")
+		#message(STATUS "SHADER_SRC=${SHADER_SRC} -> ${SHADER_BIN}")
 
 		# Add custom command to compile the shader
 		set(CUSTOM_ARGS "${SHADERC}" -f "${SHADER_SRC}" -o "${SHADER_BIN}" --type "${SHADER_TYPE}" --platform "${SHADER_PLATFORM}" --profile "${SHADER_PROFILE}" --varyingdef "${VARYING_DEF}")

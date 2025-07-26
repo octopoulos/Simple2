@@ -1,4 +1,4 @@
-// @version 2025-07-21
+// @version 2025-07-22
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -83,68 +83,15 @@ bx::AllocatorI* getDefaultAllocator()
 }
 #endif // ENTRY_CONFIG_IMPLEMENT_DEFAULT_ALLOCATOR
 
+/// same order as SDL3
+/// @see SDL_scancode.h
 static const char* s_keyName[] = {
 	"None",
-	"Esc",
-	"Return",
-	"Tab",
-	"Space",
-	"Backspace",
-	"Up",
-	"Down",
-	"Left",
-	"Right",
-	"Insert",
-	"Delete",
-	"Home",
-	"End",
-	"PageUp",
-	"PageDown",
-	"Print",
-	"Plus",
-	"Minus",
-	"LeftBracket",
-	"RightBracket",
-	"Semicolon",
-	"Quote",
-	"Comma",
-	"Period",
-	"Slash",
-	"Backslash",
-	"Tilde",
-	"F1",
-	"F2",
-	"F3",
-	"F4",
-	"F5",
-	"F6",
-	"F7",
-	"F8",
-	"F9",
-	"F10",
-	"F11",
-	"F12",
-	"NumPad0",
-	"NumPad1",
-	"NumPad2",
-	"NumPad3",
-	"NumPad4",
-	"NumPad5",
-	"NumPad6",
-	"NumPad7",
-	"NumPad8",
-	"NumPad9",
-	"Key0",
-	"Key1",
-	"Key2",
-	"Key3",
-	"Key4",
-	"Key5",
-	"Key6",
-	"Key7",
-	"Key8",
-	"Key9",
-	"KeyA",
+	"None1",
+	"None2",
+	"None3",
+
+	"KeyA", // 4
 	"KeyB",
 	"KeyC",
 	"KeyD",
@@ -170,17 +117,115 @@ static const char* s_keyName[] = {
 	"KeyX",
 	"KeyY",
 	"KeyZ",
-	// !NEW
-	"LeftAlt",
-	"RightAlt",
-	"LeftCtrl",
-	"RightCtrl",
+
+	"Key1", // 30
+	"Key2",
+	"Key3",
+	"Key4",
+	"Key5",
+	"Key6",
+	"Key7",
+	"Key8",
+	"Key9",
+	"Key0",
+
+	"Return", // 40
+	"Esc",
+	"Backspace",
+	"Tab",
+	"Space",
+
+	"Minus", // 45
+	"Equals",
+	"LeftBracket",
+	"RightBracket",
+	"Backslash",
+	"NonUsHash",
+	"Semicolon",
+	"Quote",
+	"Tilde",
+	"Comma",
+	"Period",
+	"Slash",
+
+	"CapsLock", // 57
+
+	"F1", // 58
+	"F2",
+	"F3",
+	"F4",
+	"F5",
+	"F6",
+	"F7",
+	"F8",
+	"F9",
+	"F10",
+	"F11",
+	"F12",
+
+	"Print", // 70
+	"ScrollLock",
+	"Pause",
+	"Insert",
+	"Home",
+	"PageUp",
+	"Delete",
+	"End",
+	"PageDown",
+	"Right",
+	"Left",
+	"Down",
+	"Up",
+
+	"NumLockClear", // 83
+	"NumPadDivide",
+	"NumPadMultiply",
+	"NumPadMinus",
+	"NumPadPlus",
+	"NumPadEnter",
+	"NumPad1",
+	"NumPad2",
+	"NumPad3",
+	"NumPad4",
+	"NumPad5",
+	"NumPad6",
+	"NumPad7",
+	"NumPad8",
+	"NumPad9",
+	"NumPad0",
+	"NumPadPeriod",
+
+	"NonUsBackslash", // 100
+	"Application",
+	"Power",
+	"NumPadEquals",
+	"Mute",
+	"VolumeUp",
+	"VolumeDown",
+	"NumPadComma",
+
+	"LeftCtrl", // 108 (SDL3: 224)
 	"LeftShift",
-	"RightShift",
+	"LeftAlt",
 	"LeftMeta",
+	"RightCtrl",
+	"RightShift",
+	"RightAlt",
 	"RightMeta",
-	//
-	"GamepadA",
+
+	"MediaPlay", // 116 (SDL3: 262)
+	"MediaPause",
+	"MediaRecord",
+	"MediaFastFoward",
+	"MediaRewind",
+	"MediaNext",
+	"MediaPrevious",
+	"MediaStop",
+	"MediaEject",
+	"MediaPlayPause",
+	"MediaSelect",
+
+	"GamepadA", // 127 (???)
 	"GamepadB",
 	"GamepadX",
 	"GamepadY",
@@ -234,7 +279,7 @@ char keyToAscii(Key::Enum _key, uint8_t _modifiers)
 	case Key::Tab: return '\t';
 	case Key::Space: return ' ';
 	case Key::Backspace: return 0x08;
-	case Key::Plus: return '+';
+	case Key::Equals: return '=';
 	case Key::Minus: return '-';
 	default: break;
 	}

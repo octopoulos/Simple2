@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-07-21
+// @version 2025-07-22
 
 #include "stdafx.h"
 #include "Object3d.h"
@@ -26,28 +26,24 @@ void Object3d::Render(uint8_t viewId, int renderFlags)
 
 void Object3d::ScaleRotationPosition(const glm::vec3& _scale, const glm::vec3& _rotation, const glm::vec3& _position)
 {
-	position   = _position;
-	rotation   = _rotation;
-	scale      = _scale;
-	quaternion = glm::quat(rotation);
-
+	position    = _position;
+	rotation    = _rotation;
+	scale       = _scale;
+	quaternion  = glm::quat(rotation);
 	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
-	transform   = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(quaternion) * scaleMatrix;
-	localMatrix = transform;
-	worldMatrix = transform;
+
+	UpdateLocalMatrix();
 }
 
 void Object3d::ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat& _quaternion, const glm::vec3& _position)
 {
-	position   = _position;
-	quaternion = _quaternion;
-	scale      = _scale;
-	rotation   = glm::eulerAngles(quaternion);
-
+	position    = _position;
+	quaternion  = _quaternion;
+	scale       = _scale;
+	rotation    = glm::eulerAngles(quaternion);
 	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
-	transform   = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(quaternion) * scaleMatrix;
-	localMatrix = transform;
-	worldMatrix = transform;
+
+	UpdateLocalMatrix();
 }
 
 void Object3d::SynchronizePhysics()
@@ -59,13 +55,20 @@ void Object3d::TraverseAndRender(uint8_t viewId, int renderFlags)
 	if (!(type & ObjectType_Group))
 		if (type & ObjectType_Instance) return;
 
-	UpdateMatrix();
+	//UpdateWorldMatrix();
 	Render(viewId, renderFlags);
 	for (const auto& child : children)
 		child->TraverseAndRender(viewId, renderFlags);
 }
 
-void Object3d::UpdateMatrix()
+void Object3d::UpdateLocalMatrix()
+{
+	transform   = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(quaternion) * scaleMatrix;
+	localMatrix = transform;
+	UpdateWorldMatrix();
+}
+
+void Object3d::UpdateWorldMatrix()
 {
 	if (parent)
 		worldMatrix = parent->worldMatrix * localMatrix;
@@ -73,5 +76,5 @@ void Object3d::UpdateMatrix()
 		worldMatrix = localMatrix;
 
 	for (auto& child : children)
-		child->UpdateMatrix();
+		child->UpdateWorldMatrix();
 }
