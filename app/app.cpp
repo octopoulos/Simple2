@@ -23,7 +23,11 @@ extern std::string VERSION;
 
 void App::Destroy()
 {
+	// make sure that everything is removed from the physical world before deleting physics
+	// mapNode is shared with the App => not destroyed with the scene
+	mapNode.reset();
 	scene.reset();
+
 	physics.reset();
 }
 
@@ -121,7 +125,7 @@ int App::InitScene()
 			cursor->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cube", "fs_cube"));
 
 			cursor->ScaleRotationPosition(
-			    { 1.0f, 1.0f, 1.0f },
+			    { 0.5f, 1.0f, 0.5f },
 			    { 0.0f, 0.0f, 0.0f },
 			    { 0.0f, 0.0f, 0.0f });
 		}

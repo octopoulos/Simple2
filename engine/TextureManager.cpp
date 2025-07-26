@@ -1,6 +1,6 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-07-17
+// @version 2025-07-22
 
 #include "stdafx.h"
 #include "TextureManager.h"
@@ -76,10 +76,17 @@ void TextureManager::Destroy()
 {
 }
 
+const bgfx::TextureInfo* TextureManager::GetTextureInfo(std::string_view name) const
+{
+	if (const auto& it = textures.find(std::string(name)); it != textures.end())
+		return &it->second.info;
+	return nullptr;
+}
+
 bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 {
 	if (const auto& it = textures.find(std::string(name)); it != textures.end())
-		return it->second;
+		return it->second.handle;
 
 	std::string path;
 	if (!IsFile(name) && name.find('/') == std::string_view::npos)
@@ -87,13 +94,14 @@ bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 	else
 		path = std::string(name);
 
-	bgfx::TextureHandle texture = LoadTexture_(bx::FilePath(path.c_str()));
+	bgfx::TextureInfo   info    = {};
+	bgfx::TextureHandle texture = LoadTexture_(bx::FilePath(path.c_str()), 0, 0, &info);
 	if (!bgfx::isValid(texture))
 	{
 		ui::LogError("Failed to load texture: {}", name);
 		return BGFX_INVALID_HANDLE;
 	}
 
-	textures.emplace(std::string(name), texture);
+	textures.emplace(std::string(name), TextureData { texture, info });
 	return texture;
 }

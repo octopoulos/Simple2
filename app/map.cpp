@@ -19,7 +19,7 @@ void App::AddObject(const std::string& name)
 	{
 		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
 		object->ScaleRotationPosition(
-		    { 1.5f, 1.5f, 1.5f },
+		    { 1.0f, 1.0f, 1.0f },
 		    { 0.0f, 0.0f, 0.0f },
 		    { coord.x, coord.y, coord.z });
 		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh);
@@ -69,8 +69,17 @@ void App::MapUi()
 						const auto handle  = textureManager.LoadTexture(preview);
 						if (bgfx::isValid(handle))
 						{
+							// crop if texture is 512px
+							auto uv0 = ImVec2(0.0f, 0.0f);
+							auto uv1 = ImVec2(1.0f, 1.0f);
+							if (const auto* info = textureManager.GetTextureInfo(preview); info->width >= 512)
+							{
+								uv0 = ImVec2(0.3f, 0.3f);
+								uv1 = ImVec2(0.7f, 0.7f);
+							}
+
 							ImTextureID texId = (ImTextureID)(uintptr_t)handle.idx;
-							if (ImGui::ImageButton(fmt::format("##{}", kitName).c_str(), texId, ImVec2(imageSize, imageSize)))
+							if (ImGui::ImageButton(fmt::format("##{}", kitName).c_str(), texId, ImVec2(imageSize, imageSize), uv0, uv1))
 								AddObject(kitName);
 
 							if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", name.c_str());
@@ -83,7 +92,7 @@ void App::MapUi()
 					{
 						const ImVec2 boxSize = { imageSize + imagePadding, imageSize + imagePadding };
 						if (ImGui::Button(fmt::format("##{}", kitName).c_str(), boxSize))
-							AddObject(name);
+							AddObject(kitName);
 
 						// draw wrapped text manually inside the button
 						const ImVec2 textMin   = ImGui::GetItemRectMin();
@@ -196,8 +205,13 @@ void App::ScanModels(const std::filesystem::path& folder, const std::filesystem:
 					std::filesystem::remove(path);
 				else if (path.has_extension() && path.extension() == ".bin")
 				{
-					const auto stem    = filename.stem().string();
-					const auto preview = folderPrev / (stem + ".png");
+					const auto stem     = filename.stem().string();
+					const auto preview  = folderPrev / (stem + ".png");
+					const auto preview2 = folderPrev / (stem + "_NE.png");
+
+					if (!IsFile(preview) && IsFile(preview2))
+						std::filesystem::copy_file(preview2, preview);
+
 					//ui::Log(" {} / - {} - {} - {}", relative, filename, preview, IsFile(preview));
 					models.insert({ stem, IsFile(preview) ? 1 : 0 });
 				}

@@ -463,12 +463,20 @@ foreach(MODEL_EXT glb obj)
 		endif()
 
 		# Copy preview image if it exists
-		set(PREVIEW_SRC "${MODEL_SRC_DIR}/${FIRST_FOLDER}/Previews/${MODEL_NAME}.png")
-		#message("PREVIEW_SRC=${PREVIEW_SRC}")
-		#message("PREVIEW_OUT=${PREVIEW_OUT}")
-		if(PREVIEW_OUT AND EXISTS "${PREVIEW_SRC}" AND NOT EXISTS "${PREVIEW_OUT}")
-			file(COPY "${PREVIEW_SRC}" DESTINATION "${PREVIEW_OUT_DIR}/${FIRST_FOLDER}")
-			list(APPEND PREVIEW_OUT_FILES "${PREVIEW_OUT}")
+		if(FIRST_FOLDER)
+			set(PREVIEW_DIR "${MODEL_SRC_DIR}/${FIRST_FOLDER}")
+			if(IS_DIRECTORY "${PREVIEW_DIR}/Previews/")
+				set(PREVIEW_SRC "${PREVIEW_DIR}/Previews/${MODEL_NAME}.png")
+			elseif(IS_DIRECTORY "${PREVIEW_DIR}/Isometric/")
+				set(PREVIEW_SRC "${PREVIEW_DIR}/Isometric/${MODEL_NAME}_NE.png")
+			endif()
+
+			#message("PREVIEW_SRC=${PREVIEW_SRC}")
+			#message("PREVIEW_OUT=${PREVIEW_OUT}")
+			if(PREVIEW_OUT AND EXISTS "${PREVIEW_SRC}" AND NOT EXISTS "${PREVIEW_OUT}")
+				file(COPY "${PREVIEW_SRC}" DESTINATION "${PREVIEW_OUT_DIR}/${FIRST_FOLDER}")
+				list(APPEND PREVIEW_OUT_FILES "${PREVIEW_OUT}")
+			endif()
 		endif()
 
 		# Check for duplicate output files
@@ -508,7 +516,7 @@ endforeach()
 # Create folders for Visual Studio
 #source_group(TREE "${ENGINE_SRC_FILES}" PREFIX "Engine" FILES ${ENGINE_SRC_FILES})
 source_group(TREE "${MODEL_SRC_DIR}" PREFIX "Assets/Models" FILES ${MODEL_SRC_FILES})
-source_group(TREE "${PREVIEW_OUT_FILES}" PREFIX "Assets/Models-prev" FILES ${PREVIEW_OUT_FILES})
+#source_group(TREE "${PREVIEW_OUT_FILES}" PREFIX "Assets/Models-prev" FILES ${PREVIEW_OUT_FILES})
 source_group(TREE "${SHADER_SRC_DIR}" PREFIX "Assets/Shaders" FILES ${SHADER_SRC_FILES})
 source_group(TREE "${RUNTIME_DIR}" PREFIX "Assets/Binaries" FILES ${MODEL_BIN_FILES} ${SHADER_BIN_FILES})
 
@@ -556,6 +564,7 @@ set(SOURCES
 	${MODEL_BIN_FILES}
 	${MODEL_SRC_FILES}
 	${PHYSICS_SRC_FILES}
+	#${PREVIEW_OUT_FILES}
 	${SHADER_BIN_FILES}
 	${SHADER_SRC_FILES}
 )

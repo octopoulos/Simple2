@@ -22,22 +22,22 @@ void App::Controls()
 	{
 		if (downs[Key::Down])
 		{
-			cursor->position.z = std::roundf(cursor->position.z - 2.0f);
+			cursor->position.z = std::roundf(cursor->position.z - 1.0f);
 			cursor->UpdateLocalMatrix();
 		}
 		if (downs[Key::Left])
 		{
-			cursor->position.x = std::roundf(cursor->position.x - 2.0f);
+			cursor->position.x = std::roundf(cursor->position.x - 1.0f);
 			cursor->UpdateLocalMatrix();
 		}
 		if (downs[Key::Right])
 		{
-			cursor->position.x = std::roundf(cursor->position.x + 2.0f);
+			cursor->position.x = std::roundf(cursor->position.x + 1.0f);
 			cursor->UpdateLocalMatrix();
 		}
 		if (downs[Key::Up])
 		{
-			cursor->position.z = std::roundf(cursor->position.z + 2.0f);
+			cursor->position.z = std::roundf(cursor->position.z + 1.0f);
 			cursor->UpdateLocalMatrix();
 		}
 
