@@ -291,6 +291,8 @@ struct Context
 	    , m_fullscreen(false)
 	{
 		bx::memSet(s_translateKey, 0, sizeof(s_translateKey));
+
+		// https://wiki.libsdl.org/SDL2/SDL_Scancode
 		TRANSLATE_KEY(SDL_SCANCODE_A, Key::KeyA);
 		TRANSLATE_KEY(SDL_SCANCODE_B, Key::KeyB);
 		TRANSLATE_KEY(SDL_SCANCODE_C, Key::KeyC);

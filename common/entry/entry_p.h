@@ -71,6 +71,7 @@
 	}
 
 #define TRANSLATE_KEY(a, b) s_translateKey[a] = b
+#define TRANSLATE_U8(a, b)  TRANSLATE_KEY(uint8_t(a), b)
 
 namespace entry
 {

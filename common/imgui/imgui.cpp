@@ -1,4 +1,4 @@
-// @version 2025-07-15
+// @version 2025-07-22
 /*
  * Copyright 2014-2015 Daniel Collin. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -237,7 +237,7 @@ struct OcornutImguiContext
 		m_keyMap[entry::Key::PageUp]       = ImGuiKey_PageUp;
 		m_keyMap[entry::Key::PageDown]     = ImGuiKey_PageDown;
 		m_keyMap[entry::Key::Print]        = ImGuiKey_PrintScreen;
-		m_keyMap[entry::Key::Plus]         = ImGuiKey_Equal;
+		m_keyMap[entry::Key::Equals]       = ImGuiKey_Equal;
 		m_keyMap[entry::Key::Minus]        = ImGuiKey_Minus;
 		m_keyMap[entry::Key::LeftBracket]  = ImGuiKey_LeftBracket;
 		m_keyMap[entry::Key::RightBracket] = ImGuiKey_RightBracket;

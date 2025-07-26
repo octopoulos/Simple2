@@ -1,9 +1,10 @@
-// @version 2025-07-21
+// @version 2025-07-22
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
+#include "stdafx.h"
 #include "entry_p.h"
 
 #if ENTRY_CONFIG_USE_GLFW
@@ -43,9 +44,7 @@ namespace entry
 	{
 #	if BX_PLATFORM_LINUX
 		if (GLFW_PLATFORM_WAYLAND == glfwGetPlatform() )
-		{
 			return glfwGetWaylandWindow(_window);
-		}
 
 		return (void*)uintptr_t(glfwGetX11Window(_window) );
 #	elif BX_PLATFORM_OSX
@@ -58,27 +57,12 @@ namespace entry
 	static uint8_t translateKeyModifiers(int _glfw)
 	{
 		uint8_t modifiers = 0;
-
-		if (_glfw & GLFW_MOD_ALT)
-		{
-			modifiers |= Modifier::LeftAlt;
-		}
-
-		if (_glfw & GLFW_MOD_CONTROL)
-		{
-			modifiers |= Modifier::LeftCtrl;
-		}
-
-		if (_glfw & GLFW_MOD_SUPER)
-		{
-			modifiers |= Modifier::LeftMeta;
-		}
-
-		if (_glfw & GLFW_MOD_SHIFT)
-		{
-			modifiers |= Modifier::LeftShift;
-		}
-
+		// clang-format off
+		if (_glfw & GLFW_MOD_ALT    ) modifiers |= Modifier::LeftAlt;
+		if (_glfw & GLFW_MOD_CONTROL) modifiers |= Modifier::LeftCtrl;
+		if (_glfw & GLFW_MOD_SUPER  ) modifiers |= Modifier::LeftMeta;
+		if (_glfw & GLFW_MOD_SHIFT  ) modifiers |= Modifier::LeftShift;
+		// clang-format on
 		return modifiers;
 	}
 
@@ -92,13 +76,9 @@ namespace entry
 	static MouseButton::Enum translateMouseButton(int _button)
 	{
 		if (_button == GLFW_MOUSE_BUTTON_LEFT)
-		{
 			return MouseButton::Left;
-		}
 		else if (_button == GLFW_MOUSE_BUTTON_RIGHT)
-		{
 			return MouseButton::Right;
-		}
 
 		return MouseButton::Middle;
 	}
@@ -159,20 +139,13 @@ namespace entry
 			const unsigned char* buttons = glfwGetJoystickButtons(m_handle.idx, &numButtons);
 			const float* axes = glfwGetJoystickAxes(m_handle.idx, &numAxes);
 
-			if (NULL == buttons || NULL == axes)
-			{
-				return;
-			}
+			if (NULL == buttons || NULL == axes) return;
 
 			if (numAxes > GamepadAxis::Count)
-			{
 				numAxes = GamepadAxis::Count;
-			}
 
 			if (numButtons > Key::Count - Key::GamepadA)
-			{
 				numButtons = Key::Count - Key::GamepadA;
-			}
 
 			WindowHandle defaultWindow = { 0 };
 
@@ -181,9 +154,7 @@ namespace entry
 				GamepadAxis::Enum axis = translateGamepadAxis(ii);
 				int32_t value = (int32_t) (axes[ii] * 32768.f);
 				if (GamepadAxis::LeftY == axis || GamepadAxis::RightY == axis)
-				{
 					value = -value;
-				}
 
 				if (m_axes[ii] != value)
 				{
@@ -303,94 +274,121 @@ namespace entry
 			, m_scrollPos(0.0f)
 		{
 			bx::memSet(s_translateKey, 0, sizeof(s_translateKey));
-			s_translateKey[GLFW_KEY_ESCAPE]       = Key::Esc;
-			s_translateKey[GLFW_KEY_ENTER]        = Key::Return;
-			s_translateKey[GLFW_KEY_TAB]          = Key::Tab;
-			s_translateKey[GLFW_KEY_BACKSPACE]    = Key::Backspace;
-			s_translateKey[GLFW_KEY_SPACE]        = Key::Space;
-			s_translateKey[GLFW_KEY_UP]           = Key::Up;
-			s_translateKey[GLFW_KEY_DOWN]         = Key::Down;
-			s_translateKey[GLFW_KEY_LEFT]         = Key::Left;
-			s_translateKey[GLFW_KEY_RIGHT]        = Key::Right;
-			s_translateKey[GLFW_KEY_PAGE_UP]      = Key::PageUp;
-			s_translateKey[GLFW_KEY_PAGE_DOWN]    = Key::PageDown;
-			s_translateKey[GLFW_KEY_HOME]         = Key::Home;
-			s_translateKey[GLFW_KEY_END]          = Key::End;
-			s_translateKey[GLFW_KEY_PRINT_SCREEN] = Key::Print;
-			s_translateKey[GLFW_KEY_KP_ADD]       = Key::Plus;
-			s_translateKey[GLFW_KEY_EQUAL]        = Key::Plus;
-			s_translateKey[GLFW_KEY_KP_SUBTRACT]  = Key::Minus;
-			s_translateKey[GLFW_KEY_MINUS]        = Key::Minus;
-			s_translateKey[GLFW_KEY_COMMA]        = Key::Comma;
-			s_translateKey[GLFW_KEY_PERIOD]       = Key::Period;
-			s_translateKey[GLFW_KEY_SLASH]        = Key::Slash;
-			s_translateKey[GLFW_KEY_F1]           = Key::F1;
-			s_translateKey[GLFW_KEY_F2]           = Key::F2;
-			s_translateKey[GLFW_KEY_F3]           = Key::F3;
-			s_translateKey[GLFW_KEY_F4]           = Key::F4;
-			s_translateKey[GLFW_KEY_F5]           = Key::F5;
-			s_translateKey[GLFW_KEY_F6]           = Key::F6;
-			s_translateKey[GLFW_KEY_F7]           = Key::F7;
-			s_translateKey[GLFW_KEY_F8]           = Key::F8;
-			s_translateKey[GLFW_KEY_F9]           = Key::F9;
-			s_translateKey[GLFW_KEY_F10]          = Key::F10;
-			s_translateKey[GLFW_KEY_F11]          = Key::F11;
-			s_translateKey[GLFW_KEY_F12]          = Key::F12;
-			s_translateKey[GLFW_KEY_KP_0]         = Key::NumPad0;
-			s_translateKey[GLFW_KEY_KP_1]         = Key::NumPad1;
-			s_translateKey[GLFW_KEY_KP_2]         = Key::NumPad2;
-			s_translateKey[GLFW_KEY_KP_3]         = Key::NumPad3;
-			s_translateKey[GLFW_KEY_KP_4]         = Key::NumPad4;
-			s_translateKey[GLFW_KEY_KP_5]         = Key::NumPad5;
-			s_translateKey[GLFW_KEY_KP_6]         = Key::NumPad6;
-			s_translateKey[GLFW_KEY_KP_7]         = Key::NumPad7;
-			s_translateKey[GLFW_KEY_KP_8]         = Key::NumPad8;
-			s_translateKey[GLFW_KEY_KP_9]         = Key::NumPad9;
-			s_translateKey[GLFW_KEY_0]            = Key::Key0;
-			s_translateKey[GLFW_KEY_1]            = Key::Key1;
-			s_translateKey[GLFW_KEY_2]            = Key::Key2;
-			s_translateKey[GLFW_KEY_3]            = Key::Key3;
-			s_translateKey[GLFW_KEY_4]            = Key::Key4;
-			s_translateKey[GLFW_KEY_5]            = Key::Key5;
-			s_translateKey[GLFW_KEY_6]            = Key::Key6;
-			s_translateKey[GLFW_KEY_7]            = Key::Key7;
-			s_translateKey[GLFW_KEY_8]            = Key::Key8;
-			s_translateKey[GLFW_KEY_9]            = Key::Key9;
-			s_translateKey[GLFW_KEY_A]            = Key::KeyA;
-			s_translateKey[GLFW_KEY_B]            = Key::KeyB;
-			s_translateKey[GLFW_KEY_C]            = Key::KeyC;
-			s_translateKey[GLFW_KEY_D]            = Key::KeyD;
-			s_translateKey[GLFW_KEY_E]            = Key::KeyE;
-			s_translateKey[GLFW_KEY_F]            = Key::KeyF;
-			s_translateKey[GLFW_KEY_G]            = Key::KeyG;
-			s_translateKey[GLFW_KEY_H]            = Key::KeyH;
-			s_translateKey[GLFW_KEY_I]            = Key::KeyI;
-			s_translateKey[GLFW_KEY_J]            = Key::KeyJ;
-			s_translateKey[GLFW_KEY_K]            = Key::KeyK;
-			s_translateKey[GLFW_KEY_L]            = Key::KeyL;
-			s_translateKey[GLFW_KEY_M]            = Key::KeyM;
-			s_translateKey[GLFW_KEY_N]            = Key::KeyN;
-			s_translateKey[GLFW_KEY_O]            = Key::KeyO;
-			s_translateKey[GLFW_KEY_P]            = Key::KeyP;
-			s_translateKey[GLFW_KEY_Q]            = Key::KeyQ;
-			s_translateKey[GLFW_KEY_R]            = Key::KeyR;
-			s_translateKey[GLFW_KEY_S]            = Key::KeyS;
-			s_translateKey[GLFW_KEY_T]            = Key::KeyT;
-			s_translateKey[GLFW_KEY_U]            = Key::KeyU;
-			s_translateKey[GLFW_KEY_V]            = Key::KeyV;
-			s_translateKey[GLFW_KEY_W]            = Key::KeyW;
-			s_translateKey[GLFW_KEY_X]            = Key::KeyX;
-			s_translateKey[GLFW_KEY_Y]            = Key::KeyY;
-			s_translateKey[GLFW_KEY_Z]            = Key::KeyZ;
-			//
-			s_translateKey[GLFW_KEY_LEFT_ALT]     = Key::LeftAlt);
-			s_translateKey[GLFW_KEY_RIGHT_ALT]    = Key::RightAlt);
-			s_translateKey[GLFW_KEY_LEFT_CONTROL] = Key::LeftCtrl);
-			s_translateKey[GLFW_KEY_RIGHT_CONTROL]= Key::RightCtrl);
-			s_translateKey[GLFW_KEY_LEFT_SHIFT]   = Key::LeftShift);
-			s_translateKey[GLFW_KEY_RIGHT_SHIFT]  = Key::RightShift);
-			s_translateKey[GLFW_KEY_LEFT_SUPER]   = Key::LeftMeta);
-			s_translateKey[GLFW_KEY_RIGHT_SUPER]  = Key::RightMeta);
+
+			// https://www.glfw.org/docs/latest/group__keys.html
+			TRANSLATE_KEY(GLFW_KEY_A, Key::KeyA);
+			TRANSLATE_KEY(GLFW_KEY_B, Key::KeyB);
+			TRANSLATE_KEY(GLFW_KEY_C, Key::KeyC);
+			TRANSLATE_KEY(GLFW_KEY_D, Key::KeyD);
+			TRANSLATE_KEY(GLFW_KEY_E, Key::KeyE);
+			TRANSLATE_KEY(GLFW_KEY_F, Key::KeyF);
+			TRANSLATE_KEY(GLFW_KEY_G, Key::KeyG);
+			TRANSLATE_KEY(GLFW_KEY_H, Key::KeyH);
+			TRANSLATE_KEY(GLFW_KEY_I, Key::KeyI);
+			TRANSLATE_KEY(GLFW_KEY_J, Key::KeyJ);
+			TRANSLATE_KEY(GLFW_KEY_K, Key::KeyK);
+			TRANSLATE_KEY(GLFW_KEY_L, Key::KeyL);
+			TRANSLATE_KEY(GLFW_KEY_M, Key::KeyM);
+			TRANSLATE_KEY(GLFW_KEY_N, Key::KeyN);
+			TRANSLATE_KEY(GLFW_KEY_O, Key::KeyO);
+			TRANSLATE_KEY(GLFW_KEY_P, Key::KeyP);
+			TRANSLATE_KEY(GLFW_KEY_Q, Key::KeyQ);
+			TRANSLATE_KEY(GLFW_KEY_R, Key::KeyR);
+			TRANSLATE_KEY(GLFW_KEY_S, Key::KeyS);
+			TRANSLATE_KEY(GLFW_KEY_T, Key::KeyT);
+			TRANSLATE_KEY(GLFW_KEY_U, Key::KeyU);
+			TRANSLATE_KEY(GLFW_KEY_V, Key::KeyV);
+			TRANSLATE_KEY(GLFW_KEY_W, Key::KeyW);
+			TRANSLATE_KEY(GLFW_KEY_X, Key::KeyX);
+			TRANSLATE_KEY(GLFW_KEY_Y, Key::KeyY);
+			TRANSLATE_KEY(GLFW_KEY_Z, Key::KeyZ);
+
+			TRANSLATE_KEY(GLFW_KEY_1, Key::Key1);
+			TRANSLATE_KEY(GLFW_KEY_2, Key::Key2);
+			TRANSLATE_KEY(GLFW_KEY_3, Key::Key3);
+			TRANSLATE_KEY(GLFW_KEY_4, Key::Key4);
+			TRANSLATE_KEY(GLFW_KEY_5, Key::Key5);
+			TRANSLATE_KEY(GLFW_KEY_6, Key::Key6);
+			TRANSLATE_KEY(GLFW_KEY_7, Key::Key7);
+			TRANSLATE_KEY(GLFW_KEY_8, Key::Key8);
+			TRANSLATE_KEY(GLFW_KEY_9, Key::Key9);
+			TRANSLATE_KEY(GLFW_KEY_0, Key::Key0);
+
+			TRANSLATE_KEY(GLFW_KEY_ENTER, Key::Return);
+			TRANSLATE_KEY(GLFW_KEY_ESCAPE, Key::Esc);
+			TRANSLATE_KEY(GLFW_KEY_BACKSPACE, Key::Backspace);
+			TRANSLATE_KEY(GLFW_KEY_TAB, Key::Tab);
+			TRANSLATE_KEY(GLFW_KEY_SPACE, Key::Space);
+
+			TRANSLATE_KEY(GLFW_KEY_MINUS, Key::Minus);
+			TRANSLATE_KEY(GLFW_KEY_EQUAL, Key::Equals);
+			TRANSLATE_KEY(GLFW_KEY_LEFT_BRACKET, Key::LeftBracket);
+			TRANSLATE_KEY(GLFW_KEY_RIGHT_BRACKET, Key::RightBracket);
+			TRANSLATE_KEY(GLFW_KEY_BACKSLASH, Key::Backslash);
+			TRANSLATE_KEY(GLFW_KEY_SEMICOLON, Key::Semicolon);
+			TRANSLATE_KEY(GLFW_KEY_APOSTROPHE, Key::Quote);
+			TRANSLATE_KEY(GLFW_KEY_GRAVE_ACCENT, Key::Tilde);
+			TRANSLATE_KEY(GLFW_KEY_COMMA, Key::Comma);
+			TRANSLATE_KEY(GLFW_KEY_PERIOD, Key::Period);
+			TRANSLATE_KEY(GLFW_KEY_SLASH, Key::Slash);
+
+			TRANSLATE_KEY(GLFW_KEY_CAPS_LOCK, Key::CapsLock);
+
+			TRANSLATE_KEY(GLFW_KEY_F1, Key::F1);
+			TRANSLATE_KEY(GLFW_KEY_F2, Key::F2);
+			TRANSLATE_KEY(GLFW_KEY_F3, Key::F3);
+			TRANSLATE_KEY(GLFW_KEY_F4, Key::F4);
+			TRANSLATE_KEY(GLFW_KEY_F5, Key::F5);
+			TRANSLATE_KEY(GLFW_KEY_F6, Key::F6);
+			TRANSLATE_KEY(GLFW_KEY_F7, Key::F7);
+			TRANSLATE_KEY(GLFW_KEY_F8, Key::F8);
+			TRANSLATE_KEY(GLFW_KEY_F9, Key::F9);
+			TRANSLATE_KEY(GLFW_KEY_F10, Key::F10);
+			TRANSLATE_KEY(GLFW_KEY_F11, Key::F11);
+			TRANSLATE_KEY(GLFW_KEY_F12, Key::F12);
+
+			TRANSLATE_KEY(GLFW_KEY_PRINT_SCREEN, Key::Print);
+			TRANSLATE_KEY(GLFW_KEY_SCROLL_LOCK, Key::ScrollLock);
+			TRANSLATE_KEY(GLFW_KEY_PAUSE, Key::Pause);
+			TRANSLATE_KEY(GLFW_KEY_INSERT, Key::Insert);
+			TRANSLATE_KEY(GLFW_KEY_HOME, Key::Home);
+			TRANSLATE_KEY(GLFW_KEY_PAGE_UP, Key::PageUp);
+			TRANSLATE_KEY(GLFW_KEY_DELETE, Key::Delete);
+			TRANSLATE_KEY(GLFW_KEY_END, Key::End);
+			TRANSLATE_KEY(GLFW_KEY_PAGE_DOWN, Key::PageDown);
+			TRANSLATE_KEY(GLFW_KEY_RIGHT, Key::Right);
+			TRANSLATE_KEY(GLFW_KEY_LEFT, Key::Left);
+			TRANSLATE_KEY(GLFW_KEY_DOWN, Key::Down);
+			TRANSLATE_KEY(GLFW_KEY_UP, Key::Up);
+
+			TRANSLATE_KEY(GLFW_KEY_NUM_LOCK, Key::NumLockClear);
+			TRANSLATE_KEY(GLFW_KEY_KP_DIVIDE, Key::NumPadDivide);
+			TRANSLATE_KEY(GLFW_KEY_KP_MULTIPLY, Key::NumPadMultiply);
+			TRANSLATE_KEY(GLFW_KEY_KP_SUBTRACT, Key::NumPadMinus);
+			TRANSLATE_KEY(GLFW_KEY_KP_ADD, Key::NumPadPlus);
+			TRANSLATE_KEY(GLFW_KEY_KP_ENTER, Key::NumPadEnter);
+			TRANSLATE_KEY(GLFW_KEY_KP_1, Key::NumPad1);
+			TRANSLATE_KEY(GLFW_KEY_KP_2, Key::NumPad2);
+			TRANSLATE_KEY(GLFW_KEY_KP_3, Key::NumPad3);
+			TRANSLATE_KEY(GLFW_KEY_KP_4, Key::NumPad4);
+			TRANSLATE_KEY(GLFW_KEY_KP_5, Key::NumPad5);
+			TRANSLATE_KEY(GLFW_KEY_KP_6, Key::NumPad6);
+			TRANSLATE_KEY(GLFW_KEY_KP_7, Key::NumPad7);
+			TRANSLATE_KEY(GLFW_KEY_KP_8, Key::NumPad8);
+			TRANSLATE_KEY(GLFW_KEY_KP_9, Key::NumPad9);
+			TRANSLATE_KEY(GLFW_KEY_KP_0, Key::NumPad0);
+			TRANSLATE_KEY(GLFW_KEY_KP_DECIMAL, Key::NumPadPeriod);
+
+			TRANSLATE_KEY(GLFW_KEY_KP_EQUAL, Key::NumPadEquals);
+
+			TRANSLATE_KEY(GLFW_KEY_LEFT_CONTROL, Key::LeftCtrl);
+			TRANSLATE_KEY(GLFW_KEY_LEFT_SHIFT, Key::LeftShift);
+			TRANSLATE_KEY(GLFW_KEY_LEFT_ALT, Key::LeftAlt);
+			TRANSLATE_KEY(GLFW_KEY_LEFT_SUPER, Key::LeftMeta);
+			TRANSLATE_KEY(GLFW_KEY_RIGHT_CONTROL, Key::RightCtrl);
+			TRANSLATE_KEY(GLFW_KEY_RIGHT_SHIFT, Key::RightShift);
+			TRANSLATE_KEY(GLFW_KEY_RIGHT_ALT, Key::RightAlt);
+			TRANSLATE_KEY(GLFW_KEY_RIGHT_SUPER, Key::RightMeta);
 	    }
 
 		int run(int _argc, const char* const* _argv)
@@ -457,9 +455,7 @@ namespace entry
 				for (uint32_t ii = 0; ii < ENTRY_CONFIG_MAX_GAMEPADS; ++ii)
 				{
 					if (m_gamepad[ii].m_connected)
-					{
 						m_gamepad[ii].update(m_eventQueue);
-					}
 				}
 
 				while (Msg* msg = m_msgs.pop())
@@ -473,16 +469,11 @@ namespace entry
 								, msg->m_title.c_str()
 								, NULL
 								, NULL);
-							if (!window)
-							{
-								break;
-							}
+							if (!window) break;
 
 							glfwSetWindowPos(window, msg->m_x, msg->m_y);
 							if (msg->m_flags & ENTRY_WINDOW_FLAG_ASPECT_RATIO)
-							{
 								glfwSetWindowAspectRatio(window, msg->m_width, msg->m_height);
-							}
 
 							glfwSetKeyCallback(window, keyCb);
 							glfwSetCharCallback(window, charCb);
@@ -578,13 +569,9 @@ namespace entry
 						{
 							GLFWwindow* window = m_window[msg->m_handle.idx];
 							if (msg->m_value)
-							{
 								glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-							}
 							else
-							{
 								glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-							}
 						}
 						break;
 					}
@@ -655,6 +642,7 @@ namespace entry
 		BX_UNUSED(_scancode);
 		if (_key == GLFW_KEY_UNKNOWN)
 		{
+			ui::Log("GLFW: Unknown code: {}", _key);
 			return;
 		}
 		WindowHandle handle = s_ctx.findHandle(_window);
@@ -669,10 +657,7 @@ namespace entry
 		WindowHandle handle = s_ctx.findHandle(_window);
 		uint8_t chars[4];
 		uint8_t length = encodeUTF8(chars, _scancode);
-		if (!length)
-		{
-			return;
-		}
+		if (!length) return;
 
 		s_ctx.m_eventQueue.postCharEvent(handle, length, chars);
 	}
@@ -727,17 +712,12 @@ namespace entry
 	{
 		WindowHandle handle = s_ctx.findHandle(_window);
 		for (int32_t ii = 0; ii < _count; ++ii)
-		{
 			s_ctx.m_eventQueue.postDropFileEvent(handle, _filePaths[ii]);
-		}
 	}
 
 	static void joystickCb(int _jid, int _action)
 	{
-		if (_jid >= ENTRY_CONFIG_MAX_GAMEPADS)
-		{
-			return;
-		}
+		if (_jid >= ENTRY_CONFIG_MAX_GAMEPADS) return;
 
 		WindowHandle defaultWindow = { 0 };
 		GamepadHandle handle = { (uint16_t) _jid };
@@ -845,9 +825,7 @@ namespace entry
 	{
 #	if BX_PLATFORM_LINUX
 		if (GLFW_PLATFORM_WAYLAND == glfwGetPlatform() )
-		{
 			return glfwGetWaylandDisplay();
-		}
 
 		return glfwGetX11Display();
 #	else
@@ -859,9 +837,7 @@ namespace entry
 	{
 #	if BX_PLATFORM_LINUX
 		if (GLFW_PLATFORM_WAYLAND == glfwGetPlatform() )
-		{
 			return bgfx::NativeWindowHandleType::Wayland;
-		}
 #	endif // BX_PLATFORM_LINUX
 
 		return bgfx::NativeWindowHandleType::Default;
