@@ -47,6 +47,13 @@ public:
 	/// Add a child to the object
 	virtual void AddChild(sObject3d child);
 
+	/// Add a child and specify its name
+	void AddNamedChild(sObject3d child, std::string&& name)
+	{
+		child->name = std::move(name);
+		AddChild(child);
+	}
+
 	/// Remove a child from the object
 	virtual void RemoveChild(const sObject3d& child);
 

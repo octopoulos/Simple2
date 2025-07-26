@@ -1,15 +1,31 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-07-19
+// @version 2025-07-22
 
 #include "stdafx.h"
 #include "app.h"
+#include "engine/ModelLoader.h"
 
 #include "dear-imgui/imgui.h"
 
 void App::AddObject(const std::string& name)
 {
-	ui::Log("AddObject: {}", name);
+	static ModelLoader loader;
+
+	const auto& coord = cursor->position;
+
+	ui::Log("AddObject: {} @ {} {} {}", name, coord.x, coord.y, coord.z);
+	if (auto object = loader.LoadModel(name, true))
+	{
+		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
+		object->ScaleRotationPosition(
+		    { 1.5f, 1.5f, 1.5f },
+		    { 0.0f, 0.0f, 0.0f },
+		    { coord.x, coord.y, coord.z });
+		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh);
+
+		mapNode->AddNamedChild(object, fmt::format("{}:{}:{}:{}", name, coord.x, coord.y, coord.z));
+	}
 }
 
 void App::MapUi()
@@ -55,7 +71,7 @@ void App::MapUi()
 						{
 							ImTextureID texId = (ImTextureID)(uintptr_t)handle.idx;
 							if (ImGui::ImageButton(fmt::format("##{}", kitName).c_str(), texId, ImVec2(imageSize, imageSize)))
-								AddObject(name);
+								AddObject(kitName);
 
 							if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", name.c_str());
 							hasImage = true;

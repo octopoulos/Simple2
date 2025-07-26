@@ -1,6 +1,6 @@
 // Scene.h
 // @author octopoulos
-// @version 2025-07-21
+// @version 2025-07-22
 
 #pragma once
 
@@ -27,12 +27,6 @@ public:
 		child->id     = TO_INT(children.size());
 		child->parent = this;
 		children.push_back(std::move(child));
-	}
-
-	void AddNamedChild(sObject3d child, std::string&& name)
-	{
-		child->name = std::move(name);
-		AddChild(child);
 	}
 
 	void Clear()

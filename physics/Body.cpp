@@ -125,7 +125,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Box: invalid dims / mesh");
+		else ui::LogError("CreateShape/ShapeType_Box: Invalid dims / mesh");
 		break;
 	case ShapeType_Box2d:
 		if (dims.x() > 0.0f && dims.y() > 0.0f && dims.z() > 0.0f)
@@ -144,7 +144,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Box2d: invalid dims / mesh");
+		else ui::LogError("CreateShape/ShapeType_Box2d: Invalid dims / mesh");
 		break;
 	case ShapeType_BoxObb:
 		if (numGroup > 0)
@@ -160,7 +160,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_BoxObb: invalid mesh");
+		else ui::LogError("CreateShape/ShapeType_BoxObb: Invalid mesh");
 		break;
 	case ShapeType_Capsule:
 		if (dims.x() > 0.0f && dims.y() > 0.0f)
@@ -179,7 +179,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Capsule: invalid dims / mesh");
+		else ui::LogError("CreateShape/ShapeType_Capsule: Invalid dims / mesh");
 		break;
 	case ShapeType_Cone:
 		if (dims.x() > 0.0f && dims.y() > 0.0f)
@@ -198,7 +198,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Cone: invalid dims / mesh");
+		else ui::LogError("CreateShape/ShapeType_Cone: Invalid dims / mesh");
 		break;
 	case ShapeType_Convex2d:
 		if (numGroup > 0)
@@ -217,7 +217,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 			}
 			shape = new btConvex2dShape(hull);
 		}
-		else ui::LogError("CreateShape/ShapeType_Convex2d: invalid mesh");
+		else ui::LogError("CreateShape/ShapeType_Convex2d: Invalid mesh");
 		break;
 	case ShapeType_ConvexHull:
 		if (numGroup > 0)
@@ -240,7 +240,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 			hull->initializePolyhedralFeatures();
 			shape = hull;
 		}
-		else ui::LogError("CreateShape/ShapeType_ConvexHull: invalid mesh");
+		else ui::LogError("CreateShape/ShapeType_ConvexHull: Invalid mesh");
 		break;
 	case ShapeType_Cylinder:
 		if (dims.x() > 0.0f && dims.y() > 0.0f && dims.z() > 0.0f)
@@ -259,7 +259,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Cylinder: invalid dims / mesh");
+		else ui::LogError("CreateShape/ShapeType_Cylinder: Invalid dims / mesh");
 		break;
 	case ShapeType_Plane:
 		if (dims.x() != 0.0f || dims.y() != 0.0f || dims.z() != 0.0f)
@@ -268,7 +268,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 			//shape->setLocalScaling(dims);
 			shape->setMargin(0.01f);
 		}
-		else ui::LogError("CreateShape/ShapeType_Plane: invalid dims");
+		else ui::LogError("CreateShape/ShapeType_Plane: Invalid dims");
 		break;
 	case ShapeType_Sphere:
 		if (dims.x() > 0.0f)
@@ -285,7 +285,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Sphere: invalid dims / mesh");
+		else ui::LogError("CreateShape/ShapeType_Sphere: Invalid dims / mesh");
 		break;
 	case ShapeType_Terrain:
 		shape = new btHeightfieldTerrainShape(1, 1, (const float*)nullptr, 0.0f, 0.0f, 1, false);
@@ -299,6 +299,12 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 
 			for (const auto& group : mesh->groups)
 			{
+				if (!group.m_indices || !group.m_vertices)
+				{
+					ui::LogError("CreateShape/ShapeType_TriangleMesh: Use ramcopy=true");
+					break;
+				}
+
 				const float* data = reinterpret_cast<const float*>(group.m_vertices);
 				for (uint32_t i = 0; i + 2 < group.m_numIndices; i += 3)
 				{
@@ -321,7 +327,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 
 			shape = new btBvhTriangleMeshShape(trimesh, true, true);
 		}
-		else ui::LogError("CreateShape/ShapeType_TriangleMesh: invalid mesh");
+		else ui::LogError("CreateShape/ShapeType_TriangleMesh: Invalid mesh");
 		break;
 	default: ui::LogError("CreateShape: Unknown type: {}", type);
 	}

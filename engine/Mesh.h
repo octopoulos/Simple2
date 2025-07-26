@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-07-21
+// @version 2025-07-22
 
 #pragma once
 
@@ -92,7 +92,7 @@ public:
 	~Mesh() { Destroy(); }
 
 	/// Utility to create a shape then a body
-	void CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, const btVector4& dims = { 0.0f, 0.0f, 0.0f, 0.0f });
+	void CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass = 0.0f, const btVector4& dims = { 0.0f, 0.0f, 0.0f, 0.0f });
 
 	/// Delete all groups including indices + vertices
 	void Destroy();

@@ -22,6 +22,11 @@ void Object3d::RemoveChild(const sObject3d& child)
 
 void Object3d::Render(uint8_t viewId, int renderFlags)
 {
+	if (type & ObjectType_Group)
+	{
+		for (const auto& child : children)
+			child->Render(viewId, renderFlags);
+	}
 }
 
 void Object3d::ScaleRotationPosition(const glm::vec3& _scale, const glm::vec3& _rotation, const glm::vec3& _position)

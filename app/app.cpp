@@ -8,9 +8,8 @@
 #include "app.h"
 #include "common/bgfx_utils.h"
 #include "common/camera.h"
-#include "imgui/imgui.h"
-
 #include "engine/ModelLoader.h"
+#include "imgui/imgui.h"
 
 #ifdef _WIN32
 #	include <windows.h>
@@ -49,10 +48,18 @@ int App::InitScene()
 {
 	scene = std::make_unique<Scene>();
 
-	cursor  = std::make_shared<Mesh>();
-	mapNode = std::make_shared<Object3d>();
-	scene->AddNamedChild(cursor, "cursor");
-	scene->AddNamedChild(mapNode, "map");
+	// cursor
+	{
+		cursor = std::make_shared<Mesh>();
+		scene->AddNamedChild(cursor, "cursor");
+	}
+
+	// mapNode
+	{
+		mapNode = std::make_shared<Object3d>();
+		mapNode->type |= ObjectType_Group;
+		scene->AddNamedChild(mapNode, "map");
+	}
 
 	physics = std::make_unique<PhysicsWorld>();
 
@@ -174,7 +181,7 @@ int App::InitScene()
 		    { 0.0f, 1.5f, 0.0f },
 		    { 4.0f, -1.0f, -2.0f }
 		);
-		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh, 0.0f);
+		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh);
 		scene->AddNamedChild(object, "building");
 	}
 	if (auto object = loader.LoadModel("bunny_decimated", true))
@@ -228,9 +235,7 @@ int App::InitScene()
 				// TODO: allow to reuse the parent mesh
 				object->CreateShapeBody(physics.get(), (i & 7) ? ShapeType_Box : ShapeType_Cylinder, 1.0f);
 
-				object->name = fmt::format("donut3-{}", i);
-				parent->AddChild(object);
-				//scene->AddNamedChild(object, fmt::format("donut3-{}", i));
+				parent->AddNamedChild(object, fmt::format("donut3-{}", i));
 			}
 		}
 	}
