@@ -26,7 +26,7 @@ EngineSettings* appSettings = &engineSettings;
 #define XSETTINGS EngineSettings
 
 static std::vector<Config> configs = {
-	#include "ui/game-config.inl"
+	#include "game-config.inl"
 };
 
 static std::unordered_map<std::string, Config*> configMap;
