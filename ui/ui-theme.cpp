@@ -3,8 +3,8 @@
 // @version 2025-07-23
 
 #include "stdafx.h"
-#include "engine-settings.h"
 #include "ui.h"
+#include "xsettings.h"
 
 //#include "imgui_impl_opengl3.h"
 
@@ -140,7 +140,7 @@ void UpdateFonts()
 		ImFontConfig fontConfig         = ImFontConfig();
 		fontConfig.FontDataOwnedByAtlas = false;
 		strcpy(fontConfig.Name, name);
-		auto font       = io.Fonts->AddFontFromMemoryTTF(fontData, dataSize, fontSize * appSettings->uiScale, &fontConfig);
+		auto font       = io.Fonts->AddFontFromMemoryTTF(fontData, dataSize, fontSize * xsettings.uiScale, &fontConfig);
 		fontNames[name] = font;
 	}
 
@@ -266,7 +266,7 @@ void UpdateTheme()
 	ImGuiStyle style;
 
 	// clang-format off
-	switch (appSettings->theme)
+	switch (xsettings.theme)
 	{
 	case Theme_Classic: SetThemeClassic(style); break;
 	case Theme_Custom : SetThemeCustom(style); break;
@@ -277,7 +277,7 @@ void UpdateTheme()
 	// clang-format on
 
 	ImGui::GetStyle() = style;
-	ImGui::GetStyle().ScaleAllSizes(appSettings->uiScale);
+	ImGui::GetStyle().ScaleAllSizes(xsettings.uiScale);
 }
 
 } // namespace ui

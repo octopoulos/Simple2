@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "ui.h"
+#include "xsettings.h"
 
 namespace ui
 {
@@ -143,7 +144,7 @@ bool AddSliderInt(const std::string& name, const char* text, int* value, int cou
 void AddSpace(float height)
 {
 	if (height < 0) height = -height * ImGui::GetStyle().WindowPadding.y;
-	//ImGui::Dummy(ImVec2(0, height * appSettings->uiScale));
+	ImGui::Dummy(ImVec2(0, height * xsettings.uiScale));
 }
 
 bool ItemEvent(const std::string& name, int index)

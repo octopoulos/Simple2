@@ -5,7 +5,7 @@
 #include "stdafx.h"
 #include "app.h"
 #include "ui/ui.h"
-#include "ui/engine-settings.h"
+#include "ui/xsettings.h"
 
 #include "dear-imgui/imgui.h"
 
@@ -114,9 +114,9 @@ void App::ShowMainMenu(float alpha)
 		if (ImGui::BeginMenu("Render"))
 		{
 			{
-				bool selected = appSettings->projection == Projection_Orthographic;
+				bool selected = xsettings.projection == Projection_Orthographic;
 				if (ImGui::MenuItem("Orthographic projection", nullptr, selected))
-					appSettings->projection = 1 - appSettings->projection;
+					xsettings.projection = 1 - xsettings.projection;
 			}
 			{
 				bool selected = renderFlags & RenderFlag_Instancing;

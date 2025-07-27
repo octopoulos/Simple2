@@ -10,7 +10,7 @@
 #include "common/camera.h"
 #include "engine/ModelLoader.h"
 #include "imgui/imgui.h"
-#include "ui/engine-settings.h"
+#include "ui/xsettings.h"
 
 #ifdef _WIN32
 #	include <windows.h>
@@ -31,7 +31,7 @@ void App::Destroy()
 
 	physics.reset();
 
-	SaveEngineSettings();
+	SaveGameSettings();
 }
 
 int App::Initialize()
@@ -51,7 +51,7 @@ int App::Initialize()
 		cameraSetVerticalAngle(-0.45f);
 	}
 
-	ui::Log("appSettings.aspectRatio={}", appSettings->aspectRatio);
+	ui::Log("xsettings.aspectRatio={}", xsettings.aspectRatio);
 	return 1;
 }
 
@@ -302,7 +302,7 @@ void App::Render()
 		const bool  homoDepth = bgfx::getCaps()->homogeneousDepth;
 		float       proj[16];
 
-		if (appSettings->projection == Projection_Orthographic)
+		if (xsettings.projection == Projection_Orthographic)
 		{
 			const float zoomX = fscreenX * orthoZoom;
 			const float zoomY = fscreenY * orthoZoom;
@@ -352,8 +352,9 @@ void App::InitializeImGui()
 
 void App::InitializeSettings()
 {
-	InitEngineSettings();
-	LoadEngineSettings();
+	InitGameSettings();
+	LoadGameSettings();
+	LoadGameSettings(xsettings.gameId);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

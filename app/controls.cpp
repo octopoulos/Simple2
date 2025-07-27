@@ -7,7 +7,7 @@
 #include "common/camera.h"
 #include "entry/input.h"
 #include "imgui/imgui.h"
-#include "ui/engine-settings.h"
+#include "ui/xsettings.h"
 
 void App::Controls()
 {
@@ -54,7 +54,7 @@ void App::Controls()
 		if (downs[Key::NumPadPlus] || downs[Key::Equals]) orthoZoom *= 0.5f;
 
 		if (downs[Key::F4]) bulletDebug = !bulletDebug;
-		if (downs[Key::F5]) appSettings->projection = 1 - appSettings->projection;
+		if (downs[Key::F5]) xsettings.projection = 1 - xsettings.projection;
 		if (downs[Key::F11]) renderFlags ^= RenderFlag_Instancing;
 	}
 
