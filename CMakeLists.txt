@@ -231,7 +231,7 @@ file(GLOB BX_SRC_FILES      CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bx/src/amalgamate
 file(GLOB COMMON_SRC_FILES  CONFIGURE_DEPENDS common/*.cpp common/*.h)
 file(GLOB ENGINE_SRC_FILES  CONFIGURE_DEPENDS engine/*.cpp engine/*.h)
 file(GLOB PHYSICS_SRC_FILES CONFIGURE_DEPENDS physics/*.cpp physics/*.h)
-# file(GLOB GUI_SRC_FILES CONFIGURE_DEPENDS src/gui/*.cpp src/gui/*.h)
+file(GLOB UI_SRC_FILES      CONFIGURE_DEPENDS ui/*.cpp ui/*.h)
 
 add_executable(Simple app/app.cpp)
 
@@ -567,6 +567,7 @@ set(SOURCES
 	#${PREVIEW_OUT_FILES}
 	${SHADER_BIN_FILES}
 	${SHADER_SRC_FILES}
+	${UI_SRC_FILES}
 )
 #message("SOURCES=${SOURCES}")
 target_sources(Simple PRIVATE ${SOURCES})

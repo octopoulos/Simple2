@@ -1,6 +1,6 @@
 // app.cpp
 // @author octopoulos
-// @version 2025-07-22
+// @version 2025-07-23
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -10,6 +10,7 @@
 #include "common/camera.h"
 #include "engine/ModelLoader.h"
 #include "imgui/imgui.h"
+#include "ui/engine-settings.h"
 
 #ifdef _WIN32
 #	include <windows.h>
@@ -29,14 +30,18 @@ void App::Destroy()
 	scene.reset();
 
 	physics.reset();
+
+	SaveEngineSettings();
 }
 
 int App::Initialize()
 {
 	FindAppDirectory(true);
+	InitializeSettings();
+
 	ScanModels("runtime/models", "runtime/models-prev");
 
-	if (const int result = InitScene(); result < 0) return result;
+	if (const int result = InitializeScene(); result < 0) return result;
 
 	// camera
 	{
@@ -45,11 +50,14 @@ int App::Initialize()
 		cameraSetHorizontalAngle(0.7f);
 		cameraSetVerticalAngle(-0.45f);
 	}
+
+	ui::Log("appSettings.aspectRatio={}", appSettings->aspectRatio);
 	return 1;
 }
 
-int App::InitScene()
+int App::InitializeScene()
 {
+	// 1)
 	scene = std::make_unique<Scene>();
 
 	// cursor
@@ -65,9 +73,10 @@ int App::InitScene()
 		scene->AddNamedChild(mapNode, "map");
 	}
 
+	// 2)
 	physics = std::make_unique<PhysicsWorld>();
 
-	// cube vertex layout
+	// 3) cube vertex layout
 	{
 		bgfx::VertexLayout cubeLayout;
 		// clang-format off
@@ -122,7 +131,7 @@ int App::InitScene()
 		// cursor
 		{
 			cursor->geometry = std::make_shared<Geometry>(vbh, ibh);
-			cursor->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cube", "fs_cube"));
+			cursor->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cursor", "fs_cursor"));
 
 			cursor->ScaleRotationPosition(
 			    { 0.5f, 1.0f, 0.5f },
@@ -162,7 +171,7 @@ int App::InitScene()
 		}
 	}
 
-	// load BIN model
+	// 4) load BIN model
 	ModelLoader loader;
 	if (auto object = loader.LoadModel("kenney_car-kit-obj/race-future", true))
 	{
@@ -250,6 +259,12 @@ int App::InitScene()
 			ui::Log(" {:2}: {}", ++i, child->name);
 	}
 
+	// 5) uniforms
+	{
+		uTime = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
+	}
+
+	// 6) time
 	startTime = bx::getHPCounter();
 	lastUs    = NowUs();
 	return 1;
@@ -265,6 +280,9 @@ void App::Render()
 	{
 		curTime   = TO_FLOAT((bx::getHPCounter() - startTime) / TO_DOUBLE(bx::getHPFrequency()));
 		deltaTime = curTime - lastTime;
+
+		float timeVec[4] = { curTime, 0.0f, 0.0f, 0.0f };
+		bgfx::setUniform(uTime, timeVec);
 	}
 
 	// 2) controls
@@ -284,19 +302,19 @@ void App::Render()
 		const bool  homoDepth = bgfx::getCaps()->homogeneousDepth;
 		float       proj[16];
 
-		if (isPerspective)
-			bx::mtxProj(proj, 60.0f, fscreenX / fscreenY, 0.1f, 2000.0f, homoDepth);
-		else
+		if (appSettings->projection == Projection_Orthographic)
 		{
 			const float zoomX = fscreenX * orthoZoom;
 			const float zoomY = fscreenY * orthoZoom;
 			bx::mtxOrtho(proj, -zoomX, zoomX, -zoomY, zoomY, -1000.0f, 1000.0f, 0.0f, homoDepth);
 		}
+		else bx::mtxProj(proj, 60.0f, fscreenX / fscreenY, 0.1f, 2000.0f, homoDepth);
 
 		bgfx::setViewTransform(0, view, proj);
 	}
 
 	// 4) physics
+	if (!isPaused)
 	{
 		physics->StepSimulation(deltaTime);
 		lastTime = curTime;
@@ -305,10 +323,37 @@ void App::Render()
 			child->SynchronizePhysics();
 
 		if (bulletDebug) physics->DrawDebug();
+
+		if (pauseNextFrame)
+		{
+			isPaused       = true;
+			pauseNextFrame = false;
+		}
 	}
+	else lastTime = curTime;
 
 	// 5) draw the scene
 	scene->RenderScene(0, renderFlags);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SETTINGS
+///////////
+
+void App::InitializeImGui()
+{
+	static char iniFilename[512];
+
+	imguiPath = ConfigFolder() / "imgui.ini";
+	strcpy(iniFilename, imguiPath.string().c_str());
+	ImGuiIO& io    = ImGui::GetIO();
+	io.IniFilename = iniFilename;
+}
+
+void App::InitializeSettings()
+{
+	InitEngineSettings();
+	LoadEngineSettings();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

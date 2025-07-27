@@ -1,13 +1,13 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-07-21
+// @version 2025-07-23
 
 #include "stdafx.h"
 #include "app.h"
+#include "ui/ui.h"
+#include "ui/engine-settings.h"
 
 #include "dear-imgui/imgui.h"
-
-//#define WITH_FILE_DIALOG 1
 
 #ifdef WITH_FILE_DIALOG
 #	include "ImGuiFileDialog/ImGuiFileDialog.h"
@@ -35,7 +35,7 @@ void App::MainUi()
 	MapUi();
 	ShowMainMenu(1.0f);
 	FilesUi();
-
+	//ui::DrawWindows();
 	if (showImGuiDemo) ImGui::ShowDemoWindow(&showImGuiDemo);
 }
 
@@ -113,10 +113,15 @@ void App::ShowMainMenu(float alpha)
 		// windows
 		if (ImGui::BeginMenu("Render"))
 		{
-			ImGui::MenuItem("Perspective projection", nullptr, &isPerspective);
+			{
+				bool selected = appSettings->projection == Projection_Orthographic;
+				if (ImGui::MenuItem("Orthographic projection", nullptr, selected))
+					appSettings->projection = 1 - appSettings->projection;
+			}
 			{
 				bool selected = renderFlags & RenderFlag_Instancing;
-				if (ImGui::MenuItem("Use instancing", nullptr, selected)) renderFlags ^= RenderFlag_Instancing;
+				if (ImGui::MenuItem("Use instancing", nullptr, selected))
+					renderFlags ^= RenderFlag_Instancing;
 			}
 			ImGui::EndMenu();
 		}
@@ -130,7 +135,7 @@ void App::ShowMainMenu(float alpha)
 			// AddMenu("Settings", xsettings.shortcutSettings, GetSettingsWindow());
 			//ImGui::Separator();
 			ImGui::MenuItem("ImGui Demo", nullptr, &showImGuiDemo);
-			// AddMenu("Theme Editor", nullptr, GetThemeWindow());
+			ui::AddMenu("Theme Editor", nullptr, ui::GetThemeWindow());
 
 			ImGui::EndMenu();
 		}

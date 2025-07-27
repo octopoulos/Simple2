@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-07-22
+// @version 2025-07-23
 
 #include "stdafx.h"
 #include "Mesh.h"
@@ -42,12 +42,11 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 	constexpr uint32_t kChunkIndexBufferCompressed  = BX_MAKEFOURCC('I', 'B', 'C', 0x1);
 	constexpr uint32_t kChunkPrimitive              = BX_MAKEFOURCC('P', 'R', 'I', 0x0);
 
-	Group group;
-
 	bx::AllocatorI* allocator = entry::getAllocator();
 
 	uint32_t  chunk;
 	bx::Error err;
+	Group     group;
 	while (bx::read(reader, chunk, &err) == 4 && err.isOk())
 	{
 		switch (chunk)
@@ -105,7 +104,6 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 				group.m_vertices = (uint8_t*)bx::alloc(allocator, group.m_numVertices * stride);
 				bx::memCopy(group.m_vertices, mem->data, mem->size);
 			}
-
 			group.m_vbh = bgfx::createVertexBuffer(mem, layout);
 		}
 		break;
@@ -122,7 +120,6 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 				group.m_indices = (uint16_t*)bx::alloc(allocator, group.m_numIndices * 2);
 				bx::memCopy(group.m_indices, mem->data, mem->size);
 			}
-
 			group.m_ibh = bgfx::createIndexBuffer(mem);
 		}
 		break;
@@ -149,7 +146,6 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 				group.m_indices = (uint16_t*)bx::alloc(allocator, group.m_numIndices * 2);
 				bx::memCopy(group.m_indices, mem->data, mem->size);
 			}
-
 			group.m_ibh = bgfx::createIndexBuffer(mem);
 		}
 		break;

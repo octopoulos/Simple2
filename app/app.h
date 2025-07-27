@@ -1,6 +1,6 @@
 // app.h
 // @author octopoulos
-// @version 2025-07-22
+// @version 2025-07-23
 
 #pragma once
 
@@ -64,9 +64,11 @@ private:
 	/////////
 
 private:
-	bool  isPerspective = true;               ///< perspective or orthogonal
-	float orthoZoom     = 0.02f;              ///< zoom in orthogonal projection
-	int   renderFlags   = RenderFlag_Default; ///< render flags
+	bool                isPaused       = false;              ///< pause simulation?
+	float               orthoZoom      = 0.02f;              ///< zoom in orthographic projection
+	bool                pauseNextFrame = false;              ///< pause next frame
+	int                 renderFlags    = RenderFlag_Default; ///< render flags
+	bgfx::UniformHandle uTime          = {};                 ///
 
 public:
 	/// Render everything except UI
@@ -92,7 +94,21 @@ private:
 	int64_t startTime = 0;    ///< initial time
 
 	/// Create scene and physics
-	int InitScene();
+	int InitializeScene();
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// SETTINGS
+	///////////
+
+protected:
+	std::filesystem::path imguiPath = {}; ///< imgui.ini
+
+	/// Load default ImGui settings
+	/// - after ImGui has been created
+	void InitializeImGui();
+
+	/// Initialize settings
+	void InitializeSettings();
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// UI

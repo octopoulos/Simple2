@@ -1,12 +1,13 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-07-22
+// @version 2025-07-23
 
 #include "stdafx.h"
 #include "app.h"
 #include "common/camera.h"
 #include "entry/input.h"
 #include "imgui/imgui.h"
+#include "ui/engine-settings.h"
 
 void App::Controls()
 {
@@ -20,6 +21,13 @@ void App::Controls()
 	// new keys
 	if (const auto& downs = ginput.keyDowns)
 	{
+		if (downs[Key::KeyO])
+		{
+			isPaused       = false;
+			pauseNextFrame = true;
+		}
+		if (downs[Key::KeyP]) isPaused = !isPaused;
+
 		if (downs[Key::Down])
 		{
 			cursor->position.z = std::roundf(cursor->position.z - 1.0f);
@@ -46,7 +54,7 @@ void App::Controls()
 		if (downs[Key::NumPadPlus] || downs[Key::Equals]) orthoZoom *= 0.5f;
 
 		if (downs[Key::F4]) bulletDebug = !bulletDebug;
-		if (downs[Key::F5]) isPerspective = !isPerspective;
+		if (downs[Key::F5]) appSettings->projection = 1 - appSettings->projection;
 		if (downs[Key::F11]) renderFlags ^= RenderFlag_Instancing;
 	}
 
