@@ -7,6 +7,7 @@
 #define CAMERA_H_HEADER_GUARD
 
 #include "entry/entry.h"
+#include <bx/math.h>
 
 #define CAMERA_KEY_FORWARD   UINT8_C(0x01)
 #define CAMERA_KEY_BACKWARD  UINT8_C(0x02)

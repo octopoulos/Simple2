@@ -1,11 +1,10 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-07-23
+// @version 2025-07-24
 
 #include "stdafx.h"
 #include "app.h"
 #include "ui/ui.h"
-#include "ui/xsettings.h"
 
 #include "dear-imgui/imgui.h"
 
@@ -23,7 +22,7 @@ void App::FilesUi()
 		{
 			fileFolder                = instance->GetCurrentPath();
 			actionFolders[fileAction] = fileFolder;
-			//OpenedFile(fileAction, instance->GetFilePathName());
+			// OpenedFile(fileAction, instance->GetFilePathName());
 		}
 		instance->Close();
 	}
@@ -32,11 +31,15 @@ void App::FilesUi()
 
 void App::MainUi()
 {
-	MapUi();
+	if (!wantVideo)
+	{
+		MapUi();
+		FilesUi();
+		// ui::DrawWindows();
+		if (showImGuiDemo) ImGui::ShowDemoWindow(&showImGuiDemo);
+	}
+
 	ShowMainMenu(1.0f);
-	FilesUi();
-	//ui::DrawWindows();
-	if (showImGuiDemo) ImGui::ShowDemoWindow(&showImGuiDemo);
 }
 
 void App::OpenFile(int action)
@@ -66,6 +69,19 @@ void App::ShowMainMenu(float alpha)
 	//	return;
 	// }
 
+	if (wantVideo)
+	{
+		ImGui::SetNextWindowPos(ImVec2(0, 0));
+		ImGui::SetNextWindowBgAlpha(0.8f);
+
+		if (ImGui::Begin("##VideoCaptureBar", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration))
+		{
+			if (ImGui::Button("REC")) wantVideo = false;
+		}
+		ImGui::End();
+		return;
+	}
+
 	static int dirtyMenu = 0;
 	// const bool hasFrame  = app->HasFrame();
 	// const int  ioBusy    = app->IoBusy();
@@ -80,33 +96,62 @@ void App::ShowMainMenu(float alpha)
 			if (ImGui::BeginMenu("Open Recent"))
 			{
 				bool first = true;
-				// for (const auto& name : xsettings.recentFiles)
-				//{
-				//	if (*name)
-				//	{
-				//		if (first)
-				//		{
-				//			if (ImGui::MenuItem("List Clear"))
-				//			{
-				//				memset(xsettings.recentFiles, 0, sizeof(xsettings.recentFiles));
-				//				break;
-				//			}
-				//			ImGui::Separator();
-				//			first = false;
-				//		}
-				//		std::filesystem::path path = name;
-				//		if (ImGui::MenuItem(path.filename().string().c_str())) app->OpenedFile(1, path);
-				//	}
-				// }
+				for (const auto& name : xsettings.recentFiles)
+				{
+					if (*name)
+					{
+						if (first)
+						{
+							if (ImGui::MenuItem("List Clear"))
+							{
+								memset(xsettings.recentFiles, 0, sizeof(xsettings.recentFiles));
+								break;
+							}
+							ImGui::Separator();
+							first = false;
+						}
+						std::filesystem::path path = name;
+						if (ImGui::MenuItem(path.filename().string().c_str()))
+							ui::Log("app->OpenedFile(1, path);");
+					}
+				}
 
 				if (first) ImGui::MenuItem("Empty List");
 				ImGui::EndMenu();
 			}
-			//ImGui::Separator();
-			// if (ImGui::MenuItem(fmt::format("Save {} Defaults", GameName()).c_str())) SaveGameSettings("", true, "-def");
-			// if (ImGui::MenuItem("Save Screenshot...", xsettings.shortcutScreenshot)) app->OpenFile(OpenAction_Screenshot);
+			ImGui::Separator();
+			if (ImGui::MenuItem("Capture Screenshot")) wantScreenshot = 6;
+			if (ImGui::MenuItem("Capture Screenshot with UI")) wantScreenshot = 5;
+			if (entryReset)
+			{
+				const bool canCapture = (*entryReset & BGFX_RESET_CAPTURE);
+
+				ImGui::Separator();
+				if (ImGui::MenuItem("Allow Video Capture", "", &xsettings.videoCapture))
+				{
+					if (xsettings.videoCapture && !canCapture)
+					{
+						ui::Log("need to RESET");
+						// bgfx::reset(xsettings.windowSize[0], xsettings.windowSize[1], *entryReset);
+					}
+				}
+
+				if (canCapture)
+				{
+					ImGui::MenuItem("Use Nvidia Encoding", "", &xsettings.nvidiaEnc);
+					if (ImGui::MenuItem(wantVideo ? fmt::format("Stop Video Capture ({})", videoFrame).c_str() : "Start Video Capture", "", wantVideo))
+					{
+						wantVideo = !wantVideo;
+						if (!wantVideo)
+							*entryReset &= ~BGFX_RESET_CAPTURE;
+						else if (!CreateDirectories("temp"))
+							wantVideo = false;
+					}
+				}
+			}
 			ImGui::Separator();
 			if (ImGui::MenuItem("Exit")) quit = true;
+
 			ImGui::EndMenu();
 		}
 
@@ -115,14 +160,10 @@ void App::ShowMainMenu(float alpha)
 		{
 			{
 				bool selected = xsettings.projection == Projection_Orthographic;
-				if (ImGui::MenuItem("Orthographic projection", nullptr, selected))
+				if (ImGui::MenuItem("Orthographic Projection", nullptr, selected))
 					xsettings.projection = 1 - xsettings.projection;
 			}
-			{
-				bool selected = renderFlags & RenderFlag_Instancing;
-				if (ImGui::MenuItem("Use instancing", nullptr, selected))
-					renderFlags ^= RenderFlag_Instancing;
-			}
+			ImGui::MenuItem("Mesh Instancing", nullptr, &xsettings.instancing);
 			ImGui::EndMenu();
 		}
 
@@ -133,7 +174,7 @@ void App::ShowMainMenu(float alpha)
 			// AddMenu("Log", xsettings.shortcutLog, GetLogWindow());
 			// app->MenuWindows();
 			// AddMenu("Settings", xsettings.shortcutSettings, GetSettingsWindow());
-			//ImGui::Separator();
+			// ImGui::Separator();
 			ImGui::MenuItem("ImGui Demo", nullptr, &showImGuiDemo);
 			ui::AddMenu("Theme Editor", nullptr, ui::GetThemeWindow());
 
@@ -143,16 +184,16 @@ void App::ShowMainMenu(float alpha)
 		// help
 		if (ImGui::BeginMenu("Help"))
 		{
-			ImGui::MenuItem("Good luck!");
+			ImGui::MenuItem("Good Luck!");
 			ImGui::EndMenu();
 		}
-
 		// menuHeight = ImGui::GetWindowHeight();
-		ImGui::EndMainMenuBar();
 
 		// save directly if update = 1, or after update-1 frames delay
 		if (update) dirtyMenu = update;
 		// if (dirtyMenu && !--dirtyMenu) SaveGameSettings();
+
+		ImGui::EndMainMenuBar();
 	}
 
 	// drawGui();

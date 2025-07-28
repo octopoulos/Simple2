@@ -1,4 +1,4 @@
-// @version 2025-07-22
+// @version 2025-07-24
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -9,6 +9,7 @@
 #include <bx/file.h>
 #include <bx/sort.h>
 #include <bgfx/bgfx.h>
+#include "ui/xsettings.h"
 
 #include <time.h>
 
@@ -576,6 +577,7 @@ uint32_t getNumApps()
 
 int runApp(AppI* _app, int _argc, const char* const* _argv)
 {
+	ui::Log("entry/runApp: {}x{} {}x{}", s_width, s_height, xsettings.windowSize[0], xsettings.windowSize[1]);
 	setWindowSize(kDefaultWindowHandle, s_width, s_height);
 
 	_app->init(_argc, _argv, s_width, s_height);
@@ -591,6 +593,25 @@ int runApp(AppI* _app, int _argc, const char* const* _argv)
 #endif // BX_PLATFORM_EMSCRIPTEN
 
 	return _app->shutdown();
+}
+
+void EntryBegin()
+{
+	ui::Log("EntryBegin");
+
+	FindAppDirectory(true);
+	InitGameSettings();
+	LoadGameSettings();
+	LoadGameSettings(xsettings.gameId);
+
+	s_width  = xsettings.windowSize[0];
+	s_height = xsettings.windowSize[1];
+}
+
+void EntryEnd()
+{
+	ui::Log("EntryEnd");
+	SaveGameSettings();
 }
 
 static int32_t sortApp(const void* _lhs, const void* _rhs)
@@ -632,6 +653,7 @@ static void sortApps()
 
 int main(int _argc, const char* const* _argv)
 {
+	ui::Log("entry/main");
 	// DBG(BX_COMPILER_NAME " / " BX_CPU_NAME " / " BX_ARCH_NAME " / " BX_PLATFORM_NAME);
 
 	s_fileReader = BX_NEW(g_allocator, FileReader);
@@ -651,7 +673,7 @@ int main(int _argc, const char* const* _argv)
 	bx::strCopy(title, BX_COUNTOF(title), fp.getBaseName());
 
 	entry::setWindowTitle(kDefaultWindowHandle, title);
-	setWindowSize(kDefaultWindowHandle, ENTRY_DEFAULT_WIDTH, ENTRY_DEFAULT_HEIGHT);
+	setWindowSize(kDefaultWindowHandle, xsettings.windowSize[0], xsettings.windowSize[1]);
 
 	sortApps();
 
@@ -796,15 +818,21 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 
 			case Event::Size:
 			{
-				const SizeEvent* size = static_cast<const SizeEvent*>(ev);
-				WindowState&     win  = s_window[0];
-				win.m_handle          = size->m_handle;
-				win.m_width           = size->m_width;
-				win.m_height          = size->m_height;
+				const SizeEvent* size   = static_cast<const SizeEvent*>(ev);
+				const int        height = (bx::max(32, size->m_height) + 7) & ~15;
+				const int        width  = (bx::max(32, size->m_width) + 3) & ~7;
+
+				WindowState& win = s_window[0];
+				win.m_handle     = size->m_handle;
+				win.m_width      = width;
+				win.m_height     = height;
+
+				xsettings.windowSize[0] = width;
+				xsettings.windowSize[1] = height;
 
 				handle  = size->m_handle;
-				_width  = size->m_width;
-				_height = size->m_height;
+				_width  = width;
+				_height = height;
 				BX_TRACE("Window resize event: %d: %dx%d", handle, _width, _height);
 				ui::Log("processEvents/Event::Size: {}: {}x{}", (void*)&handle, _width, _height);
 				needReset = true;

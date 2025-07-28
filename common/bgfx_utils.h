@@ -21,15 +21,13 @@ void calcTangents(void* _vertices, uint16_t _numVertices, bgfx::VertexLayout _la
 inline bool checkAvailTransientBuffers(uint32_t _numVertices, const bgfx::VertexLayout& _layout, uint32_t _numIndices)
 {
 	return _numVertices == bgfx::getAvailTransientVertexBuffer(_numVertices, _layout)
-		&& (0 == _numIndices || _numIndices == bgfx::getAvailTransientIndexBuffer(_numIndices) )
-		;
+	    && (0 == _numIndices || _numIndices == bgfx::getAvailTransientIndexBuffer(_numIndices));
 }
 
 ///
 inline uint32_t encodeNormalRgba8(float _x, float _y = 0.0f, float _z = 0.0f, float _w = 0.0f)
 {
-	const float src[] =
-	{
+	const float src[] = {
 		_x * 0.5f + 0.5f,
 		_y * 0.5f + 0.5f,
 		_z * 0.5f + 0.5f,
@@ -52,5 +50,5 @@ struct Args
 	Args(int _argc, const char* const* _argv);
 
 	bgfx::RendererType::Enum m_type;
-	uint16_t m_pciId;
+	uint16_t                 m_pciId;
 };

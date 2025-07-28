@@ -1,4 +1,4 @@
-// @version 2025-07-22
+// @version 2025-07-23
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -6,6 +6,7 @@
 
 #include "stdafx.h"
 #include "entry_p.h"
+#include "ui/xsettings.h"
 
 #if ENTRY_CONFIG_USE_SDL
 
@@ -13,8 +14,6 @@
 #	elif BX_PLATFORM_WINDOWS
 #		define SDL_MAIN_HANDLED
 #	endif
-
-#	include <bx/os.h>
 
 #	include <SDL2/SDL.h>
 
@@ -29,11 +28,11 @@ BX_PRAGMA_DIAGNOSTIC_POP()
 #	endif // defined(None)
 
 #	include <bx/handlealloc.h>
-#	include <bx/mutex.h>
+#	include <bx/os.h>
 #	include <bx/readerwriter.h>
 #	include <bx/thread.h>
-#	include <bx/tinystl/allocator.h>
-#	include <bx/tinystl/string.h>
+#	include <tinystl/allocator.h>
+#	include <tinystl/string.h>
 
 namespace entry
 {
@@ -66,14 +65,16 @@ static void* sdlNativeWindowHandle(SDL_Window* window)
 static uint8_t translateKeyModifiers(uint16_t sdl)
 {
 	uint8_t modifiers = 0;
-	modifiers |= sdl & KMOD_LALT ? Modifier::LeftAlt : 0;
-	modifiers |= sdl & KMOD_RALT ? Modifier::RightAlt : 0;
-	modifiers |= sdl & KMOD_LCTRL ? Modifier::LeftCtrl : 0;
-	modifiers |= sdl & KMOD_RCTRL ? Modifier::RightCtrl : 0;
-	modifiers |= sdl & KMOD_LSHIFT ? Modifier::LeftShift : 0;
+	// clang-format off
+	modifiers |= sdl & KMOD_LALT   ? Modifier::LeftAlt    : 0;
+	modifiers |= sdl & KMOD_RALT   ? Modifier::RightAlt   : 0;
+	modifiers |= sdl & KMOD_LCTRL  ? Modifier::LeftCtrl   : 0;
+	modifiers |= sdl & KMOD_RCTRL  ? Modifier::RightCtrl  : 0;
+	modifiers |= sdl & KMOD_LSHIFT ? Modifier::LeftShift  : 0;
 	modifiers |= sdl & KMOD_RSHIFT ? Modifier::RightShift : 0;
-	modifiers |= sdl & KMOD_LGUI ? Modifier::LeftMeta : 0;
-	modifiers |= sdl & KMOD_RGUI ? Modifier::RightMeta : 0;
+	modifiers |= sdl & KMOD_LGUI   ? Modifier::LeftMeta   : 0;
+	modifiers |= sdl & KMOD_RGUI   ? Modifier::RightMeta  : 0;
+	// clang-format on
 	return modifiers;
 }
 
@@ -281,14 +282,6 @@ static WindowHandle getWindowHandle(const SDL_UserEvent& _uev)
 struct Context
 {
 	Context()
-	    : m_width(ENTRY_DEFAULT_WIDTH)
-	    , m_height(ENTRY_DEFAULT_HEIGHT)
-	    , m_aspectRatio(16.0f / 9.0f)
-	    , m_mx(0)
-	    , m_my(0)
-	    , m_mz(0)
-	    , m_mouseLock(false)
-	    , m_fullscreen(false)
 	{
 		bx::memSet(s_translateKey, 0, sizeof(s_translateKey));
 
@@ -452,13 +445,16 @@ struct Context
 
 	int run(int _argc, char** _argv)
 	{
+		EntryBegin();
+		ui::Log("SDL2/run: {}x{}", xsettings.windowSize[0], xsettings.windowSize[1]);
+
 		m_mte.m_argc = _argc;
 		m_mte.m_argv = _argv;
 
 		SDL_Init(SDL_INIT_GAMECONTROLLER);
 
 		m_windowAlloc.alloc();
-		m_window[0] = SDL_CreateWindow("bgfx", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_width, m_height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+		m_window[0] = SDL_CreateWindow("bgfx", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, xsettings.windowSize[0], xsettings.windowSize[1], SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
 		m_flags[0] = 0
 		    | ENTRY_WINDOW_FLAG_ASPECT_RATIO
@@ -472,7 +468,7 @@ struct Context
 
 		// Force window resolution...
 		WindowHandle defaultWindow = { 0 };
-		entry::setWindowSize(defaultWindow, m_width, m_height);
+		entry::setWindowSize(defaultWindow, xsettings.windowSize[0], xsettings.windowSize[1]);
 
 		SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 
@@ -633,13 +629,8 @@ struct Context
 						WindowHandle handle = findHandle(wev.windowID);
 						uint32_t     width  = wev.data1;
 						uint32_t     height = wev.data2;
-						if (width != m_width
-						    || height != m_height)
-						{
-							m_width  = width;
-							m_height = height;
-							m_eventQueue.postSizeEvent(handle, m_width, m_height);
-						}
+						if (width != xsettings.windowSize[0] || height != xsettings.windowSize[1])
+							m_eventQueue.postSizeEvent(handle, width, height);
 					}
 					break;
 
@@ -823,10 +814,7 @@ struct Context
 						WindowHandle handle = getWindowHandle(uev);
 						Msg*         msg    = (Msg*)uev.data2;
 						if (isValid(handle))
-						{
 							SDL_SetWindowSize(m_window[handle.idx], msg->m_width, msg->m_height);
-							ui::Log("SDL_USER_WINDOW_SET_SIZE: {}: {}x{}", (void*)&m_window[handle.idx], msg->m_width, msg->m_height);
-						}
 						delete msg;
 					}
 					break;
@@ -871,6 +859,7 @@ struct Context
 		SDL_DestroyWindow(m_window[0]);
 		SDL_Quit();
 
+		EntryEnd();
 		return m_thread.getExitCode();
 	}
 
@@ -926,15 +915,11 @@ struct Context
 	bx::HandleAllocT<ENTRY_CONFIG_MAX_GAMEPADS> m_gamepadAlloc;
 	GamepadSDL                                  m_gamepad[ENTRY_CONFIG_MAX_GAMEPADS];
 
-	uint32_t m_width;
-	uint32_t m_height;
-	float    m_aspectRatio;
-
-	int32_t m_mx;
-	int32_t m_my;
-	int32_t m_mz;
-	bool    m_mouseLock;
-	bool    m_fullscreen;
+	bool    m_fullscreen = false;
+	bool    m_mouseLock  = false;
+	int32_t m_mx         = 0;
+	int32_t m_my         = 0;
+	int32_t m_mz         = 0;
 };
 
 static Context s_ctx;
@@ -1085,8 +1070,7 @@ int32_t MainThreadEntry::threadFunc(bx::Thread* _thread, void* _userData)
 
 int main(int _argc, char** _argv)
 {
-	using namespace entry;
-	return s_ctx.run(_argc, _argv);
+	return entry::s_ctx.run(_argc, _argv);
 }
 
 #endif // ENTRY_CONFIG_USE_SDL

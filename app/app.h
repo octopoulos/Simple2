@@ -1,6 +1,6 @@
 // app.h
 // @author octopoulos
-// @version 2025-07-23
+// @version 2025-07-24
 
 #pragma once
 
@@ -9,6 +9,7 @@
 #include "engine/ShaderManager.h"
 #include "engine/TextureManager.h"
 #include "physics/PhysicsWorld.h"
+#include "ui/xsettings.h"
 
 struct Tile
 {
@@ -32,6 +33,21 @@ public:
 
 	int  Initialize();
 	void Destroy();
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// CONTROLS
+	///////////
+
+private:
+	float inputDelta = 1.0f / 120.0f; ///< input fixed time step (in seconds)
+	int   inputFrame = 0;             ///< current input frame
+	float inputLag   = 0.0f;          ///< accumulated lag for fixed-step input
+
+	/// Fixed-rate input logic (ex: key movement, snap-to-grid)
+	void FixedControls();
+
+	/// Per-frame input logic (ex: smooth camera movement)
+	void FluidControls();
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// MAP
@@ -64,11 +80,12 @@ private:
 	/////////
 
 private:
-	bool                isPaused       = false;              ///< pause simulation?
-	float               orthoZoom      = 0.02f;              ///< zoom in orthographic projection
-	bool                pauseNextFrame = false;              ///< pause next frame
-	int                 renderFlags    = RenderFlag_Default; ///< render flags
-	bgfx::UniformHandle uTime          = {};                 ///
+	bool                bulletDebug    = false; ///< bullet debug draw
+	bool                isPaused       = false; ///< pause simulation?
+	bool                pauseNextFrame = false; ///< pause next frame
+	int                 renderFlags    = 0;     ///< render flags
+	int                 renderFrame    = 0;     ///< current rendered frame
+	bgfx::UniformHandle uTime          = {};    ///
 
 public:
 	/// Render everything except UI
@@ -80,6 +97,7 @@ public:
 
 private:
 	std::unique_ptr<PhysicsWorld> physics        = nullptr; ///< physics world
+	int                           physicsFrame   = 0;       ///< current physics frame
 	std::unique_ptr<Scene>        scene          = nullptr; ///
 	ShaderManager                 shaderManager  = {};      ///
 	TextureManager                textureManager = {};      ///
@@ -107,23 +125,16 @@ protected:
 	/// - after ImGui has been created
 	void InitializeImGui();
 
-	/// Initialize settings
-	void InitializeSettings();
-
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// UI
 	/////
 
 private:
 	UMAP_INT_STR actionFolders = {};    ///< open image & save screenshot in different folders
-	bool         bulletDebug   = false; ///< bullet debug draw
 	int          fileAction    = 0;     ///< action to take in OpenedFile
 	std::string  fileFolder    = {};    ///< folder after OpenFile
-	int64_t      now           = 0;     ///< current timestamp in us
 	bool         showImGuiDemo = false; ///< show ImGui demo window
-
-	/// Check input combos and perform actions
-	void Controls();
+	int          videoFrame    = 0;     ///< how many video frames have been captured so far
 
 	/// Handle file dialogs
 	void FilesUi();
@@ -135,6 +146,9 @@ private:
 	void ShowMainMenu(float alpha);
 
 public:
+	int  wantScreenshot = 0;     ///< capture a screenshot this frame? &1: with UI, &2: without UI, &4: capture next frame
+	bool wantVideo      = false; ///< want video capture
+
 	/// Show all custom UI elements
 	void MainUi();
 
@@ -145,12 +159,13 @@ public:
 private:
 	bool     hasFocus = true;  ///
 	uint32_t isDebug  = 0;     ///
-	uint32_t isReset  = 0;     ///
 	bool     quit     = false; ///< exit the mainloop
 	uint32_t screenX  = 1328;  ///
 	uint32_t screenY  = 800;   ///
 
 public:
+	uint32_t* entryReset = nullptr; ///< pointer to entry::m_reset
+
 	/// Synchronization with entry
 	void SynchronizeEvents(uint32_t _screenX, uint32_t _screenY);
 };

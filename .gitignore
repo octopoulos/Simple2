@@ -2,6 +2,7 @@
 .vs/
 .vscode/
 *.ini
+*.mp4
 *.zip
 assets/
 build*/
@@ -9,3 +10,4 @@ build/
 doc/
 models/
 runtime/
+temp/

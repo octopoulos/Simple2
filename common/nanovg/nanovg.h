@@ -19,6 +19,10 @@
 
 #pragma once
 
+#ifndef NANOVG_H
+#	define NANOVG_H
+#endif
+
 #include "nanovg_bgfx.h"
 
 #ifdef __cplusplus

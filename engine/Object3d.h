@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-07-22
+// @version 2025-07-23
 
 #pragma once
 
@@ -20,8 +20,6 @@ enum ObjectTypes_
 enum RenderFlags_
 {
 	RenderFlag_Instancing = 1 << 0,
-
-	RenderFlag_Default = RenderFlag_Instancing,
 };
 
 class Object3d

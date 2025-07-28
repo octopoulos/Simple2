@@ -1,15 +1,14 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-07-23
+// @version 2025-07-24
 
 #include "stdafx.h"
 #include "app.h"
 #include "common/camera.h"
 #include "entry/input.h"
 #include "imgui/imgui.h"
-#include "ui/xsettings.h"
 
-void App::Controls()
+void App::FixedControls()
 {
 	using namespace entry;
 
@@ -49,18 +48,32 @@ void App::Controls()
 			cursor->UpdateLocalMatrix();
 		}
 
-		//if (news[Key::] & KeyNew_Down) orthoZoom *= 2.0f;
-		if (downs[Key::NumPadMinus] || downs[Key::Minus]) orthoZoom *= 2.0f;
-		if (downs[Key::NumPadPlus] || downs[Key::Equals]) orthoZoom *= 0.5f;
-
 		if (downs[Key::F4]) bulletDebug = !bulletDebug;
 		if (downs[Key::F5]) xsettings.projection = 1 - xsettings.projection;
-		if (downs[Key::F11]) renderFlags ^= RenderFlag_Instancing;
+		if (downs[Key::F11]) xsettings.instancing = !xsettings.instancing;
 	}
+
+	// holding down
+	if (const auto& keys = ginput.keys)
+	{
+		if (keys[Key::NumPadMinus] || keys[Key::Minus])
+			xsettings.orthoZoom = std::min(xsettings.orthoZoom * 1.02f, 20.0f);
+		if (keys[Key::NumPadPlus] || keys[Key::Equals])
+			xsettings.orthoZoom = std::max(xsettings.orthoZoom / 1.02f, 0.0002f);
+	}
+
+	GetGlobalInput().ResetNews();
+
+	++inputFrame;
+}
+
+void App::FluidControls()
+{
+	const auto& ginput = GetGlobalInput();
 
 	// camera
 	{
-		MouseState mouseState;
+		entry::MouseState mouseState;
 		mouseState.m_buttons[0] = ginput.buttons[0];
 		mouseState.m_buttons[1] = ginput.buttons[1];
 		mouseState.m_buttons[2] = ginput.buttons[2];
@@ -71,6 +84,4 @@ void App::Controls()
 
 		cameraUpdate(deltaTime, mouseState, ImGui::MouseOverArea());
 	}
-
-	GetGlobalInput().ResetNews();
 }

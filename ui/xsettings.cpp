@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-07-23
+// @version 2025-07-24
 
 #include "stdafx.h"
 #include "xsettings.h"
@@ -31,7 +31,15 @@ static std::vector<Config> configs = {
 	// 0
 	X_STRING (XSettings, analysis, 1, appId , ""),
 	X_ENUM   (XSettings, analysis, 1, gameId, 0, sGames),
-	X_INT    (XSettings, analysis, 1, view  , 125, 0, 255),
+
+	// [render]
+	X_BOOL   (XSettings, render, 0, instancing, true),
+	X_FLOAT  (XSettings, render, 0, orthoZoom , 1.0f, 0.001f, 10.0f),
+
+	// [ui]
+	X_BOOL   (XSettings, ui, 0, nvidiaEnc   , false),
+	X_STRINGS(XSettings, ui, 0, recentFiles , "", 6),
+	X_BOOL   (XSettings, ui, 0, videoCapture, false),
 
 	// [user]
 	X_STRING (XSettings, user, 0, userEmail, ""),

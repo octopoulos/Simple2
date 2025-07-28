@@ -510,9 +510,6 @@ endforeach()
 # 8) PRELOAD + COMPRESS
 #######################
 
-# Add custom target for shaders and models
-#add_custom_target("Assets-Bin" DEPENDS ${MODEL_BIN_FILES} ${SHADER_BIN_FILES}) X
-
 # Create folders for Visual Studio
 #source_group(TREE "${ENGINE_SRC_FILES}" PREFIX "Engine" FILES ${ENGINE_SRC_FILES})
 source_group(TREE "${MODEL_SRC_DIR}" PREFIX "Assets/Models" FILES ${MODEL_SRC_FILES})

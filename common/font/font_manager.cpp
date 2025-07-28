@@ -200,7 +200,7 @@ bool TrueTypeFont::bakeGlyphDistance(CodePoint _codePoint, GlyphInfo& _glyphInfo
 	return true;
 }
 
-typedef std::unordered_map<CodePoint, GlyphInfo> GlyphHashMap;
+typedef stl::unordered_map<CodePoint, GlyphInfo> GlyphHashMap;
 
 // cache font data
 struct FontManager::CachedFont

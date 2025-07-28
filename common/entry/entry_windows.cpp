@@ -1,4 +1,4 @@
-// @version 2025-07-22
+// @version 2025-07-23
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -6,6 +6,7 @@
 
 #include "stdafx.h"
 #include "entry_p.h"
+#include "ui/xsettings.h"
 
 #if ENTRY_CONFIG_USE_NATIVE && BX_PLATFORM_WINDOWS
 
@@ -475,6 +476,7 @@ struct Context
 
 	int32_t run(int _argc, const char* const* _argv)
 	{
+		EntryBegin();
 		SetDllDirectoryA(".");
 
 		s_xinput.init();
@@ -495,7 +497,7 @@ struct Context
 
 		m_windowAlloc.alloc();
 		m_hwnd[0] = CreateWindowExA(
-		    WS_EX_ACCEPTFILES, "bgfx", "BGFX", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, ENTRY_DEFAULT_WIDTH, ENTRY_DEFAULT_HEIGHT, NULL, NULL, instance, 0);
+		    WS_EX_ACCEPTFILES, "bgfx", "BGFX", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, xsettings.windowSize[0], xsettings.windowSize[1], NULL, NULL, instance, 0);
 
 		m_flags[0] = 0
 		    | ENTRY_WINDOW_FLAG_ASPECT_RATIO
@@ -504,10 +506,8 @@ struct Context
 		adjust(m_hwnd[0], ENTRY_DEFAULT_WIDTH, ENTRY_DEFAULT_HEIGHT, true);
 		clear(m_hwnd[0]);
 
-		m_width     = ENTRY_DEFAULT_WIDTH;
-		m_height    = ENTRY_DEFAULT_HEIGHT;
-		m_oldWidth  = ENTRY_DEFAULT_WIDTH;
-		m_oldHeight = ENTRY_DEFAULT_HEIGHT;
+		m_oldWidth  = xsettings.windowSize[0];
+		m_oldHeight = xsettings.windowSize[1];
 
 		MainThreadEntry mte;
 		mte.m_argc = _argc;
@@ -519,7 +519,7 @@ struct Context
 		thread.init(mte.threadFunc, &mte);
 		m_init = true;
 
-		m_eventQueue.postSizeEvent(findHandle(m_hwnd[0]), m_width, m_height);
+		m_eventQueue.postSizeEvent(findHandle(m_hwnd[0]), xsettings.windowSize[0], xsettings.windowSize[1]);
 
 		MSG msg;
 		msg.message = WM_NULL;
@@ -546,6 +546,7 @@ struct Context
 
 		s_xinput.shutdown();
 
+		EntryEnd();
 		return thread.getExitCode();
 	}
 
@@ -629,8 +630,8 @@ struct Context
 			{
 				if (m_frame)
 				{
-					m_oldWidth  = m_width;
-					m_oldHeight = m_height;
+					m_oldWidth  = xsettings.windowSize[0];
+					m_oldHeight = xsettings.windowSize[1];
 				}
 				adjust(m_hwnd[_wparam], m_oldWidth, m_oldHeight, !m_frame);
 			}
@@ -717,12 +718,9 @@ struct Context
 				WindowHandle handle = findHandle(_hwnd);
 				if (isValid(handle))
 				{
-					uint32_t width  = GET_X_LPARAM(_lparam);
-					uint32_t height = GET_Y_LPARAM(_lparam);
-
-					m_width  = width;
-					m_height = height;
-					m_eventQueue.postSizeEvent(handle, m_width, m_height);
+					const uint32_t width  = GET_X_LPARAM(_lparam);
+					const uint32_t height = GET_Y_LPARAM(_lparam);
+					m_eventQueue.postSizeEvent(handle, width, height);
 				}
 			}
 			break;
@@ -750,10 +748,7 @@ struct Context
 					mx -= m_mx;
 					my -= m_my;
 
-					if (0 == mx
-					    && 0 == my)
-						break;
-
+					if (0 == mx && 0 == my) break;
 					setMousePos(_hwnd, m_mx, m_my);
 				}
 
@@ -848,10 +843,7 @@ struct Context
 						m_surrogate = 0;
 						utf16_len   = 2;
 					}
-					else
-					{
-						utf16_len = 1;
-					}
+					else utf16_len = 1;
 
 					uint8_t len = (uint8_t)WideCharToMultiByte(CP_UTF8, 0, utf16, utf16_len, (LPSTR)utf8, BX_COUNTOF(utf8), NULL, NULL);
 					if (0 != len)
@@ -876,8 +868,7 @@ struct Context
 			}
 			break;
 
-			default:
-				break;
+			default: break;
 			}
 		}
 
@@ -915,8 +906,8 @@ struct Context
 
 	void adjust(HWND _hwnd, uint32_t _width, uint32_t _height, bool _windowFrame)
 	{
-		m_width       = _width;
-		m_height      = _height;
+		xsettings.windowSize[0] = _width;
+		xsettings.windowSize[1] = _height;
 		m_aspectRatio = float(_width) / float(_height);
 
 		ShowWindow(_hwnd, SW_SHOWNORMAL);
@@ -998,8 +989,8 @@ struct Context
 		{
 			if (_lock)
 			{
-				m_mx = m_width / 2;
-				m_my = m_height / 2;
+				m_mx = xsettings.windowSize[0] / 2;
+				m_my = xsettings.windowSize[1] / 2;
 				ShowCursor(false);
 				setMousePos(_hwnd, m_mx, m_my);
 			}
@@ -1025,8 +1016,6 @@ struct Context
 	uint32_t m_flags[ENTRY_CONFIG_MAX_WINDOWS];
 	RECT     m_rect;
 	DWORD    m_style;
-	uint32_t m_width;
-	uint32_t m_height;
 	uint32_t m_oldWidth;
 	uint32_t m_oldHeight;
 	uint32_t m_frameWidth;
@@ -1161,8 +1150,7 @@ int32_t MainThreadEntry::threadFunc(bx::Thread* /*_thread*/, void* _userData)
 
 int main(int _argc, const char* const* _argv)
 {
-	using namespace entry;
-	return s_ctx.run(_argc, _argv);
+	return entry::s_ctx.run(_argc, _argv);
 }
 
 #endif // BX_PLATFORM_WINDOWS

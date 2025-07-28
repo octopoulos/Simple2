@@ -17,7 +17,8 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#pragma once
+#ifndef FONS_H
+#define FONS_H
 
 #define FONS_INVALID -1
 
@@ -263,7 +264,7 @@ int fons__tt_getGlyphKernAdvance(FONSttFontImpl* font, int glyph1, int glyph2)
 static void* fons__tmpalloc(size_t size, void* up);
 static void fons__tmpfree(void* ptr, void* up);
 #	else
-#		include <malloc.h>
+#		include <stdlib.h>
 #		include <string.h>
 #	endif // 0
 

@@ -1,4 +1,4 @@
-// @version 2025-07-12
+// @version 2025-07-23
 /*
  * Copyright 2013 Jeremie Roy. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -27,11 +27,11 @@ struct AtlasRegion
 
 	uint16_t x, y;
 	uint16_t width, height;
-	uint32_t mask; //encode the region type, the face index and the component index in case of a gray region
+	uint32_t mask; // encode the region type, the face index and the component index in case of a gray region
 
 	Type getType() const
 	{
-		return (Type) ( (mask >> 0) & 0x0000000F);
+		return (Type)((mask >> 0) & 0x0000000F);
 	}
 
 	uint32_t getFaceIndex() const
@@ -95,7 +95,7 @@ public:
 		return m_textureHandle;
 	}
 
-	//retrieve a region info
+	// retrieve a region info
 	const AtlasRegion& getRegion(uint16_t _handle) const
 	{
 		return m_regions[_handle];
@@ -108,7 +108,7 @@ public:
 	}
 
 	/// retrieve the usage ratio of the atlas
-	//float getUsageRatio() const { return 0.0f; }
+	// float getUsageRatio() const { return 0.0f; }
 
 	/// retrieve the numbers of region in the atlas
 	uint16_t getRegionCount() const
@@ -138,14 +138,14 @@ private:
 	struct PackedLayer;
 	PackedLayer* m_layers;
 	AtlasRegion* m_regions;
-	uint8_t* m_textureBuffer;
+	uint8_t*     m_textureBuffer;
 
 	uint32_t m_usedLayers;
 	uint32_t m_usedFaces;
 
 	bgfx::TextureHandle m_textureHandle;
-	uint16_t m_textureSize;
-	float m_texelSize;
+	uint16_t            m_textureSize;
+	float               m_texelSize;
 
 	uint16_t m_regionCount;
 	uint16_t m_maxRegionCount;

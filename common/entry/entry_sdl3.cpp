@@ -1,9 +1,10 @@
 // entry_sdl3.cpp
 // @author octopoulos
-// @version 2025-07-22
+// @version 2025-07-23
 
 #include "stdafx.h"
 #include "entry_p.h"
+#include "ui/xsettings.h"
 
 #if ENTRY_CONFIG_USE_SDL3
 
@@ -277,14 +278,6 @@ static WindowHandle getWindowHandle(const SDL_UserEvent& _uev)
 struct Context
 {
 	Context()
-	    : m_width(ENTRY_DEFAULT_WIDTH)
-	    , m_height(ENTRY_DEFAULT_HEIGHT)
-	    , m_aspectRatio(16.0f / 9.0f)
-	    , m_mx(0)
-	    , m_my(0)
-	    , m_mz(0)
-	    , m_mouseLock(false)
-	    , m_fullscreen(false)
 	{
 		bx::memSet(s_translateKey, 0, sizeof(s_translateKey));
 
@@ -456,13 +449,16 @@ struct Context
 
 	int run(int _argc, char** _argv)
 	{
+		EntryBegin();
+		ui::Log("SDL3/run: {}x{}", xsettings.windowSize[0], xsettings.windowSize[1]);
+
 		m_mte.m_argc = _argc;
 		m_mte.m_argv = _argv;
 
 		SDL_Init(SDL_INIT_GAMEPAD);
 
 		m_windowAlloc.alloc();
-		m_window[0] = SDL_CreateWindow("bgfx", m_width, m_height, SDL_WINDOW_RESIZABLE);
+		m_window[0] = SDL_CreateWindow("bgfx", xsettings.windowSize[0], xsettings.windowSize[1], SDL_WINDOW_RESIZABLE);
 
 		m_flags[0] = 0
 		    | ENTRY_WINDOW_FLAG_ASPECT_RATIO
@@ -476,7 +472,7 @@ struct Context
 
 		// Force window resolution...
 		WindowHandle defaultWindow = { 0 };
-		entry::setWindowSize(defaultWindow, m_width, m_height);
+		entry::setWindowSize(defaultWindow, xsettings.windowSize[0], xsettings.windowSize[1]);
 
 		SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, true);
 
@@ -486,7 +482,7 @@ struct Context
 			reader = getFileReader();
 			bx::sleep(100);
 		}
-
+	
 		if (bx::open(reader, "gamecontrollerdb.txt"))
 		{
 			bx::AllocatorI* allocator = getAllocator();
@@ -639,13 +635,8 @@ struct Context
 					WindowHandle handle = findHandle(wev.windowID);
 					uint32_t     width  = wev.data1;
 					uint32_t     height = wev.data2;
-					if (width != m_width
-					    || height != m_height)
-					{
-						m_width  = width;
-						m_height = height;
-						m_eventQueue.postSizeEvent(handle, m_width, m_height);
-					}
+					if (width != xsettings.windowSize[0] || height != xsettings.windowSize[1])
+						m_eventQueue.postSizeEvent(handle, width, height);
 				}
 				break;
 
@@ -877,6 +868,7 @@ struct Context
 		SDL_DestroyWindow(m_window[0]);
 		SDL_Quit();
 
+		EntryEnd();
 		return m_thread.getExitCode();
 	}
 
@@ -932,15 +924,11 @@ struct Context
 	bx::HandleAllocT<ENTRY_CONFIG_MAX_GAMEPADS> m_gamepadAlloc;
 	GamepadSDL                                  m_gamepad[ENTRY_CONFIG_MAX_GAMEPADS];
 
-	uint32_t m_width;
-	uint32_t m_height;
-	float    m_aspectRatio;
-
-	int32_t m_mx;
-	int32_t m_my;
-	int32_t m_mz;
-	bool    m_mouseLock;
-	bool    m_fullscreen;
+	bool    m_fullscreen = false;
+	bool    m_mouseLock  = false;
+	int32_t m_mx         = 0;
+	int32_t m_my         = 0;
+	int32_t m_mz         = 0;
 };
 
 static Context s_ctx;
@@ -1088,8 +1076,7 @@ int32_t MainThreadEntry::threadFunc(bx::Thread* _thread, void* _userData)
 
 int main(int _argc, char** _argv)
 {
-	using namespace entry;
-	return s_ctx.run(_argc, _argv);
+	return entry::s_ctx.run(_argc, _argv);
 }
 
 #endif // ENTRY_CONFIG_USE_SDL3

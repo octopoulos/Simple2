@@ -1,6 +1,6 @@
 // app.cpp
 // @author octopoulos
-// @version 2025-07-23
+// @version 2025-07-24
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -8,9 +8,9 @@
 #include "app.h"
 #include "common/bgfx_utils.h"
 #include "common/camera.h"
+#include "common/ffmpeg-pipe.h"
 #include "engine/ModelLoader.h"
 #include "imgui/imgui.h"
-#include "ui/xsettings.h"
 
 #ifdef _WIN32
 #	include <windows.h>
@@ -30,15 +30,11 @@ void App::Destroy()
 	scene.reset();
 
 	physics.reset();
-
-	SaveGameSettings();
 }
 
 int App::Initialize()
 {
-	FindAppDirectory(true);
-	InitializeSettings();
-
+	ui::Log("App::Initialize");
 	ScanModels("runtime/models", "runtime/models-prev");
 
 	if (const int result = InitializeScene(); result < 0) return result;
@@ -228,7 +224,7 @@ int App::InitializeScene()
 		parent->program = shaderManager.LoadProgram("vs_model_instance", "fs_model_instance");
 		scene->AddNamedChild(parent, "donut3-group");
 
-		for (int i = 0; i < 120; ++i)
+		for (int i = 0; i < 1200; ++i)
 		{
 			//if (auto object = std::make_shared<Mesh>())
 			if (auto object = loader.LoadModel("donut3"))
@@ -286,7 +282,15 @@ void App::Render()
 	}
 
 	// 2) controls
-	Controls();
+	FluidControls();
+	{
+		inputLag += deltaTime;
+		while (inputLag >= inputDelta)
+		{
+			FixedControls();
+			inputLag -= inputDelta;
+		}
+	}
 
 	// 3) camera view
 	{
@@ -304,8 +308,8 @@ void App::Render()
 
 		if (xsettings.projection == Projection_Orthographic)
 		{
-			const float zoomX = fscreenX * orthoZoom;
-			const float zoomY = fscreenY * orthoZoom;
+			const float zoomX = fscreenX * xsettings.orthoZoom;
+			const float zoomY = fscreenY * xsettings.orthoZoom;
 			bx::mtxOrtho(proj, -zoomX, zoomX, -zoomY, zoomY, -1000.0f, 1000.0f, 0.0f, homoDepth);
 		}
 		else bx::mtxProj(proj, 60.0f, fscreenX / fscreenY, 0.1f, 2000.0f, homoDepth);
@@ -317,6 +321,8 @@ void App::Render()
 	if (!isPaused)
 	{
 		physics->StepSimulation(deltaTime);
+		++physicsFrame;
+
 		lastTime = curTime;
 
 		for (auto& child : scene->children)
@@ -333,7 +339,32 @@ void App::Render()
 	else lastTime = curTime;
 
 	// 5) draw the scene
-	scene->RenderScene(0, renderFlags);
+	{
+		renderFlags = 0;
+		if (xsettings.instancing) renderFlags |= RenderFlag_Instancing;
+
+		scene->RenderScene(0, renderFlags);
+	}
+
+	// 6) capture screenshot?
+	if (wantScreenshot)
+	{
+		// ignore this frame to give time to hide the GUI
+		if (wantScreenshot & 4)
+			wantScreenshot &= ~4;
+		else
+		{
+			wantScreenshot = 0;
+			if (CreateDirectories("temp"))
+			{
+				bgfx::FrameBufferHandle fbh = BGFX_INVALID_HANDLE;
+				bgfx::requestScreenShot(fbh, fmt::format("temp/{}.png", FormatDateTime(2, true)).c_str());
+			}
+		}
+	}
+
+	++renderFrame;
+	if (wantVideo) ++videoFrame;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -348,13 +379,6 @@ void App::InitializeImGui()
 	strcpy(iniFilename, imguiPath.string().c_str());
 	ImGuiIO& io    = ImGui::GetIO();
 	io.IniFilename = iniFilename;
-}
-
-void App::InitializeSettings()
-{
-	InitGameSettings();
-	LoadGameSettings();
-	LoadGameSettings(xsettings.gameId);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -375,16 +399,73 @@ void App::SynchronizeEvents(uint32_t _screenX, uint32_t _screenY)
 // ENTRY
 ////////
 
+struct BgfxCallback : public bgfx::CallbackI
+{
+	FfmpegPipe ffmpeg     = {};    ///
+	uint32_t   height     = 0;     ///
+	int        numFailure = 0;     ///< how many times ffmpeg.Open failed
+	uint32_t   pitch      = 0;     ///
+	bool       wantVideo  = false; ///< capturing?
+	uint32_t   width      = 0;     ///
+	bool       yflip      = false; ///
+
+	virtual void captureBegin(uint32_t _width, uint32_t _height, uint32_t _pitch, bgfx::TextureFormat::Enum _format, bool _yflip) override
+	{
+		height = _height;
+		pitch  = _pitch;
+		width  = _width;
+		yflip  = _yflip;
+	}
+
+	virtual void captureEnd() override
+	{
+		ffmpeg.Close();
+	}
+
+	virtual void captureFrame(const void* data, uint32_t size) override
+	{
+		if (!wantVideo) return;
+
+		if (!ffmpeg.pipe)
+		{
+			if (!ffmpeg.Open("temp/capture.mp4", width, height, 60, yflip)) ++numFailure;
+		}
+		else ffmpeg.WriteFrame(data, size);
+	}
+
+	virtual void screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, const void* _data, uint32_t _size, bool _yflip) override
+	{
+		bx::FileWriter writer;
+		bx::Error      err;
+		if (bx::open(&writer, _filePath, false, &err))
+		{
+			bimg::imageWritePng(&writer, _width, _height, _pitch, _data, bimg::TextureFormat::BGRA8, _yflip, &err);
+			bx::close(&writer);
+		}
+	}
+
+	// clang-format off
+	virtual bool     cacheRead(uint64_t _id, void* _data, uint32_t _size) override { return false; }
+	virtual uint32_t cacheReadSize(uint64_t _id) override { return 0; }
+	virtual void     cacheWrite(uint64_t _id, const void* _data, uint32_t _size) override {}
+	virtual void     fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str) override {}
+	virtual void     profilerBegin(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override {}
+	virtual void     profilerBeginLiteral(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override {}
+	virtual void     profilerEnd() override {}
+	virtual void     traceVargs(const char* _filePath, uint16_t _line, const char* _format, va_list _argList) override {}
+	// clang-format on
+};
+
 class EntryApp : public entry::AppI
 {
 private:
-	uint32_t m_debug  = 0;
-	uint32_t m_height = 800;
-	uint32_t m_reset  = 0;
-	uint32_t m_width  = 1328;
-
-	std::unique_ptr<App> app;
-	entry::MouseState    m_mouseState = {};
+	std::unique_ptr<App> app        = nullptr; ///< main application
+	BgfxCallback         callback   = {};      ///< for video capture + screenshot
+	uint32_t             debug      = 0;       ///
+	uint32_t             height     = 800;     ///
+	entry::MouseState    mouseState = {};      ///
+	uint32_t             reset      = 0;       ///
+	uint32_t             width      = 1328;    ///
 
 public:
 	EntryApp(const char* _name, const char* _description, const char* _url)
@@ -398,13 +479,14 @@ public:
 
 		// 1) bgfx
 		{
-			m_width  = _width;
-			m_height = _height;
-			m_debug  = 0
+			width  = _width;
+			height = _height;
+			debug  = 0
 			    | BGFX_DEBUG_PROFILER
 			    | BGFX_DEBUG_TEXT;
-			m_reset = 0
+			reset = 0
 			    //| BGFX_RESET_HDR10
+			    | (xsettings.videoCapture ? BGFX_RESET_CAPTURE : 0)
 			    | BGFX_RESET_MSAA_X8
 			    | BGFX_RESET_VSYNC;
 
@@ -414,12 +496,13 @@ public:
 			init.platformData.nwh  = entry::getNativeWindowHandle(entry::kDefaultWindowHandle);
 			init.platformData.ndt  = entry::getNativeDisplayHandle();
 			init.platformData.type = entry::getNativeWindowHandleType();
-			init.resolution.width  = m_width;
-			init.resolution.height = m_height;
-			init.resolution.reset  = m_reset;
+			init.resolution.width  = width;
+			init.resolution.height = height;
+			init.resolution.reset  = reset;
+			init.callback          = &callback;
 			bgfx::init(init);
 
-			bgfx::setDebug(m_debug);
+			bgfx::setDebug(debug);
 
 			// set view 0 clear state
 			bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
@@ -432,6 +515,7 @@ public:
 		{
 			app = std::make_unique<App>();
 			app->Initialize();
+			app->entryReset = &reset;
 		}
 	}
 
@@ -453,16 +537,19 @@ public:
 	{
 		// 1) events
 		{
-			if (entry::processEvents(m_width, m_height, m_debug, m_reset, &m_mouseState)) return false;
+			callback.wantVideo = app->wantVideo;
 
-			app->SynchronizeEvents(m_width, m_height);
+			if (entry::processEvents(width, height, debug, reset, &mouseState)) return false;
+
+			app->SynchronizeEvents(width, height);
 		}
 
 		// 2) imGui
+		if (!(app->wantScreenshot & 2))
 		{
-			imguiBeginFrame(m_mouseState.m_mx, m_mouseState.m_my, (m_mouseState.m_buttons[entry::MouseButton::Left] ? IMGUI_MBUT_LEFT : 0) | (m_mouseState.m_buttons[entry::MouseButton::Right] ? IMGUI_MBUT_RIGHT : 0) | (m_mouseState.m_buttons[entry::MouseButton::Middle] ? IMGUI_MBUT_MIDDLE : 0), m_mouseState.m_mz, uint16_t(m_width), uint16_t(m_height));
+			imguiBeginFrame(mouseState.m_mx, mouseState.m_my, (mouseState.m_buttons[entry::MouseButton::Left] ? IMGUI_MBUT_LEFT : 0) | (mouseState.m_buttons[entry::MouseButton::Right] ? IMGUI_MBUT_RIGHT : 0) | (mouseState.m_buttons[entry::MouseButton::Middle] ? IMGUI_MBUT_MIDDLE : 0), mouseState.m_mz, uint16_t(width), uint16_t(height));
 			{
-				showExampleDialog(this);
+				if (!app->wantVideo) showExampleDialog(this);
 				app->MainUi();
 			}
 			imguiEndFrame();
@@ -470,8 +557,9 @@ public:
 
 		// 3) render
 		{
-			bgfx::setViewRect(0, 0, 0, uint16_t(m_width), uint16_t(m_height));
+			bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
 			bgfx::touch(0);
+
 			app->Render();
 		}
 

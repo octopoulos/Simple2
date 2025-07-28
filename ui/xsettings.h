@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-07-23
+// @version 2025-07-24
 
 #pragma once
 
@@ -12,10 +12,15 @@ struct XSettings : public EngineSettings
 	// 0
 	str256 appId;  ///< appId to synchronize with the browser
 	int    gameId; ///< 0: gori, 1: custom
-	int    view;   ///< &1: analysis, &2: text, &4: division, &8: base, &16: border, &32; coord
+
+	// [render]
+	bool  instancing; ///< use mesh instancing
+	float orthoZoom;  ///< zoom in orthographic projection
 
 	// [ui]
-	str512 recentFiles[6]; ///
+	bool   nvidiaEnc;      ///< use nVidia encoding
+	str512 recentFiles[6]; ///< recent files for quick load
+	bool   videoCapture;   ///< allow video capture
 
 	// [user]
 	str256 userEmail; ///< login
