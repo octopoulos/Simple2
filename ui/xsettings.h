@@ -13,6 +13,9 @@ struct XSettings : public EngineSettings
 	str256 appId;  ///< appId to synchronize with the browser
 	int    gameId; ///< 0: gori, 1: custom
 
+	// [physics]
+	bool physPaused; ///< paused physics
+
 	// [render]
 	bool  instancing; ///< use mesh instancing
 	float orthoZoom;  ///< zoom in orthographic projection

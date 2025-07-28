@@ -319,7 +319,7 @@ void App::Render()
 	}
 
 	// 4) physics
-	if (!isPaused)
+	if (!xsettings.physPaused)
 	{
 		physics->StepSimulation(deltaTime);
 		++physicsFrame;
@@ -333,8 +333,8 @@ void App::Render()
 
 		if (pauseNextFrame)
 		{
-			isPaused       = true;
-			pauseNextFrame = false;
+			xsettings.physPaused = true;
+			pauseNextFrame       = false;
 		}
 	}
 	else lastTime = curTime;

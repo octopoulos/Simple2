@@ -155,7 +155,14 @@ void App::ShowMainMenu(float alpha)
 			ImGui::EndMenu();
 		}
 
-		// windows
+		// physics
+		if (ImGui::BeginMenu("Physics"))
+		{
+			ImGui::MenuItem("Paused", nullptr, &xsettings.physPaused);
+			ImGui::EndMenu();
+		}
+
+		// render
 		if (ImGui::BeginMenu("Render"))
 		{
 			{

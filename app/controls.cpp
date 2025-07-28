@@ -22,10 +22,10 @@ void App::FixedControls()
 	{
 		if (downs[Key::KeyO])
 		{
-			isPaused       = false;
-			pauseNextFrame = true;
+			xsettings.physPaused = false;
+			pauseNextFrame       = true;
 		}
-		if (downs[Key::KeyP]) isPaused = !isPaused;
+		if (downs[Key::KeyP]) xsettings.physPaused = !xsettings.physPaused;
 
 		if (downs[Key::Down])
 		{

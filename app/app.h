@@ -81,7 +81,6 @@ private:
 
 private:
 	bool                bulletDebug    = false; ///< bullet debug draw
-	bool                isPaused       = false; ///< pause simulation?
 	bool                pauseNextFrame = false; ///< pause next frame
 	int                 renderFlags    = 0;     ///< render flags
 	int                 renderFrame    = 0;     ///< current rendered frame

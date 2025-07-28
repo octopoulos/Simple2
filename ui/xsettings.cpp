@@ -32,6 +32,9 @@ static std::vector<Config> configs = {
 	X_STRING (XSettings, analysis, 1, appId , ""),
 	X_ENUM   (XSettings, analysis, 1, gameId, 0, sGames),
 
+	// [physics]
+	X_BOOL   (XSettings, physics, 0, physPaused, false),
+
 	// [render]
 	X_BOOL   (XSettings, render, 0, instancing, true),
 	X_FLOAT  (XSettings, render, 0, orthoZoom , 1.0f, 0.001f, 10.0f),
