@@ -87,6 +87,10 @@ void App::FluidControls()
 		if (keys[Key::LeftCtrl]) speed *= 0.5f;
 		if (keys[Key::LeftShift]) speed *= 2.0f;
 
+		const bool isOrtho = (xsettings.projection == Projection_Orthographic);
+		const int  keyQS   = isOrtho ? Key::KeyS : Key::KeyQ;
+		const int  keyEW   = isOrtho ? Key::KeyW : Key::KeyE;
+
 		if (keys[Key::KeyA])
 		{
 			camera->pos2    = bx::mad(camera->right, -speed, camera->pos2);
@@ -97,25 +101,28 @@ void App::FluidControls()
 			camera->pos2    = bx::mad(camera->right, speed, camera->pos2);
 			camera->target2 = bx::mad(camera->right, speed, camera->target2);
 		}
-		if (keys[Key::KeyE])
+		if (keys[keyEW])
 		{
 			camera->pos2    = bx::mad(camera->up, speed, camera->pos2);
 			camera->target2 = bx::mad(camera->up, speed, camera->target2);
 		}
-		if (keys[Key::KeyQ])
+		if (keys[keyQS])
 		{
 			camera->pos2    = bx::mad(camera->up, -speed, camera->pos2);
 			camera->target2 = bx::mad(camera->up, -speed, camera->target2);
 		}
-		if (keys[Key::KeyS])
+		if (!isOrtho)
 		{
-			camera->pos2    = bx::mad(camera->forward, -speed, camera->pos2);
-			camera->target2 = bx::mad(camera->forward, -speed, camera->target2);
-		}
-		if (keys[Key::KeyW])
-		{
-			camera->pos2    = bx::mad(camera->forward, speed, camera->pos2);
-			camera->target2 = bx::mad(camera->forward, speed, camera->target2);
+			if (keys[Key::KeyS])
+			{
+				camera->pos2    = bx::mad(camera->forward, -speed, camera->pos2);
+				camera->target2 = bx::mad(camera->forward, -speed, camera->target2);
+			}
+			if (keys[Key::KeyW])
+			{
+				camera->pos2    = bx::mad(camera->forward, speed, camera->pos2);
+				camera->target2 = bx::mad(camera->forward, speed, camera->target2);
+			}
 		}
 	}
 }
