@@ -7,8 +7,8 @@
 #include "stdafx.h"
 #include "app.h"
 #include "common/bgfx_utils.h"
-#include "common/camera.h"
 #include "common/ffmpeg-pipe.h"
+#include "common/entry/input.h"
 #include "engine/ModelLoader.h"
 #include "imgui/imgui.h"
 
@@ -40,14 +40,6 @@ int App::Initialize()
 
 	if (const int result = InitializeScene(); result < 0) return result;
 
-	// camera
-	{
-		cameraCreate();
-		cameraSetPosition({ -11.77f, 6.74f, -15.57f });
-		cameraSetHorizontalAngle(0.7f);
-		cameraSetVerticalAngle(-0.45f);
-	}
-
 	ui::Log("xsettings.aspectRatio={}", xsettings.aspectRatio);
 	return 1;
 }
@@ -56,6 +48,12 @@ int App::InitializeScene()
 {
 	// 1)
 	scene = std::make_unique<Scene>();
+
+	// camera
+	{
+		camera = std::make_shared<Camera>();
+		scene->AddNamedChild(camera, "camera");
+	}
 
 	// cursor
 	{
@@ -277,6 +275,7 @@ void App::Render()
 	{
 		curTime   = TO_FLOAT((bx::getHPCounter() - startTime) / TO_DOUBLE(bx::getHPFrequency()));
 		deltaTime = curTime - lastTime;
+		lastTime  = curTime;
 
 		float timeVec[4] = { curTime, 0.0f, 0.0f, 0.0f };
 		bgfx::setUniform(uTime, timeVec);
@@ -294,37 +293,13 @@ void App::Render()
 	}
 
 	// 3) camera view
-	{
-		bgfx::setViewRect(0, 0, 0, screenX, screenY);
-
-		// view
-		float view[16];
-		cameraGetViewMtx(view);
-
-		// projection
-		const float fscreenX  = TO_FLOAT(screenX);
-		const float fscreenY  = TO_FLOAT(screenY);
-		const bool  homoDepth = bgfx::getCaps()->homogeneousDepth;
-		float       proj[16];
-
-		if (xsettings.projection == Projection_Orthographic)
-		{
-			const float zoomX = fscreenX * xsettings.orthoZoom;
-			const float zoomY = fscreenY * xsettings.orthoZoom;
-			bx::mtxOrtho(proj, -zoomX, zoomX, -zoomY, zoomY, -1000.0f, 1000.0f, 0.0f, homoDepth);
-		}
-		else bx::mtxProj(proj, 60.0f, fscreenX / fscreenY, 0.1f, 2000.0f, homoDepth);
-
-		bgfx::setViewTransform(0, view, proj);
-	}
+	camera->UpdateViewProjection(0, TO_FLOAT(screenX), TO_FLOAT(screenY));
 
 	// 4) physics
 	if (!xsettings.physPaused)
 	{
 		physics->StepSimulation(deltaTime);
 		++physicsFrame;
-
-		lastTime = curTime;
 
 		for (auto& child : scene->children)
 			child->SynchronizePhysics();
@@ -337,7 +312,6 @@ void App::Render()
 			pauseNextFrame       = false;
 		}
 	}
-	else lastTime = curTime;
 
 	// 5) draw the scene
 	{
@@ -463,13 +437,12 @@ struct BgfxCallback : public bgfx::CallbackI
 class EntryApp : public entry::AppI
 {
 private:
-	std::unique_ptr<App> app        = nullptr; ///< main application
-	BgfxCallback         callback   = {};      ///< for video capture + screenshot
-	uint32_t             debug      = 0;       ///
-	uint32_t             height     = 800;     ///
-	entry::MouseState    mouseState = {};      ///
-	uint32_t             reset      = 0;       ///
-	uint32_t             width      = 1328;    ///
+	std::unique_ptr<App> app      = nullptr; ///< main application
+	BgfxCallback         callback = {};      ///< for video capture + screenshot
+	uint32_t             debug    = 0;       ///
+	uint32_t             height   = 800;     ///
+	uint32_t             reset    = 0;       ///
+	uint32_t             width    = 1328;    ///
 
 public:
 	EntryApp(const char* _name, const char* _description, const char* _url)
@@ -543,15 +516,20 @@ public:
 		{
 			callback.wantVideo = app->wantVideo;
 
-			if (entry::processEvents(width, height, debug, reset, &mouseState)) return false;
-
+			if (entry::processEvents(width, height, debug, reset)) return false;
 			app->SynchronizeEvents(width, height);
 		}
 
 		// 2) imGui
 		if (!(app->wantScreenshot & 2))
 		{
-			imguiBeginFrame(mouseState.m_mx, mouseState.m_my, (mouseState.m_buttons[entry::MouseButton::Left] ? IMGUI_MBUT_LEFT : 0) | (mouseState.m_buttons[entry::MouseButton::Right] ? IMGUI_MBUT_RIGHT : 0) | (mouseState.m_buttons[entry::MouseButton::Middle] ? IMGUI_MBUT_MIDDLE : 0), mouseState.m_mz, uint16_t(width), uint16_t(height));
+			// TODO: move this inside imguiBeginFrame
+			const auto& ginput   = GetGlobalInput();
+			const auto& buttons  = ginput.buttons;
+			const auto  imButton = (buttons[1] ? IMGUI_MBUT_LEFT : 0) | (buttons[3] ? IMGUI_MBUT_RIGHT : 0) | (buttons[2] ? IMGUI_MBUT_MIDDLE : 0);
+			const auto& mouseAbs = ginput.mouseAbs;
+
+			imguiBeginFrame(mouseAbs[0], mouseAbs[1], imButton, mouseAbs[2], uint16_t(width), uint16_t(height));
 			{
 				if (!app->wantVideo) showExampleDialog(this);
 				app->MainUi();

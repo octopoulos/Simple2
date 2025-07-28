@@ -4,7 +4,6 @@
 
 #include "stdafx.h"
 #include "app.h"
-#include "common/camera.h"
 #include "entry/input.h"
 #include "imgui/imgui.h"
 
@@ -62,26 +61,61 @@ void App::FixedControls()
 			xsettings.orthoZoom = std::max(xsettings.orthoZoom / 1.02f, 0.0002f);
 	}
 
-	GetGlobalInput().ResetNews();
-
+	GetGlobalInput().ResetFixed();
 	++inputFrame;
 }
 
 void App::FluidControls()
 {
-	const auto& ginput = GetGlobalInput();
+	auto& ginput = GetGlobalInput();
+	ginput.MouseDeltas();
 
 	// camera
+	if (!ImGui::MouseOverArea())
 	{
-		entry::MouseState mouseState;
-		mouseState.m_buttons[0] = ginput.buttons[0];
-		mouseState.m_buttons[1] = ginput.buttons[1];
-		mouseState.m_buttons[2] = ginput.buttons[2];
-		mouseState.m_buttons[3] = ginput.buttons[3];
-		mouseState.m_mx         = ginput.mouseAbs[0];
-		mouseState.m_my         = ginput.mouseAbs[1];
-		mouseState.m_mz         = ginput.mouseAbs[2];
+		if (ginput.buttons[1])
+			camera->Orbit(ginput.mouseRels2[0], ginput.mouseRels2[1]);
+		camera->Update(deltaTime);
+	}
 
-		cameraUpdate(deltaTime, mouseState, ImGui::MouseOverArea());
+	// holding down
+	if (const auto& keys = ginput.keys)
+	{
+		using namespace entry;
+
+		float speed = deltaTime * 10.0f;
+		if (keys[Key::LeftCtrl]) speed *= 0.5f;
+		if (keys[Key::LeftShift]) speed *= 2.0f;
+
+		if (keys[Key::KeyA])
+		{
+			camera->pos2    = bx::mad(camera->right, -speed, camera->pos2);
+			camera->target2 = bx::mad(camera->right, -speed, camera->target2);
+		}
+		if (keys[Key::KeyD])
+		{
+			camera->pos2    = bx::mad(camera->right, speed, camera->pos2);
+			camera->target2 = bx::mad(camera->right, speed, camera->target2);
+		}
+		if (keys[Key::KeyE])
+		{
+			camera->pos2    = bx::mad(camera->up, speed, camera->pos2);
+			camera->target2 = bx::mad(camera->up, speed, camera->target2);
+		}
+		if (keys[Key::KeyQ])
+		{
+			camera->pos2    = bx::mad(camera->up, -speed, camera->pos2);
+			camera->target2 = bx::mad(camera->up, -speed, camera->target2);
+		}
+		if (keys[Key::KeyS])
+		{
+			camera->pos2    = bx::mad(camera->forward, -speed, camera->pos2);
+			camera->target2 = bx::mad(camera->forward, -speed, camera->target2);
+		}
+		if (keys[Key::KeyW])
+		{
+			camera->pos2    = bx::mad(camera->forward, speed, camera->pos2);
+			camera->target2 = bx::mad(camera->forward, speed, camera->target2);
+		}
 	}
 }

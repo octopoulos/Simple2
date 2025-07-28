@@ -521,7 +521,10 @@ struct Context
 
 					WindowHandle handle = findHandle(mev.windowID);
 					if (isValid(handle))
+					{
+						ui::Log("MOUSE MOTION: {} {} {} : {} {}", m_mx, m_my, m_mz, mev.xrel, mev.yrel);
 						m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz);
+					}
 				}
 				break;
 

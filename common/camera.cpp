@@ -192,31 +192,31 @@ struct Camera
 		m_keys |= gpy < -16834 ? CAMERA_KEY_FORWARD : 0;
 		m_keys |= gpy > 16834 ? CAMERA_KEY_BACKWARD : 0;
 
-		const bx::Vec3 direction = {
+		forward = {
 			bx::cos(m_verticalAngle) * bx::sin(m_horizontalAngle),
 			bx::sin(m_verticalAngle),
 			bx::cos(m_verticalAngle) * bx::cos(m_horizontalAngle),
 		};
 
-		const bx::Vec3 right = {
+		right = {
 			bx::sin(m_horizontalAngle - bx::kPiHalf),
 			0.0f,
 			bx::cos(m_horizontalAngle - bx::kPiHalf),
 		};
 
-		const bx::Vec3 up = bx::cross(right, direction);
+		up = bx::cross(right, forward);
 
-		m_eye = bx::mad(direction, deltaZ * _deltaTime * m_moveSpeed, m_eye);
+		m_eye = bx::mad(forward, deltaZ * _deltaTime * m_moveSpeed, m_eye);
 
 		if (m_keys & CAMERA_KEY_FORWARD)
 		{
-			m_eye = bx::mad(direction, _deltaTime * m_moveSpeed, m_eye);
+			m_eye = bx::mad(forward, _deltaTime * m_moveSpeed, m_eye);
 			setKeyState(CAMERA_KEY_FORWARD, false);
 		}
 
 		if (m_keys & CAMERA_KEY_BACKWARD)
 		{
-			m_eye = bx::mad(direction, -_deltaTime * m_moveSpeed, m_eye);
+			m_eye = bx::mad(forward, -_deltaTime * m_moveSpeed, m_eye);
 			setKeyState(CAMERA_KEY_BACKWARD, false);
 		}
 
@@ -244,8 +244,8 @@ struct Camera
 			setKeyState(CAMERA_KEY_DOWN, false);
 		}
 
-		m_at = bx::add(m_eye, direction);
-		m_up = bx::cross(right, direction);
+		m_at = bx::add(m_eye, forward);
+		m_up = bx::cross(right, forward);
 	}
 
 	void getViewMtx(float* _viewMtx)
@@ -271,9 +271,12 @@ struct Camera
 	MouseCoords m_mouseNow;
 	MouseCoords m_mouseLast;
 
-	bx::Vec3 m_eye = bx::InitZero;
-	bx::Vec3 m_at  = bx::InitZero;
-	bx::Vec3 m_up  = bx::InitZero;
+	bx::Vec3 forward = bx::InitZero;
+	bx::Vec3 right   = bx::InitZero;
+	bx::Vec3 up      = bx::InitZero;
+	bx::Vec3 m_eye   = bx::InitZero;
+	bx::Vec3 m_at    = bx::InitZero;
+	bx::Vec3 m_up    = bx::InitZero;
 	float    m_horizontalAngle;
 	float    m_verticalAngle;
 
@@ -321,16 +324,6 @@ void cameraSetKeyState(uint8_t _key, bool _down)
 void cameraGetViewMtx(float* _viewMtx)
 {
 	s_camera->getViewMtx(_viewMtx);
-}
-
-bx::Vec3 cameraGetPosition()
-{
-	return s_camera->m_eye;
-}
-
-bx::Vec3 cameraGetAt()
-{
-	return s_camera->m_at;
 }
 
 void cameraUpdate(float _deltaTime, const entry::MouseState& _mouseState, bool _reset)

@@ -5,7 +5,6 @@
  */
 
 #include "stdafx.h"
-#include "camera.h"
 #include "imgui/imgui.h"
 #include "entry/entry.h"
 #include "entry/cmd.h"
@@ -392,15 +391,6 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 			}
 		}
 		ImGui::End();
-	}
-
-	// camera info
-	if (1)
-	{
-		const auto at  = cameraGetAt();
-		const auto pos = cameraGetPosition();
-		ImGui::Text("Camera at : %.2f %.2f %.2f", at.x, at.y, at.z);
-		ImGui::Text("Camera pos: %.2f %.2f %.2f", pos.x, pos.y, pos.z);
 	}
 
 	ImGui::End();

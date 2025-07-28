@@ -1,4 +1,4 @@
-// @version 2025-07-22
+// @version 2025-07-24
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -120,9 +120,14 @@ struct GlobalInput
 	bool     keys[256]       = {};                          ///< are keys pushed?
 	int64_t  keyTimes[256]   = {};                          ///< when the key was pushed last time (in us)
 	uint8_t  keyUps[256]     = {};                          ///< those keys were released this frame
-	int      mouseAbs[3]     = { 640, 360, 0 };             ///< mouse absolute coordinates
+	int      mouseAbs[3]     = {};                          ///< mouse absolute coordinates
+	int      mouseAbs2[3]    = {};                          ///< mouse absolute coordinates: deltas
+	int      mouseFrame      = 0;                           ///< mouse input frame
 	bool     mouseLock       = false;                       ///< mouse is locked?
-	float    mouseNorm[3]    = {};                          ///< mouse normalized coordinates
+	float    mouseDeltas[3]  = {};                          ///< mouse changes
+	float    mouseRels[3]    = {};                          ///< mouse relative coordinates
+	float    mouseRels0[3]   = {};                          ///< mouse relative coordinates: previous
+	float    mouseRels2[3]   = {};                          ///< mouse relative coordinates: deltas
 	float    resolution[3]   = { 1280.0f, 720.0f, 120.0f }; ///< used to normalize mouse coords
 
 	/// Keyboard key down/up
@@ -130,6 +135,10 @@ struct GlobalInput
 
 	/// Mouse button change
 	void MouseButton(int button, uint8_t state);
+
+	/// Compute mouse deltas
+	/// - call this every frame
+	void MouseDeltas();
 
 	/// Mouse locked or unlocked
 	void MouseLock(bool lock);
@@ -141,7 +150,7 @@ struct GlobalInput
 	void Reset();
 
 	/// Reset the keyNews only, must do this every frame
-	void ResetNews();
+	void ResetFixed();
 
 	/// Set resolution to calculate mouseNorm
 	void SetResolution(int width, int height, int wheelDelta);

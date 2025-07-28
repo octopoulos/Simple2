@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "engine/Camera.h"
 #include "engine/Mesh.h"
 #include "engine/Scene.h"
 #include "engine/ShaderManager.h"
@@ -95,9 +96,10 @@ public:
 	////////
 
 private:
+	sCamera                       camera         = nullptr; ///< camera
 	std::unique_ptr<PhysicsWorld> physics        = nullptr; ///< physics world
 	int                           physicsFrame   = 0;       ///< current physics frame
-	std::unique_ptr<Scene>        scene          = nullptr; ///
+	std::unique_ptr<Scene>        scene          = nullptr; ///< scene container
 	ShaderManager                 shaderManager  = {};      ///
 	TextureManager                textureManager = {};      ///
 

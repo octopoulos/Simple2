@@ -1,4 +1,4 @@
-// @version 2025-07-22
+// @version 2025-07-24
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -406,13 +406,19 @@ void GlobalInput::MouseButton(int button, uint8_t state)
 		buttons[button] = state;
 }
 
+void GlobalInput::MouseDeltas()
+{
+	mouseRels2[0] = mouseRels[0] - mouseRels0[0];
+	mouseRels2[1] = mouseRels[1] - mouseRels0[1];
+	mouseRels2[2] = mouseRels[2] - mouseRels0[2];
+	mouseRels0[0] = mouseRels[0];
+	mouseRels0[1] = mouseRels[1];
+	mouseRels0[2] = mouseRels[2];
+}
+
 void GlobalInput::MouseLock(bool lock)
 {
-	if (mouseLock != lock)
-	{
-		mouseLock = lock;
-		std::memset(mouseNorm, 0, sizeof(mouseNorm));
-	}
+	if (mouseLock != lock) mouseLock = lock;
 }
 
 void GlobalInput::MouseMove(int mx, int my, int mz)
@@ -420,9 +426,12 @@ void GlobalInput::MouseMove(int mx, int my, int mz)
 	mouseAbs[0]  = mx;
 	mouseAbs[1]  = my;
 	mouseAbs[2]  = mz;
-	mouseNorm[0] = TO_FLOAT(mx) / resolution[0];
-	mouseNorm[1] = TO_FLOAT(my) / resolution[1];
-	mouseNorm[2] = TO_FLOAT(mz) / resolution[2];
+	mouseRels[0] = TO_FLOAT(mx) / resolution[0];
+	mouseRels[1] = TO_FLOAT(my) / resolution[1];
+	mouseRels[2] = TO_FLOAT(mz) / resolution[2];
+
+	if (!mouseFrame) std::memcpy(mouseRels0, mouseRels, sizeof(mouseRels));
+	++mouseFrame;
 }
 
 void GlobalInput::Reset()
@@ -433,18 +442,24 @@ void GlobalInput::Reset()
 	std::memset(keys      , 0, sizeof(keys      ));
 	std::memset(keyTimes  , 0, sizeof(keyTimes  ));
 	std::memset(mouseAbs  , 0, sizeof(mouseAbs  ));
-	std::memset(mouseNorm , 0, sizeof(mouseNorm ));
+	std::memset(mouseAbs2 , 0, sizeof(mouseAbs2 ));
+	std::memset(mouseRels , 0, sizeof(mouseRels ));
+	std::memset(mouseRels2, 0, sizeof(mouseRels2));
 	// clang-format on
 
 	keyChangeId = 0;
+	mouseFrame  = 0;
 	mouseLock   = false;
-	ResetNews();
+
+	ResetFixed();
 }
 
-void GlobalInput::ResetNews()
+void GlobalInput::ResetFixed()
 {
+	// clang-format off
 	std::memset(keyDowns, 0, sizeof(keyDowns));
-	std::memset(keyUps, 0, sizeof(keyUps));
+	std::memset(keyUps  , 0, sizeof(keyUps  ));
+	// clang-format on
 }
 
 void GlobalInput::SetResolution(int width, int height, int wheelDelta)
