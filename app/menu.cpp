@@ -31,14 +31,20 @@ void App::FilesUi()
 
 void App::MainUi()
 {
+	// skip some UI elements when recording video
 	if (!wantVideo)
 	{
 		MapUi();
+
 		FilesUi();
+
 		// ui::DrawWindows();
 		if (showImGuiDemo) ImGui::ShowDemoWindow(&showImGuiDemo);
 	}
 
+	LearnUi();
+
+	// show menu (or [REC] if recording video)
 	ShowMainMenu(1.0f);
 }
 
@@ -159,6 +165,7 @@ void App::ShowMainMenu(float alpha)
 		if (ImGui::BeginMenu("Physics"))
 		{
 			ImGui::MenuItem("Paused", nullptr, &xsettings.physPaused);
+			ImGui::MenuItem("Show Collision Volumes", nullptr, &xsettings.bulletDebug);
 			ImGui::EndMenu();
 		}
 

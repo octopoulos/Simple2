@@ -223,7 +223,7 @@ int App::InitializeScene()
 		parent->program = shaderManager.LoadProgram("vs_model_instance", "fs_model_instance");
 		scene->AddNamedChild(parent, "donut3-group");
 
-		for (int i = 0; i < 1200; ++i)
+		for (int i = 0; i < 120; ++i)
 		{
 			//if (auto object = std::make_shared<Mesh>())
 			if (auto object = loader.LoadModel("donut3"))
