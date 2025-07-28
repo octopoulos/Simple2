@@ -35,6 +35,7 @@ void App::Destroy()
 int App::Initialize()
 {
 	ui::Log("App::Initialize");
+	FindAppDirectory(true);
 	ScanModels("runtime/models", "runtime/models-prev");
 
 	if (const int result = InitializeScene(); result < 0) return result;
@@ -428,7 +429,10 @@ struct BgfxCallback : public bgfx::CallbackI
 
 		if (!ffmpeg.pipe)
 		{
-			if (!ffmpeg.Open("temp/capture.mp4", width, height, 60, yflip)) ++numFailure;
+			if (numFailure > 3)
+				wantVideo = false;
+			else if (!ffmpeg.Open(fmt::format("temp/{}.mp4", FormatDateTime(2, true)), width, height, 60, yflip))
+				++numFailure;
 		}
 		else ffmpeg.WriteFrame(data, size);
 	}
