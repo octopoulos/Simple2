@@ -1,4 +1,4 @@
-// @version 2025-07-23
+// @version 2025-07-25
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -750,9 +750,10 @@ struct Context
 
 					if (0 == mx && 0 == my) break;
 					setMousePos(_hwnd, m_mx, m_my);
-				}
 
-				m_eventQueue.postMouseEvent(findHandle(_hwnd), mx, my, m_mz);
+					m_eventQueue.postMouseEvent(findHandle(_hwnd), m_mx, m_my, m_mz, true, mx, my);
+				}
+				else m_eventQueue.postMouseEvent(findHandle(_hwnd), mx, my, m_mz, false, 0, 0);
 			}
 			break;
 
@@ -763,7 +764,7 @@ struct Context
 				int32_t mx = pt.x;
 				int32_t my = pt.y;
 				m_mz += GET_WHEEL_DELTA_WPARAM(_wparam) / WHEEL_DELTA;
-				m_eventQueue.postMouseEvent(findHandle(_hwnd), mx, my, m_mz);
+				m_eventQueue.postMouseEvent(findHandle(_hwnd), mx, my, m_mz, false, 0, 0);
 			}
 			break;
 

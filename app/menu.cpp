@@ -4,9 +4,9 @@
 
 #include "stdafx.h"
 #include "app.h"
+#include "entry/input.h"
+#include "imgui/imgui.h"
 #include "ui/ui.h"
-
-#include "dear-imgui/imgui.h"
 
 #ifdef WITH_FILE_DIALOG
 #	include "ImGuiFileDialog/ImGuiFileDialog.h"
@@ -29,13 +29,18 @@ void App::FilesUi()
 #endif
 }
 
-void App::MainUi()
+int App::MainUi()
 {
+	// lock => no UI
+	if (GetGlobalInput().mouseLock) return 0;
+
 	// skip some UI elements when recording video
+	int drawnFlag = 1;
 	if (!wantVideo)
 	{
-		MapUi();
+		drawnFlag |= 2;
 
+		MapUi();
 		FilesUi();
 
 		// ui::DrawWindows();
@@ -46,6 +51,7 @@ void App::MainUi()
 
 	// show menu (or [REC] if recording video)
 	ShowMainMenu(1.0f);
+	return drawnFlag;
 }
 
 void App::OpenFile(int action)

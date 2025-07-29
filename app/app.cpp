@@ -531,8 +531,7 @@ public:
 
 			imguiBeginFrame(mouseAbs[0], mouseAbs[1], imButton, mouseAbs[2], uint16_t(width), uint16_t(height));
 			{
-				if (!app->wantVideo) showExampleDialog(this);
-				app->MainUi();
+				if (app->MainUi() & 2) showExampleDialog(this);
 			}
 			imguiEndFrame();
 		}

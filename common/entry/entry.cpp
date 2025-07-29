@@ -1,4 +1,4 @@
-// @version 2025-07-24
+// @version 2025-07-25
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -792,7 +792,7 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 				const MouseEvent* mouse = static_cast<const MouseEvent*>(ev);
 				handle                  = mouse->m_handle;
 
-				inputSetMousePos(mouse->m_mx, mouse->m_my, mouse->m_mz);
+				inputSetMousePos(mouse->m_mx, mouse->m_my, mouse->m_mz, mouse->hasDelta, mouse->m_dx, mouse->m_dy);
 				if (!mouse->m_move)
 					inputSetMouseButtonState(mouse->m_button, mouse->m_down);
 
@@ -950,7 +950,7 @@ bool processWindowEvents(WindowState& _state, uint32_t& _debug, uint32_t& _reset
 				win.m_handle            = mouse->m_handle;
 
 				if (mouse->m_move)
-					inputSetMousePos(mouse->m_mx, mouse->m_my, mouse->m_mz);
+					inputSetMousePos(mouse->m_mx, mouse->m_my, mouse->m_mz, mouse->hasDelta, mouse->m_dx, mouse->m_dy);
 				else
 					inputSetMouseButtonState(mouse->m_button, mouse->m_down);
 

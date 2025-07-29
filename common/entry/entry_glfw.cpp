@@ -1,4 +1,4 @@
-// @version 2025-07-23
+// @version 2025-07-25
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -532,9 +532,15 @@ struct Context
 				{
 					GLFWwindow* window = m_window[msg->m_handle.idx];
 					if (msg->m_value)
+					{
 						glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+						glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+					}
 					else
+					{
 						glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+						glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
+					}
 				}
 				break;
 				}
@@ -633,13 +639,13 @@ void Context::scrollCb(GLFWwindow* _window, double _dx, double _dy)
 	double       mx, my;
 	glfwGetCursorPos(_window, &mx, &my);
 	s_ctx.m_scrollPos += _dy;
-	s_ctx.m_eventQueue.postMouseEvent(handle, (int32_t)mx, (int32_t)my, (int32_t)s_ctx.m_scrollPos);
+	s_ctx.m_eventQueue.postMouseEvent(handle, (int32_t)mx, (int32_t)my, (int32_t)s_ctx.m_scrollPos, false, 0, 0);
 }
 
 void Context::cursorPosCb(GLFWwindow* _window, double _mx, double _my)
 {
 	WindowHandle handle = s_ctx.findHandle(_window);
-	s_ctx.m_eventQueue.postMouseEvent(handle, (int32_t)_mx, (int32_t)_my, (int32_t)s_ctx.m_scrollPos);
+	s_ctx.m_eventQueue.postMouseEvent(handle, (int32_t)_mx, (int32_t)_my, (int32_t)s_ctx.m_scrollPos, false, 0, 0);
 }
 
 void Context::mouseButtonCb(GLFWwindow* _window, int32_t _button, int32_t _action, int32_t _mods)

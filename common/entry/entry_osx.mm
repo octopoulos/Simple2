@@ -1,4 +1,4 @@
-// @version 2025-07-22
+// @version 2025-07-25
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -308,9 +308,9 @@ struct Context
 					m_my -= m_cmy;
 
 					setMousePos(window, m_cmx, m_cmy);
+					m_eventQueue.postMouseEvent(handle, m_cmx, m_cmy, m_scroll, true, m_mx, m_my);
 				}
-
-				m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_scroll);
+				else m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_scroll, false, 0, 0);
 				break;
 
 			case NSEventTypeLeftMouseDown:
@@ -350,7 +350,7 @@ struct Context
 				m_scrollf += [event deltaY];
 
 				m_scroll = (int32_t)m_scrollf;
-				m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_scroll);
+				m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_scroll, false, 0, 0);
 				break;
 
 			case NSEventTypeKeyDown:

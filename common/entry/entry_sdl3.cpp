@@ -1,6 +1,6 @@
 // entry_sdl3.cpp
 // @author octopoulos
-// @version 2025-07-23
+// @version 2025-07-25
 
 #include "stdafx.h"
 #include "entry_p.h"
@@ -521,10 +521,7 @@ struct Context
 
 					WindowHandle handle = findHandle(mev.windowID);
 					if (isValid(handle))
-					{
-						ui::Log("MOUSE MOTION: {} {} {} : {} {}", m_mx, m_my, m_mz, mev.xrel, mev.yrel);
-						m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz);
-					}
+						m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz, true, mev.xrel * 2, mev.yrel * 2);
 				}
 				break;
 
@@ -556,7 +553,7 @@ struct Context
 
 					WindowHandle handle = findHandle(mev.windowID);
 					if (isValid(handle))
-						m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz);
+						m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz, false, 0, 0);
 				}
 				break;
 
@@ -856,8 +853,7 @@ struct Context
 					}
 					break;
 
-					default:
-						break;
+					default: break;
 					}
 				}
 				break;

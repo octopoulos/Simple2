@@ -162,7 +162,8 @@ public:
 	bool wantVideo      = false; ///< want video capture
 
 	/// Show all custom UI elements
-	void MainUi();
+	/// @returns 0: no UI drawn, &1: something was drawn, &2: no video
+	int MainUi();
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// WINDOW

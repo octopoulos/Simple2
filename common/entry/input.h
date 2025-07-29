@@ -1,4 +1,4 @@
-// @version 2025-07-24
+// @version 2025-07-25
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -80,7 +80,7 @@ void inputCharFlush();
 void inputSetMouseResolution(uint16_t _width, uint16_t _height);
 
 ///
-void inputSetMousePos(int32_t _mx, int32_t _my, int32_t _mz);
+void inputSetMousePos(int32_t _mx, int32_t _my, int32_t _mz, bool hasDelta, int32_t _dx, int32_t _dy);
 
 ///
 void inputSetMouseButtonState(entry::MouseButton::Enum _button, uint8_t _state);
@@ -144,7 +144,7 @@ struct GlobalInput
 	void MouseLock(bool lock);
 
 	/// Mouse motion
-	void MouseMove(int mx, int my, int mz);
+	void MouseMove(int mx, int my, int mz, bool hasDelta, int dx, int dy);
 
 	/// Reset data to initial state
 	void Reset();

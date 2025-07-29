@@ -1,3 +1,4 @@
+// @version 2025-07-25
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -284,7 +285,7 @@ using namespace entry;
 	touchLocation.x *= self.contentScaleFactor;
 	touchLocation.y *= self.contentScaleFactor;
 
-	s_ctx->m_eventQueue.postMouseEvent(s_defaultWindow, touchLocation.x, touchLocation.y, 0);
+	s_ctx->m_eventQueue.postMouseEvent(s_defaultWindow, touchLocation.x, touchLocation.y, 0, false, 0, 0);
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event

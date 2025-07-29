@@ -1,4 +1,4 @@
-// @version 2025-07-23
+// @version 2025-07-25
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -517,7 +517,7 @@ struct Context
 
 					WindowHandle handle = findHandle(mev.windowID);
 					if (isValid(handle))
-						m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz);
+						m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz, true, mev.xrel * 2, mev.yrel * 2);
 				}
 				break;
 
@@ -549,7 +549,7 @@ struct Context
 
 					WindowHandle handle = findHandle(mev.windowID);
 					if (isValid(handle))
-						m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz);
+						m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz, false, 0, 0);
 				}
 				break;
 
@@ -844,8 +844,7 @@ struct Context
 					}
 					break;
 
-					default:
-						break;
+					default: break;
 					}
 				}
 				break;

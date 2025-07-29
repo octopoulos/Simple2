@@ -1,4 +1,4 @@
-// @version 2025-07-24
+// @version 2025-07-25
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -320,11 +320,11 @@ void inputCharFlush()
 	s_input->m_keyboard.charFlush();
 }
 
-void inputSetMousePos(int32_t _mx, int32_t _my, int32_t _mz)
+void inputSetMousePos(int32_t _mx, int32_t _my, int32_t _mz, bool hasDelta, int32_t _dx, int32_t _dy)
 {
 	s_input->m_mouse.setPos(_mx, _my, _mz);
 	// !NEW
-	GetGlobalInput().MouseMove(_mx, _my, _mz);
+	GetGlobalInput().MouseMove(_mx, _my, _mz, hasDelta, _dx, _dy);
 }
 
 void inputSetMouseButtonState(entry::MouseButton::Enum _button, uint8_t _state)
@@ -403,7 +403,14 @@ void GlobalInput::KeyDownUp(int key, bool down)
 void GlobalInput::MouseButton(int button, uint8_t state)
 {
 	if (button >= 0 && button < 8)
+	{
 		buttons[button] = state;
+
+		// reset initial position when clicking
+		mouseRels0[0] = mouseRels[0];
+		mouseRels0[1] = mouseRels[1];
+		mouseRels0[2] = mouseRels[2];
+	}
 }
 
 void GlobalInput::MouseDeltas()
@@ -421,7 +428,7 @@ void GlobalInput::MouseLock(bool lock)
 	if (mouseLock != lock) mouseLock = lock;
 }
 
-void GlobalInput::MouseMove(int mx, int my, int mz)
+void GlobalInput::MouseMove(int mx, int my, int mz, bool hasDelta, int dx, int dy)
 {
 	mouseAbs[0]  = mx;
 	mouseAbs[1]  = my;
@@ -429,6 +436,13 @@ void GlobalInput::MouseMove(int mx, int my, int mz)
 	mouseRels[0] = TO_FLOAT(mx) / resolution[0];
 	mouseRels[1] = TO_FLOAT(my) / resolution[1];
 	mouseRels[2] = TO_FLOAT(mz) / resolution[2];
+
+	// relative motion?
+	if (hasDelta)
+	{
+		mouseRels0[0] = TO_FLOAT(mx - dx) / resolution[0];
+		mouseRels0[1] = TO_FLOAT(my - dy) / resolution[1];
+	}
 
 	if (!mouseFrame) std::memcpy(mouseRels0, mouseRels, sizeof(mouseRels));
 	++mouseFrame;
@@ -444,6 +458,7 @@ void GlobalInput::Reset()
 	std::memset(mouseAbs  , 0, sizeof(mouseAbs  ));
 	std::memset(mouseAbs2 , 0, sizeof(mouseAbs2 ));
 	std::memset(mouseRels , 0, sizeof(mouseRels ));
+	std::memset(mouseRels0, 0, sizeof(mouseRels0));
 	std::memset(mouseRels2, 0, sizeof(mouseRels2));
 	// clang-format on
 

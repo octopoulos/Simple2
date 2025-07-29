@@ -1,4 +1,4 @@
-// @version 2025-07-22
+// @version 2025-07-25
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -155,6 +155,9 @@ struct MouseEvent : public Event
 {
 	ENTRY_IMPLEMENT_EVENT(MouseEvent, Event::Mouse);
 
+	bool              hasDelta;
+	int32_t           m_dx;
+	int32_t           m_dy;
 	int32_t           m_mx;
 	int32_t           m_my;
 	int32_t           m_mz;
@@ -250,9 +253,12 @@ public:
 		m_queue.push(ev);
 	}
 
-	void postMouseEvent(WindowHandle _handle, int32_t _mx, int32_t _my, int32_t _mz)
+	void postMouseEvent(WindowHandle _handle, int32_t _mx, int32_t _my, int32_t _mz, bool hasDelta, int32_t _dx, int32_t _dy)
 	{
 		MouseEvent* ev = BX_NEW(getAllocator(), MouseEvent)(_handle);
+		ev->hasDelta   = hasDelta;
+		ev->m_dx       = _dx;
+		ev->m_dy       = _dy;
 		ev->m_mx       = _mx;
 		ev->m_my       = _my;
 		ev->m_mz       = _mz;
