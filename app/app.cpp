@@ -1,6 +1,6 @@
 // app.cpp
 // @author octopoulos
-// @version 2025-07-24
+// @version 2025-07-25
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -304,7 +304,7 @@ void App::Render()
 		for (auto& child : scene->children)
 			child->SynchronizePhysics();
 
-		if (bulletDebug) physics->DrawDebug();
+		if (xsettings.bulletDebug) physics->DrawDebug();
 
 		if (pauseNextFrame)
 		{

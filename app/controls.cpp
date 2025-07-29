@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-07-24
+// @version 2025-07-25
 
 #include "stdafx.h"
 #include "app.h"
@@ -50,7 +50,7 @@ void App::FixedControls()
 			cursor->UpdateLocalMatrix();
 		}
 
-		if (downs[Key::F4]) bulletDebug = !bulletDebug;
+		if (downs[Key::F4]) xsettings.bulletDebug = !xsettings.bulletDebug;
 		if (downs[Key::F5]) xsettings.projection = 1 - xsettings.projection;
 		if (downs[Key::F11]) xsettings.instancing = !xsettings.instancing;
 

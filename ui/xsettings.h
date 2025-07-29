@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-07-24
+// @version 2025-07-25
 
 #pragma once
 
@@ -14,7 +14,8 @@ struct XSettings : public EngineSettings
 	int    gameId; ///< 0: gori, 1: custom
 
 	// [physics]
-	bool physPaused; ///< paused physics
+	bool bulletDebug; ///< bullet debug draw
+	bool physPaused;  ///< paused physics
 
 	// [render]
 	bool  instancing; ///< use mesh instancing

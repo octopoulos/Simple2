@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-07-24
+// @version 2025-07-25
 
 #include "stdafx.h"
 #include "xsettings.h"
@@ -36,8 +36,9 @@ static std::vector<Config> configs = {
 	X_BOOL   (XSettings, physics, 0, physPaused, false),
 
 	// [render]
-	X_BOOL   (XSettings, render, 0, instancing, true),
-	X_FLOAT  (XSettings, render, 0, orthoZoom , 1.0f, 0.001f, 10.0f),
+	X_BOOL   (XSettings, render, 0, bulletDebug, false),
+	X_BOOL   (XSettings, render, 0, instancing,  true),
+	X_FLOAT  (XSettings, render, 0, orthoZoom  , 1.0f, 0.001f, 10.0f),
 
 	// [ui]
 	X_BOOL   (XSettings, ui, 0, nvidiaEnc   , false),

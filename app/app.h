@@ -1,6 +1,6 @@
 // app.h
 // @author octopoulos
-// @version 2025-07-24
+// @version 2025-07-25
 
 #pragma once
 
@@ -93,7 +93,6 @@ private:
 	/////////
 
 private:
-	bool                bulletDebug    = false; ///< bullet debug draw
 	bool                pauseNextFrame = false; ///< pause next frame
 	int                 renderFlags    = 0;     ///< render flags
 	int                 renderFrame    = 0;     ///< current rendered frame

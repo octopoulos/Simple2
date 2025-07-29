@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-07-24
+// @version 2025-07-25
 
 #include "stdafx.h"
 #include "app.h"
@@ -165,7 +165,7 @@ void App::ShowMainMenu(float alpha)
 		if (ImGui::BeginMenu("Physics"))
 		{
 			ImGui::MenuItem("Paused", nullptr, &xsettings.physPaused);
-			ImGui::MenuItem("Show Collision Volumes", nullptr, &xsettings.bulletDebug);
+			ImGui::MenuItem("Draw Collision Volumes", nullptr, &xsettings.bulletDebug);
 			ImGui::EndMenu();
 		}
 
