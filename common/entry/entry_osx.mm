@@ -177,36 +177,20 @@ struct Context
 		*outY = bx::clamp(y, 0, int32_t(adjustFrame.size.height) );
 	}
 
-	void setMousePos(NSWindow* _window, int _x, int _y)
-	{
-		NSRect  originalFrame = [_window frame];
-		NSRect  adjustFrame   = [_window contentRectForFrameRect: originalFrame];
-
-		adjustFrame.origin.y = NSMaxY(NSScreen.screens[0].frame) - NSMaxY(adjustFrame);
-
-		CGWarpMouseCursorPosition(CGPointMake(_x + adjustFrame.origin.x, _y + adjustFrame.origin.y));
-		CGAssociateMouseAndMouseCursorPosition(YES);
-	}
-
 	void setMouseLock(NSWindow* _window, bool _lock)
 	{
 		NSWindow* newMouseLock = _lock ? _window : nullptr;
 
 		if ( m_mouseLock != newMouseLock )
 		{
-			if ( _lock )
+			if (_lock)
 			{
-				NSRect  originalFrame = [_window frame];
-				NSRect  adjustFrame   = [_window contentRectForFrameRect: originalFrame];
-
-				m_cmx = (int)adjustFrame.size.width / 2;
-				m_cmy = (int)adjustFrame.size.height / 2;
-
-				setMousePos(_window, m_cmx, m_cmy);
 				[NSCursor hide];
+				CGAssociateMouseAndMouseCursorPosition(NO);
 			}
 			else
 			{
+				CGAssociateMouseAndMouseCursorPosition(YES);
 				[NSCursor unhide];
 			}
 			m_mouseLock = newMouseLock;
@@ -304,11 +288,9 @@ struct Context
 
 				if (window == m_mouseLock)
 				{
-					m_mx -= m_cmx;
-					m_my -= m_cmy;
-
-					setMousePos(window, m_cmx, m_cmy);
-					m_eventQueue.postMouseEvent(handle, m_cmx, m_cmy, m_scroll, true, m_mx, m_my);
+					float dx = [event deltaX];
+					float dy = [event deltaY];
+					m_eventQueue.postMouseEvent(handle, m_cmx, m_cmy, m_scroll, true, dx, dy);
 				}
 				else m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_scroll, false, 0, 0);
 				break;
@@ -394,8 +376,7 @@ struct Context
 				}
 				break;
 
-			default:
-				break;
+			default: break;
 			}
 
 			[NSApp sendEvent:event];

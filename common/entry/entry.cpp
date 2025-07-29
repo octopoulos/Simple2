@@ -320,7 +320,6 @@ bool setOrToggle(uint32_t& _flags, const char* _name, uint32_t _bit, int _first,
 
 int cmdMouseLock(CmdContext* /*_context*/, void* /*_userData*/, int _argc, char const* const* _argv)
 {
-	DBG("cmdMouseLock/1 %d\n", _argc);
 	if (1 < _argc)
 	{
 		bool set = false;
@@ -328,13 +327,8 @@ int cmdMouseLock(CmdContext* /*_context*/, void* /*_userData*/, int _argc, char 
 		{
 			bx::fromString(&set, _argv[1]);
 			inputSetMouseLock(set);
-			DBG("cmdMouseLock/2 %d\n", set);
 		}
-		else
-		{
-			DBG("cmdMouseLock/3 %d\n", inputIsMouseLocked());
-			inputSetMouseLock(!inputIsMouseLocked());
-		}
+		else inputSetMouseLock(!inputIsMouseLocked());
 
 		return bx::kExitSuccess;
 	}

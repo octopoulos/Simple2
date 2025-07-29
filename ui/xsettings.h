@@ -22,9 +22,9 @@ struct XSettings : public EngineSettings
 	float orthoZoom;  ///< zoom in orthographic projection
 
 	// [ui]
-	bool   nvidiaEnc;      ///< use nVidia encoding
-	str512 recentFiles[6]; ///< recent files for quick load
-	bool   videoCapture;   ///< allow video capture
+	bool  nvidiaEnc;      ///< use nVidia encoding
+	str2k recentFiles[6]; ///< recent files for quick load
+	bool  videoCapture;   ///< allow video capture
 
 	// [user]
 	str256 userEmail; ///< login
