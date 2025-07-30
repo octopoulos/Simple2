@@ -1,10 +1,11 @@
 // engine-settings.cpp
 // @author octopoulo
-// @version 2025-07-23
+// @version 2025-07-26
 
 #include "stdafx.h"
-#include "engine-settings.h" //
-#include "AI/common.h"       // Config
+#include "ui/engine-settings.h"
+//
+#include "AI/common.h" // Config
 
 static std::string settingsToml = "engine.ini";
 

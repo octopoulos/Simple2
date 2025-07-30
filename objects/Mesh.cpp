@@ -3,7 +3,7 @@
 // @version 2025-07-26
 
 #include "stdafx.h"
-#include "Mesh.h"
+#include "objects/Mesh.h"
 
 #include <meshoptimizer.h>
 

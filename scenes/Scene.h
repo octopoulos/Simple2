@@ -1,10 +1,10 @@
 // Scene.h
 // @author octopoulos
-// @version 2025-07-24
+// @version 2025-07-26
 
 #pragma once
 
-#include "Object3d.h"
+#include "objects/Object3d.h"
 
 class Scene : public Object3d
 {

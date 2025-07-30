@@ -1,9 +1,10 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-07-25
+// @version 2025-07-26
 
 #include "stdafx.h"
-#include "Camera.h"
+#include "core/Camera.h"
+//
 #include "ui/xsettings.h"
 
 void Camera::Initialize()

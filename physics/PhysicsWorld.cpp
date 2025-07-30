@@ -3,8 +3,9 @@
 // @version 2025-07-26
 
 #include "stdafx.h"
-#include "PhysicsWorld.h"
-#include "engine/ShaderManager.h"
+#include "physics/PhysicsWorld.h"
+//
+#include "core/ShaderManager.h"
 #include "ui/xsettings.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

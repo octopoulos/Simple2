@@ -1,10 +1,11 @@
 // ui-theme.cpp
 // @author octopoulo
-// @version 2025-07-23
+// @version 2025-07-26
 
 #include "stdafx.h"
-#include "ui.h"
-#include "xsettings.h"
+#include "ui/ui.h"
+//
+#include "ui/xsettings.h"
 
 //#include "imgui_impl_opengl3.h"
 

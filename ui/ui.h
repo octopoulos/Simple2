@@ -1,12 +1,11 @@
 // ui.h
 // @author octopoulo
-// @version 2025-07-23
+// @version 2025-07-26
 
 #pragma once
 
-#include "imgui.h"
-#include "imgui_internal.h"
-#include "imgui_stdlib.h"
+#include "dear-imgui/imgui.h"
+#include "dear-imgui/imgui_internal.h"
 
 namespace ui
 {

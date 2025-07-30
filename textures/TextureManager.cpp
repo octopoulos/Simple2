@@ -3,7 +3,7 @@
 // @version 2025-07-26
 
 #include "stdafx.h"
-#include "TextureManager.h"
+#include "textures/TextureManager.h"
 
 #include <bimg/decode.h>
 

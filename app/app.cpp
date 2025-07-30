@@ -5,15 +5,17 @@
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
 #include "stdafx.h"
-#include "app.h"
-#include "bgfx_utils.h"
-#include "debugdraw/debugdraw.h"
-#include "ffmpeg-pipe.h"
-#include "engine/ModelLoader.h"
-#include "engine/ShaderManager.h"
-#include "engine/TextureManager.h"
+#include "app/app.h"
+//
+#include "core/ShaderManager.h"
 #include "entry/input.h"
-#include "imgui/imgui.h"
+#include "loaders/ModelLoader.h"
+#include "textures/TextureManager.h"
+
+#include "common/bgfx_utils.h"
+#include "common/debugdraw/debugdraw.h"
+#include "common/ffmpeg-pipe.h"
+#include "common/imgui/imgui.h"
 
 #ifdef _WIN32
 #	include <windows.h>

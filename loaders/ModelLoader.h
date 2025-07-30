@@ -1,10 +1,10 @@
 // ModelLoader.h
 // @author octopoulos
-// @version 2025-07-20
+// @version 2025-07-26
 
 #pragma once
 
-#include "engine/Mesh.h"
+#include "objects/Mesh.h"
 
 class ModelLoader
 {

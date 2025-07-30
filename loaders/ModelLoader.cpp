@@ -1,9 +1,9 @@
 // ModelLoader.cpp
 // @author octopoulos
-// @version 2025-07-19
+// @version 2025-07-26
 
 #include "stdafx.h"
-#include "ModelLoader.h"
+#include "loaders/ModelLoader.h"
 
 sMesh ModelLoader::LoadModel(std::string_view name, bool ramcopy)
 {

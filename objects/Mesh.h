@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "Geometry.h"
-#include "Material.h"
-#include "Object3d.h"
+#include "geometries/Geometry.h"
+#include "materials/Material.h"
+#include "objects/Object3d.h"
 #include "physics/Body.h"
 
 #include <bx/bounds.h>

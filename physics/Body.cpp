@@ -1,11 +1,11 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-07-22
+// @version 2025-07-26
 
 #include "stdafx.h"
-#include "Body.h"
-
-#include "engine/Mesh.h"
+#include "physics/Body.h"
+//
+#include "objects/Mesh.h"
 
 #include <BulletCollision/CollisionShapes/btBox2dShape.h>
 #include <BulletCollision/CollisionShapes/btConvex2dShape.h>

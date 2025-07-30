@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "engine/Camera.h"
-#include "engine/Mesh.h"
-#include "engine/Scene.h"
+#include "core/Camera.h"
+#include "objects/Mesh.h"
+#include "scenes/Scene.h"
 #include "physics/PhysicsWorld.h"
 #include "ui/xsettings.h"
 

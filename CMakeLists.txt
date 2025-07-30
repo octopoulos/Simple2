@@ -224,14 +224,36 @@ else()
 	set(CPP_MM "cpp")
 endif()
 
-file(GLOB APP_SRC_FILES     CONFIGURE_DEPENDS app/*.cpp app/*.h)
-file(GLOB BGFX_SRC_FILES    CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bgfx/src/amalgamated.${CPP_MM}")
-file(GLOB BIMG_SRC_FILES    CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bimg/src/image.cpp" "${CPP_3RDPARTY}/bimg/src/image_decode.cpp" "${CPP_3RDPARTY}/bimg/src/image_gnf.cpp" "${CPP_3RDPARTY}/bimg/3rdparty/astc-encoder/source/*.cpp" "${CPP_3RDPARTY}/bimg/3rdparty/tinyexr/deps/miniz/miniz.*")
-file(GLOB BX_SRC_FILES      CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bx/src/amalgamated.cpp")
-file(GLOB COMMON_SRC_FILES  CONFIGURE_DEPENDS common/*.cpp common/*.h common/debugdraw/*.cpp common/debugdraw/*.h)
-file(GLOB ENGINE_SRC_FILES  CONFIGURE_DEPENDS engine/*.cpp engine/*.h)
-file(GLOB PHYSICS_SRC_FILES CONFIGURE_DEPENDS physics/*.cpp physics/*.h)
-file(GLOB UI_SRC_FILES      CONFIGURE_DEPENDS ui/*.cpp ui/*.h)
+set(  3RDPARTY_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty")
+set(       APP_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/app")
+set(    COMMON_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/common")
+set(      CORE_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/core")
+set(     ENTRY_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/common/entry")
+set(GEOMETRIES_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/geometries")
+set(   LOADERS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/loaders")
+set( MATERIALS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/materials")
+set(   OBJECTS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/objects")
+set(   PHYSICS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/physics")
+set(    SCENES_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scenes")
+set(  TEXTURES_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/textures")
+set(        UI_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ui")
+
+file(GLOB   3RDPARTY_SRC_FILES CONFIGURE_DEPENDS "${3RDPARTY_SRC_DIR}/dear-imgui/*.cpp")
+file(GLOB        APP_SRC_FILES CONFIGURE_DEPENDS "${APP_SRC_DIR}/*.cpp" "${APP_SRC_DIR}/*.h")
+file(GLOB       BGFX_SRC_FILES CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bgfx/src/amalgamated.${CPP_MM}")
+file(GLOB       BIMG_SRC_FILES CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bimg/src/image.cpp" "${CPP_3RDPARTY}/bimg/src/image_decode.cpp" "${CPP_3RDPARTY}/bimg/src/image_gnf.cpp" "${CPP_3RDPARTY}/bimg/3rdparty/astc-encoder/source/*.cpp" "${CPP_3RDPARTY}/bimg/3rdparty/tinyexr/deps/miniz/miniz.*")
+file(GLOB         BX_SRC_FILES CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bx/src/amalgamated.cpp")
+file(GLOB     COMMON_SRC_FILES CONFIGURE_DEPENDS "${COMMON_SRC_DIR}/*.cpp" "${COMMON_SRC_DIR}/*.h" "${COMMON_SRC_DIR}/debugdraw/*.cpp" "${COMMON_SRC_DIR}/debugdraw/*.h" "${COMMON_SRC_DIR}/imgui/imgui.cpp")
+file(GLOB       CORE_SRC_FILES CONFIGURE_DEPENDS "${CORE_SRC_DIR}/*.cpp" "${CORE_SRC_DIR}/*.h")
+file(GLOB      ENTRY_SRC_FILES CONFIGURE_DEPENDS "${ENTRY_SRC_DIR}/cmd.cpp" "${ENTRY_SRC_DIR}/dialog.cpp" "${ENTRY_SRC_DIR}/entry.cpp" "${ENTRY_SRC_DIR}/input.cpp")
+file(GLOB GEOMETRIES_SRC_FILES CONFIGURE_DEPENDS "${GEOMETRIES_SRC_DIR}/*.cpp" "${GEOMETRIES_SRC_DIR}/*.h")
+file(GLOB    LOADERS_SRC_FILES CONFIGURE_DEPENDS "${LOADERS_SRC_DIR}/*.cpp" "${LOADERS_SRC_DIR}/*.h")
+file(GLOB  MATERIALS_SRC_FILES CONFIGURE_DEPENDS "${MATERIALS_SRC_DIR}/*.cpp" "${MATERIALS_SRC_DIR}/*.h")
+file(GLOB    OBJECTS_SRC_FILES CONFIGURE_DEPENDS "${OBJECTS_SRC_DIR}/*.cpp" "${OBJECTS_SRC_DIR}/*.h")
+file(GLOB    PHYSICS_SRC_FILES CONFIGURE_DEPENDS "${PHYSICS_SRC_DIR}/*.cpp" "${PHYSICS_SRC_DIR}/*.h")
+file(GLOB     SCENES_SRC_FILES CONFIGURE_DEPENDS "${SCENES_SRC_DIR}/*.cpp" "${SCENES_SRC_DIR}/*.h")
+file(GLOB   TEXTURES_SRC_FILES CONFIGURE_DEPENDS "${TEXTURES_SRC_DIR}/*.cpp" "${TEXTURES_SRC_DIR}/*.h")
+file(GLOB         UI_SRC_FILES CONFIGURE_DEPENDS "${UI_SRC_DIR}/*.cpp" "${UI_SRC_DIR}/*.h")
 
 add_executable(Simple app/app.cpp)
 
@@ -510,61 +532,72 @@ endforeach()
 # 8) PRELOAD + COMPRESS
 #######################
 
-# Create folders for Visual Studio
-#source_group(TREE "${ENGINE_SRC_FILES}" PREFIX "Engine" FILES ${ENGINE_SRC_FILES})
-source_group(TREE "${MODEL_SRC_DIR}" PREFIX "Assets/Models" FILES ${MODEL_SRC_FILES})
-#source_group(TREE "${PREVIEW_OUT_FILES}" PREFIX "Assets/Models-prev" FILES ${PREVIEW_OUT_FILES})
-source_group(TREE "${SHADER_SRC_DIR}" PREFIX "Assets/Shaders" FILES ${SHADER_SRC_FILES})
-source_group(TREE "${RUNTIME_DIR}" PREFIX "Assets/Binaries" FILES ${MODEL_BIN_FILES} ${SHADER_BIN_FILES})
-
-set(EXTRA_SRC_FILES)
 if(WITH_GLFW)
-	list(APPEND EXTRA_SRC_FILES "common/entry/entry_glfw.cpp")
+	list(APPEND ENTRY_SRC_FILES "${ENTRY_SRC_DIR}/entry_glfw.cpp")
 elseif(WITH_SDL3)
-	list(APPEND EXTRA_SRC_FILES "common/entry/entry_sdl3.cpp")
+	list(APPEND ENTRY_SRC_FILES "${ENTRY_SRC_DIR}/entry_sdl3.cpp")
 elseif(WITH_SDL)
-	list(APPEND EXTRA_SRC_FILES "common/entry/entry_sdl.cpp")
+	list(APPEND ENTRY_SRC_FILES "${ENTRY_SRC_DIR}/entry_sdl.cpp")
 elseif(ANDROID)
-	list(APPEND EXTRA_SRC_FILES "common/entry/entry_android.cpp")
+	list(APPEND ENTRY_SRC_FILES "${ENTRY_SRC_DIR}/entry_android.cpp")
 elseif(EMSCRIPTEN)
-	list(APPEND EXTRA_SRC_FILES "common/entry/entry_html5.cpp")
+	list(APPEND ENTRY_SRC_FILES "${ENTRY_SRC_DIR}/entry_html5.cpp")
 elseif(IOS)
-	list(APPEND EXTRA_SRC_FILES "common/entry/entry_ios.mm")
+	list(APPEND ENTRY_SRC_FILES "${ENTRY_SRC_DIR}/entry_ios.mm")
 elseif(APPLE)
-	list(APPEND EXTRA_SRC_FILES "common/entry/entry_osx.mm")
+	list(APPEND ENTRY_SRC_FILES "${ENTRY_SRC_DIR}/entry_osx.mm")
 elseif(UNIX)
-	list(APPEND EXTRA_SRC_FILES "common/entry/entry_x11.cpp")
+	list(APPEND ENTRY_SRC_FILES "${ENTRY_SRC_DIR}/entry_x11.cpp")
 elseif(WIN32)
-	list(APPEND EXTRA_SRC_FILES "common/entry/entry_windows.cpp")
+	list(APPEND ENTRY_SRC_FILES "${ENTRY_SRC_DIR}/entry_windows.cpp")
 endif()
+
+# Assets folders (VS)
+source_group(TREE     "${RUNTIME_DIR}" PREFIX "Assets/Binaries" FILES ${MODEL_BIN_FILES} ${SHADER_BIN_FILES})
+source_group(TREE   "${MODEL_SRC_DIR}" PREFIX "Assets/Models"   FILES ${MODEL_SRC_FILES})
+source_group(TREE  "${SHADER_SRC_DIR}" PREFIX "Assets/Shaders"  FILES ${SHADER_SRC_FILES})
+
+# Code folders (VS)
+source_group(TREE   "${3RDPARTY_SRC_DIR}" PREFIX "3rdParty"   FILES ${3RDPARTY_SRC_FILES})
+source_group(TREE        "${APP_SRC_DIR}" PREFIX "App"        FILES ${APP_SRC_FILES})
+source_group(TREE     "${COMMON_SRC_DIR}" PREFIX "Common"     FILES ${COMMON_SRC_FILES})
+source_group(TREE       "${CORE_SRC_DIR}" PREFIX "Core"       FILES ${CORE_SRC_FILES})
+source_group(TREE      "${ENTRY_SRC_DIR}" PREFIX "Entry"      FILES ${ENTRY_SRC_FILES})
+source_group(TREE       "${CPP_3RDPARTY}" PREFIX "Global"     FILES ${BGFX_SRC_FILES} ${BIMG_SRC_FILES} ${BX_SRC_FILES})
+source_group(TREE "${GEOMETRIES_SRC_DIR}" PREFIX "Geometries" FILES ${GEOMETRIES_SRC_FILES})
+source_group(TREE    "${LOADERS_SRC_DIR}" PREFIX "Loaders"    FILES ${LOADERS_SRC_FILES})
+source_group(TREE  "${MATERIALS_SRC_DIR}" PREFIX "Materials"  FILES ${MATERIALS_SRC_FILES})
+source_group(TREE    "${OBJECTS_SRC_DIR}" PREFIX "Objects"    FILES ${OBJECTS_SRC_FILES})
+source_group(TREE    "${PHYSICS_SRC_DIR}" PREFIX "Physics"    FILES ${PHYSICS_SRC_FILES})
+source_group(TREE     "${SCENES_SRC_DIR}" PREFIX "Scenes"     FILES ${SCENES_SRC_FILES})
+source_group(TREE   "${TEXTURES_SRC_DIR}" PREFIX "Textures"   FILES ${TEXTURES_SRC_FILES})
+source_group(TREE         "${UI_SRC_DIR}" PREFIX "UI"         FILES ${UI_SRC_FILES})
 
 # Add compiled models and shaders to the target
 set(SOURCES
-	"3rdparty/dear-imgui/imgui.cpp"
-	"3rdparty/dear-imgui/imgui_demo.cpp"
-	"3rdparty/dear-imgui/imgui_draw.cpp"
-	"3rdparty/dear-imgui/imgui_tables.cpp"
-	"3rdparty/dear-imgui/imgui_widgets.cpp"
-	${APP_SRC_FILES}
-	${BGFX_SRC_FILES}
-	${BIMG_SRC_FILES}
-	${BX_SRC_FILES}
-	${COMMON_SRC_FILES}
-	"common/entry/cmd.cpp"
-	"common/entry/dialog.cpp"
-	"common/entry/entry.cpp"
-	"common/entry/input.cpp"
-	"common/imgui/imgui.cpp"
-	${EXTRA_SRC_FILES}
-	${ENGINE_SRC_FILES}
-	${GUI_SRC_FILES}
-	${MODEL_BIN_FILES}
-	${MODEL_SRC_FILES}
-	${PHYSICS_SRC_FILES}
-	#${PREVIEW_OUT_FILES}
-	${SHADER_BIN_FILES}
-	${SHADER_SRC_FILES}
-	${UI_SRC_FILES}
+	     ${MODEL_BIN_FILES}
+	     ${MODEL_SRC_FILES}
+	    ${SHADER_BIN_FILES}
+	    ${SHADER_SRC_FILES}
+
+	  ${3RDPARTY_SRC_FILES}
+	      ${BGFX_SRC_FILES}
+	      ${BIMG_SRC_FILES}
+	        ${BX_SRC_FILES}
+	    ${COMMON_SRC_FILES}
+
+	       ${APP_SRC_FILES}
+	      ${CORE_SRC_FILES}
+	     ${ENTRY_SRC_FILES}
+	     ${EXTRA_SRC_FILES}
+	${GEOMETRIES_SRC_FILES}
+	   ${LOADERS_SRC_FILES}
+	 ${MATERIALS_SRC_FILES}
+	   ${OBJECTS_SRC_FILES}
+	   ${PHYSICS_SRC_FILES}
+	    ${SCENES_SRC_FILES}
+	  ${TEXTURES_SRC_FILES}
+	        ${UI_SRC_FILES}
 )
 #message("SOURCES=${SOURCES}")
 target_sources(Simple PRIVATE ${SOURCES})

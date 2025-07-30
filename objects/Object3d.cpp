@@ -1,9 +1,9 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-07-22
+// @version 2025-07-26
 
 #include "stdafx.h"
-#include "Object3d.h"
+#include "objects/Object3d.h"
 
 void Object3d::AddChild(sObject3d child)
 {

@@ -1,6 +1,6 @@
 // stdafx.h
 // @author octopoulos
-// @version 2025-07-22
+// @version 2025-07-26
 
 #pragma once
 
@@ -36,7 +36,7 @@ using namespace std::literals;
 #include "AI/time.h"    // CurrentDateTime, FormatDate, FromDate32, MakeDateTime, Now32, Now64, OffsetDateText, UnixTimestamp
 
 #include "entry/entry.h"
-#include "loader.h"
+#include "loaders/loader.h"
 
 // clang-format off
 inline btVector3    BxToBullet (const bx::Vec3& vec )  { return btVector3(vec.x, vec.y, vec.z); }

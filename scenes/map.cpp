@@ -3,10 +3,11 @@
 // @version 2025-07-26
 
 #include "stdafx.h"
-#include "app.h"
-#include "engine/ModelLoader.h"
-#include "engine/ShaderManager.h"
-#include "engine/TextureManager.h"
+#include "app/app.h"
+//
+#include "core/ShaderManager.h"
+#include "loaders/ModelLoader.h"
+#include "textures/TextureManager.h"
 
 #include "dear-imgui/imgui.h"
 

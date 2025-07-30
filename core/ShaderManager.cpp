@@ -3,7 +3,7 @@
 // @version 2025-07-26
 
 #include "stdafx.h"
-#include "ShaderManager.h"
+#include "core/ShaderManager.h"
 
 // clang-format off
 static UMAP_INT_STR RENDER_SHADERS = {

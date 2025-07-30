@@ -1,12 +1,13 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-07-25
+// @version 2025-07-26
 
 #include "stdafx.h"
-#include "app.h"
-#include "entry/input.h"
-#include "imgui/imgui.h"
+#include "app/app.h"
 #include "ui/ui.h"
+
+#include "common/imgui/imgui.h"
+#include "entry/input.h"
 
 #ifdef WITH_FILE_DIALOG
 #	include "ImGuiFileDialog/ImGuiFileDialog.h"

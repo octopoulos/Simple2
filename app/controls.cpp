@@ -3,10 +3,11 @@
 // @version 2025-07-25
 
 #include "stdafx.h"
-#include "app.h"
-#include "engine/ModelLoader.h"
+#include "app/app.h"
+//
 #include "entry/input.h"
 #include "imgui/imgui.h"
+#include "loaders/ModelLoader.h"
 
 void App::FixedControls()
 {
