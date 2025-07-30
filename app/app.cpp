@@ -33,6 +33,9 @@ void App::Destroy()
 	scene.reset();
 
 	physics.reset();
+
+	GetShaderManager().Destroy();
+	GetTextureManager().Destroy();
 }
 
 int App::Initialize()
@@ -83,6 +86,8 @@ int App::InitializeScene()
 	auto& shaderManager = GetShaderManager();
 
 	// 3) cube vertex layout
+	static std::shared_ptr<Geometry> cubeGeometry;
+	if (!cubeGeometry)
 	{
 		bgfx::VertexLayout cubeLayout;
 		// clang-format off
@@ -115,13 +120,16 @@ int App::InitializeScene()
 			0, 4, 1, 4, 5, 1, 2, 3, 6, 6, 3, 7
 		};
 
-		vbh = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), cubeLayout);
-		ibh = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
+		{
+			auto vbh     = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), cubeLayout);
+			auto ibh     = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
+			cubeGeometry = std::make_shared<Geometry>(vbh, ibh);
+		}
 
 		// cube
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
-			cubeMesh->geometry = std::make_shared<Geometry>(vbh, ibh);
+			cubeMesh->geometry = cubeGeometry;
 			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cube", "fs_cube"));
 
 			cubeMesh->ScaleRotationPosition(
@@ -136,7 +144,7 @@ int App::InitializeScene()
 
 		// cursor
 		{
-			cursor->geometry = std::make_shared<Geometry>(vbh, ibh);
+			cursor->geometry = cubeGeometry;
 			cursor->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cursor", "fs_cursor"));
 
 			cursor->ScaleRotationPosition(
@@ -148,7 +156,7 @@ int App::InitializeScene()
 		// floor
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
-			cubeMesh->geometry = std::make_shared<Geometry>(vbh, ibh);
+			cubeMesh->geometry = cubeGeometry;
 			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cube", "fs_cube"));
 
 			cubeMesh->ScaleRotationPosition(
@@ -164,7 +172,7 @@ int App::InitializeScene()
 		// base
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
-			cubeMesh->geometry = std::make_shared<Geometry>(vbh, ibh);
+			cubeMesh->geometry = cubeGeometry;
 			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_base", "fs_base"));
 
 			cubeMesh->ScaleRotationPosition(

@@ -7,9 +7,6 @@
 #include "engine/ShaderManager.h"
 #include "ui/xsettings.h"
 
-#define BGFXH_IMPL
-#include <bgfxh/bgfxh.h>
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // BulletDebugDraw
 //////////////////
@@ -97,8 +94,6 @@ void PhysicsWorld::DrawDebug()
 	// initialize debugDraw once
 	if (!debugDraw)
 	{
-		bgfxh::init(xsettings.windowSize[0], xsettings.windowSize[1], "");
-
 		// clang-format off
 		PosColorVertex::ms_layout
 		    .begin()

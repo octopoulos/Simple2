@@ -110,9 +110,6 @@ private:
 	int                           physicsFrame   = 0;       ///< current physics frame
 	std::unique_ptr<Scene>        scene          = nullptr; ///< scene container
 
-	bgfx::IndexBufferHandle  ibh = {}; /// TODO: delete
-	bgfx::VertexBufferHandle vbh = {}; /// TODO: delete
-
 	float   curTime   = 0.0f; ///< current time
 	float   deltaTime = 0.0f; ///< last delta (current - last)
 	float   lastTime  = 0.0f; ///< last rendered time

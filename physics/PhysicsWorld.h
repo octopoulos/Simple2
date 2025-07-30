@@ -5,7 +5,6 @@
 #pragma once
 
 #include <btBulletDynamicsCommon.h>
-#include <bgfxh/bgfxh.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // BulletDebugDraw
@@ -13,8 +12,8 @@
 
 struct PosColorVertex
 {
-	float    m_x, m_y, m_z;
-	uint32_t m_abgr;
+	float    x, y, z;
+	uint32_t abgr;
 
 	static bgfx::VertexLayout ms_layout;
 };
