@@ -78,7 +78,7 @@ void App::FluidControls()
 	// camera
 	if (!ImGui::MouseOverArea())
 	{
-		if (ginput.buttons[1])
+		if (ginput.buttons[1] || ginput.mouseLock)
 			camera->Orbit(ginput.mouseRels2[0], ginput.mouseRels2[1]);
 		camera->Update(deltaTime);
 	}

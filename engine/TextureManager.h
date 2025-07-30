@@ -1,6 +1,6 @@
 // TextureManager.h
 // @author octopoulos
-// @version 2025-07-22
+// @version 2025-07-26
 
 #pragma once
 
@@ -15,7 +15,7 @@ struct TextureData
 class TextureManager
 {
 private:
-	UMAP_STR<TextureData> textures;
+	UMAP_STR<TextureData> textures = {}; /// cached textures
 
 public:
 	TextureManager() = default;
@@ -31,3 +31,5 @@ public:
 	/// @returns valid texture handle or BGFX_INVALID_HANDLE.
 	bgfx::TextureHandle LoadTexture(std::string_view name);
 };
+
+TextureManager& GetTextureManager();

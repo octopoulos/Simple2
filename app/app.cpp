@@ -1,15 +1,18 @@
 // app.cpp
 // @author octopoulos
-// @version 2025-07-25
+// @version 2025-07-26
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
 #include "stdafx.h"
 #include "app.h"
-#include "common/bgfx_utils.h"
-#include "common/ffmpeg-pipe.h"
-#include "common/entry/input.h"
+#include "bgfx_utils.h"
+#include "debugdraw/debugdraw.h"
+#include "ffmpeg-pipe.h"
 #include "engine/ModelLoader.h"
+#include "engine/ShaderManager.h"
+#include "engine/TextureManager.h"
+#include "entry/input.h"
 #include "imgui/imgui.h"
 
 #ifdef _WIN32
@@ -59,6 +62,12 @@ int App::InitializeScene()
 	{
 		cursor = std::make_shared<Mesh>();
 		scene->AddNamedChild(cursor, "cursor");
+		cursor->state = 0
+		    | BGFX_STATE_DEPTH_TEST_LESS
+		    | BGFX_STATE_PT_LINES
+		    | BGFX_STATE_WRITE_A
+		    | BGFX_STATE_WRITE_RGB
+		    | BGFX_STATE_WRITE_Z;
 	}
 
 	// mapNode
@@ -70,6 +79,8 @@ int App::InitializeScene()
 
 	// 2)
 	physics = std::make_unique<PhysicsWorld>();
+
+	auto& shaderManager = GetShaderManager();
 
 	// 3) cube vertex layout
 	{
@@ -131,7 +142,7 @@ int App::InitializeScene()
 			cursor->ScaleRotationPosition(
 			    { 0.5f, 1.0f, 0.5f },
 			    { 0.0f, 0.0f, 0.0f },
-			    { 0.0f, 0.0f, 0.0f });
+			    { 0.0f, 1.0f, 0.0f });
 		}
 
 		// floor
@@ -141,11 +152,11 @@ int App::InitializeScene()
 			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cube", "fs_cube"));
 
 			cubeMesh->ScaleRotationPosition(
-			    { 9.0f, 1.0f, 9.0f },
+			    { 9.5f, 1.0f, 9.5f },
 			    { 0.0f, 0.0f, 0.0f },
-			    { 0.0f, -2.0f, 0.0f }
+			    { 0.0f, -1.0f, 0.0f }
 			);
-			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f, { 9.0f, 1.0f, 9.0f, 0.0f });
+			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f, { 9.5f, 1.0f, 9.5f, 0.0f });
 
 			scene->AddNamedChild(std::move(cubeMesh), "floor");
 		}
@@ -187,7 +198,7 @@ int App::InitializeScene()
 		object->ScaleRotationPosition(
 		    { 1.0f, 1.0f, 1.0f },
 		    { 0.0f, 1.5f, 0.0f },
-		    { 4.0f, -1.0f, -2.0f }
+		    { 4.0f, 0.0f, -2.0f }
 		);
 		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh);
 		scene->AddNamedChild(object, "building");
@@ -259,7 +270,12 @@ int App::InitializeScene()
 		uTime = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
 	}
 
-	// 6) time
+	// 6) extra inits
+	{
+		ddInit();
+	}
+
+	// 7) time
 	startTime = bx::getHPCounter();
 	lastUs    = NowUs();
 	return 1;
@@ -304,13 +320,20 @@ void App::Render()
 		for (auto& child : scene->children)
 			child->SynchronizePhysics();
 
-		if (xsettings.bulletDebug) physics->DrawDebug();
-
 		if (pauseNextFrame)
 		{
 			xsettings.physPaused = true;
 			pauseNextFrame       = false;
 		}
+	}
+
+	// x) draw grid
+	{
+		DebugDrawEncoder dde;
+
+		dde.begin(0);
+		dde.drawGrid(Axis::Y, { 0.0f, 0.0f, 0.0f }, 19);
+		dde.end();
 	}
 
 	// 5) draw the scene
@@ -319,6 +342,7 @@ void App::Render()
 		if (xsettings.instancing) renderFlags |= RenderFlag_Instancing;
 
 		scene->RenderScene(0, renderFlags);
+		if (xsettings.bulletDebug) physics->DrawDebug();
 	}
 
 	// 6) capture screenshot?

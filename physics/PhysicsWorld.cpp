@@ -1,9 +1,11 @@
 // PhysicsWorld.cpp
 // @author octopoulos
-// @version 2025-07-22
+// @version 2025-07-26
 
 #include "stdafx.h"
 #include "PhysicsWorld.h"
+#include "engine/ShaderManager.h"
+#include "ui/xsettings.h"
 
 #define BGFXH_IMPL
 #include <bgfxh/bgfxh.h>
@@ -16,58 +18,15 @@ bgfx::VertexLayout PosColorVertex::ms_layout;
 
 void BulletDebugDraw::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
 {
-	// new method
-	if (1)
-	{
-		// Convert color to ABGR
-		const uint8_t  r    = 255 * color.x();
-		const uint8_t  g    = 255 * color.y();
-		const uint8_t  b    = 255 * color.z();
-		const uint8_t  a    = 255;
-		const uint32_t abgr = (uint32_t(a) << 24) | (uint32_t(b) << 16) | (uint32_t(g) << 8) | uint32_t(r);
-		uint32_t       rgba = (uint32_t(r) << 24) | (uint32_t(g) << 16) | (uint32_t(b) << 8) | (uint32_t(a));
+	// convert color to ABGR
+	const uint32_t abgr = (uint32_t(255) << 24) | (uint32_t(255 * color.z()) << 16) | (uint32_t(255 * color.y()) << 8) | uint32_t(255 * color.x());
 
-		// Add vertices
-		lines.push_back({ from.x(), from.y(), from.z(), rgba });
-		lines.push_back({ to.x(), to.y(), to.z(), rgba });
+	// add vertices
+	lines.push_back({ from.x(), from.y(), from.z(), abgr });
+	lines.push_back({ to.x(), to.y(), to.z(), abgr });
 
-		if (lines.size() >= 8192) FlushLines();
-		return;
-	}
-
-	if (2 != bgfx::getAvailTransientVertexBuffer(2, bgfxh::PosVertex::ms_decl)) // NOW IT CRASHES HERE, stride = 0
-	{
-		ui::Log("drawLine: error");
-		return;
-	}
-
-	bgfx::TransientVertexBuffer vb;
-	bgfx::allocTransientVertexBuffer(&vb, 2, bgfxh::PosVertex::ms_decl);
-	bgfxh::PosVertex* v = (bgfxh::PosVertex*)vb.data;
-	v[0].m_x            = from.x();
-	v[0].m_y            = from.y();
-	v[0].m_z            = from.z();
-	v[1].m_x            = to.x();
-	v[1].m_y            = to.y();
-	v[1].m_z            = to.z();
-
-	uint8_t  r    = 255 * color.x();
-	uint8_t  g    = 255 * color.y();
-	uint8_t  b    = 255 * color.z();
-	uint8_t  a    = 255;
-	uint32_t rgba = (uint32_t(r) << 24) | (uint32_t(g) << 16) | (uint32_t(b) << 8) | (uint32_t(a));
-
-	bgfx::setVertexBuffer(0, &vb);
-	//bgfx::setTransform(bgfxModelMtx);
-
-	// BGFX_STATE_MSAA
-	bgfx::setState(
-		BGFX_STATE_WRITE_RGB | BGFX_STATE_PT_LINES | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_FACTOR, BGFX_STATE_BLEND_ZERO),
-		rgba
-	);
-
-	// Passthrough - vs emits modelViewProj*pos, fs emits (1,1,1,1)
-	bgfx::submit(viewId, bgfxh::m_programUntexturedPassthrough);
+	if (lines.size() >= 8192) FlushLines();
+	return;
 }
 
 void BulletDebugDraw::FlushLines()
@@ -85,14 +44,25 @@ void BulletDebugDraw::FlushLines()
 	bgfx::TransientVertexBuffer vb;
 	bgfx::allocTransientVertexBuffer(&vb, numVertices, PosColorVertex::ms_layout);
 	std::memcpy(vb.data, lines.data(), numVertices * sizeof(PosColorVertex));
-
 	bgfx::setVertexBuffer(0, &vb);
-	bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_PT_LINES | BGFX_STATE_BLEND_ALPHA);
 
-	// Passthrough shader
-	bgfx::submit(viewId, bgfxh::m_programUntexturedPassthrough);
+	bgfx::setState(0
+		| BGFX_STATE_DEPTH_TEST_ALWAYS
+		| BGFX_STATE_PT_LINES
+		| BGFX_STATE_WRITE_RGB
+		| BGFX_STATE_WRITE_Z
+	);
+	bgfx::submit(viewId, program);
 
 	lines.clear();
+}
+
+void BulletDebugDraw::Initialize()
+{
+	program = GetShaderManager().LoadProgram("vs_cube", "fs_cube");
+
+	setDebugMode(btIDebugDraw::DBG_DrawConstraints | btIDebugDraw::DBG_DrawWireframe); // | btIDebugDraw::DBG_DrawAabb
+	lines.reserve(8192);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,7 +97,7 @@ void PhysicsWorld::DrawDebug()
 	// initialize debugDraw once
 	if (!debugDraw)
 	{
-		bgfxh::PosVertex::init();
+		bgfxh::init(xsettings.windowSize[0], xsettings.windowSize[1], "");
 
 		// clang-format off
 		PosColorVertex::ms_layout
@@ -138,8 +108,7 @@ void PhysicsWorld::DrawDebug()
 		// clang-format on
 
 		debugDraw = std::make_unique<BulletDebugDraw>();
-		debugDraw->setDebugMode(btIDebugDraw::DBG_DrawConstraints | btIDebugDraw::DBG_DrawWireframe); // | btIDebugDraw::DBG_DrawAabb
-		debugDraw->lines.reserve(8192);
+		debugDraw->Initialize();
 
 		world->setDebugDrawer(debugDraw.get());
 	}

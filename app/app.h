@@ -1,14 +1,12 @@
 // app.h
 // @author octopoulos
-// @version 2025-07-25
+// @version 2025-07-26
 
 #pragma once
 
 #include "engine/Camera.h"
 #include "engine/Mesh.h"
 #include "engine/Scene.h"
-#include "engine/ShaderManager.h"
-#include "engine/TextureManager.h"
 #include "physics/PhysicsWorld.h"
 #include "ui/xsettings.h"
 
@@ -111,8 +109,6 @@ private:
 	std::unique_ptr<PhysicsWorld> physics        = nullptr; ///< physics world
 	int                           physicsFrame   = 0;       ///< current physics frame
 	std::unique_ptr<Scene>        scene          = nullptr; ///< scene container
-	ShaderManager                 shaderManager  = {};      ///
-	TextureManager                textureManager = {};      ///
 
 	bgfx::IndexBufferHandle  ibh = {}; /// TODO: delete
 	bgfx::VertexBufferHandle vbh = {}; /// TODO: delete

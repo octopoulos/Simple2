@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-07-23
+// @version 2025-07-26
 
 #include "stdafx.h"
 #include "Mesh.h"
@@ -283,6 +283,7 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 		bgfx::setVertexBuffer(0, geometry->vbh);
 		bgfx::setIndexBuffer(geometry->ibh);
 		material->Apply();
+		bgfx::setState(state ? state : BGFX_STATE_DEFAULT);
 		bgfx::submit(viewId, material->program);
 	}
 	else if (bgfx::isValid(program))
@@ -293,12 +294,12 @@ void Mesh::Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, ui
 {
 	if (state == BGFX_STATE_MASK)
 		state = 0
-		    | BGFX_STATE_WRITE_RGB
-		    | BGFX_STATE_WRITE_A
-		    | BGFX_STATE_WRITE_Z
-		    | BGFX_STATE_DEPTH_TEST_LESS
 		    | BGFX_STATE_CULL_CCW
-		    | BGFX_STATE_MSAA;
+		    | BGFX_STATE_DEPTH_TEST_LESS
+		    | BGFX_STATE_MSAA
+		    | BGFX_STATE_WRITE_A
+		    | BGFX_STATE_WRITE_RGB
+		    | BGFX_STATE_WRITE_Z;
 
 	bgfx::setTransform(mtx);
 	bgfx::setState(state);

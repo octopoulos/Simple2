@@ -1,6 +1,6 @@
 // PhysicsWorld.h
 // @author octopoulos
-// @version 2025-07-21
+// @version 2025-07-26
 
 #pragma once
 
@@ -25,6 +25,7 @@ public:
 	float                       bgfxModelMtx[16] = {}; ///
 	int                         debugMode        = 0;  ///
 	std::vector<PosColorVertex> lines            = {}; ///< collect all lines
+	bgfx::ProgramHandle         program          = {}; ///< program to draw lines
 	bgfx::ViewId                viewId           = 0;  ///< view ID for rendering
 
 	BulletDebugDraw()
@@ -46,6 +47,9 @@ public:
 
 	/// Submit all collected lines
 	void FlushLines();
+
+	/// Initialize the program + debugMode + lines
+	void Initialize();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,6 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-07-24
+// @version 2025-07-25
 
 #include "stdafx.h"
 #include "Camera.h"
@@ -10,8 +10,8 @@ void Camera::Initialize()
 {
 	orbit[0] = 0.0f;
 	orbit[1] = 0.0f;
-	pos      = { 0.0f, 0.0f, -3.0f };
-	pos2     = { 0.0f, 0.0f, -3.0f };
+	pos      = { 0.0f, 0.0f, -0.3f };
+	pos2     = { 0.0f, 0.0f, -0.3f };
 	target   = { 0.0f, 0.0f, 0.0f };
 	target2  = { 0.0f, 0.0f, 0.0f };
 }

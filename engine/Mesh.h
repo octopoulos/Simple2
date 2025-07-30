@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-07-22
+// @version 2025-07-26
 
 #pragma once
 
@@ -76,6 +76,7 @@ public:
 	bgfx::VertexLayout        layout   = {};      ///
 	std::shared_ptr<Material> material = nullptr; ///
 	bgfx::ProgramHandle       program  = {};      ///
+	uint64_t                  state    = 0;       ///< if !=0: override default state
 
 	Mesh()
 	{

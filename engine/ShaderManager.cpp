@@ -1,6 +1,6 @@
 // ShaderManager.cpp
 // @author octopoulos
-// @version 2025-07-19
+// @version 2025-07-26
 
 #include "stdafx.h"
 #include "ShaderManager.h"
@@ -19,6 +19,9 @@ static UMAP_INT_STR RENDER_SHADERS = {
 	{ bgfx::RendererType::Vulkan    , "spirv" },
 };
 // clang-format on
+
+static std::mutex programMutex;
+static std::mutex shaderMutex;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FUNCTIONS
@@ -77,7 +80,9 @@ void ShaderManager::Destroy()
 
 bgfx::ProgramHandle ShaderManager::GetProgram(std::string_view name) const
 {
-	if (const auto& it = programs.find(std::string(name)); it != programs.end())
+	std::lock_guard<std::mutex> lock(programMutex);
+
+	if (const auto& it = programs.find(name); it != programs.end())
 		return it->second;
 	else
 		return BGFX_INVALID_HANDLE;
@@ -85,6 +90,8 @@ bgfx::ProgramHandle ShaderManager::GetProgram(std::string_view name) const
 
 bgfx::ProgramHandle ShaderManager::LoadProgram(std::string_view vsName, std::string_view fsName)
 {
+	std::lock_guard<std::mutex> lock(programMutex);
+
 	std::string key = fmt::format("{}|{}", vsName, fsName);
 	if (const auto& it = programs.find(key); it != programs.end())
 		return it->second;
@@ -97,7 +104,7 @@ bgfx::ProgramHandle ShaderManager::LoadProgram(std::string_view vsName, std::str
 		return BGFX_INVALID_HANDLE;
 	}
 
-	bgfx::ProgramHandle program = LoadProgram_(vsName, fsName);
+	bgfx::ProgramHandle program = bgfx::createProgram(vs, fs);
 	if (!bgfx::isValid(program))
 	{
 		ui::LogError("Failed to create program: {}", key);
@@ -110,7 +117,9 @@ bgfx::ProgramHandle ShaderManager::LoadProgram(std::string_view vsName, std::str
 
 bgfx::ShaderHandle ShaderManager::LoadShader(std::string_view name)
 {
-	if (const auto& it = shaders.find(std::string(name)); it != shaders.end())
+	std::lock_guard<std::mutex> lock(shaderMutex);
+
+	if (const auto& it = shaders.find(name); it != shaders.end())
 		return it->second;
 
 	bgfx::ShaderHandle shader = LoadShader_(name);
@@ -122,4 +131,10 @@ bgfx::ShaderHandle ShaderManager::LoadShader(std::string_view name)
 
 	shaders.emplace(std::string(name), shader);
 	return shader;
+}
+
+ShaderManager& GetShaderManager()
+{
+	static ShaderManager shaderManager;
+	return shaderManager;
 }

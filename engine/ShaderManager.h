@@ -1,17 +1,18 @@
 // ShaderManager.h
 // @author octopoulos
-// @version 2025-07-05
+// @version 2025-07-26
 
 #pragma once
 
 class ShaderManager
 {
 private:
-	UMAP_STR<bgfx::ProgramHandle> programs;
-	UMAP_STR<bgfx::ShaderHandle>  shaders;
+	UMAP_STR<bgfx::ProgramHandle> programs = {}; /// cached programs
+	UMAP_STR<bgfx::ShaderHandle>  shaders  = {}; /// cached shaders
 
 public:
 	ShaderManager() = default;
+
 	~ShaderManager() { Destroy(); }
 
 	/// Release all loaded shaders and programs
@@ -32,3 +33,5 @@ public:
 	/// @returns valid shader handle or BGFX_INVALID_HANDLE.
 	bgfx::ShaderHandle LoadShader(std::string_view name);
 };
+
+ShaderManager& GetShaderManager();

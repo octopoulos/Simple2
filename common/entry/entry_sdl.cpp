@@ -139,12 +139,12 @@ struct GamepadSDL
 		bx::memSet(m_value, 0, sizeof(m_value));
 
 		// Deadzone values from xinput.h
-		m_deadzone[GamepadAxis::LeftX] =
-		    m_deadzone[GamepadAxis::LeftY] = 7849;
-		m_deadzone[GamepadAxis::RightX] =
-		    m_deadzone[GamepadAxis::RightY] = 8689;
-		m_deadzone[GamepadAxis::LeftZ] =
-		    m_deadzone[GamepadAxis::RightZ] = 30;
+		m_deadzone[GamepadAxis::LeftX]  = 7849;
+		m_deadzone[GamepadAxis::LeftY]  = 7849;
+		m_deadzone[GamepadAxis::RightX] = 8689;
+		m_deadzone[GamepadAxis::RightY] = 8689;
+		m_deadzone[GamepadAxis::LeftZ]  = 30;
+		m_deadzone[GamepadAxis::RightZ] = 30;
 	}
 
 	void create(const SDL_JoyDeviceEvent& _jev)

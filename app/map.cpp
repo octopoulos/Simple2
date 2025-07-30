@@ -1,10 +1,12 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-07-22
+// @version 2025-07-26
 
 #include "stdafx.h"
 #include "app.h"
 #include "engine/ModelLoader.h"
+#include "engine/ShaderManager.h"
+#include "engine/TextureManager.h"
 
 #include "dear-imgui/imgui.h"
 
@@ -17,7 +19,7 @@ void App::AddObject(const std::string& name)
 	ui::Log("AddObject: {} @ {} {} {}", name, coord.x, coord.y, coord.z);
 	if (auto object = loader.LoadModel(name, true))
 	{
-		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
+		object->program = GetShaderManager().LoadProgram("vs_model", "fs_model");
 		object->ScaleRotationPosition(
 		    { 1.0f, 1.0f, 1.0f },
 		    { 0.0f, 0.0f, 0.0f },
@@ -66,13 +68,13 @@ void App::MapUi()
 					if (hasPreview)
 					{
 						const auto preview = fmt::format("runtime/models-prev/{}.png", kitName);
-						const auto handle  = textureManager.LoadTexture(preview);
+						const auto handle  = GetTextureManager().LoadTexture(preview);
 						if (bgfx::isValid(handle))
 						{
 							// crop if texture is 512px
 							auto uv0 = ImVec2(0.0f, 0.0f);
 							auto uv1 = ImVec2(1.0f, 1.0f);
-							if (const auto* info = textureManager.GetTextureInfo(preview); info->width >= 512)
+							if (const auto* info = GetTextureManager().GetTextureInfo(preview); info->width >= 512)
 							{
 								uv0 = ImVec2(0.3f, 0.3f);
 								uv1 = ImVec2(0.7f, 0.7f);

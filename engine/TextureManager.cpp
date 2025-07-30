@@ -1,11 +1,13 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-07-22
+// @version 2025-07-26
 
 #include "stdafx.h"
 #include "TextureManager.h"
 
 #include <bimg/decode.h>
+
+static std::mutex textureMutex;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FUNCTIONS
@@ -78,6 +80,8 @@ void TextureManager::Destroy()
 
 const bgfx::TextureInfo* TextureManager::GetTextureInfo(std::string_view name) const
 {
+	std::lock_guard<std::mutex> lock(textureMutex);
+
 	if (const auto& it = textures.find(std::string(name)); it != textures.end())
 		return &it->second.info;
 	return nullptr;
@@ -85,6 +89,8 @@ const bgfx::TextureInfo* TextureManager::GetTextureInfo(std::string_view name) c
 
 bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 {
+	std::lock_guard<std::mutex> lock(textureMutex);
+
 	if (const auto& it = textures.find(std::string(name)); it != textures.end())
 		return it->second.handle;
 
@@ -104,4 +110,10 @@ bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 
 	textures.emplace(std::string(name), TextureData { texture, info });
 	return texture;
+}
+
+TextureManager& GetTextureManager()
+{
+	static TextureManager textureManager;
+	return textureManager;
 }

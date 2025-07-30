@@ -2032,8 +2032,8 @@ struct DebugDrawEncoderImpl
 		udir = bx::mul(udir, _step);
 		vdir = bx::mul(vdir, _step);
 
-		const uint32_t num = (_size/2)*2+1;
-		const float halfExtent = float(_size/2);
+		const uint32_t num = _size;
+		const float halfExtent = float(_size) / 2;
 
 		const bx::Vec3 umin = bx::mul(udir, -halfExtent);
 		const bx::Vec3 umax = bx::mul(udir,  halfExtent);
@@ -2064,8 +2064,8 @@ struct DebugDrawEncoderImpl
 		push();
 		pushTranslate(_center);
 
-		const uint32_t num = (_size/2)*2-1;
-		const float halfExtent = float(_size/2) * _step;
+		const uint32_t num = _size;
+		const float halfExtent = float(_size) / 2 * _step;
 
 		setColor(0xff606060);
 		float yy = -halfExtent + _step;
