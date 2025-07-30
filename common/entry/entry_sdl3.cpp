@@ -449,7 +449,7 @@ struct Context
 
 	int run(int _argc, char** _argv)
 	{
-		EntryBegin();
+		EntryBegin("SDL3");
 		ui::Log("SDL3/run: {}x{}", xsettings.windowSize[0], xsettings.windowSize[1]);
 
 		m_mte.m_argc = _argc;
@@ -482,7 +482,7 @@ struct Context
 			reader = getFileReader();
 			bx::sleep(100);
 		}
-	
+
 		if (bx::open(reader, "gamecontrollerdb.txt"))
 		{
 			bx::AllocatorI* allocator = getAllocator();

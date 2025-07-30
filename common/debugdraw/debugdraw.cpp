@@ -1,3 +1,4 @@
+// @version 2025-07-25
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -2067,29 +2068,36 @@ struct DebugDrawEncoderImpl
 		const uint32_t num = _size;
 		const float halfExtent = float(_size) / 2 * _step;
 
-		setColor(0xff606060);
 		float yy = -halfExtent + _step;
 		for (uint32_t ii = 0; ii < num; ++ii)
 		{
+			if (ii * 2 == _size)
+				setColor(0xff4a3c98);
+			else
+				setColor((ii % 10) ? 0xff4c4c4c : 0xff565656);
+
 			moveTo(_axis, -halfExtent, yy);
 			lineTo(_axis,  halfExtent, yy);
 
+			if (ii * 2 == _size) setColor(0xff248d64);
 			moveTo(_axis, yy, -halfExtent);
 			lineTo(_axis, yy,  halfExtent);
 
 			yy += _step;
 		}
 
-		setColor(0xff101010);
-		moveTo(_axis, -halfExtent, -halfExtent);
-		lineTo(_axis, -halfExtent,  halfExtent);
-		lineTo(_axis,  halfExtent,  halfExtent);
-		lineTo(_axis,  halfExtent, -halfExtent);
-		close();
+		// setColor(0xff101010);
+		// moveTo(_axis, -halfExtent, -halfExtent);
+		// lineTo(_axis, -halfExtent,  halfExtent);
+		// lineTo(_axis,  halfExtent,  halfExtent);
+		// lineTo(_axis,  halfExtent, -halfExtent);
+		// close();
 
+		setColor(0xff248d64);
 		moveTo(_axis, -halfExtent, 0.0f);
 		lineTo(_axis,  halfExtent, 0.0f);
 
+		setColor(0xff4a3c98);
 		moveTo(_axis, 0.0f, -halfExtent);
 		lineTo(_axis, 0.0f,  halfExtent);
 

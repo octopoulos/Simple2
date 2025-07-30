@@ -445,7 +445,7 @@ struct Context
 
 	int run(int _argc, char** _argv)
 	{
-		EntryBegin();
+		EntryBegin("SDL2");
 		ui::Log("SDL2/run: {}x{}", xsettings.windowSize[0], xsettings.windowSize[1]);
 
 		m_mte.m_argc = _argc;

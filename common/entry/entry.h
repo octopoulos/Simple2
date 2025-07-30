@@ -1,4 +1,4 @@
-// @version 2025-07-23
+// @version 2025-07-25
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -434,9 +434,12 @@ uint32_t getNumApps();
 int runApp(AppI* _app, int _argc, const char* const* _argv);
 
 ///
-void EntryBegin();
+void EntryBegin(const char* name);
 
 ///
 void EntryEnd();
+
+///
+const char* GetEntryName();
 
 } // namespace entry

@@ -39,7 +39,8 @@ bx::AllocatorI*        g_allocator = getDefaultAllocator();
 
 typedef bx::StringT<&g_allocator> String;
 
-static String s_currentDir;
+static String      s_currentDir;
+static std::string entryName;
 
 class FileReader : public bx::FileReader
 {
@@ -589,9 +590,10 @@ int runApp(AppI* _app, int _argc, const char* const* _argv)
 	return _app->shutdown();
 }
 
-void EntryBegin()
+void EntryBegin(const char* name)
 {
-	ui::Log("EntryBegin");
+	ui::Log("EntryBegin: {}", name);
+	entryName = name;
 
 	FindAppDirectory(true);
 	InitGameSettings();
@@ -607,6 +609,8 @@ void EntryEnd()
 	ui::Log("EntryEnd");
 	SaveGameSettings();
 }
+
+const char* GetEntryName() { return entryName.c_str(); }
 
 static int32_t sortApp(const void* _lhs, const void* _rhs)
 {

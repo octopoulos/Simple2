@@ -1,4 +1,4 @@
-// @version 2025-07-22
+// @version 2025-07-25
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -415,8 +415,7 @@ bgfx::NativeWindowHandleType::Enum getNativeWindowHandleType()
 
 int main(int _argc, const char* const* _argv)
 {
-	using namespace entry;
-	return s_ctx.run(_argc, _argv);
+	return entry::s_ctx.run(_argc, _argv);
 }
 
 #endif // BX_PLATFORM_EMSCRIPTEN

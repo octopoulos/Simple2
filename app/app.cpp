@@ -86,7 +86,7 @@ int App::InitializeScene()
 	auto& shaderManager = GetShaderManager();
 
 	// 3) cube vertex layout
-	static std::shared_ptr<Geometry> cubeGeometry;
+	std::shared_ptr<Geometry> cubeGeometry = nullptr;
 	if (!cubeGeometry)
 	{
 		bgfx::VertexLayout cubeLayout;
@@ -340,7 +340,7 @@ void App::Render()
 		DebugDrawEncoder dde;
 
 		dde.begin(0);
-		dde.drawGrid(Axis::Y, { 0.0f, 0.0f, 0.0f }, 19);
+		dde.drawGrid(Axis::Y, { 0.0f, 0.0f, 0.0f }, 50);
 		dde.end();
 	}
 
@@ -514,7 +514,7 @@ public:
 			bgfx::setDebug(debug);
 
 			// set view 0 clear state
-			bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
+			bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x393939ff, 1.0f, 0);
 		}
 
 		// 2) imGui

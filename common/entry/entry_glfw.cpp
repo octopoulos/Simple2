@@ -386,7 +386,7 @@ struct Context
 
 	int run(int _argc, const char* const* _argv)
 	{
-		EntryBegin();
+		EntryBegin("GLFW");
 		m_mte.m_argc = _argc;
 		m_mte.m_argv = _argv;
 

@@ -1,4 +1,4 @@
-// @version 2025-07-22
+// @version 2025-07-26
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -344,6 +344,7 @@ struct Context
 
 	int32_t run(int _argc, const char* const* _argv)
 	{
+		EntryBegin("X11");
 		XInitThreads();
 
 		m_display = XOpenDisplay(NULL);
@@ -551,6 +552,7 @@ struct Context
 		XCloseDisplay(m_display);
 		m_display = NULL;
 
+		EntryEnd();
 		return thread.getExitCode();
 	}
 
@@ -752,8 +754,7 @@ bgfx::NativeWindowHandleType::Enum getNativeWindowHandleType()
 
 int main(int _argc, const char* const* _argv)
 {
-	using namespace entry;
-	return s_ctx.run(_argc, _argv);
+	return entry::_argc, _argv);
 }
 
 #endif // ENTRY_CONFIG_USE_NATIVE && (BX_PLATFORM_LINUX || BX_PLATFORM_RPI)

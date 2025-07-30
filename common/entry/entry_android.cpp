@@ -168,6 +168,8 @@ struct Context
 
 	void run(android_app* _app)
 	{
+		EntryBegin("Android");
+
 		m_app               = _app;
 		m_app->userData     = (void*)this;
 		m_app->onAppCmd     = onAppCmdCB;
@@ -190,6 +192,7 @@ struct Context
 		}
 
 		m_thread.shutdown();
+		EntryEnd();
 	}
 
 	void onAppCmd(int32_t _cmd)
@@ -536,8 +539,7 @@ int32_t MainThreadEntry::threadFunc(bx::Thread* _thread, void* _userData)
 
 extern "C" void android_main(android_app* _app)
 {
-	using namespace entry;
-	s_ctx.run(_app);
+	entry::s_ctx.run(_app);
 }
 
 #endif // ENTRY_CONFIG_USE_NATIVE && BX_PLATFORM_ANDROID

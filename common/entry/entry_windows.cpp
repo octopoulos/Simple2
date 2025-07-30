@@ -476,7 +476,7 @@ struct Context
 
 	int32_t run(int _argc, const char* const* _argv)
 	{
-		EntryBegin();
+		EntryBegin("Windows");
 		SetDllDirectoryA(".");
 
 		s_xinput.init();
