@@ -1,11 +1,11 @@
-// app.cpp
+// App.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-07-27
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
 #include "stdafx.h"
-#include "app/app.h"
+#include "app/App.h"
 //
 #include "core/ShaderManager.h"
 #include "entry/input.h"
@@ -38,6 +38,9 @@ void App::Destroy()
 
 	GetShaderManager().Destroy();
 	GetTextureManager().Destroy();
+
+	bgfx::destroy(uLight);
+	bgfx::destroy(uTime);
 }
 
 int App::Initialize()
@@ -188,12 +191,8 @@ int App::InitializeScene()
 	}
 
 	// 4) load BIN model
-	ModelLoader loader;
-	if (auto object = loader.LoadModel("kenney_car-kit-obj/race-future", true))
+	if (auto object = ModelLoader::LoadModelFull("kenney_car-kit/race-future"))
 	{
-		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
-		//textureManager.LoadTexture("fieldstone-rgba.dds");
-		//textureManager.LoadTexture("fieldstone-n.dds");
 		object->ScaleRotationPosition(
 		    { 1.0f, 1.0f, 1.0f },
 		    { -0.3f, 2.5f, 0.0f },
@@ -202,9 +201,8 @@ int App::InitializeScene()
 		object->CreateShapeBody(physics.get(), ShapeType_ConvexHull, 3.0f);
 		scene->AddNamedChild(object, "car");
 	}
-	if (auto object = loader.LoadModel("building-n", true))
+	if (auto object = ModelLoader::LoadModelFull("kenney_city-kit-commercial_20/building-n"))
 	{
-		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
 		object->ScaleRotationPosition(
 		    { 1.0f, 1.0f, 1.0f },
 		    { 0.0f, 1.5f, 0.0f },
@@ -213,7 +211,7 @@ int App::InitializeScene()
 		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh);
 		scene->AddNamedChild(object, "building");
 	}
-	if (auto object = loader.LoadModel("bunny_decimated", true))
+	if (auto object = ModelLoader::LoadModel("bunny_decimated", true))
 	{
 		object->program = shaderManager.LoadProgram("vs_mesh", "fs_mesh");
 		object->ScaleRotationPosition(
@@ -224,7 +222,7 @@ int App::InitializeScene()
 		object->CreateShapeBody(physics.get(), ShapeType_Cylinder, 3.0f);
 		scene->AddNamedChild(object, "bunny");
 	}
-	if (auto object = loader.LoadModel("donut"))
+	if (auto object = ModelLoader::LoadModel("donut"))
 	{
 		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
 		object->ScaleRotationPosition(
@@ -237,7 +235,7 @@ int App::InitializeScene()
 	}
 
 	// donuts
-	if (auto parent = loader.LoadModel("donut3"))
+	if (auto parent = ModelLoader::LoadModel("donut3"))
 	{
 		//parent->type |= ObjectType_Group;
 		parent->type |= ObjectType_Group | ObjectType_Instance;
@@ -247,7 +245,7 @@ int App::InitializeScene()
 		for (int i = 0; i < 120; ++i)
 		{
 			//if (auto object = std::make_shared<Mesh>())
-			if (auto object = loader.LoadModel("donut3"))
+			if (auto object = ModelLoader::LoadModel("donut3"))
 			{
 				object->type |= ObjectType_Instance;
 
@@ -277,7 +275,8 @@ int App::InitializeScene()
 
 	// 5) uniforms
 	{
-		uTime = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
+		uLight = bgfx::createUniform("u_lightDir", bgfx::UniformType::Vec4);
+		uTime  = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
 	}
 
 	// 6) extra inits
@@ -303,7 +302,12 @@ void App::Render()
 		deltaTime = curTime - lastTime;
 		lastTime  = curTime;
 
-		float timeVec[4] = { curTime, 0.0f, 0.0f, 0.0f };
+		//const auto  lightDir    = bx::normalize(bx::Vec3(sinf(curTime), 1.0f, cosf(curTime)));
+		const auto  lightDir    = bx::normalize(bx::Vec3(0.5f, 1.0f, -0.5f));
+		const float lightUni[4] = { lightDir.x, lightDir.y, lightDir.z, 0.0f };
+		bgfx::setUniform(uLight, lightUni);
+
+		const float timeVec[4] = { curTime, 0.0f, 0.0f, 0.0f };
 		bgfx::setUniform(uTime, timeVec);
 	}
 

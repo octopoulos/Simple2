@@ -1,9 +1,9 @@
-// engine-settings.cpp
-// @author octopoulo
+// EngineSettings.cpp
+// @author octopoulos
 // @version 2025-07-26
 
 #include "stdafx.h"
-#include "ui/engine-settings.h"
+#include "ui/EngineSettings.h"
 //
 #include "AI/common.h" // Config
 

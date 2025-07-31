@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-07-27
 
 #pragma once
 
@@ -70,13 +70,15 @@ struct MeshState
 class Mesh : public Object3d
 {
 public:
-	std::vector<uBody>        bodies   = {};      ///< one physical body per group
-	std::shared_ptr<Geometry> geometry = nullptr; ///
-	std::vector<Group>        groups   = {};      ///< groups of vertices
-	bgfx::VertexLayout        layout   = {};      ///
-	std::shared_ptr<Material> material = nullptr; ///
-	bgfx::ProgramHandle       program  = {};      ///
-	uint64_t                  state    = 0;       ///< if !=0: override default state
+	std::vector<uBody>        bodies    = {};                  ///< one physical body per group
+	std::shared_ptr<Geometry> geometry  = nullptr;             ///
+	std::vector<Group>        groups    = {};                  ///< groups of vertices
+	bgfx::VertexLayout        layout    = {};                  ///
+	std::shared_ptr<Material> material  = nullptr;             ///
+	bgfx::ProgramHandle       program   = BGFX_INVALID_HANDLE; ///
+	uint64_t                  state     = 0;                   ///< if !=0: override default state
+	bgfx::UniformHandle       sTexColor = BGFX_INVALID_HANDLE; ///
+	bgfx::TextureHandle       texture   = BGFX_INVALID_HANDLE; ///
 
 	Mesh()
 	{
@@ -97,6 +99,9 @@ public:
 
 	/// Delete all groups including indices + vertices
 	void Destroy();
+
+	/// Initialize uniforms
+	void Initialize();
 
 	/// Load a mesh
 	/// @param ramcopy: populate indices and vertices in groups

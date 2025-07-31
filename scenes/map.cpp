@@ -1,9 +1,9 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-07-27
 
 #include "stdafx.h"
-#include "app/app.h"
+#include "app/App.h"
 //
 #include "core/ShaderManager.h"
 #include "loaders/ModelLoader.h"
@@ -13,14 +13,11 @@
 
 void App::AddObject(const std::string& name)
 {
-	static ModelLoader loader;
-
 	const auto& coord = cursor->position;
 
 	ui::Log("AddObject: {} @ {} {} {}", name, coord.x, coord.y, coord.z);
-	if (auto object = loader.LoadModel(name, true))
+	if (auto object = ModelLoader::LoadModelFull(name))
 	{
-		object->program = GetShaderManager().LoadProgram("vs_model", "fs_model");
 		object->ScaleRotationPosition(
 		    { 1.0f, 1.0f, 1.0f },
 		    { 0.0f, 0.0f, 0.0f },
@@ -163,6 +160,112 @@ bool App::OpenMap(const std::filesystem::path& filename)
 
 	return true;
 }
+
+void App::RescanAssets()
+{
+	const std::filesystem::path& MODEL_SRC_DIR   = "assets/models";
+	const std::filesystem::path& MODEL_OUT_DIR   = "runtime/models";
+	const std::filesystem::path& PREVIEW_OUT_DIR = "runtime/models-prev";
+	const std::filesystem::path& TEXTURE_OUT_DIR = "runtime/textures";
+
+	static const USET_STR validModelExts   = { ".glb", ".obj" };
+	static const USET_STR validTextureExts = { ".png", ".jpg", ".dds", ".tga" };
+
+	std::vector<std::filesystem::path> modelSources;
+	std::vector<std::filesystem::path> modelOutputs;
+	std::vector<std::filesystem::path> textureOutputs;
+
+	for (auto& entry : std::filesystem::recursive_directory_iterator(MODEL_SRC_DIR))
+	{
+		const std::filesystem::path& path = entry.path();
+		if (!IsFile(path)) continue;
+
+		const std::string ext = path.extension().string();
+		if (!validModelExts.contains(ext)) continue;
+
+		std::filesystem::path relPath     = std::filesystem::relative(path, MODEL_SRC_DIR);
+		std::string           modelName   = path.stem().string();
+		std::filesystem::path firstFolder = relPath.empty() ? "" : *relPath.begin();
+
+		std::filesystem::path modelOut = firstFolder.empty()
+		    ? (MODEL_OUT_DIR / (modelName + ".bin"))
+		    : (MODEL_OUT_DIR / firstFolder / (modelName + ".bin"));
+
+		std::filesystem::path previewOut = firstFolder.empty()
+		    ? std::filesystem::path()
+		    : (PREVIEW_OUT_DIR / firstFolder / (modelName + ".png"));
+
+		std::filesystem::path previewSrc;
+		if (!firstFolder.empty())
+		{
+			const auto previewBase = MODEL_SRC_DIR / firstFolder;
+			const auto prev1       = previewBase / "Previews" / (modelName + ".png");
+			const auto prev2       = previewBase / "Isometric" / (modelName + "_NE.png");
+
+			if (IsFile(prev1))
+				previewSrc = prev1;
+			else if (IsFile(prev2))
+				previewSrc = prev2;
+
+			if (!previewSrc.empty() && !IsFile(previewOut))
+			{
+				CreateDirectories(previewOut.parent_path());
+				CopyFileX(previewSrc, previewOut, false);
+			}
+		}
+
+		if (!IsFile(modelOut))
+		{
+			ui::Log("Need to convert: {}", relPath.string());
+			ui::Log("Convert: {} => {}", path.string(), modelOut.string());
+
+			CreateDirectories(modelOut.parent_path());
+
+			std::string cmd = fmt::format(
+			    "geometryc -f \"{}\" -o \"{}\"",
+			    path.string(), modelOut.string());
+
+			int result = std::system(cmd.c_str());
+
+			if (result != 0)
+				ui::Log("ERROR: geometryc failed with code {}", result);
+		}
+
+		modelSources.push_back(path);
+		modelOutputs.push_back(modelOut);
+
+		if (!firstFolder.empty())
+		{
+			const auto texBase = MODEL_SRC_DIR / firstFolder;
+			for (auto& texEntry : std::filesystem::recursive_directory_iterator(texBase))
+			{
+				const auto& texPath = texEntry.path();
+				if (!IsFile(texPath)) continue;
+
+				if (texPath.parent_path().filename() != "Textures") continue;
+
+				std::string ext = texPath.extension().string();
+				if (!validTextureExts.contains(ext)) continue;
+
+				const auto texName = texPath.filename();
+				const auto texOut  = TEXTURE_OUT_DIR / firstFolder / texName;
+
+				if (!IsFile(texOut))
+				{
+					CreateDirectories(texOut.parent_path());
+					if (CopyFileX(texPath, texOut, false))
+					{
+						ui::Log("Copy: {} -> {}", texPath, texOut);
+						textureOutputs.push_back(texOut);
+					}
+				}
+			}
+		}
+	}
+
+	ui::Log("Models: {}  Textures: {}", modelSources.size(), textureOutputs.size());
+}
+
 
 bool App::SaveMap(const std::filesystem::path& filename)
 {

@@ -1,6 +1,6 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-07-27
 
 #include "stdafx.h"
 #include "textures/TextureManager.h"
@@ -76,6 +76,10 @@ static bimg::ImageContainer* ImageLoad_(const bx::FilePath& _filePath, bgfx::Tex
 
 void TextureManager::Destroy()
 {
+	for (const auto& [name, texture] : textures)
+		bgfx::destroy(texture.handle);
+
+	textures.clear();
 }
 
 const bgfx::TextureInfo* TextureManager::GetTextureInfo(std::string_view name) const
@@ -95,7 +99,7 @@ bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 		return it->second.handle;
 
 	std::string path;
-	if (!IsFile(name) && name.find('/') == std::string_view::npos)
+	if (!IsFile(name))// && name.find('/') == std::string_view::npos)
 		path = fmt::format("runtime/textures/{}", name);
 	else
 		path = std::string(name);

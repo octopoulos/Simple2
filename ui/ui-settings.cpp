@@ -5,7 +5,7 @@
 #include "stdafx.h"
 #include "ui/ui.h"
 //
-#include "app/app.h"
+#include "app/App.h"
 
 //extern std::unique_ptr<Engine> engine;
 

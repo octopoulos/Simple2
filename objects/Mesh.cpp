@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-07-27
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -32,6 +32,14 @@ void Mesh::Destroy()
 		if (group.m_indices) bx::free(allocator, group.m_indices);
 	}
 	groups.clear();
+
+	bgfx::destroy(sTexColor);
+	// TODO: check if something must be done with the texture?
+}
+
+void Mesh::Initialize()
+{
+	sTexColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 }
 
 void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
@@ -53,9 +61,11 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 		{
 		case kChunkVertexBuffer:
 		{
+			// clang-format off
 			read(reader, group.m_sphere, &err);
-			read(reader, group.m_aabb, &err);
-			read(reader, group.m_obb, &err);
+			read(reader, group.m_aabb  , &err);
+			read(reader, group.m_obb   , &err);
+			// clang-format on
 
 			read(reader, layout, &err);
 
@@ -77,9 +87,11 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 
 		case kChunkVertexBufferCompressed:
 		{
+			// clang-format off
 			read(reader, group.m_sphere, &err);
-			read(reader, group.m_aabb, &err);
-			read(reader, group.m_obb, &err);
+			read(reader, group.m_aabb  , &err);
+			read(reader, group.m_obb   , &err);
+			// clang-format on
 
 			read(reader, layout, &err);
 
@@ -171,13 +183,15 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 				read(reader, const_cast<char*>(name.c_str()), len, &err);
 
 				Primitive prim;
-				read(reader, prim.m_startIndex, &err);
-				read(reader, prim.m_numIndices, &err);
+				// clang-format off
+				read(reader, prim.m_startIndex , &err);
+				read(reader, prim.m_numIndices , &err);
 				read(reader, prim.m_startVertex, &err);
 				read(reader, prim.m_numVertices, &err);
-				read(reader, prim.m_sphere, &err);
-				read(reader, prim.m_aabb, &err);
-				read(reader, prim.m_obb, &err);
+				read(reader, prim.m_sphere     , &err);
+				read(reader, prim.m_aabb       , &err);
+				read(reader, prim.m_obb        , &err);
+				// clang-format on
 
 				group.m_prims.push_back(prim);
 			}
@@ -287,7 +301,9 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 		bgfx::submit(viewId, material->program);
 	}
 	else if (bgfx::isValid(program))
+	{
 		Submit(viewId, program, glm::value_ptr(transform), BGFX_STATE_MASK);
+	}
 }
 
 void Mesh::Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, uint64_t state) const
@@ -308,6 +324,11 @@ void Mesh::Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, ui
 	{
 		bgfx::setIndexBuffer(group.m_ibh);
 		bgfx::setVertexBuffer(0, group.m_vbh);
+
+		//ui::Log("SUBMIT PROGRAM: {} {} {}", name, bgfx::isValid(sTexColor), bgfx::isValid(texture));
+		if (bgfx::isValid(texture))
+			bgfx::setTexture(0, sTexColor, texture);
+
 		bgfx::submit(id, program, 0, BGFX_DISCARD_INDEX_BUFFER | BGFX_DISCARD_VERTEX_STREAMS);
 	}
 

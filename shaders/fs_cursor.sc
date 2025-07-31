@@ -1,9 +1,10 @@
 // fs_cursor.sc
 
 $input v_normal
-uniform vec4 u_time;
 
 #include <bgfx_shader.sh>
+
+uniform vec4 u_time;
 
 void main()
 {

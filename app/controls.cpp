@@ -1,12 +1,12 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-07-25
+// @version 2025-07-27
 
 #include "stdafx.h"
-#include "app/app.h"
+#include "app/App.h"
 //
+#include "common/imgui/imgui.h"
 #include "entry/input.h"
-#include "imgui/imgui.h"
 #include "loaders/ModelLoader.h"
 
 void App::FixedControls()
@@ -137,8 +137,7 @@ void App::ThrowDonut()
 {
 	auto parent = scene->GetObjectByName("donut3-group");
 
-	ModelLoader loader;
-	if (auto object = loader.LoadModel("donut3"))
+	if (auto object = ModelLoader::LoadModel("donut3"))
 	{
 		object->type |= ObjectType_Instance;
 

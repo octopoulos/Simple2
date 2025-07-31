@@ -1,6 +1,6 @@
 // game-settings.inc.h
-// @author octopoulo
-// @version 2025-07-23
+// @author octopoulos
+// @version 2025-07-26
 // - include at the end of xsettings.h
 
 #pragma once

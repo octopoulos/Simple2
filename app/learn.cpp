@@ -1,9 +1,9 @@
 // learn.cpp
 // @author octopoulos
-// @version 2025-07-24
+// @version 2025-07-27
 
 #include "stdafx.h"
-#include "app/app.h"
+#include "app/App.h"
 
 #include "dear-imgui/imgui.h"
 

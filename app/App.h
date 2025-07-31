@@ -1,6 +1,6 @@
-// app.h
+// App.h
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-07-27
 
 #pragma once
 
@@ -80,6 +80,9 @@ private:
 	/// Open a map file
 	bool OpenMap(const std::filesystem::path& filename);
 
+	/// Rescan folders to update the assets
+	void RescanAssets();
+
 	/// Save a map file
 	bool SaveMap(const std::filesystem::path& filename);
 
@@ -94,6 +97,7 @@ private:
 	bool                pauseNextFrame = false; ///< pause next frame
 	int                 renderFlags    = 0;     ///< render flags
 	int                 renderFrame    = 0;     ///< current rendered frame
+	bgfx::UniformHandle uLight         = {};    ///
 	bgfx::UniformHandle uTime          = {};    ///
 
 public:

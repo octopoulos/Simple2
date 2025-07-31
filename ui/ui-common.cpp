@@ -1,5 +1,5 @@
 // ui-common.cpp
-// @author octopoulo
+// @author octopoulos
 // @version 2025-07-26
 
 #include "stdafx.h"

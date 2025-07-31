@@ -3,7 +3,7 @@
 // @version 2025-07-26
 
 #include "stdafx.h"
-#include "app/app.h"
+#include "app/App.h"
 #include "ui/ui.h"
 
 #include "common/imgui/imgui.h"

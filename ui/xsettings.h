@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ui/engine-settings.h"
+#include "ui/EngineSettings.h"
 
 struct XSettings : public EngineSettings
 {

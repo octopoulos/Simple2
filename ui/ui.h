@@ -1,5 +1,5 @@
 // ui.h
-// @author octopoulo
+// @author octopoulos
 // @version 2025-07-26
 
 #pragma once

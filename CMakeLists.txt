@@ -255,7 +255,7 @@ file(GLOB     SCENES_SRC_FILES CONFIGURE_DEPENDS "${SCENES_SRC_DIR}/*.cpp" "${SC
 file(GLOB   TEXTURES_SRC_FILES CONFIGURE_DEPENDS "${TEXTURES_SRC_DIR}/*.cpp" "${TEXTURES_SRC_DIR}/*.h")
 file(GLOB         UI_SRC_FILES CONFIGURE_DEPENDS "${UI_SRC_DIR}/*.cpp" "${UI_SRC_DIR}/*.h")
 
-add_executable(Simple app/app.cpp)
+add_executable(Simple app/App.cpp)
 
 #######################################################################################################################
 # 4) INCLUDES
@@ -447,6 +447,7 @@ set(MODEL_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets/models")
 set(MODEL_OUT_DIR "${RUNTIME_DIR}/models")
 set(PREVIEW_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets/models")
 set(PREVIEW_OUT_DIR "${RUNTIME_DIR}/models-prev")
+set(TEXTURE_OUT_DIR "${RUNTIME_DIR}/textures")
 
 # Create base models output directory
 file(MAKE_DIRECTORY "${MODEL_OUT_DIR}")
@@ -455,6 +456,7 @@ file(MAKE_DIRECTORY "${MODEL_OUT_DIR}")
 set(MODEL_BIN_FILES)
 set(MODEL_SRC_FILES)
 set(PREVIEW_OUT_FILES)
+set(TEXTURE_OUT_FILES)
 
 # Collect all .glb and .obj files recursively
 foreach(MODEL_EXT glb obj)
@@ -462,10 +464,10 @@ foreach(MODEL_EXT glb obj)
 	file(GLOB_RECURSE MODEL_FILES "${MODEL_SRC_DIR}/*.${MODEL_EXT}")
 
 	foreach(MODEL_SRC ${MODEL_FILES})
-		#message("MODEL_SRC=${MODEL_SRC}")
 		file(RELATIVE_PATH RELATIVE_PATH "${MODEL_SRC_DIR}" "${MODEL_SRC}")
 		get_filename_component(FIRST_FOLDER "${RELATIVE_PATH}" DIRECTORY)
 		get_filename_component(MODEL_NAME ${MODEL_SRC} NAME_WE)
+		
 		if(FIRST_FOLDER)
 			# Extract the first component of the directory path
 			string(REGEX MATCH "^[^/\\]+" FIRST_FOLDER "${FIRST_FOLDER}")
@@ -495,9 +497,41 @@ foreach(MODEL_EXT glb obj)
 
 			#message("PREVIEW_SRC=${PREVIEW_SRC}")
 			#message("PREVIEW_OUT=${PREVIEW_OUT}")
-			if(PREVIEW_OUT AND EXISTS "${PREVIEW_SRC}" AND NOT EXISTS "${PREVIEW_OUT}")
-				file(COPY "${PREVIEW_SRC}" DESTINATION "${PREVIEW_OUT_DIR}/${FIRST_FOLDER}")
-				list(APPEND PREVIEW_OUT_FILES "${PREVIEW_OUT}")
+			list(FIND PREVIEW_OUT_FILES "${PREVIEW_OUT}" INDEX)
+			if(INDEX EQUAL -1)
+				if(PREVIEW_OUT AND EXISTS "${PREVIEW_SRC}")
+					if(NOT EXISTS "${PREVIEW_OUT}")
+						file(COPY "${PREVIEW_SRC}" DESTINATION "${PREVIEW_OUT_DIR}/${FIRST_FOLDER}")
+					endif()
+					list(APPEND PREVIEW_OUT_FILES "${PREVIEW_OUT}")
+				endif()
+			endif()
+
+			# Copy textures
+			if(0)
+				set(TEXTURE_DIR "${TEXTURE_OUT_DIR}/${FIRST_FOLDER}")
+				foreach(TEXTURE_EXT png) # dds jpg png tga
+					file(GLOB_RECURSE TEXTURE_FILES
+						"${MODEL_SRC_DIR}/${FIRST_FOLDER}/Textures/*.${TEXTURE_EXT}"
+						"${MODEL_SRC_DIR}/${FIRST_FOLDER}/*/Textures/*.${TEXTURE_EXT}"
+						"${MODEL_SRC_DIR}/${FIRST_FOLDER}/*/*/Textures/*.${TEXTURE_EXT}"
+					)
+					#message("PATH=${MODEL_SRC_DIR}/${FIRST_FOLDER}")
+					foreach(TEXTURE_SRC ${TEXTURE_FILES})
+						get_filename_component(TEXTURE_NAME ${TEXTURE_SRC} NAME)
+						set(TEXTURE_OUT "${TEXTURE_DIR}/${TEXTURE_NAME}")
+						list(FIND TEXTURE_OUT_FILES "${TEXTURE_OUT}" INDEX)
+						if(INDEX EQUAL -1)
+							#message("TEXTURE_SRC=${TEXTURE_SRC} => ${TEXTURE_OUT}")
+							if(NOT EXISTS "${TEXTURE_OUT}")
+								file(MAKE_DIRECTORY "${TEXTURE_DIR}")
+								file(COPY "${TEXTURE_SRC}" DESTINATION "${TEXTURE_DIR}")
+								message("TEXTURE_SRC=${TEXTURE_SRC} => ${TEXTURE_OUT}")
+							endif()
+							list(APPEND TEXTURE_OUT_FILES "${TEXTURE_OUT}")
+						endif()
+					endforeach()
+				endforeach()
 			endif()
 		endif()
 
@@ -517,11 +551,10 @@ foreach(MODEL_EXT glb obj)
 					COMMENT "Converting model ${FIRST_FOLDER}/${MODEL_NAME}"
 					VERBATIM
 				)
-
-				list(APPEND MODEL_BIN_FILES "${MODEL_BIN}")
-				list(APPEND MODEL_SRC_FILES "${MODEL_SRC}")
-				#message("${MODEL_SRC} OK")
 			endif()
+			list(APPEND MODEL_BIN_FILES "${MODEL_BIN}")
+			list(APPEND MODEL_SRC_FILES "${MODEL_SRC}")
+			#message("${MODEL_SRC} OK")
 		else()
 			#message("${MODEL_SRC} ALREADY EXISTS")
 		endif()
@@ -553,7 +586,7 @@ elseif(WIN32)
 endif()
 
 # Assets folders (VS)
-source_group(TREE     "${RUNTIME_DIR}" PREFIX "Assets/Binaries" FILES ${MODEL_BIN_FILES} ${SHADER_BIN_FILES})
+source_group(TREE     "${RUNTIME_DIR}" PREFIX "Assets/Binaries" FILES ${MODEL_BIN_FILES} ${PREVIEW_OUT_FILES} ${SHADER_BIN_FILES} ${TEXTURE_OUT_FILES})
 source_group(TREE   "${MODEL_SRC_DIR}" PREFIX "Assets/Models"   FILES ${MODEL_SRC_FILES})
 source_group(TREE  "${SHADER_SRC_DIR}" PREFIX "Assets/Shaders"  FILES ${SHADER_SRC_FILES})
 
@@ -577,8 +610,10 @@ source_group(TREE         "${UI_SRC_DIR}" PREFIX "UI"         FILES ${UI_SRC_FIL
 set(SOURCES
 	     ${MODEL_BIN_FILES}
 	     ${MODEL_SRC_FILES}
+	   #${PREVIEW_OUT_FILES}
 	    ${SHADER_BIN_FILES}
 	    ${SHADER_SRC_FILES}
+	   ${TEXTURE_OUT_FILES}
 
 	  ${3RDPARTY_SRC_FILES}
 	      ${BGFX_SRC_FILES}
