@@ -1,6 +1,6 @@
 // game-config.inl
 // @author octopoulo
-// @version 2025-07-23
+// @version 2025-07-27
 // - add at the start of the configs mapping
 
 #ifdef XSETTINGS
@@ -9,6 +9,10 @@
 /////////
 
 // clang-format off
+// [input]
+X_INT   (XSETTINGS, input, 0, repeatDelay   , 500, 0, 5000),
+X_INT   (XSETTINGS, input, 0, repeatInterval, 50 , 0, 500),
+
 // [render]
 X_FLOATS(XSETTINGS, render, 0, center    , "0.0|0.0|0.0", -100.0f, 100.0f, 3),
 X_FLOATS(XSETTINGS, render, 0, eye       , "0.0|0.0|1.5", -100.0f, 100.0f, 3),

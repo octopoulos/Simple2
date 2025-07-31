@@ -1,13 +1,15 @@
-// @version 2025-07-25
+// @version 2025-07-27
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
 #include "stdafx.h"
-#include "cmd.h"
-#include "entry_p.h"
 #include "input.h"
+#include "cmd.h"
+//
+#include "entry_p.h"
+#include "ui/xsettings.h"
 
 #include <bx/ringbuffer.h>
 
@@ -387,16 +389,19 @@ void GlobalInput::KeyDownUp(int key, bool down)
 {
 	if (keys[key] != down)
 	{
-		const int64_t now = NowUs();
+		const int64_t nowMs = NowMs();
 
 		keys[key]               = down;
-		keyTimes[key]           = now;
-		keyChanges[keyChangeId] = { key, down, now };
+		keyTimes[key]           = nowMs;
+		keyChanges[keyChangeId] = { key, down, nowMs };
 		keyChangeId             = (keyChangeId + 1) & 127;
 		if (down)
 			keyDowns[key] = true;
 		else
-			keyUps[key] = true;
+		{
+			keyRepeats[key] = 0;
+			keyUps[key]     = true;
+		}
 	}
 }
 
@@ -448,11 +453,49 @@ void GlobalInput::MouseMove(int mx, int my, int mz, bool hasDelta, int dx, int d
 	++mouseFrame;
 }
 
+bool GlobalInput::RepeatingKey(int key)
+{
+	// 1) key is not down?
+	if (!keys[key])
+	{
+		keyRepeats[key] = 0;
+		return false;
+	}
+
+	// 2) check if time to repeat
+	{
+		const int64_t firstMs  = keyTimes[key];
+		int64_t&      repeatMs = keyRepeats[key];
+
+		// 1st repeat after delay
+		if (!repeatMs)
+		{
+			if (nowMs > firstMs + xsettings.repeatDelay)
+			{
+				repeatMs = nowMs;
+				return true;
+			}
+		}
+		// subsequent repeats
+		else
+		{
+			if (nowMs > repeatMs + xsettings.repeatInterval)
+			{
+				repeatMs = nowMs;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 void GlobalInput::Reset()
 {
 	// clang-format off
 	std::memset(buttons   , 0, sizeof(buttons   ));
 	std::memset(keyChanges, 0, sizeof(keyChanges));
+	std::memset(keyRepeats, 0, sizeof(keyRepeats));
 	std::memset(keys      , 0, sizeof(keys      ));
 	std::memset(keyTimes  , 0, sizeof(keyTimes  ));
 	std::memset(mouseAbs  , 0, sizeof(mouseAbs  ));

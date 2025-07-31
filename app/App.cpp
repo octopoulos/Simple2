@@ -312,8 +312,11 @@ void App::Render()
 	}
 
 	// 2) controls
-	FluidControls();
 	{
+		GetGlobalInput().nowMs = NowMs();
+
+		FluidControls();
+
 		inputLag += deltaTime;
 		while (inputLag >= inputDelta)
 		{

@@ -1,4 +1,4 @@
-// @version 2025-07-25
+// @version 2025-07-27
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -108,7 +108,7 @@ struct KeyState
 {
 	int     key;   ///< key code
 	bool    down;  ///< key down or up
-	int64_t stamp; ///< timestamp in us
+	int64_t stamp; ///< timestamp in ms
 };
 
 struct GlobalInput
@@ -117,8 +117,9 @@ struct GlobalInput
 	int      keyChangeId     = 0;                           ///< index of current history
 	KeyState keyChanges[128] = {};                          ///< history of key changes
 	uint8_t  keyDowns[256]   = {};                          ///< those keys were pushed this frame
+	int64_t  keyRepeats[256] = {};                          ///< last repeat time (in ms)
 	bool     keys[256]       = {};                          ///< are keys pushed?
-	int64_t  keyTimes[256]   = {};                          ///< when the key was pushed last time (in us)
+	int64_t  keyTimes[256]   = {};                          ///< when the key was pushed last time (in ms)
 	uint8_t  keyUps[256]     = {};                          ///< those keys were released this frame
 	int      mouseAbs[3]     = {};                          ///< mouse absolute coordinates
 	int      mouseAbs2[3]    = {};                          ///< mouse absolute coordinates: deltas
@@ -128,6 +129,7 @@ struct GlobalInput
 	float    mouseRels[3]    = {};                          ///< mouse relative coordinates
 	float    mouseRels0[3]   = {};                          ///< mouse relative coordinates: previous
 	float    mouseRels2[3]   = {};                          ///< mouse relative coordinates: deltas
+	int64_t  nowMs           = 0;                           ///< current timestamp (in ms)
 	float    resolution[3]   = { 1280.0f, 720.0f, 120.0f }; ///< used to normalize mouse coords
 
 	/// Keyboard key down/up
@@ -145,6 +147,9 @@ struct GlobalInput
 
 	/// Mouse motion
 	void MouseMove(int mx, int my, int mz, bool hasDelta, int dx, int dy);
+
+	/// Should the key be repeated?
+	bool RepeatingKey(int key);
 
 	/// Reset data to initial state
 	void Reset();

@@ -13,7 +13,7 @@ void App::FixedControls()
 {
 	using namespace entry;
 
-	const auto& ginput = GetGlobalInput();
+	auto& ginput = GetGlobalInput();
 
 	for (int id = 0; id < Key::Count; ++id)
 		if (ginput.keyDowns[id]) ui::Log("Controls: {} {:3} {:5} {}", ginput.keyTimes[id], id, ginput.keys[id], getName((Key::Enum)id));
@@ -30,22 +30,23 @@ void App::FixedControls()
 
 		if (downs[Key::Key1]) ThrowDonut();
 
-		if (downs[Key::Down])
+		// move cursor
+		if (downs[Key::Down] || ginput.RepeatingKey(Key::Down))
 		{
 			cursor->position.z = std::roundf(cursor->position.z - 1.0f);
 			cursor->UpdateLocalMatrix();
 		}
-		if (downs[Key::Left])
+		if (downs[Key::Left] || ginput.RepeatingKey(Key::Left))
 		{
 			cursor->position.x = std::roundf(cursor->position.x - 1.0f);
 			cursor->UpdateLocalMatrix();
 		}
-		if (downs[Key::Right])
+		if (downs[Key::Right] || ginput.RepeatingKey(Key::Right))
 		{
 			cursor->position.x = std::roundf(cursor->position.x + 1.0f);
 			cursor->UpdateLocalMatrix();
 		}
-		if (downs[Key::Up])
+		if (downs[Key::Up] || ginput.RepeatingKey(Key::Up))
 		{
 			cursor->position.z = std::roundf(cursor->position.z + 1.0f);
 			cursor->UpdateLocalMatrix();

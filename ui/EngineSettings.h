@@ -1,6 +1,6 @@
 // EngineSettings.h
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-07-27
 
 #pragma once
 
@@ -54,6 +54,10 @@ enum XVSyncs_ : int
 
 struct EngineSettings
 {
+	// [input]
+	int64_t repeatDelay;    ///< Ms wait for repeat to kick in
+	int64_t repeatInterval; ///< Ms repeat interval
+
 	// [render]
 	float center[3];  ///< scene center
 	float eye[3];     ///< scene eye
@@ -91,7 +95,7 @@ struct EngineSettings
 	int  fullScreen;    ///< 1: FS, 2: FS desktop
 	bool maximized;     ///< start in maximized window
 	int  windowPos[2];  ///< -1 = centered
-	int  windowSize[2]; ///
+	int  windowSize[2]; ///< [width, height]
 };
 
 /// Populate the settingsMap + find the settings folder
