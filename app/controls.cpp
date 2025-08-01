@@ -30,7 +30,7 @@ void App::FixedControls()
 
 	// new keys
 	{
-		if (downs[Key::KeyO])
+		if (DOWN_OR_REPEAT(Key::KeyO))
 		{
 			xsettings.physPaused = false;
 			pauseNextFrame       = true;

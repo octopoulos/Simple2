@@ -72,9 +72,7 @@ int App::InitializeScene()
 		scene->AddNamedChild(cursor, "cursor");
 		cursor->state = 0
 		    | BGFX_STATE_BLEND_ALPHA
-		    | BGFX_STATE_CULL_CW
 		    | BGFX_STATE_DEPTH_TEST_LESS
-		    //| BGFX_STATE_PT_LINES
 		    | BGFX_STATE_WRITE_A
 		    | BGFX_STATE_WRITE_RGB
 		    | BGFX_STATE_WRITE_Z;
@@ -93,65 +91,31 @@ int App::InitializeScene()
 	auto& shaderManager = GetShaderManager();
 
 	// 3) cube vertex layout
-	std::shared_ptr<Geometry> cubeGeometry = nullptr;
-	if (!cubeGeometry)
 	{
-		bgfx::VertexLayout cubeLayout;
-		// clang-format off
-		cubeLayout.begin()
-		    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-		    .add(bgfx::Attrib::Color0  , 4, bgfx::AttribType::Uint8, true)
-		    .end();
-		// clang-format on
-
-		struct PosColorVertex
-		{
-			float    x, y, z;
-			uint32_t abgr;
-		};
-
-		static PosColorVertex cubeVertices[] = {
-			{ -1, 1,  1,  0xff000000 },
-			{ 1,  1,  1,  0xff0000ff },
-			{ -1, -1, 1,  0xff00ff00 },
-			{ 1,  -1, 1,  0xff00ffff },
-			{ -1, 1,  -1, 0xffff0000 },
-			{ 1,  1,  -1, 0xffff00ff },
-			{ -1, -1, -1, 0xffffff00 },
-			{ 1,  -1, -1, 0xffffffff },
-		};
-
-		static const uint16_t cubeTriList[] = {
-			0, 1, 2, 1, 3, 2, 4, 6, 5, 5, 6, 7,
-			0, 2, 4, 4, 2, 6, 1, 5, 3, 5, 7, 3,
-			0, 4, 1, 4, 5, 1, 2, 3, 6, 6, 3, 7
-		};
-
-		{
-			auto vbh     = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), cubeLayout);
-			auto ibh     = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
-			cubeGeometry = std::make_shared<Geometry>(vbh, ibh);
-		}
-
 		// cube
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
-			cubeMesh->geometry = cubeGeometry;
-			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cube", "fs_cube"));
+			cubeMesh->geometry = CreateSphereGeometry();
+			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_model", "fs_model"));
+			cubeMesh->state    = 0
+			    | BGFX_STATE_DEPTH_TEST_LESS
+			    | BGFX_STATE_WRITE_A
+			    | BGFX_STATE_WRITE_RGB
+			    | BGFX_STATE_WRITE_Z;
 
 			cubeMesh->ScaleRotationPosition(
-			    { 0.5f, 0.5f, 0.5f },
+			    { 1.0f, 1.0f, 1.0f },
 			    { MerseneFloat(0.0f, bx::kPi2), MerseneFloat(0.0f, bx::kPi2), MerseneFloat(0.0f, bx::kPi2) },
 			    { 0.0f, 5.0f, 0.0f }
 			);
-			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 1.0f, { 0.5f, 0.5f, 0.5f, 0.0f });
+			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Sphere, 1.0f);
 
 			scene->AddNamedChild(std::move(cubeMesh), "cube");
 		}
 
 		// cursor
 		{
-			cursor->geometry = cubeGeometry;
+			cursor->geometry = CreateBoxGeometry(1.0f, 1.0f, 1.0f, 2, 2, 2);
 			cursor->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cursor", "fs_cursor"));
 
 			cursor->ScaleRotationPosition(
@@ -163,15 +127,15 @@ int App::InitializeScene()
 		// floor
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
-			cubeMesh->geometry = cubeGeometry;
+			cubeMesh->geometry = CreateBoxGeometry(20.0f, 1.0f, 20.0f, 2, 2, 2);
 			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cube", "fs_cube"));
 
 			cubeMesh->ScaleRotationPosition(
-			    { 9.5f, 1.0f, 9.5f },
+			    { 1.0f, 1.0f, 1.0f },
 			    { 0.0f, 0.0f, 0.0f },
 			    { 0.0f, -1.0f, 0.0f }
 			);
-			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f, { 9.5f, 1.0f, 9.5f, 0.0f });
+			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f);
 
 			scene->AddNamedChild(std::move(cubeMesh), "floor");
 		}
@@ -179,14 +143,14 @@ int App::InitializeScene()
 		// base
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
-			cubeMesh->geometry = cubeGeometry;
+			cubeMesh->geometry = CreateBoxGeometry(40.0f, 1.0f, 40.0f, 2, 2, 2);
 			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_base", "fs_base"));
 
 			cubeMesh->ScaleRotationPosition(
-			    { 40.0f, 1.0f, 40.0f },
+			    { 1.0f, 1.0f, 1.0f },
 			    { 0.0f, 0.0f, 0.0f },
 			    { 0.0f, -10.0f, 0.0f });
-			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f, { 40.0f, 1.0f, 40.0f, 0.1f });
+			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f);
 
 			scene->AddNamedChild(std::move(cubeMesh), "base");
 		}

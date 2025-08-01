@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-07-28
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -100,6 +100,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 	// - if multiple groups or center is not (0, 0, 0) => use a compound
 	const int  numGroup = mesh ? TO_INT(mesh->groups.size()) : 0;
 	const auto center   = (numGroup == 1) ? mesh->groups[0].m_sphere.center : bx::Vec3(0.0f);
+	const auto geometry = mesh ? mesh->geometry : nullptr;
 	const bool noOffset = shapesNoOffsets.contains(type);
 	const bool centered = noOffset ? true : std::fabsf(center.x) < 0.001f && std::fabsf(center.y) < 0.001f && std::fabsf(center.z) < 0.001f;
 	auto       compound = (!noOffset && (numGroup > 1 || !centered)) ? new btCompoundShape(true, numGroup) : nullptr;
@@ -111,6 +112,8 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 	case ShapeType_Box:
 		if (dims.x() > 0.0f && dims.y() > 0.0f && dims.z() > 0.0f)
 			shape = new btBoxShape(dims);
+		else if (geometry)
+			shape = new btBoxShape(geometry->dims);
 		else if (numGroup > 0)
 		{
 			for (const auto& group : mesh->groups)
@@ -273,6 +276,8 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 	case ShapeType_Sphere:
 		if (dims.x() > 0.0f)
 			shape = new btSphereShape(dims.x());
+		else if (geometry)
+			shape = new btSphereShape(geometry->radius);
 		else if (numGroup > 0)
 		{
 			for (const auto& group : mesh->groups)

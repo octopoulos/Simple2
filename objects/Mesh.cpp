@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-07-27
+// @version 2025-07-28
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -263,13 +263,13 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 				}
 				else if (bgfx::isValid(program))
 				{
-					uint64_t state = 0
-					    | BGFX_STATE_WRITE_RGB
-					    | BGFX_STATE_WRITE_A
-					    | BGFX_STATE_WRITE_Z
-					    | BGFX_STATE_DEPTH_TEST_LESS
+					const uint64_t state = 0
 					    | BGFX_STATE_CULL_CCW
-					    | BGFX_STATE_MSAA;
+					    | BGFX_STATE_DEPTH_TEST_LESS
+					    | BGFX_STATE_MSAA
+					    | BGFX_STATE_WRITE_A
+					    | BGFX_STATE_WRITE_RGB
+					    | BGFX_STATE_WRITE_Z;
 
 					for (const auto& group : groups)
 					{
@@ -297,7 +297,16 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 		bgfx::setVertexBuffer(0, geometry->vbh);
 		bgfx::setIndexBuffer(geometry->ibh);
 		material->Apply();
-		bgfx::setState(state ? state : BGFX_STATE_DEFAULT);
+
+		const uint64_t useState = state ? state : 0
+		    //| BGFX_STATE_CULL_CCW
+		    | BGFX_STATE_DEPTH_TEST_LESS
+		    | BGFX_STATE_MSAA
+		    | BGFX_STATE_WRITE_A
+		    | BGFX_STATE_WRITE_RGB
+		    | BGFX_STATE_WRITE_Z;
+
+		bgfx::setState(useState);
 		bgfx::submit(viewId, material->program);
 	}
 	else if (bgfx::isValid(program))
