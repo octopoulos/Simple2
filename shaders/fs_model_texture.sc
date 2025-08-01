@@ -10,10 +10,11 @@ uniform vec4 u_lightDir;
 
 void main()
 {
+    float ambient = 0.15;
     float diffuse = max(0.0, dot(v_normal, u_lightDir.xyz));
+    float lambert = mix(ambient, 1.0, diffuse);
 
     vec4 color = toLinear(texture2D(s_texColor, v_texcoord0));
     
-    gl_FragColor.xyz = diffuse * color.xyz;
-    gl_FragColor.w = 1.0;
+    gl_FragColor = vec4(color.xyz * lambert, 1.0);
 }

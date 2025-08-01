@@ -1,6 +1,6 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-07-28
 
 #include "stdafx.h"
 #include "core/Camera.h"
@@ -11,8 +11,8 @@ void Camera::Initialize()
 {
 	orbit[0] = 0.0f;
 	orbit[1] = 0.0f;
-	pos      = { 0.0f, 0.0f, -0.3f };
-	pos2     = { 0.0f, 0.0f, -0.3f };
+	pos      = { 0.0f, 0.0f, -15.0f };
+	pos2     = { 0.0f, 0.0f, -15.0f };
 	target   = { 0.0f, 0.0f, 0.0f };
 	target2  = { 0.0f, 0.0f, 0.0f };
 }
@@ -24,6 +24,9 @@ void Camera::ConsumeOrbit(float amount)
 	consume[1] = orbit[1] * amount;
 	orbit[0] -= consume[0];
 	orbit[1] -= consume[1];
+
+	//ui::Log("orbit={:7.3} {:7.3}", orbit[0], orbit[1]);
+	if (std::abs(orbit[0]) < 1e-5f && std::abs(orbit[1]) < 1e-5f) return;
 
 	const bx::Vec3 toPos       = bx::sub(pos, target);
 	const float    toPosLen    = bx::length(toPos);
@@ -54,6 +57,16 @@ void Camera::Orbit(float dx, float dy)
 	orbit[1] += dy;
 }
 
+void Camera::RotateAroundAxis(const bx::Vec3& axis, float angle)
+{
+	const auto  quat    = bx::fromAxisAngle(axis, angle);
+	const auto  rotated = bx::mul(forward, quat);
+	const float dist    = 30.0f;
+	//bx::length(bx::sub(target2, pos2));
+
+	pos2 = bx::sub(target2, bx::mul(rotated, dist));
+}
+
 void Camera::Update(float delta)
 {
 	const float amount = bx::min(delta * 20.0f, 1.0f);
@@ -62,7 +75,12 @@ void Camera::Update(float delta)
 	pos     = bx::lerp(pos, pos2, amount);
 	target  = bx::lerp(target, target2, amount);
 	forward = bx::normalize(bx::sub(target, pos));
-	right   = bx::cross(up, forward);
+
+	// fallback to Z-up if forward is too close to worldUp (camera looking straight up/down)
+	const bx::Vec3 up2 = (std::abs(bx::dot(forward, worldUp)) > 0.999f) ? bx::Vec3(0.0f, 0.0f, 1.0f) : worldUp;
+
+	right = bx::normalize(bx::cross(up2, forward));
+	up    = bx::cross(forward, right);
 }
 
 void Camera::UpdateViewProjection(uint8_t viewId, float fscreenX, float fscreenY)

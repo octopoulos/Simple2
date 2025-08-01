@@ -1,6 +1,6 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-07-28
 
 #pragma once
 
@@ -20,11 +20,13 @@ private:
 	bx::Vec3 target    = bx::InitZero;          ///< target: current
 
 public:
-	bx::Vec3 forward = { 0.0f, 0.0f, 1.0f };  ///< forward dir
-	bx::Vec3 pos2    = { 0.0f, 0.0f, -3.0f }; ///< position: destination
-	bx::Vec3 right   = { 1.0f, 0.0f, 0.0f };  ///< right dir
-	bx::Vec3 target2 = bx::InitZero;          ///< target: destination
-	bx::Vec3 up      = { 0.0f, 1.0f, 0.0f };  ///< up dir
+	float    distance = 15.0f;                 ///< distance to target
+	bx::Vec3 forward  = { 0.0f, 0.0f, 1.0f };  ///< forward dir
+	bx::Vec3 pos2     = { 0.0f, 0.0f, -3.0f }; ///< position: destination
+	bx::Vec3 right    = { 1.0f, 0.0f, 0.0f };  ///< right dir
+	bx::Vec3 target2  = bx::InitZero;          ///< target: destination
+	bx::Vec3 up       = { 0.0f, 1.0f, 0.0f };  ///< up dir
+	bx::Vec3 worldUp  = { 0.0f, 1.0f, 0.0f };  ///< world up dir
 
 	Camera()
 	{
@@ -41,6 +43,8 @@ public:
 	void GetViewMatrix(float* viewMtx);
 
 	void Orbit(float dx, float dy);
+
+	void RotateAroundAxis(const bx::Vec3& axis, float angle);
 
 	void Update(float delta);
 

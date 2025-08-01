@@ -1,22 +1,25 @@
 // fs_cursor.sc
 
-$input v_normal
+$input v_pos, v_normal
 
 #include <bgfx_shader.sh>
 
+uniform vec4 u_lightDir;
 uniform vec4 u_time;
 
 void main()
 {
-	vec3 normal = normalize(v_normal);
-	vec3 viewDir = vec3(0.0, 0.0, 1.0); // view-space forward
+    float freq   = 5.0;
+    float offset = v_pos.y * 4.0;
+    float t      = u_time.x * freq + offset;
+    
+    // triangle waveform for a sharper pulse (smoother than abs(sin()))
+    float pulse = 1.0 - abs(fract(t / 3.14159) * 2.0 - 1.0);
+    
+    float ambient = 0.45;
+    float diffuse = max(0.0, dot(v_normal, u_lightDir.xyz));
+    float lambert = mix(ambient, 1.0, diffuse);
 
-	float edge = dot(normal, viewDir);
-	edge = abs(edge); // 1 = face-on, 0 = edge-on
-
-	float glow = smoothstep(0.0, 0.2, 1.0 - edge); // highlight contour
-	float pulse = abs(sin(u_time.x * 4.0));
-	vec3 color = vec3(1.0, 1.0, 0.2) * pulse;
-
-	gl_FragColor = vec4(color, glow * 0.8); // translucent edge glow
+    vec3 color   = mix(vec3(0.7, 0.6, 0.0), vec3(1.0, 1.0, 0.0), pulse);
+    gl_FragColor = vec4(color * lambert, 0.6);
 }

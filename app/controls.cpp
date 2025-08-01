@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-07-27
+// @version 2025-07-28
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -8,6 +8,13 @@
 #include "common/imgui/imgui.h"
 #include "entry/input.h"
 #include "loaders/ModelLoader.h"
+
+#define DOWN_OR_REPEAT(key) ((downs[key] || ginput.RepeatingKey(key)) ? 1 : 0)
+
+static inline float SignNonZero(float v)
+{
+	return (v >= 0.0f) ? 1.0f : -1.0f;
+}
 
 void App::FixedControls()
 {
@@ -18,8 +25,10 @@ void App::FixedControls()
 	for (int id = 0; id < Key::Count; ++id)
 		if (ginput.keyDowns[id]) ui::Log("Controls: {} {:3} {:5} {}", ginput.keyTimes[id], id, ginput.keys[id], getName((Key::Enum)id));
 
+	const auto& downs = ginput.keyDowns;
+	const auto& keys = ginput.keys;
+
 	// new keys
-	if (const auto& downs = ginput.keyDowns)
 	{
 		if (downs[Key::KeyO])
 		{
@@ -31,25 +40,58 @@ void App::FixedControls()
 		if (downs[Key::Key1]) ThrowDonut();
 
 		// move cursor
-		if (downs[Key::Down] || ginput.RepeatingKey(Key::Down))
 		{
-			cursor->position.z = std::roundf(cursor->position.z - 1.0f);
-			cursor->UpdateLocalMatrix();
-		}
-		if (downs[Key::Left] || ginput.RepeatingKey(Key::Left))
-		{
-			cursor->position.x = std::roundf(cursor->position.x - 1.0f);
-			cursor->UpdateLocalMatrix();
-		}
-		if (downs[Key::Right] || ginput.RepeatingKey(Key::Right))
-		{
-			cursor->position.x = std::roundf(cursor->position.x + 1.0f);
-			cursor->UpdateLocalMatrix();
-		}
-		if (downs[Key::Up] || ginput.RepeatingKey(Key::Up))
-		{
-			cursor->position.z = std::roundf(cursor->position.z + 1.0f);
-			cursor->UpdateLocalMatrix();
+			static bx::Vec3 cacheForward = bx::InitZero;
+			static bx::Vec3 cacheRight   = bx::InitZero;
+
+			// keep used camera position locked until all keys are released
+			if (keys[Key::Down] || keys[Key::Left] || keys[Key::Right] || keys[Key::Up])
+			{
+				// clang-format off
+				const int flag = 0
+				    | DOWN_OR_REPEAT(Key::Down ) * 1
+				    | DOWN_OR_REPEAT(Key::Left ) * 2
+				    | DOWN_OR_REPEAT(Key::Right) * 4
+				    | DOWN_OR_REPEAT(Key::Up   ) * 8;
+				// clang-format on
+				if (flag)
+				{
+					if (flag & (1 | 8))
+					{
+						const float dir = (flag & 8) ? 1.0f : -1.0f;
+						const float fx  = cacheForward.x;
+						const float fz  = cacheForward.z;
+
+						if (std::abs(fx) > std::abs(fz))
+							cursor->position.x = std::roundf(cursor->position.x + dir * SignNonZero(fx));
+						else
+							cursor->position.z = std::roundf(cursor->position.z + dir * SignNonZero(fz));
+					}
+					if (flag & (2 | 4))
+					{
+						const float dir = (flag & 4) ? 1.0f : -1.0f;
+						const float fx  = cacheRight.x;
+						const float fz  = cacheRight.z;
+
+						if (std::abs(fx) > std::abs(fz))
+							cursor->position.x = std::roundf(cursor->position.x + dir * SignNonZero(fx));
+						else
+							cursor->position.z = std::roundf(cursor->position.z + dir * SignNonZero(fz));
+					}
+
+					cursor->UpdateLocalMatrix();
+
+					const auto target2 = bx::Vec3(cursor->position.x, cursor->position.y, cursor->position.z);
+					const auto diff    = bx::sub(camera->target2, camera->pos2);
+					camera->target2    = target2;
+					camera->pos2       = bx::sub(target2, diff);
+				}
+			}
+			else
+			{
+				cacheForward = camera->forward;
+				cacheRight   = camera->right;
+			}
 		}
 
 		if (downs[Key::F4]) xsettings.bulletDebug = !xsettings.bulletDebug;
@@ -57,10 +99,40 @@ void App::FixedControls()
 		if (downs[Key::F11]) xsettings.instancing = !xsettings.instancing;
 
 		if (downs[Key::Tab]) showLearn = !showLearn;
+
+		if (downs[Key::NumPad1])
+		{
+			camera->pos2         = bx::add(camera->target2, bx::Vec3(0.0f, 0.0f, -1.0f));
+			xsettings.projection = Projection_Orthographic;
+		}
+		if (downs[Key::NumPad3])
+		{
+			camera->pos2         = bx::add(camera->target2, bx::Vec3(1.0f, 0.0f, 0.0f));
+			xsettings.projection = Projection_Orthographic;
+		}
+		if (downs[Key::NumPad5]) xsettings.projection = 1 - xsettings.projection;
+		if (downs[Key::NumPad7])
+		{
+			camera->pos2         = bx::add(camera->target2, bx::Vec3(0.0f, 1.0f, 0.0f));
+			xsettings.projection = Projection_Orthographic;
+		}
+		// clang-format off
+		if (DOWN_OR_REPEAT(Key::NumPad2)) camera->RotateAroundAxis(camera->right  ,  bx::toRad(15.0f));
+		if (DOWN_OR_REPEAT(Key::NumPad4)) camera->RotateAroundAxis(camera->worldUp, -bx::toRad(15.0f));
+		if (DOWN_OR_REPEAT(Key::NumPad6)) camera->RotateAroundAxis(camera->worldUp,  bx::toRad(15.0f));
+		if (DOWN_OR_REPEAT(Key::NumPad8)) camera->RotateAroundAxis(camera->right  , -bx::toRad(15.0f));
+		// clang-format on
+		if (DOWN_OR_REPEAT(Key::NumPad9))
+		{
+			for (int i = 0; i < 12; ++i)
+			{
+				if (i > 0) camera->Update(0.16f);
+				camera->RotateAroundAxis(camera->worldUp, -bx::toRad(15.0f));
+			}
+		}
 	}
 
 	// holding down
-	if (const auto& keys = ginput.keys)
 	{
 		if (keys[Key::NumPadMinus] || keys[Key::Minus])
 			xsettings.orthoZoom = std::min(xsettings.orthoZoom * 1.02f, 20.0f);

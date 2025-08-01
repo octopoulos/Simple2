@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-07-27
+// @version 2025-07-28
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -71,8 +71,10 @@ int App::InitializeScene()
 		cursor = std::make_shared<Mesh>();
 		scene->AddNamedChild(cursor, "cursor");
 		cursor->state = 0
+		    | BGFX_STATE_BLEND_ALPHA
+		    | BGFX_STATE_CULL_CW
 		    | BGFX_STATE_DEPTH_TEST_LESS
-		    | BGFX_STATE_PT_LINES
+		    //| BGFX_STATE_PT_LINES
 		    | BGFX_STATE_WRITE_A
 		    | BGFX_STATE_WRITE_RGB
 		    | BGFX_STATE_WRITE_Z;
@@ -153,7 +155,7 @@ int App::InitializeScene()
 			cursor->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cursor", "fs_cursor"));
 
 			cursor->ScaleRotationPosition(
-			    { 0.5f, 1.0f, 0.5f },
+			    { 1.0f, 1.05f, 1.0f },
 			    { 0.0f, 0.0f, 0.0f },
 			    { 0.0f, 1.0f, 0.0f });
 		}
