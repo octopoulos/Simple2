@@ -298,6 +298,8 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 		bgfx::setIndexBuffer(geometry->ibh);
 		material->Apply();
 
+		if (bgfx::isValid(texture)) bgfx::setTexture(0, sTexColor, texture);
+
 		const uint64_t useState = state ? state : 0
 		    //| BGFX_STATE_CULL_CCW
 		    | BGFX_STATE_DEPTH_TEST_LESS
@@ -334,9 +336,7 @@ void Mesh::Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, ui
 		bgfx::setIndexBuffer(group.m_ibh);
 		bgfx::setVertexBuffer(0, group.m_vbh);
 
-		//ui::Log("SUBMIT PROGRAM: {} {} {}", name, bgfx::isValid(sTexColor), bgfx::isValid(texture));
-		if (bgfx::isValid(texture))
-			bgfx::setTexture(0, sTexColor, texture);
+		if (bgfx::isValid(texture)) bgfx::setTexture(0, sTexColor, texture);
 
 		bgfx::submit(id, program, 0, BGFX_DISCARD_INDEX_BUFFER | BGFX_DISCARD_VERTEX_STREAMS);
 	}

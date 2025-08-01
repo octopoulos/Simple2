@@ -106,9 +106,10 @@ uGeometry CreateBoxGeometry(float width, float height, float depth, int widthSeg
 	const bgfx::VertexBufferHandle vbh  = bgfx::createVertexBuffer(vmem, layout);
 	const bgfx::IndexBufferHandle  ibh  = bgfx::createIndexBuffer(imem);
 
-	// 4) bounding box + sphere
-	const btVector3 dims   = { width * 0.5f, height * 0.5f, depth * 0.5f };
-	const float     radius = std::max(std::max(dims[0], dims[1]), dims[2]);
+	// 4) bounds: dims = [radius, height]
+	const btVector3 aabb   = { width * 0.5f, height * 0.5f, depth * 0.5f };
+	const btVector3 dims   = { std::sqrt(width * width + depth * depth) * 0.5f, height, 0.0f };
+	const float     radius = std::max(std::max(aabb[0], aabb[1]), aabb[2]);
 
-	return std::make_shared<Geometry>(vbh, ibh, dims, radius);
+	return std::make_shared<Geometry>(vbh, ibh, aabb, dims, radius);
 }

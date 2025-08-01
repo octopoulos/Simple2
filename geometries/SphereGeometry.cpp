@@ -93,8 +93,8 @@ uGeometry CreateSphereGeometry(float radius, int widthSegments, int heightSegmen
 	const bgfx::VertexBufferHandle vbh  = bgfx::createVertexBuffer(vmem, layout);
 	const bgfx::IndexBufferHandle  ibh  = bgfx::createIndexBuffer(imem);
 
-	// 4) bounding box + sphere
-	const btVector3 dims = { radius * 2.0f, radius * 2.0f, radius * 2.0f };
+	// 4) bounds
+	const btVector3 dims = { radius, radius, radius };
 
-	return std::make_shared<Geometry>(vbh, ibh, dims, radius);
+	return std::make_shared<Geometry>(vbh, ibh, dims, dims, radius);
 }

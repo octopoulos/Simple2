@@ -90,25 +90,21 @@ int App::InitializeScene()
 
 	auto& shaderManager = GetShaderManager();
 
-	// 3) cube vertex layout
+	// 3) add default objects
 	{
 		// cube
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
-			cubeMesh->geometry = CreateSphereGeometry();
-			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_model", "fs_model"));
-			cubeMesh->state    = 0
-			    | BGFX_STATE_DEPTH_TEST_LESS
-			    | BGFX_STATE_WRITE_A
-			    | BGFX_STATE_WRITE_RGB
-			    | BGFX_STATE_WRITE_Z;
+			cubeMesh->geometry = CreatePlaneGeometry();
+			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_model_texture", "fs_model_texture"));
+			cubeMesh->texture  = GetTextureManager().LoadTexture("uv_grid_opengl.jpg");
 
 			cubeMesh->ScaleRotationPosition(
 			    { 1.0f, 1.0f, 1.0f },
 			    { MerseneFloat(0.0f, bx::kPi2), MerseneFloat(0.0f, bx::kPi2), MerseneFloat(0.0f, bx::kPi2) },
 			    { 0.0f, 5.0f, 0.0f }
 			);
-			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Sphere, 1.0f);
+			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 1.0f);
 
 			scene->AddNamedChild(std::move(cubeMesh), "cube");
 		}

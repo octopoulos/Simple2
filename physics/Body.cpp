@@ -113,7 +113,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 		if (dims.x() > 0.0f && dims.y() > 0.0f && dims.z() > 0.0f)
 			shape = new btBoxShape(dims);
 		else if (geometry)
-			shape = new btBoxShape(geometry->dims);
+			shape = new btBoxShape(geometry->aabb * mesh->scale.x);
 		else if (numGroup > 0)
 		{
 			for (const auto& group : mesh->groups)
@@ -168,6 +168,8 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 	case ShapeType_Capsule:
 		if (dims.x() > 0.0f && dims.y() > 0.0f)
 			shape = new btCapsuleShape(dims.x(), dims.y());
+		else if (geometry)
+			shape = new btCapsuleShape(geometry->dims[0] * mesh->scale.x, geometry->dims[1] * mesh->scale.x);
 		else if (numGroup > 0)
 		{
 			for (const auto& group : mesh->groups)
@@ -187,6 +189,8 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 	case ShapeType_Cone:
 		if (dims.x() > 0.0f && dims.y() > 0.0f)
 			shape = new btConeShape(dims.x(), dims.y());
+		else if (geometry)
+			shape = new btConeShape(geometry->dims[0] * mesh->scale.x, geometry->dims[1] * mesh->scale.x);
 		else if (numGroup > 0)
 		{
 			for (const auto& group : mesh->groups)
@@ -248,6 +252,8 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 	case ShapeType_Cylinder:
 		if (dims.x() > 0.0f && dims.y() > 0.0f && dims.z() > 0.0f)
 			shape = new btCylinderShape(dims);
+		else if (geometry)
+			shape = new btCylinderShape(geometry->aabb * mesh->scale.x);
 		else if (numGroup > 0)
 		{
 			for (const auto& group : mesh->groups)
@@ -277,7 +283,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 		if (dims.x() > 0.0f)
 			shape = new btSphereShape(dims.x());
 		else if (geometry)
-			shape = new btSphereShape(geometry->radius);
+			shape = new btSphereShape(geometry->radius * mesh->scale.x);
 		else if (numGroup > 0)
 		{
 			for (const auto& group : mesh->groups)
