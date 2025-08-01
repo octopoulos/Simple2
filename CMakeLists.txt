@@ -459,6 +459,7 @@ set(PREVIEW_OUT_FILES)
 set(TEXTURE_OUT_FILES)
 
 # Collect all .glb and .obj files recursively
+if(false)
 foreach(MODEL_EXT glb obj)
 	#message("MODEL_EXT=${MODEL_EXT}")
 	file(GLOB_RECURSE MODEL_FILES "${MODEL_SRC_DIR}/*.${MODEL_EXT}")
@@ -560,6 +561,7 @@ foreach(MODEL_EXT glb obj)
 		endif()
 	endforeach()
 endforeach()
+endif()
 
 #######################################################################################################################
 # 8) PRELOAD + COMPRESS

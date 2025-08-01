@@ -95,7 +95,7 @@ int App::InitializeScene()
 		// cube
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
-			cubeMesh->geometry = CreatePlaneGeometry();
+			cubeMesh->geometry = CreateIcosahedronGeometry(2.0f, 4);
 			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_model_texture", "fs_model_texture"));
 			cubeMesh->texture  = GetTextureManager().LoadTexture("uv_grid_opengl.jpg");
 
@@ -104,7 +104,7 @@ int App::InitializeScene()
 			    { MerseneFloat(0.0f, bx::kPi2), MerseneFloat(0.0f, bx::kPi2), MerseneFloat(0.0f, bx::kPi2) },
 			    { 0.0f, 5.0f, 0.0f }
 			);
-			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 1.0f);
+			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Sphere, 1.0f);
 
 			scene->AddNamedChild(std::move(cubeMesh), "cube");
 		}
