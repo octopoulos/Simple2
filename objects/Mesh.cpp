@@ -1,9 +1,10 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-07-28
+// @version 2025-07-29
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
+#include "textures/TextureManager.h"
 
 #include <meshoptimizer.h>
 
@@ -47,7 +48,8 @@ void Mesh::Destroy()
 
 void Mesh::Initialize()
 {
-	sTexColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+	sTexColor  = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+	sTexNormal = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
 }
 
 void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
@@ -216,6 +218,13 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 	}
 }
 
+void Mesh::LoadTextures(std::string_view colorName, std::string_view normalName)
+{
+	if (colorName.size()) texColor = GetTextureManager().LoadTexture(colorName);
+	if (normalName.size()) texNormal = GetTextureManager().LoadTexture(normalName);
+	Initialize();
+}
+
 void Mesh::Render(uint8_t viewId, int renderFlags)
 {
 	//if (type & ObjectType_Instance) return;
@@ -268,7 +277,8 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 					bgfx::setIndexBuffer(geometry->ibh);
 					bgfx::setInstanceDataBuffer(&idb);
 
-					if (bgfx::isValid(texture)) bgfx::setTexture(0, sTexColor, texture);
+					if (bgfx::isValid(texColor)) bgfx::setTexture(0, sTexColor, texColor);
+					if (bgfx::isValid(texNormal)) bgfx::setTexture(1, sTexNormal, texNormal);
 
 					bgfx::setState(useState);
 					bgfx::submit(viewId, material->program);
@@ -281,7 +291,8 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 						bgfx::setVertexBuffer(0, group.m_vbh);
 						bgfx::setInstanceDataBuffer(&idb);
 
-						if (bgfx::isValid(texture)) bgfx::setTexture(0, sTexColor, texture);
+						if (bgfx::isValid(texColor)) bgfx::setTexture(0, sTexColor, texColor);
+						if (bgfx::isValid(texNormal)) bgfx::setTexture(1, sTexNormal, texNormal);
 
 						bgfx::setState(useState);
 						bgfx::submit(0, program);
@@ -303,7 +314,8 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 		bgfx::setIndexBuffer(geometry->ibh);
 		material->Apply();
 
-		if (bgfx::isValid(texture)) bgfx::setTexture(0, sTexColor, texture);
+		if (bgfx::isValid(texColor)) bgfx::setTexture(0, sTexColor, texColor);
+		if (bgfx::isValid(texNormal)) bgfx::setTexture(1, sTexNormal, texNormal);
 
 		bgfx::setState(useState);
 		bgfx::submit(viewId, material->program);
@@ -327,7 +339,8 @@ void Mesh::Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, ui
 		bgfx::setIndexBuffer(group.m_ibh);
 		bgfx::setVertexBuffer(0, group.m_vbh);
 
-		if (bgfx::isValid(texture)) bgfx::setTexture(0, sTexColor, texture);
+		if (bgfx::isValid(texColor)) bgfx::setTexture(0, sTexColor, texColor);
+		if (bgfx::isValid(texNormal)) bgfx::setTexture(1, sTexNormal, texNormal);
 
 		bgfx::submit(id, program, 0, BGFX_DISCARD_INDEX_BUFFER | BGFX_DISCARD_VERTEX_STREAMS);
 	}

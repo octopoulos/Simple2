@@ -35,7 +35,7 @@ sMesh ModelLoader::LoadModelFull(std::string_view name, std::string_view texture
 	// 2) find a texture
 	if (textureName.size())
 	{
-		mesh->texture = GetTextureManager().LoadTexture(name);
+		mesh->texColor = GetTextureManager().LoadTexture(name);
 		mesh->Initialize();
 	}
 	else
@@ -59,8 +59,8 @@ sMesh ModelLoader::LoadModelFull(std::string_view name, std::string_view texture
 				// TODO: for now, keep the first variant, but we should give the user the choice
 				const int  index = 0; // MerseneInt32(0, size - 1);
 				const auto name  = names[index];
-				mesh->texture    = GetTextureManager().LoadTexture(name);
-				ui::Log("=> {} {} {}", index, name, bgfx::isValid(mesh->texture));
+				mesh->texColor   = GetTextureManager().LoadTexture(name);
+				ui::Log("=> {} {} {}", index, name, bgfx::isValid(mesh->texColor));
 				mesh->Initialize();
 			}
 		}

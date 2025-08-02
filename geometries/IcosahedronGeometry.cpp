@@ -1,6 +1,8 @@
 // IcosahedronGeometry.cpp
 // @author octopoulos
 // @version 2025-07-28
+//
+// based on THREE.js IcosahedronGeometry implementation
 
 #include "stdafx.h"
 #include "geometries/Geometry.h"

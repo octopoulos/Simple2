@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-07-27
+// @version 2025-07-29
 
 #pragma once
 
@@ -70,15 +70,17 @@ struct MeshState
 class Mesh : public Object3d
 {
 public:
-	std::vector<uBody>        bodies    = {};                  ///< one physical body per group
-	std::shared_ptr<Geometry> geometry  = nullptr;             ///
-	std::vector<Group>        groups    = {};                  ///< groups of vertices
-	bgfx::VertexLayout        layout    = {};                  ///
-	std::shared_ptr<Material> material  = nullptr;             ///
-	bgfx::ProgramHandle       program   = BGFX_INVALID_HANDLE; ///
-	uint64_t                  state     = 0;                   ///< if !=0: override default state
-	bgfx::UniformHandle       sTexColor = BGFX_INVALID_HANDLE; ///
-	bgfx::TextureHandle       texture   = BGFX_INVALID_HANDLE; ///
+	std::vector<uBody>        bodies     = {};                  ///< one physical body per group
+	std::shared_ptr<Geometry> geometry   = nullptr;             ///
+	std::vector<Group>        groups     = {};                  ///< groups of vertices
+	bgfx::VertexLayout        layout     = {};                  ///
+	std::shared_ptr<Material> material   = nullptr;             ///
+	bgfx::ProgramHandle       program    = BGFX_INVALID_HANDLE; ///
+	uint64_t                  state      = 0;                   ///< if !=0: override default state
+	bgfx::UniformHandle       sTexColor  = BGFX_INVALID_HANDLE; ///
+	bgfx::UniformHandle       sTexNormal = BGFX_INVALID_HANDLE; ///
+	bgfx::TextureHandle       texColor   = BGFX_INVALID_HANDLE; ///
+	bgfx::TextureHandle       texNormal  = BGFX_INVALID_HANDLE; ///
 
 	Mesh()
 	{
@@ -106,6 +108,9 @@ public:
 	/// Load a mesh
 	/// @param ramcopy: populate indices and vertices in groups
 	void Load(bx::ReaderSeekerI* reader, bool ramcopy);
+
+	/// Load a color and normal texture if available
+	void LoadTextures(std::string_view colorName, std::string_view normalName = "");
 
 	/// Render the mesh, if geometry & material program exist, or if program is set
 	/// - if a group => render the children only

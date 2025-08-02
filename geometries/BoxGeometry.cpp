@@ -1,6 +1,8 @@
 // BoxGeometry.cpp
 // @author octopoulos
 // @version 2025-07-28
+//
+// based on THREE.js BoxGeometry implementation
 
 #include "stdafx.h"
 #include "geometries/Geometry.h"

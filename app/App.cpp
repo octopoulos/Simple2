@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-07-28
+// @version 2025-07-29
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -95,16 +95,17 @@ int App::InitializeScene()
 		// cube
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
-			cubeMesh->geometry = CreateIcosahedronGeometry(1.0f, 4);
-			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_model_texture", "fs_model_texture"));
-			cubeMesh->texture  = GetTextureManager().LoadTexture("colors.png");
+			cubeMesh->geometry = CreateIcosahedronGeometry(3.0f, 8);
+			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_model_texture_normal", "fs_model_texture_normal"));
+			cubeMesh->LoadTextures("earth_day_4096.jpg", "earth_normal_2048.jpg");
 
 			cubeMesh->ScaleRotationPosition(
 			    { 1.0f, 1.0f, 1.0f },
-			    { MerseneFloat(0.0f, bx::kPi2), MerseneFloat(0.0f, bx::kPi2), MerseneFloat(0.0f, bx::kPi2) },
-			    { 0.0f, 5.0f, 0.0f }
+			    { bx::kPi, -bx::kPiQuarter, 0.0f },
+			    //{ MerseneFloat(0.0f, bx::kPi2), MerseneFloat(0.0f, bx::kPi2), MerseneFloat(0.0f, bx::kPi2) },
+			    { 0.0f, 7.0f, 0.0f }
 			);
-			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Sphere, 1.0f);
+			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Sphere, 8.0f);
 
 			scene->AddNamedChild(std::move(cubeMesh), "cube");
 		}
@@ -123,8 +124,9 @@ int App::InitializeScene()
 		// floor
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
-			cubeMesh->geometry = CreateBoxGeometry(20.0f, 1.0f, 20.0f, 2, 2, 2);
-			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cube", "fs_cube"));
+			cubeMesh->geometry = CreateBoxGeometry(20.0f, 2.0f, 20.0f, 4, 1, 4);
+			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_model_texture_normal", "fs_model_texture_normal"));
+			cubeMesh->LoadTextures("FloorsCheckerboard_S_Diffuse.jpg", "FloorsCheckerboard_S_Normal.jpg");
 
 			cubeMesh->ScaleRotationPosition(
 			    { 1.0f, 1.0f, 1.0f },
@@ -134,21 +136,6 @@ int App::InitializeScene()
 			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f);
 
 			scene->AddNamedChild(std::move(cubeMesh), "floor");
-		}
-
-		// base
-		{
-			auto cubeMesh      = std::make_shared<Mesh>();
-			cubeMesh->geometry = CreateBoxGeometry(40.0f, 1.0f, 40.0f, 2, 2, 2);
-			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_base", "fs_base"));
-
-			cubeMesh->ScaleRotationPosition(
-			    { 1.0f, 1.0f, 1.0f },
-			    { 0.0f, 0.0f, 0.0f },
-			    { 0.0f, -10.0f, 0.0f });
-			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f);
-
-			scene->AddNamedChild(std::move(cubeMesh), "base");
 		}
 	}
 
@@ -202,8 +189,7 @@ int App::InitializeScene()
 		//parent->type |= ObjectType_Group;
 		parent->type |= ObjectType_Group | ObjectType_Instance;
 		parent->program = shaderManager.LoadProgram("vs_model_instance", "fs_model_instance");
-		parent->texture = GetTextureManager().LoadTexture("donut_base.png");
-		parent->Initialize();
+		parent->LoadTextures("donut_base.png");
 		scene->AddNamedChild(parent, "donut3-group");
 
 		for (int i = 0; i < 120; ++i)
@@ -217,11 +203,11 @@ int App::InitializeScene()
 				const float scale  = MerseneFloat(0.25f, 0.75f);
 				const float scaleY = scale * MerseneFloat(0.7f, 1.5f);
 
-				object->program = shaderManager.LoadProgram("vs_model", "fs_model");
+				object->program = shaderManager.LoadProgram("vs_model_texture", "fs_model_texture");
 				object->ScaleRotationPosition(
 				    { scale, scaleY, scale },
 				    { sinf(i * 0.3f), 3.0f, 0.0f },
-				    { cosf(i * 0.2f) * radius, 6.0f + i * 0.5f, sinf(i * 0.2f) * radius });
+				    { cosf(i * 0.2f) * radius, 10.0f + i * 0.5f, sinf(i * 0.2f) * radius });
 				// TODO: allow to reuse the parent mesh
 				object->CreateShapeBody(physics.get(), (i & 7) ? ShapeType_Box : ShapeType_Cylinder, 1.0f);
 

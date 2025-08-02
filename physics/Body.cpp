@@ -33,11 +33,12 @@ static std::pair<btVector3, btVector3> ComputeAabbRadiusHeight(const Group& grou
 	const auto& halfMin = BxToBullet(group.m_aabb.min) * half;
 	const auto  dims    = halfMax - halfMin;
 
-	float       height = dims.y() * 2.0f;
+	float       height = dims.y();
 	const float radius = (dims.x() + dims.z()) * 0.5f;
 
 	if (type != ShapeType_Cylinder)
 	{
+		height *= 2.0f;
 		if (type == ShapeType_Capsule)
 		{
 			if (height > 2.0f * radius)
@@ -227,7 +228,18 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 		else ui::LogError("CreateShape/ShapeType_Convex2d: Invalid mesh");
 		break;
 	case ShapeType_ConvexHull:
-		if (numGroup > 0)
+		if (geometry && geometry->vertices.size())
+		{
+			auto            hull  = new btConvexHullShape();
+			const btVector3 scale = GlmToBullet(mesh->scale);
+
+			for (const auto& vertex : geometry->vertices)
+				hull->addPoint(btVector3(vertex.px, vertex.py, vertex.pz) * scale);
+
+			hull->initializePolyhedralFeatures();
+			shape = hull;
+		}
+		else if (numGroup > 0)
 		{
 			auto            hull   = new btConvexHullShape();
 			const btVector3 scale  = GlmToBullet(mesh->scale);
@@ -239,11 +251,10 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 				for (uint32_t i = 0; i < group.m_numVertices; ++i)
 				{
 					const float* v = data + i * (stride / sizeof(float));
-					hull->addPoint(btVector3(v[0], v[1], v[2]) * scale, false);
+					hull->addPoint(btVector3(v[0], v[1], v[2]) * scale);
 				}
 			}
 
-			hull->recalcLocalAabb();
 			hull->initializePolyhedralFeatures();
 			shape = hull;
 		}
@@ -274,7 +285,6 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 		if (dims.x() != 0.0f || dims.y() != 0.0f || dims.z() != 0.0f)
 		{
 			shape = new btStaticPlaneShape(dims, dims.w());
-			//shape->setLocalScaling(dims);
 			shape->setMargin(0.01f);
 		}
 		else ui::LogError("CreateShape/ShapeType_Plane: Invalid dims");
@@ -302,11 +312,38 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 		shape = new btHeightfieldTerrainShape(1, 1, (const float*)nullptr, 0.0f, 0.0f, 1, false);
 		break;
 	case ShapeType_TriangleMesh:
-		if (numGroup > 0)
+		if (geometry && geometry->indices.size())
 		{
-			auto            trimesh = new btTriangleMesh();
+			const auto&     indices  = geometry->indices;
+			const auto&     vertices = geometry->vertices;
+			const btVector3 scale    = GlmToBullet(mesh->scale);
+			auto            trimesh  = new btTriangleMesh();
+
+			for (uint32_t i = 0, numIndex = TO_UINT32(indices.size()); i < numIndex; i += 3)
+			{
+				const uint16_t i0 = indices[i + 0];
+				const uint16_t i1 = indices[i + 1];
+				const uint16_t i2 = indices[i + 2];
+
+				const auto& v0 = vertices[i0];
+				const auto& v1 = vertices[i1];
+				const auto& v2 = vertices[i2];
+
+				trimesh->addTriangle(
+					btVector3(v0.px, v0.py, v0.pz) * scale,
+					btVector3(v1.px, v1.py, v1.pz) * scale,
+					btVector3(v2.px, v2.py, v2.pz) * scale,
+					true
+				);
+			}
+
+			shape = new btBvhTriangleMeshShape(trimesh, true, true);
+		}
+		else if (numGroup > 0)
+		{
 			const btVector3 scale   = GlmToBullet(mesh->scale);
 			const uint16_t  stride  = mesh->layout.getStride();
+			auto            trimesh = new btTriangleMesh();
 
 			for (const auto& group : mesh->groups)
 			{

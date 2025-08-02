@@ -1,6 +1,6 @@
 // Geometry.h
 // @author octopoulos
-// @version 2025-07-28
+// @version 2025-07-29
 
 #pragma once
 
@@ -19,7 +19,9 @@ class Geometry
 {
 public:
 	bgfx::IndexBufferHandle  ibh = BGFX_INVALID_HANDLE; ///< indices
+	std::vector<uint16_t>    indices;                   ///< used by ConvexHull + TriangleMesh
 	bgfx::VertexBufferHandle vbh = BGFX_INVALID_HANDLE; ///< vertices
+	std::vector<PosNormalUV> vertices;                  ///< used by ConvexHull + TriangleMesh
 
 	// shape
 	btVector3 aabb   = { 1.0f, 1.0f, 1.0f }; ///< aabb half extents
@@ -28,12 +30,14 @@ public:
 
 	Geometry() = default;
 
-	Geometry(bgfx::VertexBufferHandle vbh, bgfx::IndexBufferHandle ibh, const btVector3& aabb, const btVector3& dims, float radius)
+	Geometry(bgfx::VertexBufferHandle vbh, bgfx::IndexBufferHandle ibh, const btVector3& aabb, const btVector3& dims, float radius, std::vector<PosNormalUV>&& vertices = {}, std::vector<uint16_t>&& indices = {})
 	    : vbh(vbh)
 	    , ibh(ibh)
 		, aabb(aabb)
 	    , dims(dims)
 	    , radius(radius)
+		, vertices(std::move(vertices))
+		, indices(std::move(indices))
 	{
 	}
 
@@ -139,3 +143,12 @@ uGeometry CreateTetrahedronGeometry(float radius = 1.0f, int detail = 0);
 /// @param tubularSegments: number of segments around the torus ring
 /// @param arc: sweep angle in radians (default 2π = full circle)
 uGeometry CreateTorusGeometry(float radius = 1.0f, float tube = 0.4f, int radialSegments = 12, int tubularSegments = 48, float arc = bx::kPi2);
+
+/// Constructs a new torus knot geometry
+/// @param radius: radius of the torus knot
+/// @param tube: radius of the tube
+/// @param tubularSegments: number of tubular segments
+/// @param radialSegments: number of radial segments
+/// @param p: how many times the geometry winds around its axis of rotational symmetry
+/// @param q: how many times the geometry winds around a circle in the interior of the torus
+uGeometry CreateTorusKnotGeometry(float radius = 1.0f, float tube = 0.4f, int tubularSegments = 64, int radialSegments = 8, int p = 2, int q = 3);
