@@ -112,13 +112,13 @@ int App::InitializeScene()
 
 		// cursor
 		{
-			cursor->geometry = CreateBoxGeometry(1.0f, 1.0f, 1.0f, 2, 2, 2);
+			cursor->geometry = CreateBoxGeometry(1.0f, 2.0f, 1.0f, 2, 2, 2);
 			cursor->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cursor", "fs_cursor"));
 
 			cursor->ScaleRotationPosition(
-			    { 1.0f, 1.05f, 1.0f },
+			    { 1.0f, 1.02f, 1.0f },
 			    { 0.0f, 0.0f, 0.0f },
-			    { 0.0f, 1.0f, 0.0f });
+			    { 0.5f, 1.0f, 0.5f });
 		}
 
 		// floor

@@ -1,6 +1,6 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-07-28
+// @version 2025-07-29
 
 #pragma once
 
@@ -47,6 +47,8 @@ public:
 	void RotateAroundAxis(const bx::Vec3& axis, float angle);
 
 	void Update(float delta);
+
+	void UpdatedZoom();
 
 	void UpdateViewProjection(uint8_t viewId, float fscreenX, float fscreenY);
 };

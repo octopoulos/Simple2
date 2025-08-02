@@ -1,4 +1,4 @@
-// @version 2025-07-25
+// @version 2025-07-29
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -9,6 +9,8 @@
 #include "entry/entry.h"
 #include "entry/cmd.h"
 #include "entry/dialog.h"
+#include "ui/xsettings.h"
+
 #include <bx/string.h>
 #include <bx/timer.h>
 #include <bx/math.h>
@@ -274,6 +276,9 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 
 		ImGui::Text("GPU mem: %s / %s", tmp0, tmp1);
 	}
+
+	ImGui::Text("Distance: %f", xsettings.distance);
+	ImGui::Text("OrthoZoom: %f", xsettings.orthoZoom);
 
 	if (s_showStats)
 	{

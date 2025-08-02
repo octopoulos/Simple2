@@ -1,6 +1,6 @@
 // ffmpeg-pipe.h
 // @author octopoulos
-// @version 2025-07-24
+// @version 2025-07-29
 
 #pragma once
 
@@ -34,7 +34,7 @@ struct FfmpegPipe
 		height = _height;
 		width  = _width;
 
-		std::string_view encoding = xsettings.nvidiaEnc ? "-c:v h264_nvenc -preset p7" : "-c:v libx264 -preset veryfast";
+		std::string_view encoding = xsettings.nvidiaEnc ? "-c:v h264_nvenc -cq:v 21" : "-c:v libx264 -crf 21";
 
 		std::string cmd = fmt::format(
 		    "ffmpeg -loglevel error -y -f rawvideo -pixel_format bgra -video_size {}x{} -framerate {} -i -{} {} {}",

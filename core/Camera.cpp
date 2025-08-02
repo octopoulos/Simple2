@@ -1,6 +1,6 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-07-28
+// @version 2025-07-29
 
 #include "stdafx.h"
 #include "core/Camera.h"
@@ -61,10 +61,8 @@ void Camera::RotateAroundAxis(const bx::Vec3& axis, float angle)
 {
 	const auto  quat    = bx::fromAxisAngle(axis, angle);
 	const auto  rotated = bx::mul(forward, quat);
-	const float dist    = 30.0f;
-	//bx::length(bx::sub(target2, pos2));
 
-	pos2 = bx::sub(target2, bx::mul(rotated, dist));
+	pos2 = bx::mad(rotated, -xsettings.distance, target2);
 }
 
 void Camera::Update(float delta)
@@ -81,6 +79,14 @@ void Camera::Update(float delta)
 
 	right = bx::normalize(bx::cross(up2, forward));
 	up    = bx::cross(forward, right);
+}
+
+void Camera::UpdatedZoom()
+{
+	xsettings.distance = xsettings.orthoZoom * xsettings.windowSize[1] / bx::tan(glm::radians(fovY) * 0.5f);
+
+	const auto dir = bx::normalize(bx::sub(target2, pos2));
+	pos2           = bx::mad(dir, -xsettings.distance, target2);
 }
 
 void Camera::UpdateViewProjection(uint8_t viewId, float fscreenX, float fscreenY)

@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-07-29
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -33,10 +33,11 @@ static std::vector<Config> configs = {
 	X_ENUM   (XSettings, analysis, 1, gameId, 0, sGames),
 
 	// [physics]
-	X_BOOL   (XSettings, physics, 0, physPaused, false),
+	X_BOOL   (XSettings, physics, 0, bulletDebug, false),
+	X_BOOL   (XSettings, physics, 0, physPaused , false),
 
 	// [render]
-	X_BOOL   (XSettings, render, 0, bulletDebug, false),
+	X_FLOAT  (XSettings, render, 0, distance   , 10.0f, 0.50f, 100.0f),
 	X_BOOL   (XSettings, render, 0, instancing,  true),
 	X_FLOAT  (XSettings, render, 0, orthoZoom  , 1.0f, 0.001f, 10.0f),
 

@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-07-29
 
 #pragma once
 
@@ -18,6 +18,7 @@ struct XSettings : public EngineSettings
 	bool physPaused;  ///< paused physics
 
 	// [render]
+	float distance;   ///< distance between camera and cursor
 	bool  instancing; ///< use mesh instancing
 	float orthoZoom;  ///< zoom in orthographic projection
 

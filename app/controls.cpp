@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-07-28
+// @version 2025-07-29
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -63,9 +63,9 @@ void App::FixedControls()
 						const float fz  = cacheForward.z;
 
 						if (std::abs(fx) > std::abs(fz))
-							cursor->position.x = std::roundf(cursor->position.x + dir * SignNonZero(fx));
+							cursor->position.x = std::floor(cursor->position.x + dir * SignNonZero(fx)) + 0.5f;
 						else
-							cursor->position.z = std::roundf(cursor->position.z + dir * SignNonZero(fz));
+							cursor->position.z = std::floor(cursor->position.z + dir * SignNonZero(fz)) + 0.5f;
 					}
 					if (flag & (2 | 4))
 					{
@@ -74,17 +74,17 @@ void App::FixedControls()
 						const float fz  = cacheRight.z;
 
 						if (std::abs(fx) > std::abs(fz))
-							cursor->position.x = std::roundf(cursor->position.x + dir * SignNonZero(fx));
+							cursor->position.x = std::floor(cursor->position.x + dir * SignNonZero(fx)) + 0.5f;
 						else
-							cursor->position.z = std::roundf(cursor->position.z + dir * SignNonZero(fz));
+							cursor->position.z = std::floor(cursor->position.z + dir * SignNonZero(fz)) + 0.5f;
 					}
 
 					cursor->UpdateLocalMatrix();
 
-					const auto target2 = bx::Vec3(cursor->position.x, cursor->position.y, cursor->position.z);
-					const auto diff    = bx::sub(camera->target2, camera->pos2);
+					const auto target2 = bx::load<bx::Vec3>(glm::value_ptr(cursor->position));
+					const auto dir     = bx::normalize(bx::sub(camera->pos2, camera->target2));
 					camera->target2    = target2;
-					camera->pos2       = bx::sub(target2, diff);
+					camera->pos2       = bx::mad(dir, xsettings.distance, target2);
 				}
 			}
 			else
@@ -135,9 +135,15 @@ void App::FixedControls()
 	// holding down
 	{
 		if (keys[Key::NumPadMinus] || keys[Key::Minus])
-			xsettings.orthoZoom = std::min(xsettings.orthoZoom * 1.02f, 20.0f);
+		{
+			xsettings.orthoZoom = std::min(xsettings.orthoZoom * 1.01f, 20.0f);
+			camera->UpdatedZoom();
+		}
 		if (keys[Key::NumPadPlus] || keys[Key::Equals])
-			xsettings.orthoZoom = std::max(xsettings.orthoZoom / 1.02f, 0.0002f);
+		{
+			xsettings.orthoZoom = std::max(xsettings.orthoZoom / 1.01f, 0.0002f);
+			camera->UpdatedZoom();
+		}
 	}
 
 	GetGlobalInput().ResetFixed();
