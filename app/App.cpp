@@ -95,9 +95,9 @@ int App::InitializeScene()
 		// cube
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
-			cubeMesh->geometry = CreateIcosahedronGeometry(2.0f, 4);
+			cubeMesh->geometry = CreateIcosahedronGeometry(1.0f, 4);
 			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_model_texture", "fs_model_texture"));
-			cubeMesh->texture  = GetTextureManager().LoadTexture("uv_grid_opengl.jpg");
+			cubeMesh->texture  = GetTextureManager().LoadTexture("colors.png");
 
 			cubeMesh->ScaleRotationPosition(
 			    { 1.0f, 1.0f, 1.0f },
@@ -202,6 +202,8 @@ int App::InitializeScene()
 		//parent->type |= ObjectType_Group;
 		parent->type |= ObjectType_Group | ObjectType_Instance;
 		parent->program = shaderManager.LoadProgram("vs_model_instance", "fs_model_instance");
+		parent->texture = GetTextureManager().LoadTexture("donut_base.png");
+		parent->Initialize();
 		scene->AddNamedChild(parent, "donut3-group");
 
 		for (int i = 0; i < 120; ++i)

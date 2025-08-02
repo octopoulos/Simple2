@@ -28,28 +28,28 @@ static const USET_INT shapesNoOffsets = {
 /// @returns {dims, center}
 static std::pair<btVector3, btVector3> ComputeAabbRadiusHeight(const Group& group, const btVector3& scale, int type)
 {
-	const auto  half = scale * 0.5f;
-	const auto& max  = BxToBullet(group.m_aabb.max) * half;
-	const auto& min  = BxToBullet(group.m_aabb.min) * half;
-	const auto  dims = max - min;
+	const auto  half    = scale * 0.5f;
+	const auto& halfMax = BxToBullet(group.m_aabb.max) * half;
+	const auto& halfMin = BxToBullet(group.m_aabb.min) * half;
+	const auto  dims    = halfMax - halfMin;
 
-	float       height = dims.y();
-	const float radius = std::max(dims.x(), dims.z());
+	float       height = dims.y() * 2.0f;
+	const float radius = (dims.x() + dims.z()) * 0.5f;
+
 	if (type != ShapeType_Cylinder)
 	{
-		height *= 2.0f;
 		if (type == ShapeType_Capsule)
 		{
-			if (height < 2 * radius)
-				height = 0.0f;
+			if (height > 2.0f * radius)
+				height -= 2.0f * radius;
 			else
-				height -= 2 * radius;
+				height = 0.0f;			
 		}
 	}
 
 	return {
 		{ radius, height, radius },
-		max + min
+		halfMax + halfMin
 	};
 }
 

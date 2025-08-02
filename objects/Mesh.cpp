@@ -7,6 +7,14 @@
 
 #include <meshoptimizer.h>
 
+constexpr uint64_t defaultState = 0
+    //| BGFX_STATE_CULL_CCW
+    | BGFX_STATE_DEPTH_TEST_LESS
+    | BGFX_STATE_MSAA
+    | BGFX_STATE_WRITE_A
+    | BGFX_STATE_WRITE_RGB
+    | BGFX_STATE_WRITE_Z;
+
 namespace bgfx
 {
 	int32_t read(bx::ReaderI* reader, bgfx::VertexLayout& layout, bx::Error* err);
@@ -213,6 +221,8 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 	//if (type & ObjectType_Instance) return;
 	//ui::Log("Render: {} {}", type, name);
 
+	const uint64_t useState = state ? state : defaultState;
+
 	if (type & ObjectType_Group)
 	{
 		if (const uint32_t numChild = TO_UINT32(children.size()))
@@ -258,28 +268,23 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 					bgfx::setIndexBuffer(geometry->ibh);
 					bgfx::setInstanceDataBuffer(&idb);
 
-					bgfx::setState(BGFX_STATE_DEFAULT);
+					if (bgfx::isValid(texture)) bgfx::setTexture(0, sTexColor, texture);
+
+					bgfx::setState(useState);
 					bgfx::submit(viewId, material->program);
 				}
 				else if (bgfx::isValid(program))
 				{
-					const uint64_t state = 0
-					    | BGFX_STATE_CULL_CCW
-					    | BGFX_STATE_DEPTH_TEST_LESS
-					    | BGFX_STATE_MSAA
-					    | BGFX_STATE_WRITE_A
-					    | BGFX_STATE_WRITE_RGB
-					    | BGFX_STATE_WRITE_Z;
-
 					for (const auto& group : groups)
 					{
 						bgfx::setIndexBuffer(group.m_ibh);
 						bgfx::setVertexBuffer(0, group.m_vbh);
 						bgfx::setInstanceDataBuffer(&idb);
 
-						bgfx::setState(state);
+						if (bgfx::isValid(texture)) bgfx::setTexture(0, sTexColor, texture);
+
+						bgfx::setState(useState);
 						bgfx::submit(0, program);
-						//ui::Log("SUBMIT: {}", id);
 						break;
 					}
 				}
@@ -300,33 +305,19 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 
 		if (bgfx::isValid(texture)) bgfx::setTexture(0, sTexColor, texture);
 
-		const uint64_t useState = state ? state : 0
-		    //| BGFX_STATE_CULL_CCW
-		    | BGFX_STATE_DEPTH_TEST_LESS
-		    | BGFX_STATE_MSAA
-		    | BGFX_STATE_WRITE_A
-		    | BGFX_STATE_WRITE_RGB
-		    | BGFX_STATE_WRITE_Z;
-
 		bgfx::setState(useState);
 		bgfx::submit(viewId, material->program);
 	}
 	else if (bgfx::isValid(program))
 	{
-		Submit(viewId, program, glm::value_ptr(transform), BGFX_STATE_MASK);
+		Submit(viewId, program, glm::value_ptr(transform), useState);
 	}
 }
 
 void Mesh::Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, uint64_t state) const
 {
-	if (state == BGFX_STATE_MASK)
-		state = 0
-		    | BGFX_STATE_CULL_CCW
-		    | BGFX_STATE_DEPTH_TEST_LESS
-		    | BGFX_STATE_MSAA
-		    | BGFX_STATE_WRITE_A
-		    | BGFX_STATE_WRITE_RGB
-		    | BGFX_STATE_WRITE_Z;
+	// BGFX_STATE_CULL_CCW
+	if (state == BGFX_STATE_MASK) state = defaultState;
 
 	bgfx::setTransform(mtx);
 	bgfx::setState(state);
