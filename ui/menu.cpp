@@ -50,8 +50,19 @@ int App::MainUi()
 
 	LearnUi();
 
+	// popups
+	if (ImGui::BeginPopup("###popup_Add"))
+	{
+		ImGui::SeparatorText("Add ...");
+		//for (int i = 0; i < 10; i++)
+		//	if (ImGui::Selectable(fmt::format("select_{}", i).c_str()))
+		//		;
+		ImGui::EndPopup();
+	}
+
 	// show menu (or [REC] if recording video)
 	ShowMainMenu(1.0f);
+
 	return drawnFlag;
 }
 

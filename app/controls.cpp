@@ -25,11 +25,33 @@ void App::FixedControls()
 	for (int id = 0; id < Key::Count; ++id)
 		if (ginput.keyDowns[id]) ui::Log("Controls: {} {:3} {:5} {}", ginput.keyTimes[id], id, ginput.keys[id], getName((Key::Enum)id));
 
-	const auto& downs = ginput.keyDowns;
-	const auto& keys = ginput.keys;
+	const auto& downs   = ginput.keyDowns;
+	const auto& keys    = ginput.keys;
+	const bool  isAlt   = keys[Key::LeftAlt] || keys[Key::RightAlt];
+	const bool  isCtrl  = keys[Key::LeftCtrl] || keys[Key::RightCtrl];
+	const bool  isShift = keys[Key::LeftShift] || keys[Key::RightShift];
 
-	// new keys
+	// 1) alt
+	if (isAlt)
 	{
+	}
+	// 2) ctrl
+	else if (isCtrl)
+	{
+	}
+	// 3) shift
+	else if (isShift)
+	{
+		if (downs[Key::KeyA])
+		{
+			ui::Log("Add popup...");
+			ImGui::OpenPopup("###popup_Add");
+		}
+	}
+	// 4) no modifier
+	else
+	{
+		// 4.a) new keys
 		if (DOWN_OR_REPEAT(Key::KeyO))
 		{
 			xsettings.physPaused = false;
@@ -81,10 +103,8 @@ void App::FixedControls()
 
 					cursor->UpdateLocalMatrix();
 
-					const auto target2 = bx::load<bx::Vec3>(glm::value_ptr(cursor->position));
-					const auto dir     = bx::normalize(bx::sub(camera->pos2, camera->target2));
-					camera->target2    = target2;
-					camera->pos2       = bx::mad(dir, xsettings.distance, target2);
+					camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(cursor->position));
+					camera->Zoom();
 				}
 			}
 			else
@@ -100,22 +120,10 @@ void App::FixedControls()
 
 		if (downs[Key::Tab]) showLearn = !showLearn;
 
-		if (downs[Key::NumPad1])
-		{
-			camera->pos2         = bx::add(camera->target2, bx::Vec3(0.0f, 0.0f, -1.0f));
-			xsettings.projection = Projection_Orthographic;
-		}
-		if (downs[Key::NumPad3])
-		{
-			camera->pos2         = bx::add(camera->target2, bx::Vec3(1.0f, 0.0f, 0.0f));
-			xsettings.projection = Projection_Orthographic;
-		}
+		if (downs[Key::NumPad1]) camera->SetOrthographic({ 0.0f, 0.0f, -1.0f });
+		if (downs[Key::NumPad3]) camera->SetOrthographic({ 1.0f, 0.0f, 0.0f });
+		if (downs[Key::NumPad7]) camera->SetOrthographic({ 0.0f, 1.0f, -0.1f });
 		if (downs[Key::NumPad5]) xsettings.projection = 1 - xsettings.projection;
-		if (downs[Key::NumPad7])
-		{
-			camera->pos2         = bx::add(camera->target2, bx::Vec3(0.0f, 1.0f, 0.0f));
-			xsettings.projection = Projection_Orthographic;
-		}
 		// clang-format off
 		if (DOWN_OR_REPEAT(Key::NumPad2)) camera->RotateAroundAxis(camera->right  ,  bx::toRad(15.0f));
 		if (DOWN_OR_REPEAT(Key::NumPad4)) camera->RotateAroundAxis(camera->worldUp, -bx::toRad(15.0f));
@@ -130,19 +138,11 @@ void App::FixedControls()
 				camera->RotateAroundAxis(camera->worldUp, -bx::toRad(15.0f));
 			}
 		}
-	}
 
-	// holding down
-	{
-		if (keys[Key::NumPadMinus] || keys[Key::Minus])
+		// 4.b) holding down
 		{
-			xsettings.orthoZoom = std::min(xsettings.orthoZoom * 1.01f, 20.0f);
-			camera->UpdatedZoom();
-		}
-		if (keys[Key::NumPadPlus] || keys[Key::Equals])
-		{
-			xsettings.orthoZoom = std::max(xsettings.orthoZoom / 1.01f, 0.0002f);
-			camera->UpdatedZoom();
+			if (keys[Key::NumPadMinus] || keys[Key::Minus]) camera->Zoom(1.01f);
+			if (keys[Key::NumPadPlus] || keys[Key::Equals]) camera->Zoom(1.0f / 1.01f);
 		}
 	}
 

@@ -9,24 +9,23 @@
 class Camera : public Object3d
 {
 private:
-	float    aspect    = 1.0f;                  ///
-	bx::Vec3 at        = { 0.0f, 0.0f, 1.0f };  ///
-	bx::Vec3 eye       = { 0.0f, 0.5f, 0.0f };  ///
-	float    farPlane  = 100.0f;                ///
-	float    fovY      = 60.0f;                 ///
-	float    nearPlane = 0.1f;                  ///
-	float    orbit[2]  = {};                    ///
+	float    aspect    = 1.0f;                  /// aspect ratio (width / height)
+	float    farPlane  = 100.0f;                /// far clipping plane (perspective)
+	float    fovY      = 60.0f;                 /// vertical field of view
+	float    nearPlane = 0.1f;                  /// near clipping plane (perspective)
+	float    orbit[2]  = {};                    /// [azimuth, elevation]
 	bx::Vec3 pos       = { 0.0f, 0.0f, -3.0f }; ///< position: current
-	bx::Vec3 target    = bx::InitZero;          ///< target: current
+	bx::Vec3 target    = bx::InitZero;          ///< target: current (look at)
 
 public:
-	float    distance = 15.0f;                 ///< distance to target
-	bx::Vec3 forward  = { 0.0f, 0.0f, 1.0f };  ///< forward dir
-	bx::Vec3 pos2     = { 0.0f, 0.0f, -3.0f }; ///< position: destination
-	bx::Vec3 right    = { 1.0f, 0.0f, 0.0f };  ///< right dir
-	bx::Vec3 target2  = bx::InitZero;          ///< target: destination
-	bx::Vec3 up       = { 0.0f, 1.0f, 0.0f };  ///< up dir
-	bx::Vec3 worldUp  = { 0.0f, 1.0f, 0.0f };  ///< world up dir
+	bool     isFollowing = false;                 ///< following target or free look?
+	bx::Vec3 forward     = { 0.0f, 0.0f, 1.0f };  ///< forward dir (current)
+	bx::Vec3 forward2    = { 0.0f, 0.0f, 1.0f };  ///< forward dir (wanted)
+	bx::Vec3 pos2        = { 0.0f, 0.0f, -3.0f }; ///< position: destination
+	bx::Vec3 right       = { 1.0f, 0.0f, 0.0f };  ///< right dir
+	bx::Vec3 target2     = bx::InitZero;          ///< target: destination
+	bx::Vec3 up          = { 0.0f, 1.0f, 0.0f };  ///< up dir
+	bx::Vec3 worldUp     = { 0.0f, 1.0f, 0.0f };  ///< world up dir
 
 	Camera()
 	{
@@ -36,21 +35,32 @@ public:
 
 	~Camera() = default;
 
+	/// Reset position and orientation
 	void Initialize();
 
+	/// Apply orbit deltas over time
 	void ConsumeOrbit(float amount);
 
+	/// Compute look-at view matrix
 	void GetViewMatrix(float* viewMtx);
 
+	/// Accumulate orbit deltas
 	void Orbit(float dx, float dy);
 
+	/// Rotate around given axis
 	void RotateAroundAxis(const bx::Vec3& axis, float angle);
 
+	/// Enable orthographic projection
+	void SetOrthographic(const bx::Vec3& axis);
+
+	/// Update smoothed camera state
 	void Update(float delta);
 
-	void UpdatedZoom();
-
+	/// Compute view + projection matrices
 	void UpdateViewProjection(uint8_t viewId, float fscreenX, float fscreenY);
+
+	/// Adjust zoom + distance
+	void Zoom(float ratio = 1.0f);
 };
 
 using sCamera = std::shared_ptr<Camera>;

@@ -7,6 +7,9 @@
 //
 #include "ui/xsettings.h"
 
+constexpr float orthoZoomMax = 20.0f;
+constexpr float orthoZoomMin = 0.0002f;
+
 void Camera::Initialize()
 {
 	orbit[0] = 0.0f;
@@ -65,28 +68,28 @@ void Camera::RotateAroundAxis(const bx::Vec3& axis, float angle)
 	pos2 = bx::mad(rotated, -xsettings.distance, target2);
 }
 
+void Camera::SetOrthographic(const bx::Vec3& axis)
+{
+	pos2 = bx::mad(bx::normalize(axis), xsettings.distance, target2);
+
+	xsettings.projection = Projection_Orthographic;
+}
+
 void Camera::Update(float delta)
 {
 	const float amount = bx::min(delta * 20.0f, 1.0f);
 	ConsumeOrbit(amount);
 
-	pos     = bx::lerp(pos, pos2, amount);
-	target  = bx::lerp(target, target2, amount);
-	forward = bx::normalize(bx::sub(target, pos));
+	pos      = bx::lerp(pos, pos2, amount);
+	target   = bx::lerp(target, target2, amount);
+	forward  = bx::normalize(bx::sub(target, pos));
+	forward2 = bx::normalize(bx::sub(target2, pos2));
 
 	// fallback to Z-up if forward is too close to worldUp (camera looking straight up/down)
 	const bx::Vec3 up2 = (std::abs(bx::dot(forward, worldUp)) > 0.999f) ? bx::Vec3(0.0f, 0.0f, 1.0f) : worldUp;
 
 	right = bx::normalize(bx::cross(up2, forward));
 	up    = bx::cross(forward, right);
-}
-
-void Camera::UpdatedZoom()
-{
-	xsettings.distance = xsettings.orthoZoom * xsettings.windowSize[1] / bx::tan(glm::radians(fovY) * 0.5f);
-
-	const auto dir = bx::normalize(bx::sub(target2, pos2));
-	pos2           = bx::mad(dir, -xsettings.distance, target2);
 }
 
 void Camera::UpdateViewProjection(uint8_t viewId, float fscreenX, float fscreenY)
@@ -108,4 +111,15 @@ void Camera::UpdateViewProjection(uint8_t viewId, float fscreenX, float fscreenY
 	else bx::mtxProj(proj, 60.0f, fscreenX / fscreenY, 0.1f, 2000.0f, homoDepth);
 
 	bgfx::setViewTransform(0, view, proj);
+}
+
+void Camera::Zoom(float ratio)
+{
+	// 1) update xsettings
+	xsettings.orthoZoom = std::clamp(xsettings.orthoZoom * ratio, orthoZoomMin, orthoZoomMax);
+	xsettings.distance  = xsettings.orthoZoom * xsettings.windowSize[1] / bx::tan(glm::radians(fovY) * 0.5f);
+
+	// 2) update pos2
+	isFollowing = true;
+	pos2        = bx::mad(forward2, -xsettings.distance, target2);
 }
