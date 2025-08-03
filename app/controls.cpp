@@ -8,7 +8,7 @@
 #include "common/imgui/imgui.h"
 #include "core/ShaderManager.h"
 #include "entry/input.h"
-#include "loaders/ModelLoader.h"
+#include "loaders/MeshLoader.h"
 
 #define DOWN_OR_REPEAT(key) ((downs[key] || ginput.RepeatingKey(key)) ? 1 : 0)
 
@@ -74,7 +74,7 @@ void App::FixedControls()
 	else
 	{
 		// 4.a) new keys
-		if (downs[Key::KeyI]) showPopup ^= 1;
+		if (downs[Key::KeyM]) showPopup ^= 1;
 
 		if (DOWN_OR_REPEAT(Key::KeyO))
 		{
@@ -83,8 +83,9 @@ void App::FixedControls()
 		}
 		if (downs[Key::KeyP]) xsettings.physPaused = !xsettings.physPaused;
 
-		if (downs[Key::Key1]) ThrowMesh("donut3");
-		if (downs[Key::Key2]) ThrowMesh("kenney_car-kit/taxi");
+		if (downs[Key::Key1]) ThrowMesh("donut3"             , ShapeType_Cylinder);
+		if (downs[Key::Key2]) ThrowMesh("kenney_car-kit/taxi", ShapeType_Box);
+		if (downs[Key::Key3]) ThrowGeometry();
 
 		// move cursor
 		{
@@ -205,7 +206,10 @@ void App::FluidControls()
 		camera->Update(deltaTime);
 	}
 
-	// holding down
+	// mouse clicks
+	if (ginput.buttonDowns[3]) showPopup ^= 1;
+
+	// holding key down
 	if (const auto& keys = ginput.keys)
 	{
 		using namespace entry;
@@ -230,11 +234,34 @@ void App::FluidControls()
 	}
 }
 
-void App::ThrowGeometry()
+void App::ThrowGeometry(int geometryType)
 {
+	auto object      = std::make_shared<Mesh>();
+	object->geometry = CreateAnyGeometry(geometryType);
+	object->material = std::make_shared<Material>(GetShaderManager().LoadProgram("vs_model_texture", "fs_model_texture"));
+	object->LoadTextures("colors.png");
+
+	const auto  pos   = camera->pos2;
+	const float scale = MerseneFloat(0.25f, 0.75f);
+
+	object->ScaleRotationPosition(
+	    { scale, scale, scale },
+	    { sinf(0 * 0.3f), 3.0f, 0.0f },
+	    { pos.x, pos.y, pos.z });
+	object->CreateShapeBody(physics.get(), GeometryShape(object->geometry->type), 1.0f);
+
+	// apply initial FORCE (or impulse) to the body in the camera->forward direction
+	const auto impulse = bx::mul(camera->forward, 50.0f);
+	for (auto& body : object->bodies)
+	{
+		// body->body->applyImpulse(BxToBullet(camera->forward), BxToBullet(pos));
+		body->body->applyCentralImpulse(BxToBullet(impulse));
+	}
+
+	scene->AddNamedChild(std::move(object), fmt::format("geometry:{}", scene->children.size()));
 }
 
-void App::ThrowMesh(std::string_view name)
+void App::ThrowMesh(std::string_view name, int shapeType)
 {
 	// 1) get/create the parent
 	auto groupName = fmt::format("{}-group", name);
@@ -246,7 +273,7 @@ void App::ThrowMesh(std::string_view name)
 		if (parentObj->type & ObjectType_Mesh)
 			parent = static_cast<Mesh*>(parentObj);
 	}
-	else if (auto mesh = ModelLoader::LoadModelFull(name))
+	else if (auto mesh = MeshLoader::LoadModelFull(name))
 	{
 		mesh->type |= ObjectType_Group | ObjectType_Instance;
 		mesh->program = GetShaderManager().LoadProgram("vs_model_texture_instance", "fs_model_texture_instance");
@@ -270,7 +297,7 @@ void App::ThrowMesh(std::string_view name)
 		    { sinf(0 * 0.3f), 3.0f, 0.0f },
 		    { pos.x, pos.y, pos.z }
 		);
-		object->CreateShapeBody(physics.get(), ShapeType_Cylinder, 1.0f);
+		object->CreateShapeBody(physics.get(), shapeType, 1.0f);
 
 		// apply initial FORCE (or impulse) to the body in the camera->forward direction
 		const auto impulse = bx::mul(camera->forward, 50.0f);

@@ -1,27 +1,47 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-07-27
+// @version 2025-07-30
 
 #include "stdafx.h"
 #include "app/App.h"
 //
 #include "core/ShaderManager.h"
-#include "loaders/ModelLoader.h"
+#include "loaders/MeshLoader.h"
 #include "textures/TextureManager.h"
 
 #include "dear-imgui/imgui.h"
+
+void App::AddGeometry(uGeometry geometry)
+{
+	const auto& coord = cursor->position;
+
+	auto object      = std::make_shared<Mesh>();
+	object->geometry = geometry;
+	object->material = std::make_shared<Material>(GetShaderManager().LoadProgram("vs_model_texture", "fs_model_texture"));
+	object->LoadTextures("colors.png");
+
+	object->ScaleRotationPosition(
+	    { 1.0f, 1.0f, 1.0f },
+	    { 0.0f, 0.0f, 0.0f },
+	    { coord.x, coord.y, coord.z }
+	);
+	object->CreateShapeBody(physics.get(), GeometryShape(geometry->type, false));
+
+	mapNode->AddNamedChild(object, fmt::format("{}:{}:{}:{} => {}", GeometryName(geometry->type), coord.x, coord.y, coord.z, GeometryShape(geometry->type, false)));
+}
 
 void App::AddObject(const std::string& name)
 {
 	const auto& coord = cursor->position;
 
 	ui::Log("AddObject: {} @ {} {} {}", name, coord.x, coord.y, coord.z);
-	if (auto object = ModelLoader::LoadModelFull(name))
+	if (auto object = MeshLoader::LoadModelFull(name))
 	{
 		object->ScaleRotationPosition(
 		    { 1.0f, 1.0f, 1.0f },
 		    { 0.0f, 0.0f, 0.0f },
-		    { coord.x, coord.y, coord.z });
+		    { coord.x, coord.y, coord.z }
+		);
 		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh);
 
 		mapNode->AddNamedChild(object, fmt::format("{}:{}:{}:{}", name, coord.x, coord.y, coord.z));

@@ -1,13 +1,11 @@
 // TorusKnotGeometry.cpp
 // @author octopoulos
-// @version 2025-08-01
+// @version 2025-07-30
 //
 // based on THREE.js TorusKnotGeometry implementation
 
 #include "stdafx.h"
 #include "geometries/Geometry.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
 
 uGeometry CreateTorusKnotGeometry(float radius, float tube, int tubularSegments, int radialSegments, int p, int q)
 {
@@ -105,5 +103,5 @@ uGeometry CreateTorusKnotGeometry(float radius, float tube, int tubularSegments,
 	const btVector3 aabb = { radius + tube, radius + tube, radius + tube };
 	const btVector3 dims = { radius * 2, tube * 2, 0.0f };
 
-	return std::make_shared<Geometry>(vbh, ibh, aabb, dims, radius, std::move(vertices), std::move(indices));
+	return std::make_shared<Geometry>(GeometryType_TorusKnot, vbh, ibh, aabb, dims, radius, std::move(vertices), std::move(indices));
 }

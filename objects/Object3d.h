@@ -30,7 +30,7 @@ public:
 	int                    id          = 0;                          ///< unique id
 	std::string            name        = "";                         ///< object name (used to find in scene)
 	Object3d*              parent      = nullptr;                    ///< parent object
-	int                    type        = ObjectType_Basic;           ///< object type
+	int                    type        = ObjectType_Basic;           ///< ObjectTypes_
 	glm::vec3              position    = glm::vec3(0.0f);            ///< x, y, z
 	glm::quat              quaternion  = glm::identity<glm::quat>(); ///< quaternion
 	glm::quat              rotation    = glm::vec3(0.0f);            ///< rotation: Euler angles

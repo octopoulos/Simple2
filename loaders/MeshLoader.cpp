@@ -1,14 +1,14 @@
-// ModelLoader.cpp
+// MeshLoader.cpp
 // @author octopoulos
-// @version 2025-07-28
+// @version 2025-07-30
 
 #include "stdafx.h"
-#include "loaders/ModelLoader.h"
+#include "loaders/MeshLoader.h"
 //
 #include "core/ShaderManager.h"
 #include "textures/TextureManager.h"
 
-sMesh ModelLoader::LoadModel(std::string_view name, bool ramcopy)
+sMesh MeshLoader::LoadModel(std::string_view name, bool ramcopy)
 {
 	std::filesystem::path path = "runtime/models";
 	path /= fmt::format("{}.bin", name);
@@ -24,7 +24,7 @@ sMesh ModelLoader::LoadModel(std::string_view name, bool ramcopy)
 	return mesh;
 }
 
-sMesh ModelLoader::LoadModelFull(std::string_view name, std::string_view textureName)
+sMesh MeshLoader::LoadModelFull(std::string_view name, std::string_view textureName)
 {
 	auto mesh = LoadModel(name, true);
 	if (!mesh) return nullptr;
@@ -54,13 +54,16 @@ sMesh ModelLoader::LoadModelFull(std::string_view name, std::string_view texture
 				names.push_back(name);
 			}
 
+			// load all texture variations
 			if (const int size = TO_INT(names.size()))
 			{
-				// TODO: for now, keep the first variant, but we should give the user the choice
-				const int  index = 0; // MerseneInt32(0, size - 1);
-				const auto name  = names[index];
-				mesh->texColor   = GetTextureManager().LoadTexture(name);
-				ui::Log("=> {} {} {}", index, name, bgfx::isValid(mesh->texColor));
+				for (int id = -1; const auto& name : names)
+				{
+					auto texture = GetTextureManager().LoadTexture(name);
+					mesh->textures.push_back(texture);
+					ui::Log("=> {} {} {}", id, name, bgfx::isValid(mesh->texColor));
+				}
+				mesh->texColor = mesh->textures[0];
 				mesh->Initialize();
 			}
 		}

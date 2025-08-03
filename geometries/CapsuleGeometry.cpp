@@ -1,6 +1,6 @@
 // CapsuleGeometry.cpp
 // @author octopoulos
-// @version 2025-07-28
+// @version 2025-07-30
 //
 // based on THREE.js CapsuleGeometry implementation
 
@@ -136,5 +136,5 @@ uGeometry CreateCapsuleGeometry(float radius, float height, int capSegments, int
 	const btVector3 dims   = { radius, h, 0.0f };
 	const float     boundR = h * 0.5f + radius;
 
-	return std::make_shared<Geometry>(vbh, ibh, aabb, dims, boundR);
+	return std::make_shared<Geometry>(GeometryType_Capsule, vbh, ibh, aabb, dims, boundR);
 }

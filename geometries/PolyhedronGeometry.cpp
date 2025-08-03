@@ -1,15 +1,13 @@
 // PolyhedronGeometry.cpp
 // @author octopoulos
-// @version 2025-07-28
+// @version 2025-07-30
 //
 // based on THREE.js PolyhedronGeometry implementation
 
 #include "stdafx.h"
 #include "geometries/Geometry.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
 
-uGeometry CreatePolyhedronGeometry(const float* vertices, int vertexCount, const uint16_t* indices, int indexCount, float radius, int detail)
+uGeometry CreatePolyhedronGeometry(int type, const float* vertices, int vertexCount, const uint16_t* indices, int indexCount, float radius, int detail)
 {
 	if (vertexCount % 3 != 0 || indexCount % 3 != 0) return nullptr;
 
@@ -203,5 +201,5 @@ uGeometry CreatePolyhedronGeometry(const float* vertices, int vertexCount, const
 	const btVector3 aabb = { radius, radius, radius };
 	const btVector3 dims = { radius, radius, 0.0f };
 
-	return std::make_shared<Geometry>(vbh, ibh, aabb, dims, radius, std::move(finalVertices), std::move(finalIndices));
+	return std::make_shared<Geometry>(type, vbh, ibh, aabb, dims, radius, std::move(finalVertices), std::move(finalIndices));
 }

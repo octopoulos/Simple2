@@ -1,12 +1,32 @@
 // Geometry.h
 // @author octopoulos
-// @version 2025-07-29
+// @version 2025-07-30
 
 #pragma once
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // GEOMETRY
 ///////////
+
+enum GeometryTypes_
+{
+	GeometryType_None,
+	//
+	GeometryType_Box,
+	GeometryType_Capsule,
+	GeometryType_Cone,
+	GeometryType_Cylinder,
+	GeometryType_Dodecahedron,
+	GeometryType_Icosahedron,
+	GeometryType_Octahedron,
+	GeometryType_Plane,
+	GeometryType_Sphere,
+	GeometryType_Tetrahedron,
+	GeometryType_Torus,
+	GeometryType_TorusKnot,
+	//
+	GeometryType_Count,
+};
 
 struct PosNormalUV
 {
@@ -18,10 +38,11 @@ struct PosNormalUV
 class Geometry
 {
 public:
-	bgfx::IndexBufferHandle  ibh = BGFX_INVALID_HANDLE; ///< indices
-	std::vector<uint16_t>    indices;                   ///< used by ConvexHull + TriangleMesh
-	bgfx::VertexBufferHandle vbh = BGFX_INVALID_HANDLE; ///< vertices
-	std::vector<PosNormalUV> vertices;                  ///< used by ConvexHull + TriangleMesh
+	bgfx::IndexBufferHandle  ibh      = BGFX_INVALID_HANDLE; ///< indices
+	std::vector<uint16_t>    indices  = {};                  ///< used by ConvexHull + TriangleMesh
+	int                      type     = GeometryType_None;   ///< GeometryTypes_
+	bgfx::VertexBufferHandle vbh      = BGFX_INVALID_HANDLE; ///< vertices
+	std::vector<PosNormalUV> vertices = {};                  ///< used by ConvexHull + TriangleMesh
 
 	// shape
 	btVector3 aabb   = { 1.0f, 1.0f, 1.0f }; ///< aabb half extents
@@ -30,14 +51,15 @@ public:
 
 	Geometry() = default;
 
-	Geometry(bgfx::VertexBufferHandle vbh, bgfx::IndexBufferHandle ibh, const btVector3& aabb, const btVector3& dims, float radius, std::vector<PosNormalUV>&& vertices = {}, std::vector<uint16_t>&& indices = {})
-	    : vbh(vbh)
+	Geometry(int type, bgfx::VertexBufferHandle vbh, bgfx::IndexBufferHandle ibh, const btVector3& aabb, const btVector3& dims, float radius, std::vector<PosNormalUV>&& vertices = {}, std::vector<uint16_t>&& indices = {})
+	    : type(type)
+	    , vbh(vbh)
 	    , ibh(ibh)
-		, aabb(aabb)
+	    , aabb(aabb)
 	    , dims(dims)
 	    , radius(radius)
-		, vertices(std::move(vertices))
-		, indices(std::move(indices))
+	    , vertices(std::move(vertices))
+	    , indices(std::move(indices))
 	{
 	}
 
@@ -53,6 +75,10 @@ using uGeometry = std::shared_ptr<Geometry>;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FUNCTIONS
 ////////////
+
+/// Helper to create any type of geometry
+/// @param type: GeometryType_None for random
+uGeometry CreateAnyGeometry(int type);
 
 /// Constructs a new box geometry
 /// @param width: length of the edges parallel to the X axis
@@ -115,11 +141,12 @@ uGeometry CreateOctahedronGeometry(float radius = 1.0f, int detail = 0);
 uGeometry CreatePlaneGeometry(float width = 1.0f, float height = 1.0f, int widthSegments = 1, int heightSegments = 1);
 
 /// Constructs a new polyhedron geometry
+/// - helper for Dodecahedron, Icosahedron, Octahedron and Tetrahedron
 /// @param vertices: flat array of vertices describing the base shape
 /// @param indices: flat array of indices describing the base shape
 /// @param radius: radius of the shape
 /// @param detail: how many levels to subdivide the geometry
-uGeometry CreatePolyhedronGeometry(const float* vertices, int vertexCount, const uint16_t* indices, int indexCount, float radius, int detail);
+uGeometry CreatePolyhedronGeometry(int type, const float* vertices, int vertexCount, const uint16_t* indices, int indexCount, float radius, int detail);
 
 /// Constructs a new sphere geometry
 /// @param radius: sphere radius
@@ -152,3 +179,6 @@ uGeometry CreateTorusGeometry(float radius = 1.0f, float tube = 0.4f, int radial
 /// @param p: how many times the geometry winds around its axis of rotational symmetry
 /// @param q: how many times the geometry winds around a circle in the interior of the torus
 uGeometry CreateTorusKnotGeometry(float radius = 1.0f, float tube = 0.4f, int tubularSegments = 64, int radialSegments = 8, int p = 2, int q = 3);
+
+/// Convert type to string
+std::string GeometryName(int type);

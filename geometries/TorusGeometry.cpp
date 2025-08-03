@@ -1,6 +1,6 @@
 // TorusGeometry.cpp
 // @author octopoulos
-// @version 2025-07-28
+// @version 2025-07-30
 //
 // based on THREE.js TorusGeometry implementation
 
@@ -103,5 +103,5 @@ uGeometry CreateTorusGeometry(float radius, float tube, int radialSegments, int 
 	const btVector3 dims        = { torusR, tubeR, 0.0f };
 	const float     boundR      = totalRadius;
 
-	return std::make_shared<Geometry>(vbh, ibh, aabb, dims, boundR);
+	return std::make_shared<Geometry>(GeometryType_Torus, vbh, ibh, aabb, dims, boundR, std::move(vertices), std::move(indices));
 }

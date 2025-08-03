@@ -1,6 +1,6 @@
 // CylinderGeometry.cpp
 // @author octopoulos
-// @version 2025-07-28
+// @version 2025-07-30
 //
 // based on THREE.js CylinderGeometry implementation
 
@@ -181,5 +181,5 @@ uGeometry CreateCylinderGeometry(float radiusTop, float radiusBottom, float heig
 	const btVector3 dims      = { maxRadius, height, 0.0f };
 	const float     boundR    = std::sqrt(maxRadius * maxRadius + (height * 0.5f) * (height * 0.5f));
 
-	return std::make_shared<Geometry>(vbh, ibh, aabb, dims, boundR);
+	return std::make_shared<Geometry>(GeometryType_Cylinder, vbh, ibh, aabb, dims, boundR);
 }

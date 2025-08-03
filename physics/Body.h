@@ -1,6 +1,6 @@
 // Body.h
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-07-30
 
 #pragma once
 
@@ -22,7 +22,13 @@ enum ShapeTypes_
 	ShapeType_Sphere       = 11, ///< btSphereShape (default bounding)
 	ShapeType_Terrain      = 12, ///< btHeightfieldTerrainShape
 	ShapeType_TriangleMesh = 13, ///< btBvhTriangleMeshShape
+	//
+	ShapeType_Count,
 };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// BODY
+///////
 
 class Mesh;
 
@@ -63,3 +69,10 @@ public:
 };
 
 using uBody = std::unique_ptr<Body>;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FUNCTIONS
+////////////
+
+/// Find the most appropriate body shape for a given geometry type
+int GeometryShape(int geometryType, bool hasMass = true, int detail = 0);

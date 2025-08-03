@@ -1,6 +1,6 @@
 // ConeGeometry.cpp
 // @author octopoulos
-// @version 2025-07-28
+// @version 2025-07-30
 //
 // based on THREE.js ConeGeometry implementation
 
@@ -136,5 +136,5 @@ uGeometry CreateConeGeometry(float radius, float height, int radialSegments, int
 	const btVector3 dims   = { radius, height, 0.0f };
 	const float     boundR = std::sqrt(radius * radius + height * height * 0.25f);
 
-	return std::make_shared<Geometry>(vbh, ibh, aabb, dims, boundR);
+	return std::make_shared<Geometry>(GeometryType_Cone, vbh, ibh, aabb, dims, boundR);
 }

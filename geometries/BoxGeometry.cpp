@@ -1,6 +1,6 @@
 // BoxGeometry.cpp
 // @author octopoulos
-// @version 2025-07-28
+// @version 2025-07-30
 //
 // based on THREE.js BoxGeometry implementation
 
@@ -113,5 +113,5 @@ uGeometry CreateBoxGeometry(float width, float height, float depth, int widthSeg
 	const btVector3 dims   = { std::sqrt(width * width + depth * depth) * 0.5f, height, 0.0f };
 	const float     radius = std::max(std::max(aabb[0], aabb[1]), aabb[2]);
 
-	return std::make_shared<Geometry>(vbh, ibh, aabb, dims, radius);
+	return std::make_shared<Geometry>(GeometryType_Box, vbh, ibh, aabb, dims, radius);
 }

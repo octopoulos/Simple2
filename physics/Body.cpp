@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-07-28
+// @version 2025-07-30
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -416,5 +416,68 @@ void Body::DestroyShape()
 	{
 		delete shape;
 		shape = nullptr;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FUNCTIONS
+////////////
+
+int GeometryShape(int geometryType, bool hasMass, int detail)
+{
+	// clang-format off
+	switch (geometryType)
+	{
+	// easy cases
+	case GeometryType_Box:      return ShapeType_Box;
+	case GeometryType_Capsule:  return ShapeType_Capsule;
+	case GeometryType_Cone:     return ShapeType_Cone;
+	case GeometryType_Cylinder: return ShapeType_Cylinder;
+	case GeometryType_Sphere:   return ShapeType_Sphere;
+
+	// detail => looks like a sphere
+	case GeometryType_Dodecahedron:
+	case GeometryType_Icosahedron:
+	case GeometryType_Octahedron:
+	case GeometryType_Tetrahedron:
+		// TODO: check from which detail it looks like a sphere
+		if (detail > 0) return ShapeType_Sphere;
+		return ShapeType_ConvexHull;
+
+	// here, only triangle is good but if static (no mass)
+	case GeometryType_Torus:     return hasMass ? ShapeType_Cylinder   : ShapeType_TriangleMesh;
+	case GeometryType_TorusKnot: return hasMass ? ShapeType_ConvexHull : ShapeType_TriangleMesh;
+	}
+	// clang-format on
+
+	return ShapeType_Box;
+}
+
+TEST_CASE("GeometryShape")
+{
+	// clang-format off
+	const std::vector<std::tuple<int, bool, int, int>> vectors = {
+		{ GeometryType_Box         , true , 0, ShapeType_Box          },
+		{ GeometryType_Box         , false, 0, ShapeType_Box          },
+		{ GeometryType_Capsule     , true , 0, ShapeType_Box          },
+		{ GeometryType_Cone        , true , 0, ShapeType_Box          },
+		{ GeometryType_Cylinder    , true , 0, ShapeType_Box          },
+		{ GeometryType_Sphere      , true , 0, ShapeType_Box          },
+		{ GeometryType_Dodecahedron, true , 0, ShapeType_ConvexHull   },
+		{ GeometryType_Dodecahedron, true , 1, ShapeType_Sphere       },
+		{ GeometryType_Dodecahedron, true , 4, ShapeType_Sphere       },
+		{ GeometryType_Icosahedron , true , 0, ShapeType_ConvexHull   },
+		{ GeometryType_Octahedron  , true , 0, ShapeType_ConvexHull   }, // 10
+		{ GeometryType_Tetrahedron , true , 0, ShapeType_ConvexHull   },
+		{ GeometryType_Torus       , true , 0, ShapeType_Cylinder     },
+		{ GeometryType_Torus       , false, 0, ShapeType_TriangleMesh },
+		{ GeometryType_TorusKnot   , true , 0, ShapeType_Cylinder     },
+		{ GeometryType_TorusKnot   , false, 0, ShapeType_TriangleMesh },
+	};
+	// clang-format on
+	for (int i = -1; const auto& [geometryType, hasMass, detail, answer] : vectors)
+	{
+		SUBCASE_FMT("{}_{}_{}_{}", ++i, geometryType, hasMass, detail)
+		CHECK(GeometryShape(geometryType, hasMass, detail) == answer);
 	}
 }

@@ -1,4 +1,4 @@
-// @version 2025-07-27
+// @version 2025-07-30
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -113,14 +113,17 @@ struct KeyState
 
 struct GlobalInput
 {
-	uint8_t  buttons[8]      = {};                          ///< mouse buttons
+	bool     buttonDowns[8]  = {};                          ///< mouse buttons pushed this frame
+	uint8_t  buttons[8]      = {};                          ///< mouse buttons pushed
+	int64_t  buttonTimes[8]  = {};                          ///< when the button was pushed last time (in ms)
+	bool     buttonUps[8]    = {};                          ///< mouse buttons released this frame
 	int      keyChangeId     = 0;                           ///< index of current history
 	KeyState keyChanges[128] = {};                          ///< history of key changes
-	uint8_t  keyDowns[256]   = {};                          ///< those keys were pushed this frame
+	bool     keyDowns[256]   = {};                          ///< keys pushed this frame
 	int64_t  keyRepeats[256] = {};                          ///< last repeat time (in ms)
-	bool     keys[256]       = {};                          ///< are keys pushed?
+	bool     keys[256]       = {};                          ///< keys pushed
 	int64_t  keyTimes[256]   = {};                          ///< when the key was pushed last time (in ms)
-	uint8_t  keyUps[256]     = {};                          ///< those keys were released this frame
+	bool     keyUps[256]     = {};                          ///< keys released this frame
 	int      mouseAbs[3]     = {};                          ///< mouse absolute coordinates
 	int      mouseAbs2[3]    = {};                          ///< mouse absolute coordinates: deltas
 	int      mouseFrame      = 0;                           ///< mouse input frame

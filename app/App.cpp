@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-07-29
+// @version 2025-07-30
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -9,7 +9,7 @@
 //
 #include "core/ShaderManager.h"
 #include "entry/input.h"
-#include "loaders/ModelLoader.h"
+#include "loaders/MeshLoader.h"
 #include "textures/TextureManager.h"
 
 #include "common/bgfx_utils.h"
@@ -140,7 +140,7 @@ int App::InitializeScene()
 	}
 
 	// 4) load BIN model
-	if (auto object = ModelLoader::LoadModelFull("kenney_car-kit/race-future"))
+	if (auto object = MeshLoader::LoadModelFull("kenney_car-kit/race-future"))
 	{
 		object->ScaleRotationPosition(
 		    { 1.0f, 1.0f, 1.0f },
@@ -150,7 +150,7 @@ int App::InitializeScene()
 		object->CreateShapeBody(physics.get(), ShapeType_ConvexHull, 3.0f);
 		scene->AddNamedChild(object, "car");
 	}
-	if (auto object = ModelLoader::LoadModelFull("kenney_city-kit-commercial_20/building-n"))
+	if (auto object = MeshLoader::LoadModelFull("kenney_city-kit-commercial_20/building-n"))
 	{
 		object->ScaleRotationPosition(
 		    { 1.0f, 1.0f, 1.0f },
@@ -160,7 +160,7 @@ int App::InitializeScene()
 		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh);
 		scene->AddNamedChild(object, "building");
 	}
-	if (auto object = ModelLoader::LoadModel("bunny_decimated", true))
+	if (auto object = MeshLoader::LoadModel("bunny_decimated", true))
 	{
 		object->program = shaderManager.LoadProgram("vs_mesh", "fs_mesh");
 		object->ScaleRotationPosition(
@@ -171,7 +171,7 @@ int App::InitializeScene()
 		object->CreateShapeBody(physics.get(), ShapeType_Cylinder, 3.0f);
 		scene->AddNamedChild(object, "bunny");
 	}
-	if (auto object = ModelLoader::LoadModel("donut"))
+	if (auto object = MeshLoader::LoadModel("donut"))
 	{
 		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
 		object->ScaleRotationPosition(
@@ -184,7 +184,7 @@ int App::InitializeScene()
 	}
 
 	// donuts
-	if (auto parent = ModelLoader::LoadModel("donut3"))
+	if (auto parent = MeshLoader::LoadModel("donut3"))
 	{
 		parent->type |= ObjectType_Group | ObjectType_Instance;
 		parent->program = shaderManager.LoadProgram("vs_model_texture_instance", "fs_model_texture_instance");
@@ -195,7 +195,7 @@ int App::InitializeScene()
 		const int     numDonut = 120;
 		for (int i = 0; i < numDonut; ++i)
 		{
-			// if (auto object = ModelLoader::LoadModel("donut3"))
+			// if (auto object = MeshLoader::LoadModel("donut3"))
 			if (auto object = parent->CloneInstance())
 			{
 				//object->type |= ObjectType_Instance;

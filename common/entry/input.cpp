@@ -1,4 +1,4 @@
-// @version 2025-07-27
+// @version 2025-07-30
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -407,9 +407,16 @@ void GlobalInput::KeyDownUp(int key, bool down)
 
 void GlobalInput::MouseButton(int button, uint8_t state)
 {
-	if (button >= 0 && button < 8)
+	if (button >= 0 && button < 8 && buttons[button] != state)
 	{
-		buttons[button] = state;
+		const int64_t nowMs = NowMs();
+
+		buttons[button]     = state;
+		buttonTimes[button] = nowMs;
+		if (state)
+			buttonDowns[button] = true;
+		else
+			buttonUps[button] = true;
 
 		// reset initial position when clicking
 		mouseRels0[0] = mouseRels[0];
@@ -515,8 +522,10 @@ void GlobalInput::Reset()
 void GlobalInput::ResetFixed()
 {
 	// clang-format off
-	std::memset(keyDowns, 0, sizeof(keyDowns));
-	std::memset(keyUps  , 0, sizeof(keyUps  ));
+	std::memset(buttonDowns, 0, sizeof(buttonDowns));
+	std::memset(buttonUps  , 0, sizeof(buttonUps  ));
+	std::memset(keyDowns   , 0, sizeof(keyDowns   ));
+	std::memset(keyUps     , 0, sizeof(keyUps     ));
 	// clang-format on
 }
 

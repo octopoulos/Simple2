@@ -72,17 +72,18 @@ using sMesh = std::shared_ptr<class Mesh>;
 class Mesh : public Object3d
 {
 public:
-	std::vector<uBody>        bodies     = {};                  ///< one physical body per group
-	std::shared_ptr<Geometry> geometry   = nullptr;             ///
-	std::vector<Group>        groups     = {};                  ///< groups of vertices
-	bgfx::VertexLayout        layout     = {};                  ///
-	std::shared_ptr<Material> material   = nullptr;             ///
-	bgfx::ProgramHandle       program    = BGFX_INVALID_HANDLE; ///
-	uint64_t                  state      = 0;                   ///< if !=0: override default state
-	bgfx::UniformHandle       sTexColor  = BGFX_INVALID_HANDLE; ///
-	bgfx::UniformHandle       sTexNormal = BGFX_INVALID_HANDLE; ///
-	bgfx::TextureHandle       texColor   = BGFX_INVALID_HANDLE; ///
-	bgfx::TextureHandle       texNormal  = BGFX_INVALID_HANDLE; ///
+	std::vector<uBody>               bodies     = {};                  ///< one physical body per group
+	std::shared_ptr<Geometry>        geometry   = nullptr;             ///
+	std::vector<Group>               groups     = {};                  ///< groups of vertices
+	bgfx::VertexLayout               layout     = {};                  ///
+	std::shared_ptr<Material>        material   = nullptr;             ///
+	bgfx::ProgramHandle              program    = BGFX_INVALID_HANDLE; ///
+	uint64_t                         state      = 0;                   ///< if !=0: override default state
+	bgfx::UniformHandle              sTexColor  = BGFX_INVALID_HANDLE; ///< diffuse texture
+	bgfx::UniformHandle              sTexNormal = BGFX_INVALID_HANDLE; ///
+	bgfx::TextureHandle              texColor   = BGFX_INVALID_HANDLE; ///
+	bgfx::TextureHandle              texNormal  = BGFX_INVALID_HANDLE; ///
+	std::vector<bgfx::TextureHandle> textures   = {};                  ///< all found textures
 
 	Mesh()
 	{

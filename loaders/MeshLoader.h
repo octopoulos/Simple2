@@ -1,16 +1,16 @@
-// ModelLoader.h
+// MeshLoader.h
 // @author octopoulos
-// @version 2025-07-28
+// @version 2025-07-30
 
 #pragma once
 
 #include "objects/Mesh.h"
 
-class ModelLoader
+class MeshLoader
 {
 public:
-	ModelLoader()  = default;
-	~ModelLoader() = default;
+	MeshLoader()   = default;
+	~MeshLoader() = default;
 
 	/// Loads mesh from file, creates Object3D with that mesh, and returns it
 	static sMesh LoadModel(std::string_view name, bool ramcopy = false);

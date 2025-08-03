@@ -51,10 +51,11 @@ private:
 	void FluidControls();
 
 	/// Throw a geometry
-	void ThrowGeometry();
+	/// @param geometryType: GeometryType_None for random
+	void ThrowGeometry(int geometryType = GeometryType_None);
 
 	/// Throw a mesh instance
-	void ThrowMesh(std::string_view name);
+	void ThrowMesh(std::string_view name, int shapeType);
 
 public:
 	/// Controls function executed every frame, and run before Render
@@ -79,6 +80,9 @@ private:
 	int                  iconSize  = 64;      ///< icon size for the map tiles previews
 	sObject3d            mapNode   = nullptr; ///< root of the map scene
 	std::vector<Tile>    tiles     = {};      ///< tiles
+
+	/// Insert a geometry into the map
+	void AddGeometry(uGeometry geometry);
 
 	/// Insert an object into the map
 	void AddObject(const std::string& name);

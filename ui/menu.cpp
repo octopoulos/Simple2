@@ -53,18 +53,21 @@ int App::MainUi()
 	// popups
 	if (showPopup & 1)
 	{
-		ImGui::OpenPopup("###popup_Add");
+		ImGui::OpenPopup("popup_Add");
 		showPopup &= ~1;
 	}
-	if (ImGui::BeginPopup("###popup_Add"))
+	if (ImGui::BeginPopup("popup_Add"))
 	{
-		ImGui::Text("Add ...");
+		ImGui::Text("Add geometry");
 		ImGui::Separator();
-		if (ImGui::BeginMenu("Mesh"))
+		for (int type = GeometryType_None + 1; type < GeometryType_Count; ++type)
 		{
-			ImGui::MenuItem("Plane");
-			ImGui::MenuItem("Cube");
-			ImGui::EndMenu();
+			if (ImGui::MenuItem(GeometryName(type).c_str()))
+			{
+				ui::Log("Add geometry: {} {}", type, GeometryName(type));
+				auto geometry = CreateAnyGeometry(type);
+				AddGeometry(std::move(geometry));
+			}
 		}
 
 		if (hidePopup & 1)
