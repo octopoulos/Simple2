@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-07-23
+// @version 2025-07-30
 
 #pragma once
 
@@ -12,9 +12,10 @@ enum ObjectTypes_
 {
 	ObjectType_Basic    = 1 << 0, ///< basic object
 	ObjectType_Camera   = 1 << 1, ///< camera object
-	ObjectType_Group    = 1 << 2, ///< group (no render)
-	ObjectType_Instance = 1 << 3, ///< instance
-	ObjectType_Mesh     = 1 << 4, ///< mesh
+	ObjectType_Clone    = 1 << 2, ///< clone of another object (doesn't own groups)
+	ObjectType_Group    = 1 << 3, ///< group (no render)
+	ObjectType_Instance = 1 << 4, ///< instance
+	ObjectType_Mesh     = 1 << 5, ///< mesh
 };
 
 enum RenderFlags_

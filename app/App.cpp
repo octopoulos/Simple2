@@ -186,34 +186,37 @@ int App::InitializeScene()
 	// donuts
 	if (auto parent = ModelLoader::LoadModel("donut3"))
 	{
-		//parent->type |= ObjectType_Group;
 		parent->type |= ObjectType_Group | ObjectType_Instance;
-		parent->program = shaderManager.LoadProgram("vs_model_instance", "fs_model_instance");
+		parent->program = shaderManager.LoadProgram("vs_model_texture_instance", "fs_model_texture_instance");
 		parent->LoadTextures("donut_base.png");
 		scene->AddNamedChild(parent, "donut3-group");
 
-		for (int i = 0; i < 120; ++i)
+		const int64_t nowUs    = NowUs();
+		const int     numDonut = 120;
+		for (int i = 0; i < numDonut; ++i)
 		{
-			//if (auto object = std::make_shared<Mesh>())
-			if (auto object = ModelLoader::LoadModel("donut3"))
+			// if (auto object = ModelLoader::LoadModel("donut3"))
+			if (auto object = parent->CloneInstance())
 			{
-				object->type |= ObjectType_Instance;
-
+				//object->type |= ObjectType_Instance;
 				const float radius = sinf(i * 0.02f) * 7.0f;
 				const float scale  = MerseneFloat(0.25f, 0.75f);
 				const float scaleY = scale * MerseneFloat(0.7f, 1.5f);
 
-				object->program = shaderManager.LoadProgram("vs_model_texture", "fs_model_texture");
+				//object->program = shaderManager.LoadProgram("vs_model_texture", "fs_model_texture");
+				//object->LoadTextures("donut_base.png");
 				object->ScaleRotationPosition(
 				    { scale, scaleY, scale },
 				    { sinf(i * 0.3f), 3.0f, 0.0f },
-				    { cosf(i * 0.2f) * radius, 10.0f + i * 0.5f, sinf(i * 0.2f) * radius });
-				// TODO: allow to reuse the parent mesh
+				    { cosf(i * 0.2f) * radius, 10.0f + i * 0.5f, sinf(i * 0.2f) * radius }
+				);
 				object->CreateShapeBody(physics.get(), (i & 7) ? ShapeType_Box : ShapeType_Cylinder, 1.0f);
 
 				parent->AddNamedChild(object, fmt::format("donut3-{}", i));
 			}
 		}
+		const int64_t elapsed = NowUs() - nowUs;
+		ui::Log("Loaded {} donuts in {}us ({}s) => {}us/donut", numDonut, elapsed, elapsed * 1e-6f, elapsed * 1.0f / numDonut);
 	}
 
 	// print scene children
@@ -246,12 +249,8 @@ int App::InitializeScene()
 
 void App::Render()
 {
-	// 1) update time
+	// 1) uniforms
 	{
-		curTime   = TO_FLOAT((bx::getHPCounter() - startTime) / TO_DOUBLE(bx::getHPFrequency()));
-		deltaTime = curTime - lastTime;
-		lastTime  = curTime;
-
 		//const auto  lightDir    = bx::normalize(bx::Vec3(sinf(curTime), 1.0f, cosf(curTime)));
 		const auto  lightDir    = bx::normalize(bx::Vec3(0.5f, 1.0f, -0.5f));
 		const float lightUni[4] = { lightDir.x, lightDir.y, lightDir.z, 0.0f };
@@ -261,24 +260,10 @@ void App::Render()
 		bgfx::setUniform(uTime, timeVec);
 	}
 
-	// 2) controls
-	{
-		GetGlobalInput().nowMs = NowMs();
-
-		FluidControls();
-
-		inputLag += deltaTime;
-		while (inputLag >= inputDelta)
-		{
-			FixedControls();
-			inputLag -= inputDelta;
-		}
-	}
-
-	// 3) camera view
+	// 2) camera view
 	camera->UpdateViewProjection(0, TO_FLOAT(screenX), TO_FLOAT(screenY));
 
-	// 4) physics
+	// 3) physics
 	if (!xsettings.physPaused)
 	{
 		physics->StepSimulation(deltaTime);
@@ -294,7 +279,7 @@ void App::Render()
 		}
 	}
 
-	// x) draw grid
+	// 4) draw grid
 	{
 		DebugDrawEncoder dde;
 
@@ -508,7 +493,9 @@ public:
 			callback.wantVideo = app->wantVideo;
 
 			if (entry::processEvents(width, height, debug, reset)) return false;
+			
 			app->SynchronizeEvents(width, height);
+			app->Controls();
 		}
 
 		// 2) imGui

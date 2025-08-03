@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-07-29
+// @version 2025-07-30
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -37,9 +37,12 @@ static std::vector<Config> configs = {
 	X_BOOL   (XSettings, physics, 0, physPaused , false),
 
 	// [render]
+	X_FLOAT  (XSettings, render, 0, cameraSpeed, 10.0f, 1.0f, 100.0f),
 	X_FLOAT  (XSettings, render, 0, distance   , 10.0f, 0.50f, 100.0f),
-	X_BOOL   (XSettings, render, 0, instancing,  true),
+	X_BOOL   (XSettings, render, 0, instancing , true),
 	X_FLOAT  (XSettings, render, 0, orthoZoom  , 1.0f, 0.001f, 10.0f),
+	X_FLOAT  (XSettings, render, 0, zoomKb     , 10.0f, 1.0f, 100.0f),
+	X_FLOAT  (XSettings, render, 0, zoomWheel  , 10.0f, 1.0f, 100.0f),
 
 	// [ui]
 	X_BOOL   (XSettings, ui, 0, nvidiaEnc   , false),

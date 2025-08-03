@@ -1,6 +1,6 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-07-29
+// @version 2025-07-30
 
 #include "stdafx.h"
 #include "core/Camera.h"
@@ -52,6 +52,14 @@ void Camera::ConsumeOrbit(float amount)
 void Camera::GetViewMatrix(float* viewMtx)
 {
 	bx::mtxLookAt(viewMtx, pos, target, up);
+}
+
+void Camera::Move(int cameraDir, float speed)
+{
+	const auto& dir = (cameraDir == CameraDir_Forward) ? forward : ((cameraDir == CameraDir_Right) ? right : up);
+
+	pos2    = bx::mad(dir, speed, pos2);
+	target2 = bx::mad(dir, speed, target2);
 }
 
 void Camera::Orbit(float dx, float dy)

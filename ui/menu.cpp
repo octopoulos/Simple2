@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-07-30
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -51,12 +51,27 @@ int App::MainUi()
 	LearnUi();
 
 	// popups
+	if (showPopup & 1)
+	{
+		ImGui::OpenPopup("###popup_Add");
+		showPopup &= ~1;
+	}
 	if (ImGui::BeginPopup("###popup_Add"))
 	{
-		ImGui::SeparatorText("Add ...");
-		//for (int i = 0; i < 10; i++)
-		//	if (ImGui::Selectable(fmt::format("select_{}", i).c_str()))
-		//		;
+		ImGui::Text("Add ...");
+		ImGui::Separator();
+		if (ImGui::BeginMenu("Mesh"))
+		{
+			ImGui::MenuItem("Plane");
+			ImGui::MenuItem("Cube");
+			ImGui::EndMenu();
+		}
+
+		if (hidePopup & 1)
+		{
+			ImGui::CloseCurrentPopup();
+			hidePopup &= ~1;
+		}
 		ImGui::EndPopup();
 	}
 

@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-07-29
+// @version 2025-07-30
 
 #pragma once
 
@@ -67,6 +67,8 @@ struct MeshState
 	uint16_t            m_viewId;      ///
 };
 
+using sMesh = std::shared_ptr<class Mesh>;
+
 class Mesh : public Object3d
 {
 public:
@@ -95,6 +97,9 @@ public:
 	}
 
 	~Mesh() { Destroy(); }
+
+	/// Make an instanced copy of itself => faster loading
+	sMesh CloneInstance();
 
 	/// Utility to create a shape then a body
 	void CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass = 0.0f, const btVector4& dims = { 0.0f, 0.0f, 0.0f, 0.0f });
@@ -126,8 +131,6 @@ public:
 	/// - if a group => update the children only
 	virtual void SynchronizePhysics() override;
 };
-
-using sMesh = std::shared_ptr<Mesh>;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FUNCTIONS

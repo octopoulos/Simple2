@@ -394,10 +394,10 @@ int cmdExit(CmdContext* /*_context*/, void* /*_userData*/, int /*_argc*/, char c
 }
 
 static const InputBinding s_bindings[] = {
-	{ entry::Key::KeyQ,         entry::Modifier::LeftCtrl,  1, nullptr, "exit"                              },
-	{ entry::Key::KeyQ,         entry::Modifier::RightCtrl, 1, nullptr, "exit"                              },
-	{ entry::Key::KeyF,         entry::Modifier::LeftCtrl,  1, nullptr, "graphics fullscreen"               },
-	{ entry::Key::KeyF,         entry::Modifier::RightCtrl, 1, nullptr, "graphics fullscreen"               },
+	//{ entry::Key::KeyQ,         entry::Modifier::LeftCtrl,  1, nullptr, "exit"                              },
+	//{ entry::Key::KeyQ,         entry::Modifier::RightCtrl, 1, nullptr, "exit"                              },
+	//{ entry::Key::KeyF,         entry::Modifier::LeftCtrl,  1, nullptr, "graphics fullscreen"               },
+	//{ entry::Key::KeyF,         entry::Modifier::RightCtrl, 1, nullptr, "graphics fullscreen"               },
 	{ entry::Key::Return,       entry::Modifier::RightAlt,  1, nullptr, "graphics fullscreen"               },
 	{ entry::Key::F1,           entry::Modifier::None,      1, nullptr, "graphics stats"                    },
 	{ entry::Key::F1,           entry::Modifier::LeftCtrl,  1, nullptr, "graphics ifh"                      },
@@ -410,8 +410,8 @@ static const InputBinding s_bindings[] = {
 	{ entry::Key::F8,           entry::Modifier::None,      1, nullptr, "graphics msaa"                     },
 	{ entry::Key::F9,           entry::Modifier::None,      1, nullptr, "graphics flush"                    },
 	{ entry::Key::F10,          entry::Modifier::None,      1, nullptr, "graphics hidpi"                    },
-	{ entry::Key::Print,        entry::Modifier::None,      1, nullptr, "graphics screenshot"               },
-	{ entry::Key::KeyP,         entry::Modifier::LeftCtrl,  1, nullptr, "graphics screenshot"               },
+	//{ entry::Key::Print,        entry::Modifier::None,      1, nullptr, "graphics screenshot"               },
+	//{ entry::Key::KeyP,         entry::Modifier::LeftCtrl,  1, nullptr, "graphics screenshot"               },
 
 	INPUT_BINDING_END
 };
@@ -659,9 +659,9 @@ int main(int _argc, const char* const* _argv)
 
 	cmdInit();
 	cmdAdd("mouselock", cmdMouseLock);
-	cmdAdd("graphics", cmdGraphics);
-	cmdAdd("exit", cmdExit);
-	cmdAdd("app", cmdApp);
+	cmdAdd("graphics" , cmdGraphics);
+	cmdAdd("exit"     , cmdExit);
+	cmdAdd("app"      , cmdApp);
 
 	inputInit();
 	inputAddBindings("bindings", s_bindings);

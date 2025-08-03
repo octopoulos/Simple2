@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-07-27
+// @version 2025-07-30
 
 #pragma once
 
@@ -38,9 +38,11 @@ public:
 	///////////
 
 private:
+	int   hidePopup  = 0;             ///< close specific ImGui popups
 	float inputDelta = 1.0f / 120.0f; ///< input fixed time step (in seconds)
 	int   inputFrame = 0;             ///< current input frame
 	float inputLag   = 0.0f;          ///< accumulated lag for fixed-step input
+	int   showPopup  = 0;             ///< show specific ImGui popups
 
 	/// Fixed-rate input logic (ex: key movement, snap-to-grid)
 	void FixedControls();
@@ -48,8 +50,15 @@ private:
 	/// Per-frame input logic (ex: smooth camera movement)
 	void FluidControls();
 
-	/// Throw a donut
-	void ThrowDonut();
+	/// Throw a geometry
+	void ThrowGeometry();
+
+	/// Throw a mesh instance
+	void ThrowMesh(std::string_view name);
+
+public:
+	/// Controls function executed every frame, and run before Render
+	void Controls();
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// LEARN

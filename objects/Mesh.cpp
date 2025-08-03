@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-07-29
+// @version 2025-07-30
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -21,6 +21,14 @@ namespace bgfx
 	int32_t read(bx::ReaderI* reader, bgfx::VertexLayout& layout, bx::Error* err);
 }
 
+sMesh Mesh::CloneInstance()
+{
+	auto clone    = std::make_shared<Mesh>();
+	clone->groups = groups;
+	clone->type |= ObjectType_Clone | ObjectType_Instance;
+	return clone;
+}
+
 void Mesh::CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, const btVector4& dims)
 {
 	auto body = std::make_unique<Body>(physics);
@@ -31,19 +39,23 @@ void Mesh::CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, con
 
 void Mesh::Destroy()
 {
-	bx::AllocatorI* allocator = entry::getAllocator();
-	for (const auto& group : groups)
+	// clone => don't destroy data
+	if (!(type & ObjectType_Clone))
 	{
-		bgfx::destroy(group.m_vbh);
-		if (bgfx::isValid(group.m_ibh)) bgfx::destroy(group.m_ibh);
+		bx::AllocatorI* allocator = entry::getAllocator();
+		for (const auto& group : groups)
+		{
+			bgfx::destroy(group.m_vbh);
+			if (bgfx::isValid(group.m_ibh)) bgfx::destroy(group.m_ibh);
 
-		if (group.m_vertices) bx::free(allocator, group.m_vertices);
-		if (group.m_indices) bx::free(allocator, group.m_indices);
+			if (group.m_vertices) bx::free(allocator, group.m_vertices);
+			if (group.m_indices) bx::free(allocator, group.m_indices);
+		}
+		groups.clear();
+
+		// TODO: check if something must be done with the texture?
+		bgfx::destroy(sTexColor);
 	}
-	groups.clear();
-
-	bgfx::destroy(sTexColor);
-	// TODO: check if something must be done with the texture?
 }
 
 void Mesh::Initialize()

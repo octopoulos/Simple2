@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-07-29
+// @version 2025-07-30
 
 #pragma once
 
@@ -23,9 +23,12 @@ struct XSettings : public EngineSettings
 	float orthoZoom;  ///< zoom in orthographic projection
 
 	// [ui]
+	float cameraSpeed;    ///< camera movement speed
 	bool  nvidiaEnc;      ///< use nVidia encoding
 	str2k recentFiles[6]; ///< recent files for quick load
 	bool  videoCapture;   ///< allow video capture
+	float zoomKb;         ///< zoom speed with the keyboard
+	float zoomWheel;      ///< zoom speed with the mouse wheel
 
 	// [user]
 	str256 userEmail; ///< login

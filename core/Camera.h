@@ -1,10 +1,17 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-07-29
+// @version 2025-07-30
 
 #pragma once
 
 #include "objects/Object3d.h"
+
+enum CameraDirs : int
+{
+	CameraDir_Forward = 0,
+	CameraDir_Right   = 1,
+	CameraDir_Up      = 2,
+};
 
 class Camera : public Object3d
 {
@@ -43,6 +50,9 @@ public:
 
 	/// Compute look-at view matrix
 	void GetViewMatrix(float* viewMtx);
+
+	/// Move the camera to a direction
+	void Move(int cameraDir, float speed);
 
 	/// Accumulate orbit deltas
 	void Orbit(float dx, float dy);

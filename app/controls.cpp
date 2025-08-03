@@ -1,11 +1,12 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-07-29
+// @version 2025-07-30
 
 #include "stdafx.h"
 #include "app/App.h"
 //
 #include "common/imgui/imgui.h"
+#include "core/ShaderManager.h"
 #include "entry/input.h"
 #include "loaders/ModelLoader.h"
 
@@ -14,6 +15,30 @@
 static inline float SignNonZero(float v)
 {
 	return (v >= 0.0f) ? 1.0f : -1.0f;
+}
+
+void App::Controls()
+{
+	// 1) update time
+	{
+		curTime   = TO_FLOAT((bx::getHPCounter() - startTime) / TO_DOUBLE(bx::getHPFrequency()));
+		deltaTime = curTime - lastTime;
+		lastTime  = curTime;
+	}
+
+	// 2) controls
+	{
+		GetGlobalInput().nowMs = NowMs();
+
+		FluidControls();
+
+		inputLag += deltaTime;
+		while (inputLag >= inputDelta)
+		{
+			FixedControls();
+			inputLag -= inputDelta;
+		}
+	}
 }
 
 void App::FixedControls()
@@ -42,16 +67,15 @@ void App::FixedControls()
 	// 3) shift
 	else if (isShift)
 	{
-		if (downs[Key::KeyA])
-		{
-			ui::Log("Add popup...");
-			ImGui::OpenPopup("###popup_Add");
-		}
+		// print with GUI
+		if (downs[Key::Print]) wantScreenshot = 1;
 	}
 	// 4) no modifier
 	else
 	{
 		// 4.a) new keys
+		if (downs[Key::KeyI]) showPopup ^= 1;
+
 		if (DOWN_OR_REPEAT(Key::KeyO))
 		{
 			xsettings.physPaused = false;
@@ -59,7 +83,8 @@ void App::FixedControls()
 		}
 		if (downs[Key::KeyP]) xsettings.physPaused = !xsettings.physPaused;
 
-		if (downs[Key::Key1]) ThrowDonut();
+		if (downs[Key::Key1]) ThrowMesh("donut3");
+		if (downs[Key::Key2]) ThrowMesh("kenney_car-kit/taxi");
 
 		// move cursor
 		{
@@ -114,11 +139,15 @@ void App::FixedControls()
 			}
 		}
 
+		if (downs[Key::Esc]) hidePopup |= 1;
+		if (downs[Key::Tab]) showLearn = !showLearn;
+
 		if (downs[Key::F4]) xsettings.bulletDebug = !xsettings.bulletDebug;
 		if (downs[Key::F5]) xsettings.projection = 1 - xsettings.projection;
 		if (downs[Key::F11]) xsettings.instancing = !xsettings.instancing;
 
-		if (downs[Key::Tab]) showLearn = !showLearn;
+		// print without GUI
+		if (downs[Key::Print]) wantScreenshot = 2;
 
 		if (downs[Key::NumPad1]) camera->SetOrthographic({ 0.0f, 0.0f, -1.0f });
 		if (downs[Key::NumPad3]) camera->SetOrthographic({ 1.0f, 0.0f, 0.0f });
@@ -141,8 +170,8 @@ void App::FixedControls()
 
 		// 4.b) holding down
 		{
-			if (keys[Key::NumPadMinus] || keys[Key::Minus]) camera->Zoom(1.01f);
-			if (keys[Key::NumPadPlus] || keys[Key::Equals]) camera->Zoom(1.0f / 1.01f);
+			if (keys[Key::NumPadMinus] || keys[Key::Minus]) camera->Zoom(1.0f + xsettings.zoomKb * 0.0025f);
+			if (keys[Key::NumPadPlus] || keys[Key::Equals]) camera->Zoom(1.0f / (1.0f + xsettings.zoomKb * 0.0025f));
 		}
 	}
 
@@ -156,10 +185,23 @@ void App::FluidControls()
 	ginput.MouseDeltas();
 
 	// camera
-	if (!ImGui::MouseOverArea())
 	{
-		if (ginput.buttons[1] || ginput.mouseLock)
-			camera->Orbit(ginput.mouseRels2[0], ginput.mouseRels2[1]);
+		if (!ImGui::MouseOverArea())
+		{
+			if ((ginput.buttons[1] || ginput.buttons[2]) || ginput.mouseLock)
+				camera->Orbit(ginput.mouseRels2[0], ginput.mouseRels2[1]);
+		}
+
+		// typical value: 0.008333325
+		if (float wheel = ginput.mouseRels2[2])
+		{
+			wheel *= xsettings.zoomWheel;
+			if (wheel > 0)
+				camera->Zoom(1.0f / (1.0f + wheel));
+			else
+				camera->Zoom(1.0f - wheel);
+		}
+
 		camera->Update(deltaTime);
 	}
 
@@ -168,7 +210,7 @@ void App::FluidControls()
 	{
 		using namespace entry;
 
-		float speed = deltaTime * 10.0f;
+		float speed = deltaTime * xsettings.cameraSpeed;
 		if (keys[Key::LeftCtrl]) speed *= 0.5f;
 		if (keys[Key::LeftShift]) speed *= 2.0f;
 
@@ -176,50 +218,49 @@ void App::FluidControls()
 		const int  keyQS   = isOrtho ? Key::KeyS : Key::KeyQ;
 		const int  keyEW   = isOrtho ? Key::KeyW : Key::KeyE;
 
-		if (keys[Key::KeyA])
-		{
-			camera->pos2    = bx::mad(camera->right, -speed, camera->pos2);
-			camera->target2 = bx::mad(camera->right, -speed, camera->target2);
-		}
-		if (keys[Key::KeyD])
-		{
-			camera->pos2    = bx::mad(camera->right, speed, camera->pos2);
-			camera->target2 = bx::mad(camera->right, speed, camera->target2);
-		}
-		if (keys[keyEW])
-		{
-			camera->pos2    = bx::mad(camera->up, speed, camera->pos2);
-			camera->target2 = bx::mad(camera->up, speed, camera->target2);
-		}
-		if (keys[keyQS])
-		{
-			camera->pos2    = bx::mad(camera->up, -speed, camera->pos2);
-			camera->target2 = bx::mad(camera->up, -speed, camera->target2);
-		}
+		if (keys[Key::KeyA]) camera->Move(CameraDir_Right, -speed);
+		if (keys[Key::KeyD]) camera->Move(CameraDir_Right, speed);
+		if (keys[keyEW]) camera->Move(CameraDir_Up, speed);
+		if (keys[keyQS]) camera->Move(CameraDir_Up, -speed);
 		if (!isOrtho)
 		{
-			if (keys[Key::KeyS])
-			{
-				camera->pos2    = bx::mad(camera->forward, -speed, camera->pos2);
-				camera->target2 = bx::mad(camera->forward, -speed, camera->target2);
-			}
-			if (keys[Key::KeyW])
-			{
-				camera->pos2    = bx::mad(camera->forward, speed, camera->pos2);
-				camera->target2 = bx::mad(camera->forward, speed, camera->target2);
-			}
+			if (keys[Key::KeyS]) camera->Move(CameraDir_Forward, -speed);
+			if (keys[Key::KeyW]) camera->Move(CameraDir_Forward, speed);
 		}
 	}
 }
 
-void App::ThrowDonut()
+void App::ThrowGeometry()
 {
-	auto parent = scene->GetObjectByName("donut3-group");
+}
 
-	if (auto object = ModelLoader::LoadModel("donut3"))
+void App::ThrowMesh(std::string_view name)
+{
+	// 1) get/create the parent
+	auto groupName = fmt::format("{}-group", name);
+
+	Mesh* parent = nullptr;
+	auto  parentObj  = scene->GetObjectByName(groupName);
+	if (parentObj)
 	{
-		object->type |= ObjectType_Instance;
+		if (parentObj->type & ObjectType_Mesh)
+			parent = static_cast<Mesh*>(parentObj);
+	}
+	else if (auto mesh = ModelLoader::LoadModelFull(name))
+	{
+		mesh->type |= ObjectType_Group | ObjectType_Instance;
+		mesh->program = GetShaderManager().LoadProgram("vs_model_texture_instance", "fs_model_texture_instance");
+		//mesh->LoadTextures("donut_base.png");
+		scene->AddNamedChild(mesh, std::move(groupName));
 
+		parent = mesh.get();
+		ui::Log("ThrowMesh: new parent: {}", name);
+	}
+	if (!parent) return;
+
+	// 2) clone an instance
+	if (auto object = parent->CloneInstance())
+	{
 		const auto  pos    = camera->pos2;
 		const float scale  = MerseneFloat(0.25f, 0.75f);
 		const float scaleY = scale * MerseneFloat(0.7f, 1.5f);
@@ -239,6 +280,6 @@ void App::ThrowDonut()
 			body->body->applyCentralImpulse(BxToBullet(impulse));
 		}
 
-		parent->AddNamedChild(object, fmt::format("donut3-{}", parent->children.size()));
+		parent->AddNamedChild(object, fmt::format("{}-{}", name, parent->children.size()));
 	}
 }
