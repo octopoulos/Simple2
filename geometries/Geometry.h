@@ -95,7 +95,7 @@ uGeometry CreateBoxGeometry(float width = 1.0f, float height = 1.0f, float depth
 /// @param capSegments: number of curve segments used to build each cap
 /// @param radialSegments: number of segmented faces around the circumference of the capsule, min 3
 /// @param heightSegments: number of rows of faces along the height of the middle section, min 1
-uGeometry CreateCapsuleGeometry(float radius = 1.0f, float height = 1.0f, int capSegments = 4, int radialSegments = 8, int heightSegments = 1);
+uGeometry CreateCapsuleGeometry(float radius = 1.0f, float height = 1.0f, int capSegments = 8, int radialSegments = 16, int heightSegments = 1);
 
 /// Constructs a new cone geometry
 /// @param radius: radius of the cone base

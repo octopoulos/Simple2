@@ -235,29 +235,56 @@ void App::FluidControls()
 
 void App::ThrowGeometry(int geometryType)
 {
-	auto object      = std::make_shared<Mesh>();
-	object->geometry = CreateAnyGeometry(geometryType);
-	object->material = std::make_shared<Material>(GetShaderManager().LoadProgram("vs_model_texture", "fs_model_texture"));
-	object->LoadTextures("colors.png");
+	if (geometryType == GeometryType_None)
+		geometryType = MerseneInt32(GeometryType_Box, GeometryType_Count - 1);
 
-	const auto  pos   = camera->pos2;
-	const float scale = MerseneFloat(0.25f, 0.75f);
+	// 1) get/create the parent
+	const auto name      = fmt::format("geom-{}", geometryType);
+	auto       groupName = fmt::format("{}-group", name);
 
-	object->ScaleRotationPosition(
-	    { scale, scale, scale },
-	    { sinf(0 * 0.3f), 3.0f, 0.0f },
-	    { pos.x, pos.y, pos.z });
-	object->CreateShapeBody(physics.get(), GeometryShape(object->geometry->type), 1.0f);
-
-	// apply initial FORCE (or impulse) to the body in the camera->forward direction
-	const auto impulse = bx::mul(camera->forward, 50.0f);
-	for (auto& body : object->bodies)
+	Mesh* parent    = nullptr;
+	auto  parentObj = scene->GetObjectByName(groupName);
+	if (parentObj)
 	{
-		// body->body->applyImpulse(BxToBullet(camera->forward), BxToBullet(pos));
-		body->body->applyCentralImpulse(BxToBullet(impulse));
+		if (parentObj->type & ObjectType_Mesh)
+			parent = static_cast<Mesh*>(parentObj);
 	}
+	else if (auto mesh = std::make_shared<Mesh>())
+	{
+		mesh->type |= ObjectType_Group | ObjectType_Instance;
+		mesh->geometry = CreateAnyGeometry(geometryType);
+		mesh->material = std::make_shared<Material>(GetShaderManager().LoadProgram("vs_model_texture_instance", "fs_model_texture_instance"));
+		mesh->LoadTextures("colors.png");
+		scene->AddNamedChild(mesh, std::move(groupName));
 
-	scene->AddNamedChild(std::move(object), fmt::format("geometry:{}", scene->children.size()));
+		parent = mesh.get();
+		ui::Log("ThrowGeometry: new parent: {}", name);
+	}
+	if (!parent) return;
+
+	// 2) clone an instance
+	if (auto object = parent->CloneInstance())
+	{
+		object->program = GetShaderManager().LoadProgram("vs_model_texture", "fs_model_texture");
+
+		const auto  pos   = camera->pos2;
+		const float scale = std::clamp(NormalFloat(1.0f, 0.2f), 0.25f, 1.5f);
+
+		object->ScaleRotationPosition(
+		    { scale, scale, scale },
+		    { 0.0f, 0.0f, 0.0f },
+		    { pos.x, pos.y, pos.z });
+		object->CreateShapeBody(physics.get(), GeometryShape(geometryType), 1.0f);
+
+		const auto impulse = bx::mul(camera->forward, 40.0f);
+		for (auto& body : object->bodies)
+		{
+			const auto offset = btVector3(NormalFloat(), NormalFloat(), NormalFloat()) * 0.02f * scale;
+			body->body->applyImpulse(BxToBullet(impulse), offset);
+		}
+
+		parent->AddNamedChild(std::move(object), fmt::format("{}:{}", name, scene->children.size()));
+	}
 }
 
 void App::ThrowMesh(std::string_view name, int shapeType)
@@ -276,7 +303,6 @@ void App::ThrowMesh(std::string_view name, int shapeType)
 	{
 		mesh->type |= ObjectType_Group | ObjectType_Instance;
 		mesh->program = GetShaderManager().LoadProgram("vs_model_texture_instance", "fs_model_texture_instance");
-		//mesh->LoadTextures("donut_base.png");
 		scene->AddNamedChild(mesh, std::move(groupName));
 
 		parent = mesh.get();
@@ -287,25 +313,26 @@ void App::ThrowMesh(std::string_view name, int shapeType)
 	// 2) clone an instance
 	if (auto object = parent->CloneInstance())
 	{
+		object->program = GetShaderManager().LoadProgram("vs_model_texture", "fs_model_texture");
+
 		const auto  pos    = camera->pos2;
-		const float scale  = MerseneFloat(0.25f, 0.75f);
+		const float scale  = MerseneFloat(0.25f, 1.0f);
 		const float scaleY = scale * MerseneFloat(0.7f, 1.5f);
 
 		object->ScaleRotationPosition(
 		    { scale, scaleY, scale },
-		    { sinf(0 * 0.3f), 3.0f, 0.0f },
+		    { 0.0f, 0.0f, 0.0f },
 		    { pos.x, pos.y, pos.z }
 		);
 		object->CreateShapeBody(physics.get(), shapeType, 1.0f);
 
-		// apply initial FORCE (or impulse) to the body in the camera->forward direction
-		const auto impulse = bx::mul(camera->forward, 50.0f);
+		const auto impulse = bx::mul(camera->forward, 40.0f);
 		for (auto& body : object->bodies)
 		{
-			// body->body->applyImpulse(BxToBullet(camera->forward), BxToBullet(pos));
-			body->body->applyCentralImpulse(BxToBullet(impulse));
+			const auto offset = btVector3(NormalFloat(), NormalFloat(), NormalFloat()) * 0.02f * scale;
+			body->body->applyImpulse(BxToBullet(impulse), offset);
 		}
 
-		parent->AddNamedChild(object, fmt::format("{}-{}", name, parent->children.size()));
+		parent->AddNamedChild(object, fmt::format("{}:{}", name, parent->children.size()));
 	}
 }

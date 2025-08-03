@@ -437,12 +437,9 @@ int GeometryShape(int geometryType, bool hasMass, int detail)
 
 	// detail => looks like a sphere
 	case GeometryType_Dodecahedron:
-	case GeometryType_Icosahedron:
-	case GeometryType_Octahedron:
-	case GeometryType_Tetrahedron:
-		// TODO: check from which detail it looks like a sphere
-		if (detail > 0) return ShapeType_Sphere;
-		return ShapeType_ConvexHull;
+	case GeometryType_Icosahedron: return (detail >= 1) ? ShapeType_Sphere : ShapeType_ConvexHull;
+	case GeometryType_Octahedron:  return (detail >= 2) ? ShapeType_Sphere : ShapeType_ConvexHull;
+	case GeometryType_Tetrahedron: return (detail >= 4) ? ShapeType_Sphere : ShapeType_ConvexHull;
 
 	// here, only triangle is good but if static (no mass)
 	case GeometryType_Torus:     return hasMass ? ShapeType_Cylinder   : ShapeType_TriangleMesh;

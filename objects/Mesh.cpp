@@ -23,9 +23,13 @@ namespace bgfx
 
 sMesh Mesh::CloneInstance()
 {
-	auto clone    = std::make_shared<Mesh>();
-	clone->groups = groups;
-	clone->type |= ObjectType_Clone | ObjectType_Instance;
+	auto clone = std::make_shared<Mesh>();
+	{
+		clone->geometry = geometry;
+		clone->groups   = groups;
+		clone->type     = type | ObjectType_Clone | ObjectType_Instance;
+		clone->type &= ~ObjectType_Group;
+	}
 	return clone;
 }
 
