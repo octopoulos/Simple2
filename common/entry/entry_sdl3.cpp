@@ -1,6 +1,6 @@
 // entry_sdl3.cpp
 // @author octopoulos
-// @version 2025-07-25
+// @version 2025-07-30
 
 #include "stdafx.h"
 #include "entry_p.h"
@@ -458,7 +458,7 @@ struct Context
 		SDL_Init(SDL_INIT_GAMEPAD);
 
 		m_windowAlloc.alloc();
-		m_window[0] = SDL_CreateWindow("bgfx", xsettings.windowSize[0], xsettings.windowSize[1], SDL_WINDOW_RESIZABLE);
+		m_window[0] = SDL_CreateWindow("Loading ...", xsettings.windowSize[0], xsettings.windowSize[1], SDL_WINDOW_RESIZABLE);
 
 		m_flags[0] = 0
 		    | ENTRY_WINDOW_FLAG_ASPECT_RATIO

@@ -1,4 +1,4 @@
-// @version 2025-07-25
+// @version 2025-07-30
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -454,7 +454,7 @@ struct Context
 		SDL_Init(SDL_INIT_GAMECONTROLLER);
 
 		m_windowAlloc.alloc();
-		m_window[0] = SDL_CreateWindow("bgfx", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, xsettings.windowSize[0], xsettings.windowSize[1], SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+		m_window[0] = SDL_CreateWindow("Loading ...", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, xsettings.windowSize[0], xsettings.windowSize[1], SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
 		m_flags[0] = 0
 		    | ENTRY_WINDOW_FLAG_ASPECT_RATIO

@@ -25,6 +25,7 @@ private:
 	bx::Vec3 target    = bx::InitZero;          ///< target: current (look at)
 
 public:
+	float    distance    = 0.1f;                  ///< current distance to use between pos and target
 	bool     isFollowing = false;                 ///< following target or free look?
 	bx::Vec3 forward     = { 0.0f, 0.0f, 1.0f };  ///< forward dir (current)
 	bx::Vec3 forward2    = { 0.0f, 0.0f, 1.0f };  ///< forward dir (wanted)

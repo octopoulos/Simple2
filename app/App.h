@@ -164,6 +164,9 @@ private:
 	/// Open an ImGuiFileDialog
 	void OpenFile(int action);
 
+	/// Opened a file with the dialog
+	void OpenedFile(int action, const std::filesystem::path& path);
+
 	/// Show the menu bar
 	void ShowMainMenu(float alpha);
 

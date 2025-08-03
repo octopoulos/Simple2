@@ -191,18 +191,17 @@ void App::FluidControls()
 		{
 			if ((ginput.buttons[1] || ginput.buttons[2]) || ginput.mouseLock)
 				camera->Orbit(ginput.mouseRels2[0], ginput.mouseRels2[1]);
-		}
 
-		// typical value: 0.008333325
-		if (float wheel = ginput.mouseRels2[2])
-		{
-			wheel *= xsettings.zoomWheel;
-			if (wheel > 0)
-				camera->Zoom(1.0f / (1.0f + wheel));
-			else
-				camera->Zoom(1.0f - wheel);
+			// typical value: 0.008333325
+			if (float wheel = ginput.mouseRels2[2])
+			{
+				wheel *= xsettings.zoomWheel;
+				if (wheel > 0)
+					camera->Zoom(1.0f / (1.0f + wheel));
+				else
+					camera->Zoom(1.0f - wheel);
+			}
 		}
-
 		camera->Update(deltaTime);
 	}
 
@@ -215,7 +214,7 @@ void App::FluidControls()
 		using namespace entry;
 
 		float speed = deltaTime * xsettings.cameraSpeed;
-		if (keys[Key::LeftCtrl]) speed *= 0.5f;
+		if (keys[Key::LeftCtrl]) speed *= 0.2f;
 		if (keys[Key::LeftShift]) speed *= 2.0f;
 
 		const bool isOrtho = (xsettings.projection == Projection_Orthographic);

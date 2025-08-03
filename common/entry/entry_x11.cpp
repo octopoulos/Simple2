@@ -1,4 +1,4 @@
-// @version 2025-07-26
+// @version 2025-07-30
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -28,8 +28,8 @@
 
 namespace entry
 {
-static const char* s_applicationName  = "BGFX";
-static const char* s_applicationClass = "bgfx";
+static const char* s_applicationName  = "SIMPLE";
+static const char* s_applicationClass = "simple";
 
 #	define JS_EVENT_BUTTON 0x01 /* button pressed/released */
 #	define JS_EVENT_AXIS   0x02 /* joystick moved */

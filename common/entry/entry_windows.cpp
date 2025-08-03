@@ -1,4 +1,4 @@
-// @version 2025-07-25
+// @version 2025-07-30
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -491,13 +491,13 @@ struct Context
 		wnd.hInstance     = instance;
 		wnd.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
 		wnd.hCursor       = LoadCursor(NULL, IDC_ARROW);
-		wnd.lpszClassName = L"bgfx";
+		wnd.lpszClassName = L"simple";
 		wnd.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
 		RegisterClassExW(&wnd);
 
 		m_windowAlloc.alloc();
 		m_hwnd[0] = CreateWindowExA(
-		    WS_EX_ACCEPTFILES, "bgfx", "BGFX", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, xsettings.windowSize[0], xsettings.windowSize[1], NULL, NULL, instance, 0);
+		    WS_EX_ACCEPTFILES, "simple", "SIMPLE", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, xsettings.windowSize[0], xsettings.windowSize[1], NULL, NULL, instance, 0);
 
 		m_flags[0] = 0
 		    | ENTRY_WINDOW_FLAG_ASPECT_RATIO
@@ -559,7 +559,7 @@ struct Context
 			case WM_USER_WINDOW_CREATE:
 			{
 				Msg* msg  = (Msg*)_lparam;
-				HWND hwnd = CreateWindowW(L"bgfx", UTF8ToUTF16(msg->m_title.c_str()).data(), WS_OVERLAPPEDWINDOW | WS_VISIBLE, msg->m_x, msg->m_y, msg->m_width, msg->m_height, NULL, NULL, (HINSTANCE)GetModuleHandle(NULL), 0);
+				HWND hwnd = CreateWindowW(L"Loading ...", UTF8ToUTF16(msg->m_title.c_str()).data(), WS_OVERLAPPEDWINDOW | WS_VISIBLE, msg->m_x, msg->m_y, msg->m_width, msg->m_height, NULL, NULL, (HINSTANCE)GetModuleHandle(NULL), 0);
 
 				adjust(hwnd, msg->m_width, msg->m_height, true);
 				clear(hwnd);

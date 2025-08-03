@@ -12,10 +12,11 @@ constexpr float orthoZoomMin = 0.0002f;
 
 void Camera::Initialize()
 {
+	distance = 0.1f;
 	orbit[0] = 0.0f;
 	orbit[1] = 0.0f;
-	pos      = { 0.0f, 0.0f, -15.0f };
-	pos2     = { 0.0f, 0.0f, -15.0f };
+	pos      = { 0.0f, 5.0f, -13.0f };
+	pos2     = { 0.0f, 5.0f, -13.0f };
 	target   = { 0.0f, 0.0f, 0.0f };
 	target2  = { 0.0f, 0.0f, 0.0f };
 }
@@ -28,7 +29,7 @@ void Camera::ConsumeOrbit(float amount)
 	orbit[0] -= consume[0];
 	orbit[1] -= consume[1];
 
-	//ui::Log("orbit={:7.3} {:7.3}", orbit[0], orbit[1]);
+	// ui::Log("orbit={:7.3} {:7.3}", orbit[0], orbit[1]);
 	if (std::abs(orbit[0]) < 1e-5f && std::abs(orbit[1]) < 1e-5f) return;
 
 	const bx::Vec3 toPos       = bx::sub(pos, target);
@@ -58,8 +59,11 @@ void Camera::Move(int cameraDir, float speed)
 {
 	const auto& dir = (cameraDir == CameraDir_Forward) ? forward : ((cameraDir == CameraDir_Right) ? right : up);
 
-	pos2    = bx::mad(dir, speed, pos2);
-	target2 = bx::mad(dir, speed, target2);
+
+	distance    = 0.1f;
+	isFollowing = false;
+	pos2        = bx::mad(dir, speed, pos2);
+	target2     = bx::mad(forward, distance, pos2);
 }
 
 void Camera::Orbit(float dx, float dy)
@@ -70,15 +74,15 @@ void Camera::Orbit(float dx, float dy)
 
 void Camera::RotateAroundAxis(const bx::Vec3& axis, float angle)
 {
-	const auto  quat    = bx::fromAxisAngle(axis, angle);
-	const auto  rotated = bx::mul(forward, quat);
+	const auto quat    = bx::fromAxisAngle(axis, angle);
+	const auto rotated = bx::mul(forward, quat);
 
-	pos2 = bx::mad(rotated, -xsettings.distance, target2);
+	pos2 = bx::mad(rotated, -distance, target2);
 }
 
 void Camera::SetOrthographic(const bx::Vec3& axis)
 {
-	pos2 = bx::mad(bx::normalize(axis), xsettings.distance, target2);
+	pos2 = bx::mad(bx::normalize(axis), distance, target2);
 
 	xsettings.projection = Projection_Orthographic;
 }
@@ -128,6 +132,7 @@ void Camera::Zoom(float ratio)
 	xsettings.distance  = xsettings.orthoZoom * xsettings.windowSize[1] / bx::tan(glm::radians(fovY) * 0.5f);
 
 	// 2) update pos2
+	distance    = xsettings.distance;
 	isFollowing = true;
-	pos2        = bx::mad(forward2, -xsettings.distance, target2);
+	pos2        = bx::mad(forward2, -distance, target2);
 }

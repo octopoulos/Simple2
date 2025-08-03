@@ -13,6 +13,13 @@
 #	include "ImGuiFileDialog/ImGuiFileDialog.h"
 #endif // WITH_FILE_DIALOG
 
+enum OpenActions_
+{
+	OpenAction_None      = 0,
+	OpenAction_OpenScene = 1,
+	OpenAction_SaveScene = 2,
+};
+
 /// https://github.com/octopoulos/ImGuiFileDialog/blob/master/Documentation.md
 void App::FilesUi()
 {
@@ -23,7 +30,7 @@ void App::FilesUi()
 		{
 			fileFolder                = instance->GetCurrentPath();
 			actionFolders[fileAction] = fileFolder;
-			// OpenedFile(fileAction, instance->GetFilePathName());
+			OpenedFile(fileAction, instance->GetFilePathName());
 		}
 		instance->Close();
 	}
@@ -86,11 +93,12 @@ int App::MainUi()
 
 void App::OpenFile(int action)
 {
+	// clang-format off
 	static const UMAP_INT_STR titles = {
-		{ 1, "Open file"       },
-		{ 2, "Save file"       },
-		{ 3, "Save screenshot" },
+		{ OpenAction_OpenScene, "Open Scene" },
+		{ OpenAction_SaveScene, "Save Scene" },
 	};
+	// clang-format on
 
 	fileAction = action;
 
@@ -101,6 +109,20 @@ void App::OpenFile(int action)
 	};
 	ImGuiFileDialog::Instance()->OpenDialog("OpenFileX", FindDefault(titles, action, "Choose File"), "((.*))", config);
 #endif // WITH_FILE_DIALOG
+}
+
+void App::OpenedFile(int action, const std::filesystem::path& path)
+{
+	ui::Log("App/OpenedFile: {} action={} folder={}", path, action, fileFolder);
+	if (path.empty()) return;
+
+	switch (action)
+	{
+	case OpenAction_OpenScene: OpenMap(path); break;
+	case OpenAction_SaveScene: SaveMap(path); break;
+	default:
+		ui::Log("OpenedFile: Unknown action: {} {}", action, path);
+	}
 }
 
 void App::ShowMainMenu(float alpha)
@@ -125,8 +147,6 @@ void App::ShowMainMenu(float alpha)
 	}
 
 	static int dirtyMenu = 0;
-	// const bool hasFrame  = app->HasFrame();
-	// const int  ioBusy    = app->IoBusy();
 	int        update    = 0;
 
 	if (ImGui::BeginMainMenuBar())
@@ -134,7 +154,7 @@ void App::ShowMainMenu(float alpha)
 		// file
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("Open Image/Video...", "")) OpenFile(0);
+			if (ImGui::MenuItem("Open Scene...", "")) OpenFile(OpenAction_OpenScene);
 			if (ImGui::BeginMenu("Open Recent"))
 			{
 				bool first = true;
@@ -154,13 +174,38 @@ void App::ShowMainMenu(float alpha)
 						}
 						std::filesystem::path path = name;
 						if (ImGui::MenuItem(path.filename().string().c_str()))
-							ui::Log("app->OpenedFile(1, path);");
+							OpenedFile(OpenAction_OpenScene, path);
 					}
 				}
 
 				if (first) ImGui::MenuItem("Empty List");
 				ImGui::EndMenu();
 			}
+			ImGui::Separator();
+			if (ImGui::MenuItem("Save Scene...", "")) OpenFile(OpenAction_SaveScene);
+			ImGui::Separator();
+			if (ImGui::MenuItem("Exit")) quit = true;
+
+			ImGui::EndMenu();
+		}
+
+		// physics
+		if (ImGui::BeginMenu("Physics"))
+		{
+			ImGui::MenuItem("Paused", nullptr, &xsettings.physPaused);
+			ImGui::MenuItem("Show Collision Volumes", nullptr, &xsettings.bulletDebug);
+			ImGui::EndMenu();
+		}
+
+		// render
+		if (ImGui::BeginMenu("Render"))
+		{
+			{
+				bool selected = xsettings.projection == Projection_Orthographic;
+				if (ImGui::MenuItem("Orthographic Projection", nullptr, selected))
+					xsettings.projection = 1 - xsettings.projection;
+			}
+			ImGui::MenuItem("Mesh Instancing", nullptr, &xsettings.instancing);
 			ImGui::Separator();
 			if (ImGui::MenuItem("Capture Screenshot")) wantScreenshot = 6;
 			if (ImGui::MenuItem("Capture Screenshot with UI")) wantScreenshot = 5;
@@ -191,29 +236,6 @@ void App::ShowMainMenu(float alpha)
 					}
 				}
 			}
-			ImGui::Separator();
-			if (ImGui::MenuItem("Exit")) quit = true;
-
-			ImGui::EndMenu();
-		}
-
-		// physics
-		if (ImGui::BeginMenu("Physics"))
-		{
-			ImGui::MenuItem("Paused", nullptr, &xsettings.physPaused);
-			ImGui::MenuItem("Draw Collision Volumes", nullptr, &xsettings.bulletDebug);
-			ImGui::EndMenu();
-		}
-
-		// render
-		if (ImGui::BeginMenu("Render"))
-		{
-			{
-				bool selected = xsettings.projection == Projection_Orthographic;
-				if (ImGui::MenuItem("Orthographic Projection", nullptr, selected))
-					xsettings.projection = 1 - xsettings.projection;
-			}
-			ImGui::MenuItem("Mesh Instancing", nullptr, &xsettings.instancing);
 			ImGui::EndMenu();
 		}
 
@@ -222,10 +244,8 @@ void App::ShowMainMenu(float alpha)
 		{
 			// AddMenu("Controls", xsettings.shortcutControls, GetControlsWindow());
 			// AddMenu("Log", xsettings.shortcutLog, GetLogWindow());
-			// app->MenuWindows();
 			// AddMenu("Settings", xsettings.shortcutSettings, GetSettingsWindow());
 			// ImGui::Separator();
-			ImGui::MenuItem("ImGui Demo", nullptr, &showImGuiDemo);
 			ui::AddMenu("Theme Editor", nullptr, ui::GetThemeWindow());
 
 			ImGui::EndMenu();
@@ -234,6 +254,7 @@ void App::ShowMainMenu(float alpha)
 		// help
 		if (ImGui::BeginMenu("Help"))
 		{
+			ImGui::MenuItem("ImGui Demo", nullptr, &showImGuiDemo);
 			ImGui::MenuItem("Good Luck!");
 			ImGui::EndMenu();
 		}
