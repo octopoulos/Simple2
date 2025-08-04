@@ -10,6 +10,13 @@
 #include "entry/input.h"
 #include "loaders/MeshLoader.h"
 
+enum ThrowActions_ : int
+{
+	ThrowAction_Drop,
+	ThrowAction_Spiral,
+	ThrowAction_Throw,
+};
+
 #define DOWN_OR_REPEAT(key) ((downs[key] || ginput.RepeatingKey(key)) ? 1 : 0)
 
 static inline float SignNonZero(float v)
@@ -83,10 +90,10 @@ void App::FixedControls()
 		}
 		if (downs[Key::KeyP]) xsettings.physPaused = !xsettings.physPaused;
 
-		if (downs[Key::Key1]) ThrowMesh(ThrowAction_Throw, "donut3", ShapeType_Cylinder);
-		if (downs[Key::Key2]) ThrowMesh(ThrowAction_Throw, "kenney_car-kit/taxi", ShapeType_Box); // Capsule doesn't work
-		if (downs[Key::Key3]) ThrowGeometry(ThrowAction_Throw);
-		if (downs[Key::Key4]) ThrowMesh(ThrowAction_Spiral, "donut3", ShapeType_Cylinder);
+		if (downs[Key::Key1]) ThrowMesh(ThrowAction_Throw, "donut3", ShapeType_Cylinder, "donut_base.png");
+		// TODO: Shape_Capsule doesn't work
+		if (downs[Key::Key2]) ThrowMesh(ThrowAction_Throw, "kenney_car-kit/taxi", ShapeType_Box);
+		if (downs[Key::Key3]) ThrowGeometry(ThrowAction_Throw, GeometryType_None, "colors.png");
 
 		// move cursor
 		{
@@ -214,6 +221,17 @@ void App::FluidControls()
 	{
 		using namespace entry;
 
+		if (keys[Key::Key4])
+		{
+			static int64_t prevUs;
+			const int64_t  nowUs = NowUs();
+			if (nowUs > prevUs + 16 * 1000)
+			{
+				ThrowMesh(ThrowAction_Spiral, "donut3", ShapeType_Cylinder, "donut_base.png");
+				prevUs = nowUs;
+			}
+		}
+
 		float speed = deltaTime * xsettings.cameraSpeed;
 		if (keys[Key::LeftCtrl]) speed *= 0.2f;
 		if (keys[Key::LeftShift]) speed *= 2.0f;
@@ -234,7 +252,7 @@ void App::FluidControls()
 	}
 }
 
-void App::ThrowGeometry(int action, int geometryType)
+void App::ThrowGeometry(int action, int geometryType, std::string_view texture)
 {
 	if (geometryType == GeometryType_None)
 		geometryType = MerseneInt32(GeometryType_Box, GeometryType_Count - 1);
@@ -255,7 +273,7 @@ void App::ThrowGeometry(int action, int geometryType)
 		mesh->type |= ObjectType_Group | ObjectType_Instance;
 		mesh->geometry = CreateAnyGeometry(geometryType);
 		mesh->material = std::make_shared<Material>(GetShaderManager().LoadProgram("vs_model_texture_instance", "fs_model_texture_instance"));
-		mesh->LoadTextures("colors.png");
+		if (texture.size()) mesh->LoadTextures(texture);
 		scene->AddNamedChild(mesh, std::move(groupName));
 
 		parent = mesh.get();
@@ -277,18 +295,21 @@ void App::ThrowGeometry(int action, int geometryType)
 		    { pos.x, pos.y, pos.z });
 		object->CreateShapeBody(physics.get(), GeometryShape(geometryType), 1.0f);
 
-		const auto impulse = bx::mul(camera->forward, 40.0f);
-		for (auto& body : object->bodies)
+		if (action == ThrowAction_Throw)
 		{
-			const auto offset = btVector3(NormalFloat(), NormalFloat(), NormalFloat()) * 0.02f * scale;
-			body->body->applyImpulse(BxToBullet(impulse), offset);
+			const auto impulse = bx::mul(camera->forward, 40.0f);
+			for (auto& body : object->bodies)
+			{
+				const auto offset = btVector3(NormalFloat(), NormalFloat(), NormalFloat()) * 0.02f * scale;
+				body->body->applyImpulse(BxToBullet(impulse), offset);
+			}
 		}
 
 		parent->AddNamedChild(std::move(object), fmt::format("{}:{}", name, scene->children.size()));
 	}
 }
 
-void App::ThrowMesh(int action, std::string_view name, int shapeType)
+void App::ThrowMesh(int action, std::string_view name, int shapeType, std::string_view texture)
 {
 	// 1) get/create the parent
 	auto groupName = fmt::format("{}-group", name);
@@ -304,6 +325,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType)
 	{
 		mesh->type |= ObjectType_Group | ObjectType_Instance;
 		mesh->program = GetShaderManager().LoadProgram("vs_model_texture_instance", "fs_model_texture_instance");
+		if (texture.size()) mesh->LoadTextures(texture);
 		scene->AddNamedChild(mesh, std::move(groupName));
 
 		parent = mesh.get();
@@ -316,22 +338,49 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType)
 	{
 		object->program = GetShaderManager().LoadProgram("vs_model_texture", "fs_model_texture");
 
-		const auto  pos    = camera->pos2;
+		bx::Vec3 pos = camera->pos2;
+		bx::Vec3 rot = bx::InitZero;
+
+		if (action == ThrowAction_Spiral)
+		{
+			const auto numChild = parent->children.size();
+			if (numChild)
+			{
+				const auto& child = parent->children.back();
+				const auto& cpos  = child->transform[3];
+				ui::Log(" - {}: {} {} {}", child->name, cpos[0], cpos[1], cpos[2]);
+				pos.y = std::max(pos.x, cpos[1] + 0.5f);
+			}
+			else pos.y = 10.0f;
+
+			const float radius = sinf(numChild * 0.02f) * 7.0f;
+			{
+				pos.x = cosf(numChild * 0.2f) * radius;
+				pos.z = sinf(numChild * 0.2f) * radius;
+				rot.x = sinf(numChild * 0.3f);
+				rot.y = 3.0f;
+			}
+			if (numChild & 1) shapeType = ShapeType_Box;
+		}
+
 		const float scale  = MerseneFloat(0.25f, 1.0f);
 		const float scaleY = scale * MerseneFloat(0.7f, 1.5f);
 
 		object->ScaleRotationPosition(
 		    { scale, scaleY, scale },
-		    { 0.0f, 0.0f, 0.0f },
+		    { rot.x, rot.y, rot.z },
 		    { pos.x, pos.y, pos.z }
 		);
 		object->CreateShapeBody(physics.get(), shapeType, 1.0f);
 
-		const auto impulse = bx::mul(camera->forward, 40.0f);
-		for (auto& body : object->bodies)
+		if (action == ThrowAction_Throw)
 		{
-			const auto offset = btVector3(NormalFloat(), NormalFloat(), NormalFloat()) * 0.02f * scale;
-			body->body->applyImpulse(BxToBullet(impulse), offset);
+			const auto impulse = bx::mul(camera->forward, 40.0f);
+			for (auto& body : object->bodies)
+			{
+				const auto offset = btVector3(NormalFloat(), NormalFloat(), NormalFloat()) * 0.02f * scale;
+				body->body->applyImpulse(BxToBullet(impulse), offset);
+			}
 		}
 
 		parent->AddNamedChild(object, fmt::format("{}:{}", name, parent->children.size()));

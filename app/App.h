@@ -19,13 +19,6 @@ struct Tile
 	float       z    = 0.0f;    ///< front
 };
 
-enum ThrowActions_ : int
-{
-	ThrowAction_Drop,
-	ThrowAction_Spiral,
-	ThrowAction_Throw,
-};
-
 class App
 {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -59,10 +52,10 @@ private:
 
 	/// Throw a geometry
 	/// @param geometryType: GeometryType_None for random
-	void ThrowGeometry(int action, int geometryType = GeometryType_None);
+	void ThrowGeometry(int action, int geometryType = GeometryType_None, std::string_view texture = "");
 
 	/// Throw a mesh instance
-	void ThrowMesh(int action, std::string_view name, int shapeType);
+	void ThrowMesh(int action, std::string_view name, int shapeType, std::string_view texture = "");
 
 public:
 	/// Controls function executed every frame, and run before Render

@@ -215,43 +215,6 @@ int App::InitializeScene()
 		scene->AddNamedChild(object, "donut");
 	}
 
-	// donuts
-	ThrowMesh(ThrowAction_Spiral, "donut3");
-	if (auto parent = MeshLoader::LoadModel("donut3"))
-	{
-		parent->type |= ObjectType_Group | ObjectType_Instance;
-		parent->program = shaderManager.LoadProgram("vs_model_texture_instance", "fs_model_texture_instance");
-		parent->LoadTextures("donut_base.png");
-		scene->AddNamedChild(parent, "donut3-group");
-
-		const int64_t nowUs    = NowUs();
-		const int     numDonut = 120;
-		for (int i = 0; i < numDonut; ++i)
-		{
-			// if (auto object = MeshLoader::LoadModel("donut3"))
-			if (auto object = parent->CloneInstance())
-			{
-				//object->type |= ObjectType_Instance;
-				const float radius = sinf(i * 0.02f) * 7.0f;
-				const float scale  = MerseneFloat(0.25f, 0.75f);
-				const float scaleY = scale * MerseneFloat(0.7f, 1.5f);
-
-				//object->program = shaderManager.LoadProgram("vs_model_texture", "fs_model_texture");
-				//object->LoadTextures("donut_base.png");
-				object->ScaleRotationPosition(
-				    { scale, scaleY, scale },
-				    { sinf(i * 0.3f), 3.0f, 0.0f },
-				    { cosf(i * 0.2f) * radius, 10.0f + i * 0.5f, sinf(i * 0.2f) * radius }
-				);
-				object->CreateShapeBody(physics.get(), (i & 7) ? ShapeType_Box : ShapeType_Cylinder, 1.0f);
-
-				parent->AddNamedChild(object, fmt::format("donut3-{}", i));
-			}
-		}
-		const int64_t elapsed = NowUs() - nowUs;
-		ui::Log("Loaded {} donuts in {}us ({}s) => {}us/donut", numDonut, elapsed, elapsed * 1e-6f, elapsed * 1.0f / numDonut);
-	}
-
 	// print scene children
 	{
 		ui::Log("Scene.children={}", scene->children.size());
@@ -526,7 +489,7 @@ public:
 			callback.wantVideo = app->wantVideo;
 
 			if (entry::processEvents(width, height, debug, reset)) return false;
-			
+
 			app->SynchronizeEvents(width, height);
 			app->Controls();
 		}
