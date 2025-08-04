@@ -1,6 +1,6 @@
 // ui-settings.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-07-31
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -17,7 +17,7 @@ namespace ui
 	app->ActivateRectangle(id)
 
 // see app:ShowMoreFlags
-enum ShowFlags
+enum ShowFlags : int
 {
 	Show_Analysis          = 1 << 0, // main
 	Show_AnalysisGlobal    = 1 << 1,

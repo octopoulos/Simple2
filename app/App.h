@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-07-31
 
 #pragma once
 
@@ -17,6 +17,13 @@ struct Tile
 	float       x    = 0.0f;    ///< right
 	float       y    = 0.0f;    ///< up
 	float       z    = 0.0f;    ///< front
+};
+
+enum ThrowActions_ : int
+{
+	ThrowAction_Drop,
+	ThrowAction_Spiral,
+	ThrowAction_Throw,
 };
 
 class App
@@ -52,10 +59,10 @@ private:
 
 	/// Throw a geometry
 	/// @param geometryType: GeometryType_None for random
-	void ThrowGeometry(int geometryType = GeometryType_None);
+	void ThrowGeometry(int action, int geometryType = GeometryType_None);
 
 	/// Throw a mesh instance
-	void ThrowMesh(std::string_view name, int shapeType);
+	void ThrowMesh(int action, std::string_view name, int shapeType);
 
 public:
 	/// Controls function executed every frame, and run before Render

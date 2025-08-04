@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-07-31
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -216,6 +216,7 @@ int App::InitializeScene()
 	}
 
 	// donuts
+	ThrowMesh(ThrowAction_Spiral, "donut3");
 	if (auto parent = MeshLoader::LoadModel("donut3"))
 	{
 		parent->type |= ObjectType_Group | ObjectType_Instance;

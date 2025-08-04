@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-07-31
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -83,9 +83,10 @@ void App::FixedControls()
 		}
 		if (downs[Key::KeyP]) xsettings.physPaused = !xsettings.physPaused;
 
-		if (downs[Key::Key1]) ThrowMesh("donut3"             , ShapeType_Cylinder);
-		if (downs[Key::Key2]) ThrowMesh("kenney_car-kit/taxi", ShapeType_Box);
-		if (downs[Key::Key3]) ThrowGeometry();
+		if (downs[Key::Key1]) ThrowMesh(ThrowAction_Throw, "donut3", ShapeType_Cylinder);
+		if (downs[Key::Key2]) ThrowMesh(ThrowAction_Throw, "kenney_car-kit/taxi", ShapeType_Box); // Capsule doesn't work
+		if (downs[Key::Key3]) ThrowGeometry(ThrowAction_Throw);
+		if (downs[Key::Key4]) ThrowMesh(ThrowAction_Spiral, "donut3", ShapeType_Cylinder);
 
 		// move cursor
 		{
@@ -233,7 +234,7 @@ void App::FluidControls()
 	}
 }
 
-void App::ThrowGeometry(int geometryType)
+void App::ThrowGeometry(int action, int geometryType)
 {
 	if (geometryType == GeometryType_None)
 		geometryType = MerseneInt32(GeometryType_Box, GeometryType_Count - 1);
@@ -287,7 +288,7 @@ void App::ThrowGeometry(int geometryType)
 	}
 }
 
-void App::ThrowMesh(std::string_view name, int shapeType)
+void App::ThrowMesh(int action, std::string_view name, int shapeType)
 {
 	// 1) get/create the parent
 	auto groupName = fmt::format("{}-group", name);

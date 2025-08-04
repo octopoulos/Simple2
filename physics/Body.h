@@ -1,12 +1,12 @@
 // Body.h
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-07-31
 
 #pragma once
 
 #include "physics/PhysicsWorld.h"
 
-enum ShapeTypes_
+enum ShapeTypes_ : int
 {
 	ShapeType_None         = 0,  ///< btEmptyShape
 	ShapeType_Box          = 1,  ///< btBox2dShape

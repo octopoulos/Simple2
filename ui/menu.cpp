@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-07-31
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -13,7 +13,7 @@
 #	include "ImGuiFileDialog/ImGuiFileDialog.h"
 #endif // WITH_FILE_DIALOG
 
-enum OpenActions_
+enum OpenActions_ : int
 {
 	OpenAction_None      = 0,
 	OpenAction_OpenScene = 1,

@@ -1,6 +1,6 @@
 // Geometry.h
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-07-31
 
 #pragma once
 
@@ -8,7 +8,7 @@
 // GEOMETRY
 ///////////
 
-enum GeometryTypes_
+enum GeometryTypes_ : int
 {
 	GeometryType_None,
 	//

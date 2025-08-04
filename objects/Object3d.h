@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-07-31
 
 #pragma once
 
@@ -8,7 +8,7 @@ class Object3d;
 using sObject3d = std::shared_ptr<Object3d>;
 
 /// An object can have multiple types (like a flag)
-enum ObjectTypes_
+enum ObjectTypes_ : int
 {
 	ObjectType_Basic    = 1 << 0, ///< basic object
 	ObjectType_Camera   = 1 << 1, ///< camera object
@@ -18,7 +18,7 @@ enum ObjectTypes_
 	ObjectType_Mesh     = 1 << 5, ///< mesh
 };
 
-enum RenderFlags_
+enum RenderFlags_ : int
 {
 	RenderFlag_Instancing = 1 << 0,
 };
