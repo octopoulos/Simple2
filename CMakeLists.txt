@@ -21,13 +21,11 @@ project(Simple LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-OPTION(WITH_FILE_DIALOG ON )
-OPTION(WITH_GLFW        OFF)
-OPTION(WITH_SDL         OFF)
-OPTION(WITH_SDL3        OFF)
+OPTION(WITH_GLFW OFF)
+OPTION(WITH_SDL  OFF)
+OPTION(WITH_SDL3 OFF)
 
 set(ALL_WITHS
-	WITH_FILE_DIALOG
 	WITH_GLFW
 	WITH_SDL
 	WITH_SDL3
@@ -238,7 +236,7 @@ set(    SCENES_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scenes")
 set(  TEXTURES_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/textures")
 set(        UI_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ui")
 
-file(GLOB   3RDPARTY_SRC_FILES CONFIGURE_DEPENDS "${3RDPARTY_SRC_DIR}/dear-imgui/*.cpp")
+file(GLOB   3RDPARTY_SRC_FILES CONFIGURE_DEPENDS "${3RDPARTY_SRC_DIR}/dear-imgui/*.cpp" "${3RDPARTY_SRC_DIR}/ImGuiFileDialog/*.cpp" "${3RDPARTY_SRC_DIR}/ImGuiFileDialog/*.h")
 file(GLOB        APP_SRC_FILES CONFIGURE_DEPENDS "${APP_SRC_DIR}/*.cpp" "${APP_SRC_DIR}/*.h")
 file(GLOB       BGFX_SRC_FILES CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bgfx/src/amalgamated.${CPP_MM}")
 file(GLOB       BIMG_SRC_FILES CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bimg/src/image.cpp" "${CPP_3RDPARTY}/bimg/src/image_decode.cpp" "${CPP_3RDPARTY}/bimg/src/image_gnf.cpp" "${CPP_3RDPARTY}/bimg/3rdparty/astc-encoder/source/*.cpp" "${CPP_3RDPARTY}/bimg/3rdparty/tinyexr/deps/miniz/miniz.*")
@@ -262,9 +260,6 @@ add_executable(Simple app/App.cpp)
 #############
 
 add_subdirectory("${CPP_PATH}/AI/" AI)
-if(WITH_FILE_DIALOG)
-	add_subdirectory("${CPP_PATH}/ImGuiFileDialog/" ImGuiFileDialog)
-endif()
 
 set(VCPKG_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
 
@@ -306,11 +301,6 @@ target_link_libraries(Simple PRIVATE
 	meshoptimizer::meshoptimizer
 	#rapidobj::rapidobj
 )
-
-if(WITH_FILE_DIALOG)
-	target_link_libraries(Simple PRIVATE ImGuiFileDialog)
-	#target_link_libraries(Simple PRIVATE "${imguifiledialog_SOURCE_DIR}/ImGuiFileDialog.cpp")
-endif()
 
 if(WITH_GLFW)
 	target_link_libraries(Simple PRIVATE glfw)

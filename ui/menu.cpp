@@ -9,9 +9,7 @@
 #include "common/imgui/imgui.h"
 #include "entry/input.h"
 
-#ifdef WITH_FILE_DIALOG
-#	include "ImGuiFileDialog/ImGuiFileDialog.h"
-#endif // WITH_FILE_DIALOG
+#include "ImGuiFileDialog/ImGuiFileDialog.h"
 
 enum OpenActions_ : int
 {
@@ -23,7 +21,6 @@ enum OpenActions_ : int
 /// https://github.com/octopoulos/ImGuiFileDialog/blob/master/Documentation.md
 void App::FilesUi()
 {
-#ifdef WITH_FILE_DIALOG
 	if (auto instance = ImGuiFileDialog::Instance(); instance->Display("OpenFileX", 0, { 768.0f, 512.0f }))
 	{
 		if (instance->IsOk())
@@ -34,7 +31,6 @@ void App::FilesUi()
 		}
 		instance->Close();
 	}
-#endif
 }
 
 int App::MainUi()
@@ -102,13 +98,11 @@ void App::OpenFile(int action)
 
 	fileAction = action;
 
-#ifdef WITH_FILE_DIALOG
 	IGFD::FileDialogConfig config = {
 		.path  = FindDefault(actionFolders, action, "."),
 		.flags = ImGuiFileDialogFlags_Modal,
 	};
 	ImGuiFileDialog::Instance()->OpenDialog("OpenFileX", FindDefault(titles, action, "Choose File"), "((.*))", config);
-#endif // WITH_FILE_DIALOG
 }
 
 void App::OpenedFile(int action, const std::filesystem::path& path)
