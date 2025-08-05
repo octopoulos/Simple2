@@ -52,10 +52,10 @@ private:
 
 	/// Throw a geometry
 	/// @param geometryType: GeometryType_None for random
-	void ThrowGeometry(int action, int geometryType = GeometryType_None, std::string_view texture = "");
+	void ThrowGeometry(int action, int geometryType = GeometryType_None, std::string_view textureName = "");
 
 	/// Throw a mesh instance
-	void ThrowMesh(int action, std::string_view name, int shapeType, std::string_view texture = "");
+	void ThrowMesh(int action, std::string_view name, int shapeType, std::string_view textureName = "");
 
 public:
 	/// Controls function executed every frame, and run before Render

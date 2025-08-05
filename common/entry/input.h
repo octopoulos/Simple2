@@ -1,4 +1,4 @@
-// @version 2025-07-30
+// @version 2025-07-31
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -104,6 +104,15 @@ int32_t inputGetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::En
 // GlobalInput
 //////////////
 
+enum Modifiers_ : int
+{
+	Modifier_None  = 0,
+	Modifier_Shift = 1,
+	Modifier_Ctrl  = 2,
+	Modifier_Alt   = 4,
+	Modifier_Meta  = 8,
+};
+
 struct KeyState
 {
 	int     key;   ///< key code
@@ -124,6 +133,8 @@ struct GlobalInput
 	bool     keys[256]       = {};                          ///< keys pushed
 	int64_t  keyTimes[256]   = {};                          ///< when the key was pushed last time (in ms)
 	bool     keyUps[256]     = {};                          ///< keys released this frame
+	int      lastAscii       = -1;                          ///< last ascii char pushed
+	int      lastKey         = 0;                           ///< last key pushed
 	int      mouseAbs[3]     = {};                          ///< mouse absolute coordinates
 	int      mouseAbs2[3]    = {};                          ///< mouse absolute coordinates: deltas
 	int      mouseFrame      = 0;                           ///< mouse input frame
@@ -135,8 +146,16 @@ struct GlobalInput
 	int64_t  nowMs           = 0;                           ///< current timestamp (in ms)
 	float    resolution[3]   = { 1280.0f, 720.0f, 120.0f }; ///< used to normalize mouse coords
 
+	/// Check the global modifier, or if the key is a modifier
+	/// @param key: 0 for global modifier
+	/// @returns &1: shift, &2: ctrl, &4: alt, &8: meta
+	int IsModifier(int key = 0);
+
 	/// Keyboard key down/up
 	void KeyDownUp(int key, bool down);
+
+	/// Convert key to ascii char
+	int KeyToAscii(int key);
 
 	/// Mouse button change
 	void MouseButton(int button, uint8_t state);
@@ -156,6 +175,9 @@ struct GlobalInput
 
 	/// Reset data to initial state
 	void Reset();
+
+	/// Check if the last ascii must be repeated, if not then reset it
+	void ResetAscii();
 
 	/// Reset the keyNews only, must do this every frame
 	void ResetFixed();

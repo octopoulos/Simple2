@@ -4,6 +4,7 @@
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
+#include "stdafx.h"
 #include <bgfx/bgfx.h>
 #include <bgfx/embedded_shader.h>
 #include <bx/allocator.h>
@@ -16,7 +17,7 @@
 #include "../bgfx_utils.h"
 
 #ifndef USE_ENTRY
-#	define USE_ENTRY 0
+#	define USE_ENTRY 1
 #endif // USE_ENTRY
 
 #ifndef USE_LOCAL_STB
@@ -218,113 +219,143 @@ struct OcornutImguiContext
 		io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 
 #if USE_ENTRY
-		for (int32_t ii = 0; ii < (int32_t)entry::Key::Count; ++ii)
+		using namespace entry;
+		for (int32_t ii = 0; ii < (int32_t)Key::Count; ++ii)
 			m_keyMap[ii] = ImGuiKey_None;
 
-		m_keyMap[entry::Key::Esc]          = ImGuiKey_Escape;
-		m_keyMap[entry::Key::Return]       = ImGuiKey_Enter;
-		m_keyMap[entry::Key::Tab]          = ImGuiKey_Tab;
-		m_keyMap[entry::Key::Space]        = ImGuiKey_Space;
-		m_keyMap[entry::Key::Backspace]    = ImGuiKey_Backspace;
-		m_keyMap[entry::Key::Up]           = ImGuiKey_UpArrow;
-		m_keyMap[entry::Key::Down]         = ImGuiKey_DownArrow;
-		m_keyMap[entry::Key::Left]         = ImGuiKey_LeftArrow;
-		m_keyMap[entry::Key::Right]        = ImGuiKey_RightArrow;
-		m_keyMap[entry::Key::Insert]       = ImGuiKey_Insert;
-		m_keyMap[entry::Key::Delete]       = ImGuiKey_Delete;
-		m_keyMap[entry::Key::Home]         = ImGuiKey_Home;
-		m_keyMap[entry::Key::End]          = ImGuiKey_End;
-		m_keyMap[entry::Key::PageUp]       = ImGuiKey_PageUp;
-		m_keyMap[entry::Key::PageDown]     = ImGuiKey_PageDown;
-		m_keyMap[entry::Key::Print]        = ImGuiKey_PrintScreen;
-		m_keyMap[entry::Key::Equals]       = ImGuiKey_Equal;
-		m_keyMap[entry::Key::Minus]        = ImGuiKey_Minus;
-		m_keyMap[entry::Key::LeftBracket]  = ImGuiKey_LeftBracket;
-		m_keyMap[entry::Key::RightBracket] = ImGuiKey_RightBracket;
-		m_keyMap[entry::Key::Semicolon]    = ImGuiKey_Semicolon;
-		m_keyMap[entry::Key::Quote]        = ImGuiKey_Apostrophe;
-		m_keyMap[entry::Key::Comma]        = ImGuiKey_Comma;
-		m_keyMap[entry::Key::Period]       = ImGuiKey_Period;
-		m_keyMap[entry::Key::Slash]        = ImGuiKey_Slash;
-		m_keyMap[entry::Key::Backslash]    = ImGuiKey_Backslash;
-		m_keyMap[entry::Key::Tilde]        = ImGuiKey_GraveAccent;
-		m_keyMap[entry::Key::F1]           = ImGuiKey_F1;
-		m_keyMap[entry::Key::F2]           = ImGuiKey_F2;
-		m_keyMap[entry::Key::F3]           = ImGuiKey_F3;
-		m_keyMap[entry::Key::F4]           = ImGuiKey_F4;
-		m_keyMap[entry::Key::F5]           = ImGuiKey_F5;
-		m_keyMap[entry::Key::F6]           = ImGuiKey_F6;
-		m_keyMap[entry::Key::F7]           = ImGuiKey_F7;
-		m_keyMap[entry::Key::F8]           = ImGuiKey_F8;
-		m_keyMap[entry::Key::F9]           = ImGuiKey_F9;
-		m_keyMap[entry::Key::F10]          = ImGuiKey_F10;
-		m_keyMap[entry::Key::F11]          = ImGuiKey_F11;
-		m_keyMap[entry::Key::F12]          = ImGuiKey_F12;
-		m_keyMap[entry::Key::NumPad0]      = ImGuiKey_Keypad0;
-		m_keyMap[entry::Key::NumPad1]      = ImGuiKey_Keypad1;
-		m_keyMap[entry::Key::NumPad2]      = ImGuiKey_Keypad2;
-		m_keyMap[entry::Key::NumPad3]      = ImGuiKey_Keypad3;
-		m_keyMap[entry::Key::NumPad4]      = ImGuiKey_Keypad4;
-		m_keyMap[entry::Key::NumPad5]      = ImGuiKey_Keypad5;
-		m_keyMap[entry::Key::NumPad6]      = ImGuiKey_Keypad6;
-		m_keyMap[entry::Key::NumPad7]      = ImGuiKey_Keypad7;
-		m_keyMap[entry::Key::NumPad8]      = ImGuiKey_Keypad8;
-		m_keyMap[entry::Key::NumPad9]      = ImGuiKey_Keypad9;
-		m_keyMap[entry::Key::Key0]         = ImGuiKey_0;
-		m_keyMap[entry::Key::Key1]         = ImGuiKey_1;
-		m_keyMap[entry::Key::Key2]         = ImGuiKey_2;
-		m_keyMap[entry::Key::Key3]         = ImGuiKey_3;
-		m_keyMap[entry::Key::Key4]         = ImGuiKey_4;
-		m_keyMap[entry::Key::Key5]         = ImGuiKey_5;
-		m_keyMap[entry::Key::Key6]         = ImGuiKey_6;
-		m_keyMap[entry::Key::Key7]         = ImGuiKey_7;
-		m_keyMap[entry::Key::Key8]         = ImGuiKey_8;
-		m_keyMap[entry::Key::Key9]         = ImGuiKey_9;
-		m_keyMap[entry::Key::KeyA]         = ImGuiKey_A;
-		m_keyMap[entry::Key::KeyB]         = ImGuiKey_B;
-		m_keyMap[entry::Key::KeyC]         = ImGuiKey_C;
-		m_keyMap[entry::Key::KeyD]         = ImGuiKey_D;
-		m_keyMap[entry::Key::KeyE]         = ImGuiKey_E;
-		m_keyMap[entry::Key::KeyF]         = ImGuiKey_F;
-		m_keyMap[entry::Key::KeyG]         = ImGuiKey_G;
-		m_keyMap[entry::Key::KeyH]         = ImGuiKey_H;
-		m_keyMap[entry::Key::KeyI]         = ImGuiKey_I;
-		m_keyMap[entry::Key::KeyJ]         = ImGuiKey_J;
-		m_keyMap[entry::Key::KeyK]         = ImGuiKey_K;
-		m_keyMap[entry::Key::KeyL]         = ImGuiKey_L;
-		m_keyMap[entry::Key::KeyM]         = ImGuiKey_M;
-		m_keyMap[entry::Key::KeyN]         = ImGuiKey_N;
-		m_keyMap[entry::Key::KeyO]         = ImGuiKey_O;
-		m_keyMap[entry::Key::KeyP]         = ImGuiKey_P;
-		m_keyMap[entry::Key::KeyQ]         = ImGuiKey_Q;
-		m_keyMap[entry::Key::KeyR]         = ImGuiKey_R;
-		m_keyMap[entry::Key::KeyS]         = ImGuiKey_S;
-		m_keyMap[entry::Key::KeyT]         = ImGuiKey_T;
-		m_keyMap[entry::Key::KeyU]         = ImGuiKey_U;
-		m_keyMap[entry::Key::KeyV]         = ImGuiKey_V;
-		m_keyMap[entry::Key::KeyW]         = ImGuiKey_W;
-		m_keyMap[entry::Key::KeyX]         = ImGuiKey_X;
-		m_keyMap[entry::Key::KeyY]         = ImGuiKey_Y;
-		m_keyMap[entry::Key::KeyZ]         = ImGuiKey_Z;
+		m_keyMap[Key::KeyA]           = ImGuiKey_A; // 4
+		m_keyMap[Key::KeyB]           = ImGuiKey_B;
+		m_keyMap[Key::KeyC]           = ImGuiKey_C;
+		m_keyMap[Key::KeyD]           = ImGuiKey_D;
+		m_keyMap[Key::KeyE]           = ImGuiKey_E;
+		m_keyMap[Key::KeyF]           = ImGuiKey_F;
+		m_keyMap[Key::KeyG]           = ImGuiKey_G;
+		m_keyMap[Key::KeyH]           = ImGuiKey_H;
+		m_keyMap[Key::KeyI]           = ImGuiKey_I;
+		m_keyMap[Key::KeyJ]           = ImGuiKey_J;
+		m_keyMap[Key::KeyK]           = ImGuiKey_K;
+		m_keyMap[Key::KeyL]           = ImGuiKey_L;
+		m_keyMap[Key::KeyM]           = ImGuiKey_M;
+		m_keyMap[Key::KeyN]           = ImGuiKey_N;
+		m_keyMap[Key::KeyO]           = ImGuiKey_O;
+		m_keyMap[Key::KeyP]           = ImGuiKey_P;
+		m_keyMap[Key::KeyQ]           = ImGuiKey_Q;
+		m_keyMap[Key::KeyR]           = ImGuiKey_R;
+		m_keyMap[Key::KeyS]           = ImGuiKey_S;
+		m_keyMap[Key::KeyT]           = ImGuiKey_T;
+		m_keyMap[Key::KeyU]           = ImGuiKey_U;
+		m_keyMap[Key::KeyV]           = ImGuiKey_V;
+		m_keyMap[Key::KeyW]           = ImGuiKey_W;
+		m_keyMap[Key::KeyX]           = ImGuiKey_X;
+		m_keyMap[Key::KeyY]           = ImGuiKey_Y;
+		m_keyMap[Key::KeyZ]           = ImGuiKey_Z;
+		//
+		m_keyMap[Key::Key1]           = ImGuiKey_1; // 30
+		m_keyMap[Key::Key2]           = ImGuiKey_2;
+		m_keyMap[Key::Key3]           = ImGuiKey_3;
+		m_keyMap[Key::Key4]           = ImGuiKey_4;
+		m_keyMap[Key::Key5]           = ImGuiKey_5;
+		m_keyMap[Key::Key6]           = ImGuiKey_6;
+		m_keyMap[Key::Key7]           = ImGuiKey_7;
+		m_keyMap[Key::Key8]           = ImGuiKey_8;
+		m_keyMap[Key::Key9]           = ImGuiKey_9;
+		m_keyMap[Key::Key0]           = ImGuiKey_0;
+		//
+		m_keyMap[Key::Return]         = ImGuiKey_Enter; // 40
+		m_keyMap[Key::Esc]            = ImGuiKey_Escape;
+		m_keyMap[Key::Backspace]      = ImGuiKey_Backspace;
+		m_keyMap[Key::Tab]            = ImGuiKey_Tab;
+		m_keyMap[Key::Space]          = ImGuiKey_Space;
+		//
+		m_keyMap[Key::Minus]          = ImGuiKey_Minus; // 45
+		m_keyMap[Key::Equals]         = ImGuiKey_Equal;
+		m_keyMap[Key::LeftBracket]    = ImGuiKey_LeftBracket;
+		m_keyMap[Key::RightBracket]   = ImGuiKey_RightBracket;
+		m_keyMap[Key::Backslash]      = ImGuiKey_Backslash;
+		m_keyMap[Key::Semicolon]      = ImGuiKey_Semicolon;
+		m_keyMap[Key::Quote]          = ImGuiKey_Apostrophe;
+		m_keyMap[Key::Tilde]          = ImGuiKey_GraveAccent;
+		m_keyMap[Key::Comma]          = ImGuiKey_Comma;
+		m_keyMap[Key::Period]         = ImGuiKey_Period;
+		m_keyMap[Key::Slash]          = ImGuiKey_Slash;
+		//
+		m_keyMap[Key::CapsLock]       = ImGuiKey_CapsLock; // 57
+		//
+		m_keyMap[Key::F1]             = ImGuiKey_F1; // 58
+		m_keyMap[Key::F2]             = ImGuiKey_F2;
+		m_keyMap[Key::F3]             = ImGuiKey_F3;
+		m_keyMap[Key::F4]             = ImGuiKey_F4;
+		m_keyMap[Key::F5]             = ImGuiKey_F5;
+		m_keyMap[Key::F6]             = ImGuiKey_F6;
+		m_keyMap[Key::F7]             = ImGuiKey_F7;
+		m_keyMap[Key::F8]             = ImGuiKey_F8;
+		m_keyMap[Key::F9]             = ImGuiKey_F9;
+		m_keyMap[Key::F10]            = ImGuiKey_F10;
+		m_keyMap[Key::F11]            = ImGuiKey_F11;
+		m_keyMap[Key::F12]            = ImGuiKey_F12;
+		//
+		m_keyMap[Key::Print]          = ImGuiKey_PrintScreen; // 70
+		m_keyMap[Key::ScrollLock]     = ImGuiKey_ScrollLock;
+		m_keyMap[Key::Pause]          = ImGuiKey_Pause;
+		m_keyMap[Key::Insert]         = ImGuiKey_Insert;
+		m_keyMap[Key::Home]           = ImGuiKey_Home;
+		m_keyMap[Key::PageUp]         = ImGuiKey_PageUp;
+		m_keyMap[Key::Delete]         = ImGuiKey_Delete;
+		m_keyMap[Key::End]            = ImGuiKey_End;
+		m_keyMap[Key::PageDown]       = ImGuiKey_PageDown;
+		m_keyMap[Key::Right]          = ImGuiKey_RightArrow;
+		m_keyMap[Key::Left]           = ImGuiKey_LeftArrow;
+		m_keyMap[Key::Down]           = ImGuiKey_DownArrow;
+		m_keyMap[Key::Up]             = ImGuiKey_UpArrow;
+		//
+		m_keyMap[Key::NumLockClear]   = ImGuiKey_NumLock; // 83
+		m_keyMap[Key::NumPadDivide]   = ImGuiKey_KeypadDivide;
+		m_keyMap[Key::NumPadMultiply] = ImGuiKey_KeypadMultiply;
+		m_keyMap[Key::NumPadMinus]    = ImGuiKey_KeypadSubtract;
+		m_keyMap[Key::NumPadPlus]     = ImGuiKey_KeypadAdd;
+		m_keyMap[Key::NumPadEnter]    = ImGuiKey_KeypadEnter;
+		m_keyMap[Key::NumPad1]        = ImGuiKey_Keypad1;
+		m_keyMap[Key::NumPad2]        = ImGuiKey_Keypad2;
+		m_keyMap[Key::NumPad3]        = ImGuiKey_Keypad3;
+		m_keyMap[Key::NumPad4]        = ImGuiKey_Keypad4;
+		m_keyMap[Key::NumPad5]        = ImGuiKey_Keypad5;
+		m_keyMap[Key::NumPad6]        = ImGuiKey_Keypad6;
+		m_keyMap[Key::NumPad7]        = ImGuiKey_Keypad7;
+		m_keyMap[Key::NumPad8]        = ImGuiKey_Keypad8;
+		m_keyMap[Key::NumPad9]        = ImGuiKey_Keypad9;
+		m_keyMap[Key::NumPad0]        = ImGuiKey_Keypad0;
+		m_keyMap[Key::NumPadPeriod]   = ImGuiKey_KeypadDecimal;
+		//
+		m_keyMap[Key::NonUsBackslash] = ImGuiKey_Oem102; // 100
+		m_keyMap[Key::NumPadEquals]   = ImGuiKey_KeypadEqual;
+		//
+		m_keyMap[Key::LeftCtrl]       = ImGuiKey_LeftCtrl; // 109 (SDL3: 224)
+		m_keyMap[Key::LeftShift]      = ImGuiKey_LeftShift;
+		m_keyMap[Key::LeftAlt]        = ImGuiKey_LeftAlt;
+		m_keyMap[Key::LeftMeta]       = ImGuiKey_LeftSuper;
+		m_keyMap[Key::RightCtrl]      = ImGuiKey_RightCtrl;
+		m_keyMap[Key::RightShift]     = ImGuiKey_RightShift;
+		m_keyMap[Key::RightAlt]       = ImGuiKey_RightAlt;
+		m_keyMap[Key::RightMeta]      = ImGuiKey_RightSuper;
 
 		io.ConfigFlags |= 0
 		    | ImGuiConfigFlags_NavEnableGamepad
 		    | ImGuiConfigFlags_NavEnableKeyboard;
 
-		m_keyMap[entry::Key::GamepadStart]     = ImGuiKey_GamepadStart;
-		m_keyMap[entry::Key::GamepadBack]      = ImGuiKey_GamepadBack;
-		m_keyMap[entry::Key::GamepadY]         = ImGuiKey_GamepadFaceUp;
-		m_keyMap[entry::Key::GamepadA]         = ImGuiKey_GamepadFaceDown;
-		m_keyMap[entry::Key::GamepadX]         = ImGuiKey_GamepadFaceLeft;
-		m_keyMap[entry::Key::GamepadB]         = ImGuiKey_GamepadFaceRight;
-		m_keyMap[entry::Key::GamepadUp]        = ImGuiKey_GamepadDpadUp;
-		m_keyMap[entry::Key::GamepadDown]      = ImGuiKey_GamepadDpadDown;
-		m_keyMap[entry::Key::GamepadLeft]      = ImGuiKey_GamepadDpadLeft;
-		m_keyMap[entry::Key::GamepadRight]     = ImGuiKey_GamepadDpadRight;
-		m_keyMap[entry::Key::GamepadShoulderL] = ImGuiKey_GamepadL1;
-		m_keyMap[entry::Key::GamepadShoulderR] = ImGuiKey_GamepadR1;
-		m_keyMap[entry::Key::GamepadThumbL]    = ImGuiKey_GamepadL3;
-		m_keyMap[entry::Key::GamepadThumbR]    = ImGuiKey_GamepadR3;
+		m_keyMap[Key::GamepadStart]     = ImGuiKey_GamepadStart;
+		m_keyMap[Key::GamepadBack]      = ImGuiKey_GamepadBack;
+		m_keyMap[Key::GamepadY]         = ImGuiKey_GamepadFaceUp;
+		m_keyMap[Key::GamepadA]         = ImGuiKey_GamepadFaceDown;
+		m_keyMap[Key::GamepadX]         = ImGuiKey_GamepadFaceLeft;
+		m_keyMap[Key::GamepadB]         = ImGuiKey_GamepadFaceRight;
+		m_keyMap[Key::GamepadUp]        = ImGuiKey_GamepadDpadUp;
+		m_keyMap[Key::GamepadDown]      = ImGuiKey_GamepadDpadDown;
+		m_keyMap[Key::GamepadLeft]      = ImGuiKey_GamepadDpadLeft;
+		m_keyMap[Key::GamepadRight]     = ImGuiKey_GamepadDpadRight;
+		m_keyMap[Key::GamepadShoulderL] = ImGuiKey_GamepadL1;
+		m_keyMap[Key::GamepadShoulderR] = ImGuiKey_GamepadR1;
+		m_keyMap[Key::GamepadThumbL]    = ImGuiKey_GamepadL3;
+		m_keyMap[Key::GamepadThumbR]    = ImGuiKey_GamepadR3;
 #endif // USE_ENTRY
 
 		bgfx::RendererType::Enum type = bgfx::getRendererType();
@@ -420,22 +451,25 @@ struct OcornutImguiContext
 		io.DeltaTime            = float(frameTime / freq);
 
 		io.AddMousePosEvent((float)_mx, (float)_my);
-		io.AddMouseButtonEvent(ImGuiMouseButton_Left, 0 != (_button & IMGUI_MBUT_LEFT));
-		io.AddMouseButtonEvent(ImGuiMouseButton_Right, 0 != (_button & IMGUI_MBUT_RIGHT));
+		io.AddMouseButtonEvent(ImGuiMouseButton_Left  , 0 != (_button & IMGUI_MBUT_LEFT));
+		io.AddMouseButtonEvent(ImGuiMouseButton_Right , 0 != (_button & IMGUI_MBUT_RIGHT));
 		io.AddMouseButtonEvent(ImGuiMouseButton_Middle, 0 != (_button & IMGUI_MBUT_MIDDLE));
 		io.AddMouseWheelEvent(0.0f, (float)(_scroll - m_lastScroll));
 		m_lastScroll = _scroll;
 
 #if USE_ENTRY
+		using namespace entry;
 		const uint8_t modifiers = inputGetModifiersState();
-		io.AddKeyEvent(ImGuiMod_Shift, 0 != (modifiers & (entry::Modifier::LeftShift | entry::Modifier::RightShift)));
-		io.AddKeyEvent(ImGuiMod_Ctrl, 0 != (modifiers & (entry::Modifier::LeftCtrl | entry::Modifier::RightCtrl)));
-		io.AddKeyEvent(ImGuiMod_Alt, 0 != (modifiers & (entry::Modifier::LeftAlt | entry::Modifier::RightAlt)));
-		io.AddKeyEvent(ImGuiMod_Super, 0 != (modifiers & (entry::Modifier::LeftMeta | entry::Modifier::RightMeta)));
+		// clang-format off
+		io.AddKeyEvent(ImGuiMod_Shift, 0 != (modifiers & (Modifier::LeftShift | Modifier::RightShift)));
+		io.AddKeyEvent(ImGuiMod_Ctrl , 0 != (modifiers & (Modifier::LeftCtrl  | Modifier::RightCtrl )));
+		io.AddKeyEvent(ImGuiMod_Alt  , 0 != (modifiers & (Modifier::LeftAlt   | Modifier::RightAlt  )));
+		io.AddKeyEvent(ImGuiMod_Super, 0 != (modifiers & (Modifier::LeftMeta  | Modifier::RightMeta )));
+		// clang-format on
 
-		for (int32_t ii = 0; ii < int32_t(entry::Key::Count); ++ii)
+		for (int32_t ii = 0; ii < int32_t(Key::Count); ++ii)
 		{
-			io.AddKeyEvent(m_keyMap[ii], inputGetKeyState(entry::Key::Enum(ii)));
+			io.AddKeyEvent(m_keyMap[ii], inputGetKeyState(Key::Enum(ii)));
 			io.SetKeyEventNativeData(m_keyMap[ii], 0, 0, ii);
 		}
 #endif // USE_ENTRY

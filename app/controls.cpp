@@ -57,22 +57,24 @@ void App::FixedControls()
 	for (int id = 0; id < Key::Count; ++id)
 		if (ginput.keyDowns[id]) ui::Log("Controls: {} {:3} {:5} {}", ginput.keyTimes[id], id, ginput.keys[id], getName((Key::Enum)id));
 
-	const auto& downs   = ginput.keyDowns;
-	const auto& keys    = ginput.keys;
-	const bool  isAlt   = keys[Key::LeftAlt] || keys[Key::RightAlt];
-	const bool  isCtrl  = keys[Key::LeftCtrl] || keys[Key::RightCtrl];
-	const bool  isShift = keys[Key::LeftShift] || keys[Key::RightShift];
+	const auto& downs    = ginput.keyDowns;
+	const auto& keys     = ginput.keys;
+	const int   modifier = ginput.IsModifier();
 
+	// ignore inputs when using the GUI?
+	if (ImGui::MouseOverArea())
+	{
+	}
 	// 1) alt
-	if (isAlt)
+	else if (modifier & Modifier_Alt)
 	{
 	}
 	// 2) ctrl
-	else if (isCtrl)
+	else if (modifier & Modifier_Ctrl)
 	{
 	}
 	// 3) shift
-	else if (isShift)
+	else if (modifier & Modifier_Shift)
 	{
 		// print with GUI
 		if (downs[Key::Print]) wantScreenshot = 1;
@@ -193,6 +195,8 @@ void App::FluidControls()
 	auto& ginput = GetGlobalInput();
 	ginput.MouseDeltas();
 
+	const int modifier = ginput.IsModifier();
+
 	// camera
 	{
 		if (!ImGui::MouseOverArea())
@@ -213,46 +217,50 @@ void App::FluidControls()
 		camera->Update(deltaTime);
 	}
 
-	// mouse clicks
-	if (ginput.buttonDowns[3]) showPopup ^= 1;
-
-	// holding key down
-	if (const auto& keys = ginput.keys)
+	// ignore inputs when using the GUI?
+	if (!ImGui::MouseOverArea())
 	{
-		using namespace entry;
+		// mouse clicks
+		if (ginput.buttonDowns[3]) showPopup ^= 1;
 
-		if (keys[Key::Key4])
+		// holding key down
+		if (const auto& keys = ginput.keys)
 		{
-			static int64_t prevUs;
-			const int64_t  nowUs = NowUs();
-			if (nowUs > prevUs + 16 * 1000)
+			using namespace entry;
+
+			if (keys[Key::Key4])
 			{
-				ThrowMesh(ThrowAction_Spiral, "donut3", ShapeType_Cylinder, "donut_base.png");
-				prevUs = nowUs;
+				static int64_t prevUs;
+				const int64_t  nowUs = NowUs();
+				if (nowUs > prevUs + 15 * 1000)
+				{
+					ThrowMesh(ThrowAction_Spiral, "donut3", ShapeType_Cylinder, "donut_base.png");
+					prevUs = nowUs;
+				}
 			}
-		}
 
-		float speed = deltaTime * xsettings.cameraSpeed;
-		if (keys[Key::LeftCtrl]) speed *= 0.2f;
-		if (keys[Key::LeftShift]) speed *= 2.0f;
+			float speed = deltaTime * xsettings.cameraSpeed;
+			if (modifier & Modifier_Ctrl) speed *= 0.2f;
+			if (modifier & Modifier_Shift) speed *= 2.0f;
 
-		const bool isOrtho = (xsettings.projection == Projection_Orthographic);
-		const int  keyQS   = isOrtho ? Key::KeyS : Key::KeyQ;
-		const int  keyEW   = isOrtho ? Key::KeyW : Key::KeyE;
+			const bool isOrtho = (xsettings.projection == Projection_Orthographic);
+			const int  keyQS   = isOrtho ? Key::KeyS : Key::KeyQ;
+			const int  keyEW   = isOrtho ? Key::KeyW : Key::KeyE;
 
-		if (keys[Key::KeyA]) camera->Move(CameraDir_Right, -speed);
-		if (keys[Key::KeyD]) camera->Move(CameraDir_Right, speed);
-		if (keys[keyEW]) camera->Move(CameraDir_Up, speed);
-		if (keys[keyQS]) camera->Move(CameraDir_Up, -speed);
-		if (!isOrtho)
-		{
-			if (keys[Key::KeyS]) camera->Move(CameraDir_Forward, -speed);
-			if (keys[Key::KeyW]) camera->Move(CameraDir_Forward, speed);
+			if (keys[Key::KeyA]) camera->Move(CameraDir_Right, -speed);
+			if (keys[Key::KeyD]) camera->Move(CameraDir_Right, speed);
+			if (keys[keyEW]) camera->Move(CameraDir_Up, speed);
+			if (keys[keyQS]) camera->Move(CameraDir_Up, -speed);
+			if (!isOrtho)
+			{
+				if (keys[Key::KeyS]) camera->Move(CameraDir_Forward, -speed);
+				if (keys[Key::KeyW]) camera->Move(CameraDir_Forward, speed);
+			}
 		}
 	}
 }
 
-void App::ThrowGeometry(int action, int geometryType, std::string_view texture)
+void App::ThrowGeometry(int action, int geometryType, std::string_view textureName)
 {
 	if (geometryType == GeometryType_None)
 		geometryType = MerseneInt32(GeometryType_Box, GeometryType_Count - 1);
@@ -273,7 +281,7 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view texture)
 		mesh->type |= ObjectType_Group | ObjectType_Instance;
 		mesh->geometry = CreateAnyGeometry(geometryType);
 		mesh->material = std::make_shared<Material>(GetShaderManager().LoadProgram("vs_model_texture_instance", "fs_model_texture_instance"));
-		if (texture.size()) mesh->LoadTextures(texture);
+		if (textureName.size()) mesh->LoadTextures(textureName);
 		scene->AddNamedChild(mesh, std::move(groupName));
 
 		parent = mesh.get();
@@ -309,7 +317,7 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view texture)
 	}
 }
 
-void App::ThrowMesh(int action, std::string_view name, int shapeType, std::string_view texture)
+void App::ThrowMesh(int action, std::string_view name, int shapeType, std::string_view textureName)
 {
 	// 1) get/create the parent
 	auto groupName = fmt::format("{}-group", name);
@@ -321,11 +329,11 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, std::strin
 		if (parentObj->type & ObjectType_Mesh)
 			parent = static_cast<Mesh*>(parentObj);
 	}
-	else if (auto mesh = MeshLoader::LoadModelFull(name))
+	else if (auto mesh = MeshLoader::LoadModelFull(name, textureName))
 	{
 		mesh->type |= ObjectType_Group | ObjectType_Instance;
 		mesh->program = GetShaderManager().LoadProgram("vs_model_texture_instance", "fs_model_texture_instance");
-		if (texture.size()) mesh->LoadTextures(texture);
+		//if (textureName.size()) mesh->LoadTextures(textureName);
 		scene->AddNamedChild(mesh, std::move(groupName));
 
 		parent = mesh.get();

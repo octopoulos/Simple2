@@ -484,9 +484,12 @@ public:
 
 	virtual bool update() override
 	{
+		auto& ginput = GetGlobalInput();
+
 		// 1) events
 		{
 			callback.wantVideo = app->wantVideo;
+			ginput.ResetAscii();
 
 			if (entry::processEvents(width, height, debug, reset)) return false;
 
@@ -496,14 +499,12 @@ public:
 
 		// 2) imGui
 		if (!(app->wantScreenshot & 2))
-		{
-			// TODO: move this inside imguiBeginFrame
-			const auto& ginput   = GetGlobalInput();
+		{			
 			const auto& buttons  = ginput.buttons;
 			const auto  imButton = (buttons[1] ? IMGUI_MBUT_LEFT : 0) | (buttons[3] ? IMGUI_MBUT_RIGHT : 0) | (buttons[2] ? IMGUI_MBUT_MIDDLE : 0);
 			const auto& mouseAbs = ginput.mouseAbs;
 
-			imguiBeginFrame(mouseAbs[0], mouseAbs[1], imButton, mouseAbs[2], uint16_t(width), uint16_t(height));
+			imguiBeginFrame(mouseAbs[0], mouseAbs[1], imButton, mouseAbs[2], uint16_t(width), uint16_t(height), ginput.lastAscii);
 			{
 				if (app->MainUi() & 2) showExampleDialog(this);
 			}

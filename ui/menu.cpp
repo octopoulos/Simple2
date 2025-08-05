@@ -154,7 +154,7 @@ void App::ShowMainMenu(float alpha)
 		// file
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("Open Scene...", "")) OpenFile(OpenAction_OpenScene);
+			if (ImGui::MenuItem("Open Scene...")) OpenFile(OpenAction_OpenScene);
 			if (ImGui::BeginMenu("Open Recent"))
 			{
 				bool first = true;
@@ -182,7 +182,9 @@ void App::ShowMainMenu(float alpha)
 				ImGui::EndMenu();
 			}
 			ImGui::Separator();
-			if (ImGui::MenuItem("Save Scene...", "")) OpenFile(OpenAction_SaveScene);
+			if (ImGui::MenuItem("Save Scene...")) OpenFile(OpenAction_SaveScene);
+			ImGui::Separator();
+			if (ImGui::MenuItem("Rescan assets")) RescanAssets();
 			ImGui::Separator();
 			if (ImGui::MenuItem("Exit")) quit = true;
 
@@ -243,7 +245,7 @@ void App::ShowMainMenu(float alpha)
 		if (ImGui::BeginMenu("Windows"))
 		{
 			// AddMenu("Controls", xsettings.shortcutControls, GetControlsWindow());
-			// AddMenu("Log", xsettings.shortcutLog, GetLogWindow());
+			ui::AddMenu("Log", nullptr, ui::GetLogWindow());
 			// AddMenu("Settings", xsettings.shortcutSettings, GetSettingsWindow());
 			// ImGui::Separator();
 			ui::AddMenu("Theme Editor", nullptr, ui::GetThemeWindow());

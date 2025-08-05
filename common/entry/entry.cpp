@@ -1,4 +1,4 @@
-// @version 2025-07-25
+// @version 2025-07-31
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -258,26 +258,20 @@ const char* getName(Key::Enum _key)
 
 char keyToAscii(Key::Enum _key, uint8_t _modifiers)
 {
-	const bool isAscii = (Key::Key0 <= _key && _key <= Key::KeyZ)
-	    || (Key::Esc <= _key && _key <= Key::Minus);
-	if (!isAscii)
-		return '\0';
+	const bool isAscii = (Key::Key0 <= _key && _key <= Key::KeyZ) || (Key::Esc <= _key && _key <= Key::Minus);
+	if (!isAscii) return '\0';
 
 	const bool isNumber = (Key::Key0 <= _key && _key <= Key::Key9);
-	if (isNumber)
-		return '0' + char(_key - Key::Key0);
+	if (isNumber) return '0' + char(_key - Key::Key0);
+
+	enum
+	{
+		ShiftMask = Modifier::LeftShift | Modifier::RightShift
+	};
+	const bool shift = !!(_modifiers & ShiftMask);
 
 	const bool isChar = (Key::KeyA <= _key && _key <= Key::KeyZ);
-	if (isChar)
-	{
-		enum
-		{
-			ShiftMask = Modifier::LeftShift | Modifier::RightShift
-		};
-
-		const bool shift = !!(_modifiers & ShiftMask);
-		return (shift ? 'A' : 'a') + char(_key - Key::KeyA);
-	}
+	if (isChar) return (shift ? 'A' : 'a') + char(_key - Key::KeyA);
 
 	switch (_key)
 	{
@@ -286,8 +280,8 @@ char keyToAscii(Key::Enum _key, uint8_t _modifiers)
 	case Key::Tab: return '\t';
 	case Key::Space: return ' ';
 	case Key::Backspace: return 0x08;
-	case Key::Equals: return '=';
-	case Key::Minus: return '-';
+	case Key::Equals: return shift ? '+' : '=';
+	case Key::Minus: return shift ? '_' : '-';
 	default: break;
 	}
 
@@ -772,6 +766,7 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 			{
 				const CharEvent* chev = static_cast<const CharEvent*>(ev);
 				inputChar(chev->m_len, chev->m_char);
+				ui::Log("char={} {} {} {} {}", chev->m_len, chev->m_char[0], chev->m_char[1], chev->m_char[2], chev->m_char[3]);
 			}
 			break;
 

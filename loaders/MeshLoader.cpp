@@ -1,6 +1,6 @@
 // MeshLoader.cpp
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-07-31
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -18,7 +18,7 @@ sMesh MeshLoader::LoadModel(std::string_view name, bool ramcopy)
 	auto mesh = MeshLoad(filePath, ramcopy);
 	if (!mesh)
 	{
-		ui::LogError("Failed to load mesh: {} @{}", name, path);
+		ui::LogError("LoadModel: Cannot load: {} @{}", name, path);
 		return nullptr;
 	}
 	return mesh;
@@ -35,15 +35,15 @@ sMesh MeshLoader::LoadModelFull(std::string_view name, std::string_view textureN
 	// 2) find a texture
 	if (textureName.size())
 	{
-		mesh->texColor = GetTextureManager().LoadTexture(name);
-		mesh->Initialize();
+		const auto& texture = GetTextureManager().LoadTexture(textureName);
+		if (bgfx::isValid(texture)) mesh->textures.push_back(texture);
 	}
 	else
 	{
 		const auto parent      = std::filesystem::path(name).parent_path();
 		const auto texturePath = std::filesystem::path("runtime/textures") / parent;
 
-		if (IsDirectory(texturePath))
+		if (!parent.empty() && IsDirectory(texturePath))
 		{
 			VEC_STR names;
 			for (const auto& dirEntry : std::filesystem::directory_iterator { texturePath })
@@ -59,15 +59,19 @@ sMesh MeshLoader::LoadModelFull(std::string_view name, std::string_view textureN
 			{
 				for (int id = -1; const auto& name : names)
 				{
-					auto texture = GetTextureManager().LoadTexture(name);
-					mesh->textures.push_back(texture);
-					ui::Log("=> {} {} {}", id, name, bgfx::isValid(mesh->texColor));
+					const auto& texture = GetTextureManager().LoadTexture(name);
+					if (bgfx::isValid(texture)) mesh->textures.push_back(texture);
+					ui::Log("=> {} {} {}", id, name, bgfx::isValid(texture));
 				}
-				mesh->texColor = mesh->textures[0];
-				mesh->Initialize();
 			}
 		}
 	}
 
+	// 3) assign current texture
+	if (mesh->textures.size())
+	{
+		mesh->texColor = mesh->textures[0];
+		mesh->Initialize();
+	}
 	return mesh;
 }

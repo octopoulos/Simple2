@@ -1,4 +1,4 @@
-// @version 2025-07-30
+// @version 2025-07-31
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -385,6 +385,148 @@ int32_t inputGetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::En
 // GlobalInput
 //////////////
 
+/// same order as SDL3
+/// @see SDL_scancode.h
+// clang-format off
+static int ASCII_KEYS[100][2] = {
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+
+	{ 'a', 'A' },  // 4
+	{ 'b', 'B' },
+	{ 'c', 'C' },
+	{ 'd', 'D' },
+	{ 'e', 'E' },
+	{ 'f', 'F' },
+	{ 'g', 'G' },
+	{ 'h', 'H' },
+	{ 'i', 'I' },
+	{ 'j', 'J' },
+	{ 'k', 'K' },
+	{ 'l', 'L' },
+	{ 'm', 'M' },
+	{ 'n', 'N' },
+	{ 'o', 'O' },
+	{ 'p', 'P' },
+	{ 'q', 'Q' },
+	{ 'r', 'R' },
+	{ 's', 'S' },
+	{ 't', 'T' },
+	{ 'u', 'U' },
+	{ 'v', 'V' },
+	{ 'w', 'W' },
+	{ 'x', 'X' },
+	{ 'y', 'Y' },
+	{ 'z', 'Z' },
+
+	{ '1', '!' }, // 30
+	{ '2', '@' },
+	{ '3', '#' },
+	{ '4', '$' },
+	{ '5', '%' },
+	{ '6', '^' },
+	{ '7', '&' },
+	{ '8', '*' },
+	{ '9', '(' },
+	{ '0', ')' },
+
+	{ '\n', '\n' }, // 40
+	{ 27, 27 },
+	{ 8, 8 },
+	{ '\t', '\t' },
+	{ ' ', ' ' },
+
+	{ '-', '_' }, // 45
+	{ '=', '+' },
+	{ '[', '{' },
+	{ ']', '}' },
+	{ '\\', '|' },
+	{ '#', '#' },
+	{ ';', ':' },
+	{ '\'', '"' },
+	{ '~', '~' },
+	{ ',', '<' },
+	{ '.', '>' },
+	{ '/', '?' },
+
+	{ -1, -1 }, // 57
+
+	{ -1, -1 }, // 58
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+
+	{ -1, -1 }, // 70
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+	{ -1, -1 },
+
+	{ -1, -1 }, // 83
+	{ '/', '/' },
+	{ '*', '*' },
+	{ '-', '-' },
+	{ '+', '+' },
+	{ '\n', '\n' },
+	{ '1', '1' },
+	{ '2', '2' },
+	{ '3', '3' },
+	{ '4', '4' },
+	{ '5', '5' },
+	{ '6', '6' },
+	{ '7', '7' },
+	{ '8', '8' },
+	{ '9', '9' },
+	{ '0', '0' },
+	{ '.', '.' },
+};
+// clang-format on
+
+static UMAP_INT_INT MODIFIER_KEYS = {
+	{ entry::Key::LeftAlt,    Modifier_Alt   },
+	{ entry::Key::LeftCtrl,   Modifier_Ctrl  },
+	{ entry::Key::LeftMeta,   Modifier_Meta  },
+	{ entry::Key::LeftShift,  Modifier_Shift },
+	{ entry::Key::RightAlt,   Modifier_Alt   },
+	{ entry::Key::RightCtrl,  Modifier_Ctrl  },
+	{ entry::Key::RightMeta,  Modifier_Meta  },
+	{ entry::Key::RightShift, Modifier_Shift },
+};
+
+int GlobalInput::IsModifier(int key)
+{
+	using namespace entry;
+
+	if (key) return FindDefault(MODIFIER_KEYS, key, 0);
+
+	// clang-format off
+	int flag = 0;
+	if (keys[Key::LeftShift] || keys[Key::RightShift]) flag |= Modifier_Shift;
+	if (keys[Key::LeftCtrl ] || keys[Key::RightCtrl ]) flag |= Modifier_Ctrl;
+	if (keys[Key::LeftAlt  ] || keys[Key::RightAlt  ]) flag |= Modifier_Alt;
+	if (keys[Key::LeftMeta ] || keys[Key::RightMeta ]) flag |= Modifier_Meta;
+	// clang-format on
+	return flag;
+}
+
 void GlobalInput::KeyDownUp(int key, bool down)
 {
 	if (keys[key] != down)
@@ -396,13 +538,32 @@ void GlobalInput::KeyDownUp(int key, bool down)
 		keyChanges[keyChangeId] = { key, down, nowMs };
 		keyChangeId             = (keyChangeId + 1) & 127;
 		if (down)
+		{
 			keyDowns[key] = true;
+			lastAscii     = KeyToAscii(key);
+			lastKey       = key;
+			//ui::Log("KeyDownUp: {} {} : {} {}", key, down, lastKey, lastAscii);
+		}
 		else
 		{
 			keyRepeats[key] = 0;
 			keyUps[key]     = true;
+			if (!IsModifier(key))
+			{
+				lastAscii = -1;
+				lastKey   = 0;
+			}
 		}
 	}
+}
+
+int GlobalInput::KeyToAscii(int key)
+{
+	if (key < 0 || key >= 100) return -1;
+
+	if (IsModifier(key) & (Modifier_Ctrl | Modifier_Alt | Modifier_Meta)) return -1;
+
+	return ASCII_KEYS[key][(IsModifier() & Modifier_Shift) ? 1 : 0];
 }
 
 void GlobalInput::MouseButton(int button, uint8_t state)
@@ -516,7 +677,16 @@ void GlobalInput::Reset()
 	mouseFrame  = 0;
 	mouseLock   = false;
 
+	ResetAscii();
 	ResetFixed();
+}
+
+void GlobalInput::ResetAscii()
+{
+	if (lastKey > 0 && RepeatingKey(lastKey))
+		lastAscii = KeyToAscii(lastKey);
+	else
+		lastAscii = -1;
 }
 
 void GlobalInput::ResetFixed()
