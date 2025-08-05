@@ -8,6 +8,8 @@
 # 1
 # ~/web/common-js, ~/web/gori/**, ~/web/mova/**, ~/web/vatreviews/**,, ~/Code/cpp/AI/**, ~/Code/cpp/Engine/**, ~/Code/cpp/Server/**, ~/Code/cpp/Simple2/**
 # *.dot, *.md, *_.*, *.sh, *.ttf*, *0.*, *testo*, _all*, _deps/, 3rdparty/, all*, app/1/, build*, CMakeFiles/, coverage/, debugdraw/, doc/, dummy.html, dump/, font/, fs_*, index.html, index-*.html, libs/, locale/, new.txt, source/, temp/, template/, vs_*, website2/
+#
+# git log --date=short --pretty=format:"%ad %s" | awk '!seen[$1]++ { print "\n**" $1 "**" } { $1=""; print "- " substr($0, 2) }' > CHANGELOG.md
 
 cmake_minimum_required(VERSION 3.20)
 cmake_policy(SET CMP0167 NEW)
@@ -458,7 +460,7 @@ foreach(MODEL_EXT glb obj)
 		file(RELATIVE_PATH RELATIVE_PATH "${MODEL_SRC_DIR}" "${MODEL_SRC}")
 		get_filename_component(FIRST_FOLDER "${RELATIVE_PATH}" DIRECTORY)
 		get_filename_component(MODEL_NAME ${MODEL_SRC} NAME_WE)
-		
+
 		if(FIRST_FOLDER)
 			# Extract the first component of the directory path
 			string(REGEX MATCH "^[^/\\]+" FIRST_FOLDER "${FIRST_FOLDER}")
