@@ -1,11 +1,10 @@
 // learn.cpp
 // @author octopoulos
-// @version 2025-07-27
+// @version 2025-07-31
 
 #include "stdafx.h"
 #include "app/App.h"
-
-#include "dear-imgui/imgui.h"
+#include "imgui-include.h"
 
 void App::LearnUi()
 {

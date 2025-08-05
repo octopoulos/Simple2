@@ -1,3 +1,4 @@
+// @version 2025-07-31
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -6,8 +7,9 @@
 #ifndef IMGUI_H_HEADER_GUARD
 #define IMGUI_H_HEADER_GUARD
 
+#include "imgui-include.h"
+
 #include <bgfx/bgfx.h>
-#include <dear-imgui/imgui.h>
 #include <iconfontheaders/icons_kenney.h>
 #include <iconfontheaders/icons_font_awesome.h>
 

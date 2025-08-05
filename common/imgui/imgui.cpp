@@ -1,4 +1,4 @@
-// @version 2025-07-22
+// @version 2025-08-01
 /*
  * Copyright 2014-2015 Daniel Collin. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -10,9 +10,8 @@
 #include <bx/allocator.h>
 #include <bx/math.h>
 #include <bx/timer.h>
-#include <dear-imgui/imgui.h>
-#include <dear-imgui/imgui_internal.h>
 
+#include "imgui-include.h"
 #include "imgui.h"
 #include "../bgfx_utils.h"
 
@@ -132,7 +131,7 @@ struct OcornutImguiContext
 					bgfx::TextureHandle th      = m_texture;
 					bgfx::ProgramHandle program = m_program;
 
-					if (ImU64(0) != cmd->TextureId)
+					if (ImU64(0) != cmd->TexRef.GetTexID())
 					{
 						union
 						{
@@ -144,7 +143,7 @@ struct OcornutImguiContext
 								uint8_t             flags;
 								uint8_t             mip;
 							} s;
-						} texture = { cmd->TextureId };
+						} texture = { cmd->TexRef.GetTexID() };
 
 						state |= 0 != (IMGUI_FLAGS_ALPHA_BLEND & texture.s.flags)
 						    ? BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA)
@@ -339,6 +338,7 @@ struct OcornutImguiContext
 		m_keyMap[Key::RightMeta]      = ImGuiKey_RightSuper;
 
 		io.ConfigFlags |= 0
+		    | ImGuiConfigFlags_DockingEnable
 		    | ImGuiConfigFlags_NavEnableGamepad
 		    | ImGuiConfigFlags_NavEnableKeyboard;
 
@@ -391,23 +391,23 @@ struct OcornutImguiContext
 			config.MergeMode = true;
 			config.DstFont   = m_font[ImGui::Font::Regular];
 
-			for (uint32_t ii = 0; ii < BX_COUNTOF(s_fontRangeMerge); ++ii)
-			{
-				const FontRangeMerge& frm = s_fontRangeMerge[ii];
-				io.Fonts->AddFontFromMemoryTTF((void*)frm.data, (int)frm.size, _fontSize - 3.0f, &config, frm.ranges);
-			}
+			//for (uint32_t ii = 0; ii < BX_COUNTOF(s_fontRangeMerge); ++ii)
+			//{
+			//	const FontRangeMerge& frm = s_fontRangeMerge[ii];
+			//	io.Fonts->AddFontFromMemoryTTF((void*)frm.data, (int)frm.size, _fontSize - 3.0f, &config, frm.ranges);
+			//}
 		}
 
 		io.Fonts->GetTexDataAsRGBA32(&data, &width, &height);
 
 		m_texture = bgfx::createTexture2D((uint16_t)width, (uint16_t)height, false, 1, bgfx::TextureFormat::BGRA8, 0, bgfx::copy(data, width * height * 4));
 
-		ImGui::InitDockContext();
+		//ImGui::InitDockContext();
 	}
 
 	void destroy()
 	{
-		ImGui::ShutdownDockContext();
+		//ImGui::ShutdownDockContext();
 		ImGui::DestroyContext(m_imgui);
 
 		bgfx::destroy(s_tex);
@@ -476,6 +476,12 @@ struct OcornutImguiContext
 
 		ImGui::NewFrame();
 		ImGuizmo::BeginFrame();
+
+#ifdef WITH_IMGUI_DOCKING
+		// docking support
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::DockSpaceOverViewport(0, viewport, ImGuiDockNodeFlags_PassthruCentralNode);
+#endif // WITH_IMGUI_DOCKING
 	}
 
 	void endFrame()

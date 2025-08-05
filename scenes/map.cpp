@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-07-31
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -9,7 +9,7 @@
 #include "loaders/MeshLoader.h"
 #include "textures/TextureManager.h"
 
-#include "dear-imgui/imgui.h"
+#include "imgui-include.h"
 
 void App::AddGeometry(uGeometry geometry)
 {

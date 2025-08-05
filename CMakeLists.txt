@@ -23,12 +23,14 @@ project(Simple LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-OPTION(WITH_GLFW OFF)
-OPTION(WITH_SDL  OFF)
-OPTION(WITH_SDL3 OFF)
+OPTION(WITH_GLFW          OFF)
+OPTION(WITH_IMGUI_DOCKING ON )
+OPTION(WITH_SDL           OFF)
+OPTION(WITH_SDL3          OFF)
 
 set(ALL_WITHS
 	WITH_GLFW
+	WITH_IMGUI_DOCKING
 	WITH_SDL
 	WITH_SDL3
 )
@@ -38,16 +40,24 @@ foreach(opt IN LISTS ALL_WITHS)
 	endif()
 endforeach()
 
+set(3RDPARTY_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty")
+if(WITH_IMGUI_DOCKING)
+	set(IMGUI_DIR "${3RDPARTY_SRC_DIR}/imgui-docking")
+else()
+	set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dear-imgui")
+endif()
+
 add_definitions(
 	-DBX_CONFIG_DEBUG=0
 	-DBX_CONFIG_SUPPORTS_THREADING=1
 	-DENTRY_CONFIG_IMPLEMENT_MAIN=1
 	-DENTRY_DEFAULT_HEIGHT=800
 	-DENTRY_DEFAULT_WIDTH=1328
-	-DIMGUI_INCLUDE="${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dear-imgui/imgui.h"
-	-DIMGUI_INTERNAL_INCLUDE="${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dear-imgui/imgui_internal.h"
 	-DIMGUI_DEFINE_MATH_OPERATORS
+	-DIMGUI_INCLUDE="${IMGUI_DIR}/imgui.h"
+	-DIMGUI_INTERNAL_INCLUDE="${IMGUI_DIR}/imgui_internal.h"
 )
+
 if(WITH_GLFW)
 	add_definitions(
 		-DENTRY_CONFIG_USE_NATIVE=0
@@ -224,7 +234,6 @@ else()
 	set(CPP_MM "cpp")
 endif()
 
-set(  3RDPARTY_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty")
 set(       APP_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/app")
 set(    COMMON_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/common")
 set(      CORE_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/core")
@@ -238,7 +247,7 @@ set(    SCENES_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scenes")
 set(  TEXTURES_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/textures")
 set(        UI_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ui")
 
-file(GLOB   3RDPARTY_SRC_FILES CONFIGURE_DEPENDS "${3RDPARTY_SRC_DIR}/dear-imgui/*.cpp" "${3RDPARTY_SRC_DIR}/ImGuiFileDialog/*.cpp" "${3RDPARTY_SRC_DIR}/ImGuiFileDialog/*.h")
+file(GLOB   3RDPARTY_SRC_FILES CONFIGURE_DEPENDS "${IMGUI_DIR}/*.cpp" "${IMGUI_DIR}/*.h" "${3RDPARTY_SRC_DIR}/ImGuiFileDialog/*.cpp" "${3RDPARTY_SRC_DIR}/ImGuiFileDialog/*.h")
 file(GLOB        APP_SRC_FILES CONFIGURE_DEPENDS "${APP_SRC_DIR}/*.cpp" "${APP_SRC_DIR}/*.h")
 file(GLOB       BGFX_SRC_FILES CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bgfx/src/amalgamated.${CPP_MM}")
 file(GLOB       BIMG_SRC_FILES CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bimg/src/image.cpp" "${CPP_3RDPARTY}/bimg/src/image_decode.cpp" "${CPP_3RDPARTY}/bimg/src/image_gnf.cpp" "${CPP_3RDPARTY}/bimg/3rdparty/astc-encoder/source/*.cpp" "${CPP_3RDPARTY}/bimg/3rdparty/tinyexr/deps/miniz/miniz.*")
@@ -268,7 +277,6 @@ set(VCPKG_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
 target_include_directories(Simple PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}"
 	"${CMAKE_CURRENT_SOURCE_DIR}/3rdparty"
-	"${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dear-imgui"
 	"${CMAKE_CURRENT_SOURCE_DIR}/app"
 	"${CMAKE_CURRENT_SOURCE_DIR}/common"
 	"${CPP_3RDPARTY}"
@@ -285,6 +293,7 @@ target_include_directories(Simple PRIVATE
 	"${CPP_3RDPARTY}/bx/3rdparty"
 	"${CPP_3RDPARTY}/bx/include"
 	"${CPP_PATH}"
+	"${IMGUI_DIR}"
 	"${VCPKG_INCLUDE_DIR}/bullet"
 	# "${VCPKG_INCLUDE_DIR}/bx"
 )
