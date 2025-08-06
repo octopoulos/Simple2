@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-01
+// @version 2025-08-02
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -61,29 +61,44 @@ int App::MainUi()
 	LearnUi();
 
 	// popups
-	if (showPopup & 1)
+	static int currentPopup;
+	if (showPopup & Popup_Any)
 	{
 		ImGui::OpenPopup("popup_Add");
-		showPopup &= ~1;
+		currentPopup = showPopup;
+		showPopup &= ~Popup_Any;
 	}
 	if (ImGui::BeginPopup("popup_Add"))
 	{
-		ImGui::Text("Add geometry");
-		ImGui::Separator();
-		for (int type = GeometryType_None + 1; type < GeometryType_Count; ++type)
+		if (currentPopup & Popup_AddGeometry)
 		{
-			if (ImGui::MenuItem(GeometryName(type).c_str()))
+			ImGui::Text("Add geometry");
+			ImGui::Separator();
+			for (int type = GeometryType_None + 1; type < GeometryType_Count; ++type)
 			{
-				ui::Log("Add geometry: {} {}", type, GeometryName(type));
-				auto geometry = CreateAnyGeometry(type);
-				AddGeometry(std::move(geometry));
+				if (ImGui::MenuItem(GeometryName(type).c_str()))
+				{
+					ui::Log("Add geometry: {} {}", type, GeometryName(type));
+					auto geometry = CreateAnyGeometry(type);
+					AddGeometry(std::move(geometry));
+				}
 			}
 		}
+		else if (currentPopup & Popup_AddMap)
+		{
+			ImGui::Text("Add map tile");
+			ImGui::Separator();
+		}
+		else if (currentPopup & Popup_AddMesh)
+		{
+			ImGui::Text("Add mesh");
+			ImGui::Separator();
+		}
 
-		if (hidePopup & 1)
+		if (hidePopup & Popup_Any)
 		{
 			ImGui::CloseCurrentPopup();
-			hidePopup &= ~1;
+			hidePopup &= ~Popup_Any;
 		}
 		ImGui::EndPopup();
 	}

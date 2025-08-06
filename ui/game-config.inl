@@ -1,6 +1,6 @@
 // game-config.inl
 // @author octopoulo
-// @version 2025-07-27
+// @version 2025-08-02
 // - add at the start of the configs mapping
 
 #ifdef XSETTINGS
@@ -31,6 +31,7 @@ X_ENUM (XSETTINGS, system, 0, vsync      , Vsync_Adaptive, sVSyncs),
 
 // [ui]
 X_ENUM  (XSETTINGS, ui, 0, aspectRatio       , AspectRatio_Native, sAspectRatios),
+X_FLOAT (XSETTINGS, ui, 0, fontScale         , 0.834f, 0.1f, 10.0f),
 X_STRING(XSETTINGS, ui, 0, shortcutControls  , ""),
 X_STRING(XSETTINGS, ui, 0, shortcutLog       , ""),
 X_STRING(XSETTINGS, ui, 0, shortcutOpen      , ""),

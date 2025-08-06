@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-08-02
 
 #pragma once
 
@@ -24,6 +24,7 @@ struct XSettings : public EngineSettings
 
 	// [ui]
 	float cameraSpeed;    ///< camera movement speed
+	float iconSize;       ///< map icon size
 	bool  nvidiaEnc;      ///< use nVidia encoding
 	str2k recentFiles[6]; ///< recent files for quick load
 	bool  videoCapture;   ///< allow video capture

@@ -1,6 +1,6 @@
 // EngineSettings.h
 // @author octopoulos
-// @version 2025-07-27
+// @version 2025-08-02
 
 #pragma once
 
@@ -38,6 +38,7 @@ enum XRenderModes_ : int
 
 enum XThemes_ : int
 {
+	Theme_Blender,
 	Theme_Classic,
 	Theme_Custom,
 	Theme_Dark,
@@ -76,6 +77,7 @@ struct EngineSettings
 
 	// [ui]
 	int   aspectRatio;        ///< frame aspect ratio
+	float fontScale;          ///< FontScaleMain
 	str32 shortcutControls;   ///
 	str32 shortcutLog;        ///
 	str32 shortcutOpen;       ///

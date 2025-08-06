@@ -1,4 +1,4 @@
-// @version 2025-08-01
+// @version 2025-08-02
 /*
  * Copyright 2014-2015 Daniel Collin. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -64,6 +64,61 @@ static void  memFree(void* _ptr, void* _userData);
 
 struct OcornutImguiContext
 {
+	void updateTexture(ImTextureData* tex)
+	{
+		auto ref = tex->GetTexRef();
+		//ui::Log("tex={} {} {} status={}", (intptr_t)tex, (int64_t)&ref, (int64_t)ref._TexID, (int64_t)tex->Status);
+
+		if (tex->Status == ImTextureStatus_WantCreate)
+		{
+			auto handle = bgfx::createTexture2D(
+				(uint16_t)tex->Width,
+				(uint16_t)tex->Height,
+				false,
+				1,
+				bgfx::TextureFormat::BGRA8,
+				0 // flags (not immutable)
+			);
+
+			const bgfx::Memory* mem = bgfx::copy(tex->GetPixels(), tex->Width * tex->Height * 4);
+			bgfx::updateTexture2D(handle, 0, 0, 0, 0, tex->Width, tex->Height, mem);
+
+			// save handle in BackendUserData
+			tex->BackendUserData = new bgfx::TextureHandle(handle);
+
+			// use pointer-as-ID trick
+			tex->SetTexID((ImTextureID)(intptr_t)handle.idx);
+			tex->SetStatus(ImTextureStatus_OK);
+		}
+		else if (tex->Status == ImTextureStatus_WantUpdates)
+		{
+			auto* handlePtr = static_cast<bgfx::TextureHandle*>(tex->BackendUserData);
+			if (!handlePtr || !bgfx::isValid(*handlePtr))
+				return;
+
+			for (const ImTextureRect& rect : tex->Updates)
+			{
+				const uint8_t*      data  = (const uint8_t*)tex->GetPixelsAt(rect.x, rect.y);
+				const uint16_t      pitch = tex->Width * 4;
+				const bgfx::Memory* mem   = bgfx::copy(data, rect.h * pitch);
+
+				bgfx::updateTexture2D(*handlePtr, 0, 0, (uint16_t)rect.x, (uint16_t)rect.y, (uint16_t)rect.w, (uint16_t)rect.h, mem, pitch);
+			}
+
+			tex->SetStatus(ImTextureStatus_OK);
+		}
+		else if (tex->Status == ImTextureStatus_WantDestroy && tex->UnusedFrames > 0)
+		{
+			auto* handlePtr = static_cast<bgfx::TextureHandle*>(tex->BackendUserData);
+			if (handlePtr && bgfx::isValid(*handlePtr))
+			{
+				bgfx::destroy(*handlePtr);
+				delete handlePtr;
+				tex->BackendUserData = nullptr;
+			}
+		}
+	}
+
 	void render(ImDrawData* _drawData)
 	{
 		// Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
@@ -89,6 +144,13 @@ struct OcornutImguiContext
 
 		const ImVec2 clipPos   = _drawData->DisplayPos;       // (0,0) unless using multi-viewports
 		const ImVec2 clipScale = _drawData->FramebufferScale; // (1,1) unless using retina display which are often (2,2)
+
+		if (_drawData->Textures)
+		{
+			for (ImTextureData* tex : *_drawData->Textures)
+				if (tex->Status != ImTextureStatus_OK)
+					updateTexture(tex);
+		}
 
 		// Render command lists
 		for (int32_t ii = 0, num = _drawData->CmdListsCount; ii < num; ++ii)
@@ -131,7 +193,7 @@ struct OcornutImguiContext
 					bgfx::TextureHandle th      = m_texture;
 					bgfx::ProgramHandle program = m_program;
 
-					if (ImU64(0) != cmd->TexRef.GetTexID())
+					if (ImU64(0) != cmd->GetTexID())
 					{
 						union
 						{
@@ -143,11 +205,12 @@ struct OcornutImguiContext
 								uint8_t             flags;
 								uint8_t             mip;
 							} s;
-						} texture = { cmd->TexRef.GetTexID() };
+						} texture = { cmd->GetTexID() };
 
-						state |= 0 != (IMGUI_FLAGS_ALPHA_BLEND & texture.s.flags)
-						    ? BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA)
-						    : BGFX_STATE_NONE;
+						//state |= 0 != (IMGUI_FLAGS_ALPHA_BLEND & texture.s.flags)
+						//    ? BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA)
+						//    : BGFX_STATE_NONE;
+						state |= BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
 						th = texture.s.handle;
 
 						if (0 != texture.s.mip)
@@ -215,6 +278,7 @@ struct OcornutImguiContext
 
 		setupStyle(true);
 
+		io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
 		io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 
 #if USE_ENTRY
@@ -384,9 +448,9 @@ struct OcornutImguiContext
 			config.MergeMode            = false;
 			// config.MergeGlyphCenterV = true;
 
-			const ImWchar* ranges        = io.Fonts->GetGlyphRangesCyrillic();
-			m_font[ImGui::Font::Regular] = io.Fonts->AddFontFromMemoryTTF((void*)s_robotoRegularTtf, sizeof(s_robotoRegularTtf), _fontSize, &config, ranges);
-			m_font[ImGui::Font::Mono]    = io.Fonts->AddFontFromMemoryTTF((void*)s_robotoMonoRegularTtf, sizeof(s_robotoMonoRegularTtf), _fontSize - 3.0f, &config, ranges);
+			//const ImWchar* ranges        = io.Fonts->GetGlyphRangesCyrillic();
+			m_font[ImGui::Font::Regular] = io.Fonts->AddFontFromMemoryTTF((void*)s_robotoRegularTtf, sizeof(s_robotoRegularTtf), _fontSize, &config);//, ranges);
+			m_font[ImGui::Font::Mono]    = io.Fonts->AddFontFromMemoryTTF((void*)s_robotoMonoRegularTtf, sizeof(s_robotoMonoRegularTtf), _fontSize - 3.0f, &config);//, ranges);
 
 			config.MergeMode = true;
 			config.DstFont   = m_font[ImGui::Font::Regular];
@@ -398,9 +462,9 @@ struct OcornutImguiContext
 			//}
 		}
 
-		io.Fonts->GetTexDataAsRGBA32(&data, &width, &height);
+		//io.Fonts->GetTexDataAsRGBA32(&data, &width, &height);
 
-		m_texture = bgfx::createTexture2D((uint16_t)width, (uint16_t)height, false, 1, bgfx::TextureFormat::BGRA8, 0, bgfx::copy(data, width * height * 4));
+		//m_texture = bgfx::createTexture2D((uint16_t)width, (uint16_t)height, false, 1, bgfx::TextureFormat::BGRA8, 0, bgfx::copy(data, width * height * 4));
 
 		//ImGui::InitDockContext();
 	}

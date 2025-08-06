@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-07-31
+// @version 2025-08-02
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -83,7 +83,9 @@ void App::FixedControls()
 	else
 	{
 		// 4.a) new keys
-		if (downs[Key::KeyM]) showPopup ^= 1;
+		if (downs[Key::KeyH]) showPopup ^= Popup_AddGeometry;
+		if (downs[Key::KeyJ]) showPopup ^= Popup_AddMesh;
+		if (downs[Key::KeyM]) showPopup ^= Popup_AddMap;
 
 		if (DOWN_OR_REPEAT(Key::KeyO))
 		{
@@ -221,7 +223,7 @@ void App::FluidControls()
 	if (!ImGui::MouseOverArea())
 	{
 		// mouse clicks
-		if (ginput.buttonDowns[3]) showPopup ^= 1;
+		if (ginput.buttonDowns[3]) showPopup ^= Popup_Add;
 
 		// holding key down
 		if (const auto& keys = ginput.keys)

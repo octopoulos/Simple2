@@ -1,6 +1,6 @@
 // EngineSettings.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-08-02
 
 #include "stdafx.h"
 #include "ui/EngineSettings.h"
@@ -14,7 +14,7 @@ extern const char* sFullScreens[3];
 const char* sAspectRatios[] = { "1:1", "4:3", "3:2", "16:9", "Native", "Window" };
 const char* sProjections[]  = { "Orthogonal", "Perspective" };
 const char* sRenderModes[]  = { "None", "Screen", "Model", "Screen + Model" };
-const char* sThemes[]       = { "Classic", "Custom", "Dark", "Light", "Xemu" };
+const char* sThemes[]       = { "Blender", "Classic", "Custom", "Dark", "Light", "Xemu" };
 const char* sVSyncs[]       = { "Off", "On", "Adaptive" };
 
 // global variable

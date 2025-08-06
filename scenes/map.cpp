@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-08-01
+// @version 2025-08-02
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -8,6 +8,7 @@
 #include "core/ShaderManager.h"
 #include "loaders/MeshLoader.h"
 #include "textures/TextureManager.h"
+#include "ui/xsettings.h"
 
 #include "imgui-include.h"
 
@@ -59,13 +60,11 @@ void App::MapUi()
 	// TODO: move it to CommonWindow/MapWindow
 	ImGui::Begin("Map");
 	{
-		ImGui::SliderInt("Icon size", &iconSize, 32, 128, "%d px");
-
 		const auto  style        = ImGui::GetStyle();
 		const auto& wsize        = ImGui::GetWindowSize() - style.WindowPadding;
 		const float imagePadding = style.FramePadding.x * 2;
-		const float imageSize    = iconSize;
-		const float spacing      = std::clamp(iconSize / 16.0f, 2.0f, 8.0f);
+		const float imageSize    = xsettings.iconSize;
+		const float spacing      = std::clamp(xsettings.iconSize / 16.0f, 2.0f, 8.0f);
 		const int   itemsPerRow  = std::max(1, int((wsize.x - style.IndentSpacing - style.ScrollbarSize) / (imageSize + imagePadding + spacing)));
 
 		for (const auto& [kit, models] : kitModels)
@@ -100,7 +99,7 @@ void App::MapUi()
 							}
 
 							ImTextureID texId = (ImTextureID)(uintptr_t)handle.idx;
-							if (ImGui::ImageButton(fmt::format("##{}", kitName).c_str(), texId, ImVec2(imageSize, imageSize), uv0, uv1))
+							if (ImGui::ImageButton(fmt::format("##{}", kitName).c_str(), ImTextureRef(texId), ImVec2(imageSize, imageSize), uv0, uv1))
 								AddObject(kitName);
 
 							if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", name.c_str());

@@ -1,6 +1,6 @@
 // ui-settings.cpp
 // @author octopoulos
-// @version 2025-08-01
+// @version 2025-08-02
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -106,7 +106,7 @@ public:
 			if (ImGui::TreeNodeEx("Main", SHOW_TREE(Show_NetMain)))
 			{
 				tree |= Show_NetMain;
-				AddDragInt("mousePos", "Mouse Pos");
+				//AddDragInt("mousePos", "Mouse Pos");
 				if (ImGui::IsMousePosValid())
 				{
 					const auto& io   = ImGui::GetIO();
@@ -117,9 +117,9 @@ public:
 				}
 				else ImGui::TextUnformatted("<Invalid>");
 
-				AddSliderInt("netDebug", "Net Debug");
-				AddSliderInt("netRecheck", "Net Recheck");
-				AddSliderInt("netTransfers", "Net Transfers");
+				//AddSliderInt("netDebug", "Net Debug");
+				//AddSliderInt("netRecheck", "Net Recheck");
+				//AddSliderInt("netTransfers", "Net Transfers");
 				ImGui::TreePop();
 			}
 
@@ -189,10 +189,11 @@ public:
 			{
 				tree |= Show_SystemUI;
 				AddSliderInt("aspectRatio", "Aspect Ratio", nullptr);
+				if (AddDragFloat("fontScale", "Font Scale", 0.001f, "%.3f")) ImGui::GetStyle().FontScaleMain = xsettings.fontScale;
 				AddSliderInt("fullScreen", "Full Screen", nullptr);
+				AddSliderFloat("iconSize", "Icon Size", "%.0f");
 				AddSliderBool("maximized", "Maximized");
 				AddSliderBool("stretch", "Stretch");
-				AddSliderInt("target", "Target", nullptr);
 				if (AddCombo("theme", "Theme")) UpdateTheme();
 				AddDragFloat("uiScale", "UI Scale");
 				ImGui::DragInt2("Window Pos", xsettings.windowPos, 1, -1, 5120);

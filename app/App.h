@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-07-31
+// @version 2025-08-02
 
 #pragma once
 
@@ -9,6 +9,16 @@
 #include "scenes/Scene.h"
 #include "physics/PhysicsWorld.h"
 #include "ui/xsettings.h"
+
+enum Popups_ : int
+{
+	Popup_None        = 0,
+	Popup_Add         = 1 << 0,
+	Popup_AddGeometry = 1 << 1,
+	Popup_AddMap      = 1 << 2,
+	Popup_AddMesh     = 1 << 3,
+	Popup_Any         = Popup_Add | Popup_AddGeometry | Popup_AddMap | Popup_AddMesh,
+};
 
 struct Tile
 {
@@ -77,7 +87,6 @@ private:
 private:
 	sMesh                cursor    = nullptr; ///< current cursor for placing tiles
 	MAP_STR<MAP_STR_INT> kitModels = {};      ///< model database: [title, filename]
-	int                  iconSize  = 64;      ///< icon size for the map tiles previews
 	sObject3d            mapNode   = nullptr; ///< root of the map scene
 	std::vector<Tile>    tiles     = {};      ///< tiles
 

@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-08-02
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -45,6 +45,7 @@ static std::vector<Config> configs = {
 	X_FLOAT  (XSettings, render, 0, zoomWheel  , 10.0f, 1.0f, 100.0f),
 
 	// [ui]
+	X_FLOAT  (XSettings, ui, 0, iconSize    , 64.0f, 8.0f, 256.0f),
 	X_BOOL   (XSettings, ui, 0, nvidiaEnc   , false),
 	X_STRINGS(XSettings, ui, 0, recentFiles , "", 6),
 	X_BOOL   (XSettings, ui, 0, videoCapture, false),

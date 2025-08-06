@@ -1,6 +1,6 @@
 // learn.cpp
 // @author octopoulos
-// @version 2025-07-31
+// @version 2025-08-02
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -23,11 +23,34 @@ void App::LearnUi()
 	{
 		ImGui::Dummy(ImVec2(0, sy * 0.3f));
 
-		// center text
-		ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]);
-		ImGui::SetCursorPosX((sx - ImGui::CalcTextSize("HELLO").x) * 0.5f);
-		ImGui::Text("HELLO");
-		ImGui::PopFont();
+		//// center text
+		//ImGui::GetCurrentWindow()->FontWindowScale = 3.0f;
+		////ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]);
+		//ImGui::SetCursorPosX((sx - ImGui::CalcTextSize("HELLO").x) * 0.5f);
+		//ImGui::Text("HELLO");
+		////ImGui::PopFont();
+		////ImGui::GetCurrentWindow()->FontWindowScale = 1.0f;
+
+		{
+			// get current font
+			ImFont*     font    = ImGui::GetFont();
+			float       bigSize = ImGui::GetFontSize() * 3.0f;
+			const char* text    = "HELLO";
+
+			ImFontBaked* baked   = font->GetFontBaked(bigSize);
+
+			// measure text
+			ImVec2 textSize = font->CalcTextSizeA(bigSize, FLT_MAX, 0.0f, text);
+			ImVec2 cursor   = ImGui::GetCursorScreenPos();
+			ImVec2 center   = ImVec2(cursor.x + (sx - textSize.x) * 0.5f, cursor.y + sy * 0.3f);
+
+			// draw text
+			const ImU32  color    = IM_COL32(255, 255, 255, 255);
+			const ImVec4 clipRect = ImGui::GetCurrentWindow()->ClipRect.ToVec4();
+
+			ImDrawList* drawList = ImGui::GetWindowDrawList();
+			font->RenderText(drawList, bigSize, center, color, clipRect, text, nullptr);
+		}
 
 		ImGui::Dummy(ImVec2(0, sy * 0.4f));
 
