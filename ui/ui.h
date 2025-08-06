@@ -1,6 +1,6 @@
 // ui.h
 // @author octopoulos
-// @version 2025-07-31
+// @version 2025-08-01
 
 #pragma once
 
@@ -55,27 +55,17 @@ bool ItemEvent(const std::string& name, int index = -1);
 /// Show a 2 column Stats table
 void ShowTable(const std::vector<std::tuple<std::string, std::string>>& stats);
 
-uint32_t LoadTexture(const std::filesystem::path& path, std::string name);
-uint32_t LoadTexture(const uint8_t* data, uint32_t size, std::string name);
+//uint32_t LoadTexture(const std::filesystem::path& path, std::string name);
+//uint32_t LoadTexture(const uint8_t* data, uint32_t size, std::string name);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CONTROLS
 ///////////
 
-bool AddMenu(const char* text, const char* shortcut, CommonWindow& window);
+CommonWindow& GetControlsWindow();
 
 /// Image text button aligned on a row
 int DrawControlButton(uint32_t texId, const ImVec4& color, std::string name, const char* label, int textButton, float uiScale);
-
-/// Draw all UI
-void DrawWindows(const std::vector<CommonWindow*>& windows, bool showImGuiDemo);
-
-/// Set alpha for the next window
-bool SetAlpha(float alpha);
-
-/// Hide/unhide windows:
-/// - only change hidden, not isOpen
-bool ShowWindows(const std::vector<CommonWindow*>& windows, bool show, bool force);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // LOG
@@ -109,10 +99,17 @@ void Tab(int value);
 #define LogWarning(...) AddLog(3, fmt::format(__VA_ARGS__))
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// MENU
+///////
+
+/// Current menu height
+float GetMenuHeight();
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SETTINGS
 ///////////
 
-CommonWindow& GetEnSettingsWindow();
+CommonWindow& GetSettingsWindow();
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // THEME
@@ -122,5 +119,28 @@ CommonWindow& GetThemeWindow();
 ImFont*       FindFont(const std::string& name);
 void          UpdateFonts();
 void          UpdateTheme();
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// UI
+/////
+
+/// Add a menu item for a window toggle
+bool AddMenu(const char* text, const char* shortcut, CommonWindow& window);
+
+/// Draw all UI
+void DrawWindows();
+
+/// Create a list of the windows
+void ListWindows();
+
+/// Set alpha for the next window
+bool SetAlpha(float alpha);
+
+/// Show the menu bar
+void ShowMainMenu(float alpha);
+
+/// Hide/unhide windows
+///  - only change hidden, not isOpen
+bool ShowWindows(bool show, bool force);
 
 } // namespace ui

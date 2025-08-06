@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-07-31
+// @version 2025-08-01
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -17,6 +17,10 @@ enum OpenActions_ : int
 	OpenAction_OpenScene = 1,
 	OpenAction_SaveScene = 2,
 };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// APP
+//////
 
 /// https://github.com/octopoulos/ImGuiFileDialog/blob/master/Documentation.md
 void App::FilesUi()
@@ -38,6 +42,9 @@ int App::MainUi()
 	// lock => no UI
 	if (GetGlobalInput().mouseLock) return 0;
 
+	// show menu (or [REC] if recording video)
+	ShowMainMenu(1.0f);
+
 	// skip some UI elements when recording video
 	int drawnFlag = 1;
 	if (!wantVideo)
@@ -47,7 +54,7 @@ int App::MainUi()
 		MapUi();
 		FilesUi();
 
-		// ui::DrawWindows();
+		ui::DrawWindows();
 		if (showImGuiDemo) ImGui::ShowDemoWindow(&showImGuiDemo);
 	}
 
@@ -80,9 +87,6 @@ int App::MainUi()
 		}
 		ImGui::EndPopup();
 	}
-
-	// show menu (or [REC] if recording video)
-	ShowMainMenu(1.0f);
 
 	return drawnFlag;
 }
@@ -238,10 +242,10 @@ void App::ShowMainMenu(float alpha)
 		// windows
 		if (ImGui::BeginMenu("Windows"))
 		{
-			// AddMenu("Controls", xsettings.shortcutControls, GetControlsWindow());
+			ui::AddMenu("Controls", xsettings.shortcutControls, ui::GetControlsWindow());
 			ui::AddMenu("Log", nullptr, ui::GetLogWindow());
-			// AddMenu("Settings", xsettings.shortcutSettings, GetSettingsWindow());
-			// ImGui::Separator();
+			ui::AddMenu("Settings", xsettings.shortcutSettings, ui::GetSettingsWindow());
+			ImGui::Separator();
 			ui::AddMenu("Theme Editor", nullptr, ui::GetThemeWindow());
 
 			ImGui::EndMenu();
@@ -267,3 +271,16 @@ void App::ShowMainMenu(float alpha)
 
 	// ImGui::PopStyleColor();
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// UI
+/////
+
+namespace ui
+{
+
+static float menuHeight = 0.0f;
+
+float GetMenuHeight() { return menuHeight; }
+
+} // namespace ui

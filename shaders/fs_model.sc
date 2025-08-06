@@ -11,6 +11,6 @@ void main()
     float ambient = 0.15;
     float diffuse = max(0.0, dot(v_normal, u_lightDir.xyz));
     float lambert = mix(ambient, 1.0, diffuse);
-    
-	gl_FragColor = vec4(lambert * vec3(1.0, 1.0, 1.0), 1.0);
+
+    gl_FragColor = vec4(lambert * vec3(1.0, 1.0, 1.0), 1.0);
 }

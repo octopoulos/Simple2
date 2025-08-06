@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-07-31
+// @version 2025-08-01
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -56,7 +56,8 @@ void App::MapUi()
 	ImGui::SetNextWindowPos(ImVec2(displaySize.x - firstSize.x - 10.0f, 50.0f), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(firstSize, ImGuiCond_FirstUseEver);
 
-	ImGui::Begin("Controls");
+	// TODO: move it to CommonWindow/MapWindow
+	ImGui::Begin("Map");
 	{
 		ImGui::SliderInt("Icon size", &iconSize, 32, 128, "%d px");
 

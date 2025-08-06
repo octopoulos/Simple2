@@ -1,6 +1,6 @@
 // ui-settings.cpp
 // @author octopoulos
-// @version 2025-07-31
+// @version 2025-08-01
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -235,6 +235,7 @@ public:
 };
 
 static SettingsWindow settingsWindow;
-CommonWindow&         GetSettingsWindow() { return settingsWindow; }
+
+CommonWindow& GetSettingsWindow() { return settingsWindow; }
 
 } // namespace ui

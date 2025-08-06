@@ -1,23 +1,13 @@
 // ui-controls.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-08-01
 
 #include "stdafx.h"
 #include "ui/ui.h"
+#include "ui/xsettings.h"
 
 namespace ui
 {
-
-bool AddMenu(const char* text, const char* shortcut, CommonWindow& window)
-{
-	const bool clicked = ImGui::MenuItem(text, shortcut, &window.isOpen);
-	if (clicked)
-	{
-		if (window.hidden & 1) window.isOpen = true;
-		if (window.isOpen) window.hidden &= ~1;
-	}
-	return clicked;
-}
 
 int DrawControlButton(uint32_t texId, const ImVec4& color, std::string name, const char* label, int textButton, float uiScale)
 {
@@ -73,46 +63,62 @@ int DrawControlButton(uint32_t texId, const ImVec4& color, std::string name, con
 	return flag;
 }
 
-void DrawWindows(const std::vector<CommonWindow*>& windows, bool showImGuiDemo)
+class ControlsWindow : public CommonWindow
 {
-	for (const auto& window : windows)
-		window->Draw();
+private:
+	uint32_t texId = 0;
 
-	if (showImGuiDemo)
-		ImGui::ShowDemoWindow(&showImGuiDemo);
-}
-
-bool SetAlpha(float alpha)
-{
-	if (alpha <= 0.0f) return false;
-
-	ImVec4 color = ImGui::GetStyle().Colors[ImGuiCol_Text];
-	color.w      = alpha;
-	ImGui::PushStyleColor(ImGuiCol_Text, color);
-	ImGui::SetNextWindowBgAlpha(alpha);
-	return true;
-}
-
-bool ShowWindows(const std::vector<CommonWindow*>& windows, bool show, bool force)
-{
-	bool changed = false;
-	for (const auto& window : windows)
+public:
+	ControlsWindow()
 	{
-		if (show)
-		{
-			if (window->hidden & 1)
-			{
-				changed = true;
-				window->hidden &= ~1;
-			}
-		}
-		else if (window->hidden == 0 || (window->hidden == 2 && force))
-		{
-			changed = true;
-			window->hidden |= 1;
-		}
+		name   = "Controls";
+		isOpen = true;
 	}
-	return changed;
-}
+
+	void Draw()
+	{
+		CHECK_DRAW();
+		if (!drawn)
+		{
+			//texId = LoadTexture(controls_data, controls_size, "controls");
+			++drawn;
+		}
+
+		if (!SetAlpha(alpha)) return;
+
+		if (ImGui::Begin("Controls", &isOpen))
+		{
+			//const auto app = static_cast<App*>(engine.get());
+			//app->ScreenFocused(3);
+
+			const auto& style = ImGui::GetStyle();
+			const auto  color = style.Colors[ImGuiCol_Text];
+
+			ImGui::PushFont(FindFont("RobotoCondensed"));
+			//if (DrawButton(color, "Open")) app->OpenFile(OpenAction_Capture);
+			//if (DrawButton(color, "FullScr", "Screen")) app->SourceType(CapType::Screen);
+			//if (DrawButton(color, "Stop")) app->SourceType(CapType::None);
+			if (DrawButton(color, "Config")) GetSettingsWindow().isOpen ^= 1;
+			//if (DrawButton(color, "Reset")) app->JumpToFrame(-1, app->Pause());
+			//if (DrawButton(color, app->Pause() ? "Start" : "Pause")) app->Pause(2);
+			// if (DrawButton(color, "Pads")) {}
+			// if (DrawButton(color, "List")) {}
+			// if (DrawButton(color, "Grid")) {}
+			ImGui::PopFont();
+		}
+		ImGui::End();
+		ImGui::PopStyleColor();
+	}
+
+	/// Image text button aligned on a row
+	int DrawButton(const ImVec4& color, std::string name, const char* label = nullptr)
+	{
+		return DrawControlButton(texId, color, name, label ? label : name.c_str(), xsettings.textButton, xsettings.uiScale);
+	}
+};
+
+static ControlsWindow controlsWindow;
+
+CommonWindow& GetControlsWindow() { return controlsWindow; }
 
 } // namespace ui

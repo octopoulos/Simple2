@@ -1,6 +1,6 @@
 // ui-theme.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-08-01
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -109,7 +109,8 @@ public:
 };
 
 static ThemeWindow themeWindow;
-CommonWindow&      GetThemeWindow() { return themeWindow; }
+
+CommonWindow& GetThemeWindow() { return themeWindow; }
 
 // FONTS
 ////////

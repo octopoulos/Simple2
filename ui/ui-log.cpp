@@ -1,6 +1,6 @@
 // ui-log.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-08-01
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -183,7 +183,8 @@ protected:
 };
 
 static LogWindow logWindow;
-CommonWindow&    GetLogWindow() { return logWindow; }
+
+CommonWindow& GetLogWindow() { return logWindow; }
 
 // API
 //////

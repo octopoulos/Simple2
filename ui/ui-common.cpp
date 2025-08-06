@@ -1,6 +1,6 @@
 // ui-common.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-08-01
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -177,28 +177,9 @@ void ShowTable(const std::vector<std::tuple<std::string, std::string>>& stats)
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// IMAGES
-/////////
-
-//uint32_t LoadTexture(const std::filesystem::path& path, std::string name)
-//{
-//	if (!IsFile(path)) return 0;
-//
-//	const auto texId = gl::LoadFileTexture(path.string().c_str(), 0);
-//	if (texId) textures[name] = texId;
-//	return texId;
-//}
-//
-//uint32_t LoadTexture(const uint8_t* data, uint32_t size, std::string name)
-//{
-//	const auto texId = gl::LoadMemoryTexture(data, size, 0);
-//	if (texId)
-//		textures[name] = texId;
-//	return texId;
-//}
 
 static CommonWindow commonWindow;
-CommonWindow&       GetCommonWindow() { return commonWindow; }
+
+CommonWindow& GetCommonWindow() { return commonWindow; }
 
 } // namespace ui

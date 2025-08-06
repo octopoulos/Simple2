@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-07-31
+// @version 2025-08-01
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -11,6 +11,7 @@
 #include "entry/input.h"
 #include "loaders/MeshLoader.h"
 #include "textures/TextureManager.h"
+#include "ui/ui.h"
 
 #include "common/bgfx_utils.h"
 #include "common/debugdraw/debugdraw.h"
@@ -47,6 +48,15 @@ int App::Initialize()
 {
 	ui::Log("App::Initialize");
 	FindAppDirectory(true);
+
+	// load imgui.ini
+	{
+		InitializeImGui();
+		ImGui::LoadIniSettingsFromDisk(imguiPath.string().c_str());
+
+		ui::ListWindows();
+	}
+
 	ScanModels("runtime/models", "runtime/models-prev");
 
 	if (const int result = InitializeScene(); result < 0) return result;
@@ -499,7 +509,7 @@ public:
 
 		// 2) imGui
 		if (!(app->wantScreenshot & 2))
-		{			
+		{
 			const auto& buttons  = ginput.buttons;
 			const auto  imButton = (buttons[1] ? IMGUI_MBUT_LEFT : 0) | (buttons[3] ? IMGUI_MBUT_RIGHT : 0) | (buttons[2] ? IMGUI_MBUT_MIDDLE : 0);
 			const auto& mouseAbs = ginput.mouseAbs;

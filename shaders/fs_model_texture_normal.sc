@@ -25,6 +25,6 @@ void main()
     float lambert = mix(ambient, 1.0, diffuse);
 
     vec4 color = toLinear(texture2D(s_texColor, v_texcoord0));
-    
-    gl_FragColor = vec4(color.rgb * lambert, 1.0);    
+
+    gl_FragColor = vec4(color.rgb * lambert, 1.0);
 }

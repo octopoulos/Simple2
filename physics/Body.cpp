@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-08-01
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -44,7 +44,7 @@ static std::pair<btVector3, btVector3> ComputeAabbRadiusHeight(const Group& grou
 			if (height > 2.0f * radius)
 				height -= 2.0f * radius;
 			else
-				height = 0.0f;			
+				height = 0.0f;
 		}
 	}
 
