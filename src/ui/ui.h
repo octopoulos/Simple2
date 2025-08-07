@@ -1,10 +1,12 @@
 // ui.h
 // @author octopoulos
-// @version 2025-08-02
+// @version 2025-08-03
 
 #pragma once
 
 #include "imgui-include.h"
+
+class App;
 
 namespace ui
 {
@@ -22,12 +24,12 @@ namespace ui
 class CommonWindow
 {
 public:
-	float       alpha  = 1.0f;  ///
-	int         drawn  = 0;     ///
-	int         focus  = 0;     ///
-	int         hidden = 0;     ///< automatic flag, 2=cannot be hidden
-	bool        isOpen = false; ///< manual flag, the user opened/closed the window
-	std::string name;           ///
+	float       alpha  = 1.0f;    ///< window opacity
+	App*        app    = nullptr; ///< pointer to App, to display App properties
+	int         drawn  = 0;       ///< used for initial setup
+	int         hidden = 0;       ///< automatic flag, 2=cannot be hidden
+	bool        isOpen = false;   ///< manual flag, the user opened/closed the window
+	std::string name;             ///< Controls, Log, Scene, Settings, Theme
 
 	virtual ~CommonWindow() {}
 	virtual void Draw() {}
@@ -123,6 +125,12 @@ void Tab(int value);
 float GetMenuHeight();
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SCENE
+////////
+
+CommonWindow& GetSceneWindow();
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SETTINGS
 ///////////
 
@@ -148,7 +156,7 @@ bool AddMenu(const char* text, const char* shortcut, CommonWindow& window);
 void DrawWindows();
 
 /// Create a list of the windows
-void ListWindows();
+void ListWindows(App* app);
 
 /// Set alpha for the next window
 bool SetAlpha(float alpha);

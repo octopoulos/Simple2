@@ -1,4 +1,4 @@
-// @version 2025-08-02
+// @version 2025-08-03
 /*
  * Copyright 2014-2015 Daniel Collin. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -278,8 +278,10 @@ struct OcornutImguiContext
 
 		setupStyle(true);
 
-		io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
-		io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
+		io.BackendFlags |= 0
+		    | ImGuiBackendFlags_HasMouseCursors
+		    | ImGuiBackendFlags_RendererHasTextures
+		    | ImGuiBackendFlags_RendererHasVtxOffset;
 
 #if USE_ENTRY
 		using namespace entry;

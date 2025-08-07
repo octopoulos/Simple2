@@ -1,6 +1,6 @@
 // ui.cpp
 // @author octopoulos
-// @version 2025-08-01
+// @version 2025-08-03
 
 #include "stdafx.h"
 #include "ui.h"
@@ -28,17 +28,23 @@ void DrawWindows()
 		window->Draw();
 }
 
-void ListWindows()
+void ListWindows(App* app)
 {
 	if (windows.size()) return;
 
+	// clang-format off
 	windows.push_back(&GetControlsWindow());
-	windows.push_back(&GetLogWindow());
+	windows.push_back(&GetLogWindow     ());
+	windows.push_back(&GetSceneWindow   ());
 	windows.push_back(&GetSettingsWindow());
-	windows.push_back(&GetThemeWindow());
+	windows.push_back(&GetThemeWindow   ());
+	// clang-format on
 
 	for (const auto& window : windows)
+	{
+		window->app               = app;
 		windowNames[window->name] = window;
+	}
 }
 
 bool SetAlpha(float alpha)

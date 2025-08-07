@@ -23,7 +23,7 @@ static void LabelLeft(const char* label, int components)
 	{
 		ImGui::AlignTextToFramePadding();
 
-		const float spacingX = ImGui::GetStyle().ItemInnerSpacing.x;
+		const float spacingX = 6.0f; //ImGui::GetStyle().ItemInnerSpacing.x;
 		const float width    = ImGui::GetContentRegionAvail().x;
 		valueWidth           = width * 0.6f - spacingX;
 
@@ -45,8 +45,7 @@ static void LabelRight(const char* label)
 {
 	if (!xsettings.labelLeft)
 	{
-		const float spacingX = ImGui::GetStyle().ItemInnerSpacing.x;
-
+		const float spacingX = 6.0f; //ImGui::GetStyle().ItemInnerSpacing.x;
 		if (auto label_end = ImGui::FindRenderedTextEnd(label); label != label_end)
 		{
 			ImGui::SameLine(0, spacingX);

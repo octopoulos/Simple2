@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-08-02
+// @version 2025-08-03
 
 #pragma once
 
@@ -131,10 +131,9 @@ public:
 	////////
 
 private:
-	sCamera                       camera         = nullptr; ///< camera
-	std::unique_ptr<PhysicsWorld> physics        = nullptr; ///< physics world
-	int                           physicsFrame   = 0;       ///< current physics frame
-	std::unique_ptr<Scene>        scene          = nullptr; ///< scene container
+	sCamera                       camera       = nullptr; ///< camera
+	std::unique_ptr<PhysicsWorld> physics      = nullptr; ///< physics world
+	int                           physicsFrame = 0;       ///< current physics frame
 
 	float   curTime   = 0.0f; ///< current time
 	float   deltaTime = 0.0f; ///< last delta (current - last)
@@ -144,6 +143,9 @@ private:
 
 	/// Create scene and physics
 	int InitializeScene();
+
+public:
+	std::unique_ptr<Scene> scene = nullptr; ///< scene container
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// SETTINGS

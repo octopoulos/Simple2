@@ -1,6 +1,6 @@
 // Scene.h
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-08-03
 
 #pragma once
 
@@ -9,9 +9,14 @@
 class Scene : public Object3d
 {
 public:
-	UMAP_STR<std::weak_ptr<Object3d>> names  = {};
+	UMAP_STR<std::weak_ptr<Object3d>> names = {};
 
-	Scene()  = default;
+	Scene()
+	{
+		name = "Scene";
+		type = ObjectType_Scene;
+	}
+
 	~Scene() = default;
 
 	void AddChild(sObject3d child) override
@@ -55,6 +60,6 @@ public:
 	{
 		for (const auto& child : children)
 			child->Render(viewId, renderFlags);
-		//TraverseAndRender(viewId, renderFlags);
+		// TraverseAndRender(viewId, renderFlags);
 	}
 };

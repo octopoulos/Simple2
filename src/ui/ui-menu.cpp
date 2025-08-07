@@ -257,11 +257,14 @@ void App::ShowMainMenu(float alpha)
 		// windows
 		if (ImGui::BeginMenu("Windows"))
 		{
-			ui::AddMenu("Controls", xsettings.shortcutControls, ui::GetControlsWindow());
-			ui::AddMenu("Log", nullptr, ui::GetLogWindow());
-			ui::AddMenu("Settings", xsettings.shortcutSettings, ui::GetSettingsWindow());
+			// clang-format off
+			ui::AddMenu("Controls"    , nullptr, ui::GetControlsWindow());
+			ui::AddMenu("Log"         , nullptr, ui::GetLogWindow());
+			ui::AddMenu("Scene"       , nullptr, ui::GetSceneWindow());
+			ui::AddMenu("Settings"    , nullptr, ui::GetSettingsWindow());
 			ImGui::Separator();
 			ui::AddMenu("Theme Editor", nullptr, ui::GetThemeWindow());
+			// clang-format on
 
 			ImGui::EndMenu();
 		}

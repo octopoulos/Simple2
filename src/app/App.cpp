@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-08-02
+// @version 2025-08-03
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -54,7 +54,7 @@ int App::Initialize()
 		InitializeImGui();
 		ImGui::LoadIniSettingsFromDisk(imguiPath.string().c_str());
 
-		ui::ListWindows();
+		ui::ListWindows(this);
 		ui::UpdateTheme();
 	}
 

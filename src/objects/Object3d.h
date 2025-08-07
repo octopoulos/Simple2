@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-07-31
+// @version 2025-08-03
 
 #pragma once
 
@@ -10,12 +10,14 @@ using sObject3d = std::shared_ptr<Object3d>;
 /// An object can have multiple types (like a flag)
 enum ObjectTypes_ : int
 {
-	ObjectType_Basic    = 1 << 0, ///< basic object
-	ObjectType_Camera   = 1 << 1, ///< camera object
-	ObjectType_Clone    = 1 << 2, ///< clone of another object (doesn't own groups)
-	ObjectType_Group    = 1 << 3, ///< group (no render)
-	ObjectType_Instance = 1 << 4, ///< instance
-	ObjectType_Mesh     = 1 << 5, ///< mesh
+	ObjectType_Basic     = 1 << 0, ///< basic object
+	ObjectType_Camera    = 1 << 1, ///< camera object
+	ObjectType_Clone     = 1 << 2, ///< clone of another object (doesn't own groups)
+	ObjectType_Group     = 1 << 3, ///< group (no render)
+	ObjectType_Instance  = 1 << 4, ///< instance
+	ObjectType_Mesh      = 1 << 5, ///< mesh
+	ObjectType_RubikCube = 1 << 6, ///< Rubic cube
+	ObjectType_Scene     = 1 << 7, ///< scene
 };
 
 enum RenderFlags_ : int
@@ -40,7 +42,11 @@ public:
 	glm::mat4              localMatrix = glm::mat4(1.0f);            ///< full local transform (S * R * T)
 	glm::mat4              worldMatrix = glm::mat4(1.0f);            ///< parent->worldMatrix * localMatrix
 
-	Object3d()          = default;
+	Object3d()
+	{
+		type = ObjectType_Basic;
+	}
+
 	virtual ~Object3d() = default;
 
 	/// Add a child to the object
