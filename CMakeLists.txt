@@ -1,6 +1,6 @@
 # CMakeLists.txt
-# cmake -B . -S .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=~/Code/vcpkg/scripts/buildsystems/vcpkg.cmake
-# cmake -B . -S .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=~/Code/vcpkg/scripts/buildsystems/vcpkg.cmake
+# cmake -B . -S ../.. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=~/Code/vcpkg/scripts/buildsystems/vcpkg.cmake
+# cmake -B . -S ../.. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=~/Code/vcpkg/scripts/buildsystems/vcpkg.cmake
 # cmake --build . -j8
 # cmake --build . --target AssetsBin
 #
@@ -23,14 +23,12 @@ project(Simple LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-OPTION(WITH_GLFW          OFF)
-OPTION(WITH_IMGUI_DOCKING ON )
-OPTION(WITH_SDL           OFF)
-OPTION(WITH_SDL3          OFF)
+OPTION(WITH_GLFW OFF)
+OPTION(WITH_SDL  OFF)
+OPTION(WITH_SDL3 OFF)
 
 set(ALL_WITHS
 	WITH_GLFW
-	WITH_IMGUI_DOCKING
 	WITH_SDL
 	WITH_SDL3
 )
@@ -41,11 +39,7 @@ foreach(opt IN LISTS ALL_WITHS)
 endforeach()
 
 set(3RDPARTY_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty")
-if(WITH_IMGUI_DOCKING)
-	set(IMGUI_DIR "${3RDPARTY_SRC_DIR}/imgui-docking")
-else()
-	set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/dear-imgui")
-endif()
+set(IMGUI_DIR "${3RDPARTY_SRC_DIR}/imgui-docking")
 
 add_definitions(
 	-DBX_CONFIG_DEBUG=0
@@ -234,18 +228,20 @@ else()
 	set(CPP_MM "cpp")
 endif()
 
-set(       APP_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/app")
-set(    COMMON_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/common")
-set(      CORE_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/core")
-set(     ENTRY_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/common/entry")
-set(GEOMETRIES_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/geometries")
-set(   LOADERS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/loaders")
-set( MATERIALS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/materials")
-set(   OBJECTS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/objects")
-set(   PHYSICS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/physics")
-set(    SCENES_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scenes")
-set(  TEXTURES_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/textures")
-set(        UI_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ui")
+set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
+
+set(       APP_SRC_DIR "${SRC_DIR}/app")
+set(    COMMON_SRC_DIR "${SRC_DIR}/common")
+set(      CORE_SRC_DIR "${SRC_DIR}/core")
+set(     ENTRY_SRC_DIR "${SRC_DIR}/common/entry")
+set(GEOMETRIES_SRC_DIR "${SRC_DIR}/geometries")
+set(   LOADERS_SRC_DIR "${SRC_DIR}/loaders")
+set( MATERIALS_SRC_DIR "${SRC_DIR}/materials")
+set(   OBJECTS_SRC_DIR "${SRC_DIR}/objects")
+set(   PHYSICS_SRC_DIR "${SRC_DIR}/physics")
+set(    SCENES_SRC_DIR "${SRC_DIR}/scenes")
+set(  TEXTURES_SRC_DIR "${SRC_DIR}/textures")
+set(        UI_SRC_DIR "${SRC_DIR}/ui")
 
 file(GLOB   3RDPARTY_SRC_FILES CONFIGURE_DEPENDS "${IMGUI_DIR}/*.cpp" "${IMGUI_DIR}/*.h" "${3RDPARTY_SRC_DIR}/ImGuiFileDialog/*.cpp" "${3RDPARTY_SRC_DIR}/ImGuiFileDialog/*.h")
 file(GLOB        APP_SRC_FILES CONFIGURE_DEPENDS "${APP_SRC_DIR}/*.cpp" "${APP_SRC_DIR}/*.h")
@@ -264,7 +260,7 @@ file(GLOB     SCENES_SRC_FILES CONFIGURE_DEPENDS "${SCENES_SRC_DIR}/*.cpp" "${SC
 file(GLOB   TEXTURES_SRC_FILES CONFIGURE_DEPENDS "${TEXTURES_SRC_DIR}/*.cpp" "${TEXTURES_SRC_DIR}/*.h")
 file(GLOB         UI_SRC_FILES CONFIGURE_DEPENDS "${UI_SRC_DIR}/*.cpp" "${UI_SRC_DIR}/*.h")
 
-add_executable(Simple app/App.cpp)
+add_executable(Simple "${SRC_DIR}/app/App.cpp")
 
 #######################################################################################################################
 # 4) INCLUDES
@@ -275,10 +271,7 @@ add_subdirectory("${CPP_PATH}/AI/" AI)
 set(VCPKG_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
 
 target_include_directories(Simple PRIVATE
-	"${CMAKE_CURRENT_SOURCE_DIR}"
-	"${CMAKE_CURRENT_SOURCE_DIR}/3rdparty"
-	"${CMAKE_CURRENT_SOURCE_DIR}/app"
-	"${CMAKE_CURRENT_SOURCE_DIR}/common"
+	"${3RDPARTY_SRC_DIR}"
 	"${CPP_3RDPARTY}"
 	"${CPP_3RDPARTY}/bgfx/3rdparty"
 	"${CPP_3RDPARTY}/bgfx/3rdparty/directx-headers/include/directx"
@@ -294,6 +287,9 @@ target_include_directories(Simple PRIVATE
 	"${CPP_3RDPARTY}/bx/include"
 	"${CPP_PATH}"
 	"${IMGUI_DIR}"
+	"${SRC_DIR}"
+	"${SRC_DIR}/app"
+	"${SRC_DIR}/common"
 	"${VCPKG_INCLUDE_DIR}/bullet"
 	# "${VCPKG_INCLUDE_DIR}/bx"
 )

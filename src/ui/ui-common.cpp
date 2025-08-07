@@ -56,7 +56,7 @@ static void LabelRight(const char* label)
 }
 
 /// mode: 1=combo 2=text
-static void PushBlender(int mode)
+static int PushBlender(int mode)
 {
 	if (xsettings.theme == Theme_Blender)
 	{
@@ -69,21 +69,24 @@ static void PushBlender(int mode)
 			ImGui::PushStyleColor(ImGuiCol_Button        , ImVec4(0.16f, 0.16f, 0.16f, 1.00f));
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered , ImVec4(0.19f, 0.19f, 0.19f, 1.00f));
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive  , ImVec4(0.27f, 0.38f, 0.56f, 1.00f));
+			return 6;
 		}
 		else
 		{
 			ImGui::PushStyleColor(ImGuiCol_FrameBg       , ImVec4(0.11f, 0.11f, 0.11f, 0.88f)); // 29
 			ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.14f, 0.14f, 0.14f, 1.00f)); // 35
 			ImGui::PushStyleColor(ImGuiCol_FrameBgActive , ImVec4(0.09f, 0.09f, 0.09f, 1.00f)); // 24
+			return 3;
 		}
 		// clang-format on
 	}
+
+	return 0;
 }
 
-static void PopBlender(int mode)
+static void PopBlender(int pushed)
 {
-	if (xsettings.theme == Theme_Blender)
-		ImGui::PopStyleColor(mode == 1 ? 6 : 3);
+	if (pushed) ImGui::PopStyleColor(pushed);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -98,12 +101,12 @@ bool AddCombo(const std::string& name, const char* label)
 	if (auto config = ConfigFind(name))
 	{
 		LabelLeft(label, 1);
-		PushBlender(1);
+		const int pushed = PushBlender(1);
 
 		result = ImGui::Combo(LABEL_ID(label), (int*)config->ptr, config->names, config->count);
 		result |= ItemEvent(name);
 
-		PopBlender(1);
+		PopBlender(pushed);
 		LabelRight(label);
 	}
 	return result;
@@ -118,7 +121,7 @@ bool AddCombo(const std::string& name, const char* label, const char* texts[], c
 		int  index = (it != values.end()) ? TO_INT(std::distance(values.begin(), it)) : 0;
 
 		LabelLeft(label, 1);
-		PushBlender(1);
+		const int pushed = PushBlender(1);
 
 		if (ImGui::Combo(LABEL_ID(label), &index, texts, TO_INT(values.size())))
 		{
@@ -127,7 +130,7 @@ bool AddCombo(const std::string& name, const char* label, const char* texts[], c
 		}
 		result |= ItemEvent(name);
 
-		PopBlender(1);
+		PopBlender(pushed);
 		LabelRight(label);
 	}
 	return result;
@@ -191,12 +194,12 @@ bool AddDragInt(const std::string& name, const char* text, float speed, const ch
 void AddInputText(const std::string& name, const char* label, size_t size, int flags)
 {
 	LabelLeft(label, 1);
-	PushBlender(2);
+	const int pushed = PushBlender(2);
 
 	if (auto config = ConfigFind(name))
 		ImGui::InputText(LABEL_ID(label), (char*)config->ptr, size, flags);
 
-	PopBlender(2);
+	PopBlender(pushed);
 	LabelRight(label);
 }
 

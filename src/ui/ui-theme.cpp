@@ -236,7 +236,7 @@ static void SetThemeBlender(ImGuiStyle& style)
 	style.ScrollbarSize = 10.0f;
 
 	auto& io = ImGui::GetIO();
-	if (auto* font = io.Fonts->AddFontFromFileTTF("data/Inter.ttf")) io.FontDefault = font;
+	if (auto* font = io.Fonts->AddFontFromFileTTF("runtime/fonts/inter.ttf")) io.FontDefault = font;
 }
 
 static void SetThemeClassic(ImGuiStyle& style)

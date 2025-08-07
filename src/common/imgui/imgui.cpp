@@ -451,7 +451,7 @@ struct OcornutImguiContext
 			//const ImWchar* ranges        = io.Fonts->GetGlyphRangesCyrillic();
 			m_font[ImGui::Font::Regular] = io.Fonts->AddFontFromMemoryTTF((void*)s_robotoRegularTtf, sizeof(s_robotoRegularTtf), _fontSize, &config);//, ranges);
 			m_font[ImGui::Font::Mono]    = io.Fonts->AddFontFromMemoryTTF((void*)s_robotoMonoRegularTtf, sizeof(s_robotoMonoRegularTtf), _fontSize - 3.0f, &config);//, ranges);
-			//m_font[ImGui::Font::Inter]   = io.Fonts->AddFontFromFileTTF("data/Inter.ttf");
+			//m_font[ImGui::Font::Inter]   = io.Fonts->AddFontFromFileTTF("runtime/fonts/inter.ttf");
 
 			config.MergeMode = true;
 			config.DstFont   = m_font[ImGui::Font::Regular];
@@ -542,11 +542,9 @@ struct OcornutImguiContext
 		ImGui::NewFrame();
 		ImGuizmo::BeginFrame();
 
-#ifdef WITH_IMGUI_DOCKING
 		// docking support
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
 		ImGui::DockSpaceOverViewport(0, viewport, ImGuiDockNodeFlags_PassthruCentralNode);
-#endif // WITH_IMGUI_DOCKING
 	}
 
 	void endFrame()

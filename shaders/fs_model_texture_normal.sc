@@ -2,7 +2,7 @@
 
 $input v_normal, v_texcoord0
 
-#include "../common/common.sh"
+#include "common.sh"
 
 SAMPLER2D(s_texColor, 0);
 SAMPLER2D(s_texNormal, 1);
