@@ -1,6 +1,6 @@
-// ui-log.cpp
+// LogWindow.cpp
 // @author octopoulos
-// @version 2025-08-01
+// @version 2025-08-02
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -186,8 +186,9 @@ static LogWindow logWindow;
 
 CommonWindow& GetLogWindow() { return logWindow; }
 
-// API
-//////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FUNCTIONS
+////////////
 
 /// Add Log - va_list version
 /// @param id: 0: log, 1: error, 2: info, 3: warning

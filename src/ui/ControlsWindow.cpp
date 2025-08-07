@@ -1,6 +1,6 @@
-// ui-controls.cpp
+// ControlsWindow.cpp
 // @author octopoulos
-// @version 2025-08-01
+// @version 2025-08-02
 
 #include "stdafx.h"
 #include "ui/ui.h"

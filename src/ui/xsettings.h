@@ -4,37 +4,141 @@
 
 #pragma once
 
-#include "ui/EngineSettings.h"
+/// Aspect ratio enumeration
+enum XAspectRatios_ : int
+{
+	AspectRatio_1_1,    ///< 1
+	AspectRatio_4_3,    ///< 1.3333
+	AspectRatio_3_2,    ///< 1.5
+	AspectRatio_16_9,   ///< 1.777
+	AspectRatio_Native, ///
+	AspectRatio_Window, ///
+};
 
-struct XSettings : public EngineSettings
+enum XChanges_ : int
+{
+	Change_Analysis  = 1,
+	Change_Derivator = 2,
+	Change_Changed   = 128,
+};
+
+enum XProjections_ : int
+{
+	Projection_Orthographic,
+	Projection_Perspective,
+};
+
+enum XRenderModes_ : int
+{
+	RenderMode_None,
+	RenderMode_Screen,
+	RenderMode_Model,
+	RenderMode_Both,
+};
+
+enum XThemes_ : int
+{
+	Theme_Blender,
+	Theme_Classic,
+	Theme_Custom,
+	Theme_Dark,
+	Theme_Light,
+	Theme_Xemu,
+};
+
+enum XVSyncs_ : int
+{
+	Vsync_Off,
+	Vsync_On,
+	Vsync_Adaptive,
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// MAPPING
+//////////
+
+struct XSettings
 {
 	// [analysis]
-	// 0
 	str256 appId;  ///< appId to synchronize with the browser
 	int    gameId; ///< 0: gori, 1: custom
+
+	// [input]
+	float   cameraSpeed;    ///< camera movement speed
+	int64_t repeatDelay;    ///< Ms wait for repeat to kick in
+	int64_t repeatInterval; ///< Ms repeat interval
+	float   zoomKb;         ///< zoom speed with the keyboard
+	float   zoomWheel;      ///< zoom speed with the mouse wheel
 
 	// [physics]
 	bool bulletDebug; ///< bullet debug draw
 	bool physPaused;  ///< paused physics
 
 	// [render]
+	float center[3];   ///< scene center
 	float distance;   ///< distance between camera and cursor
+	float eye[3];     ///< scene eye
+	bool  fixedView;  ///< don't move the view with the mouse
 	bool  instancing; ///< use mesh instancing
 	float orthoZoom;  ///< zoom in orthographic projection
+	int   projection; ///< 0: ortho, 1: perspective
+	int   renderMode; ///< &1: screen, &2: model
+
+	// [system]
+	float activeMs;    ///< ms per frame when mouse moving + focused
+	bool  benchmark;   ///< analyze every frame for benchmark purpose
+	int   drawEvery;   ///< render every frame?
+	float idleMs;      ///< ms per frame when idle or not focused
+	float idleTimeout; ///< after how many ms is it considered idle?
+	int   ioFrameUs;   ///< how many us to spend in I/O per frame
+	int   vsync;       ///< off, on, adaptive
 
 	// [ui]
-	float cameraSpeed;    ///< camera movement speed
+	int   aspectRatio;    ///< frame aspect ratio
+	float fontScale;      ///< FontScaleMain
 	float iconSize;       ///< map icon size
+	bool  labelLeft;      ///< labels on the left of the inputs
 	bool  nvidiaEnc;      ///< use nVidia encoding
 	str2k recentFiles[6]; ///< recent files for quick load
+	int   stretch;        ///< stretch capture to window
+	int   textButton;     ///< show text under the button
+	int   theme;          ///< Blender, Dark, Light
+	int   tree;           ///< which tree nodes are open in the panel
+	float uiScale;        ///< general scale
 	bool  videoCapture;   ///< allow video capture
-	float zoomKb;         ///< zoom speed with the keyboard
-	float zoomWheel;      ///< zoom speed with the mouse wheel
 
 	// [user]
 	str256 userEmail; ///< login
 	str256 userHost;  ///< ws(s) url
 	str256 userPw;    ///< password
+
+	// [window]
+	int  fullScreen;    ///< 1: FS, 2: FS desktop
+	bool maximized;     ///< start in maximized window
+	int  windowPos[2];  ///< -1 = centered
+	int  windowSize[2]; ///< [width, height]
 };
 
-#include "game-settings.h"
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FUNCTIONS
+////////////
+
+/// Populate the settingsMap + find the settings folder
+void InitGameSettings();
+
+/// Load settings.ini
+void LoadGameSettings(int gameId = -1, std::string baseName = "", std::string_view suffix = "");
+
+/// Save settings.ini
+/// @param sections: empty to save all
+int SaveGameSettings(std::string baseName = "", bool saveGame = true, std::string_view suffix = "", const USET_STR& sections = {});
+
+/// Get the settings folder (C++)
+std::filesystem::path GameFolder();
+
+/// Get the game string
+/// @param gameId: -1: get current gameId
+/// @returns "x" if incorrect gameId
+const char* GameName(int gameId = -1);
+
+extern XSettings xsettings;

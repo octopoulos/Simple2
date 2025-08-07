@@ -1,4 +1,4 @@
-// ui-theme.cpp
+// ThemeWindow.cpp
 // @author octopoulos
 // @version 2025-08-02
 
@@ -6,8 +6,6 @@
 #include "ui/ui.h"
 //
 #include "ui/xsettings.h"
-
-//#include "imgui_impl_opengl3.h"
 
 namespace ui
 {
@@ -111,6 +109,10 @@ public:
 static ThemeWindow themeWindow;
 
 CommonWindow& GetThemeWindow() { return themeWindow; }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FUNCTIONS
+////////////
 
 // FONTS
 ////////
@@ -222,21 +224,27 @@ static void SetThemeBlender(ImGuiStyle& style)
 	colors[ImGuiCol_TableHeaderBg]             = ImVec4(0.19f, 0.19f, 0.20f, 1.00f);
 	colors[ImGuiCol_TableBorderStrong]         = ImVec4(0.31f, 0.31f, 0.35f, 1.00f);
 	colors[ImGuiCol_TableBorderLight]          = ImVec4(0.23f, 0.23f, 0.25f, 1.00f);
-	colors[ImGuiCol_TableRowBg]                = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
-	colors[ImGuiCol_TableRowBgAlt]             = ImVec4(1.00f, 1.00f, 1.00f, 0.09f);
+	colors[ImGuiCol_TableRowBg]                = ImVec4(0.15f, 0.15f, 0.15f, 0.88f); // 40 40 40 224
+	colors[ImGuiCol_TableRowBgAlt]             = ImVec4(0.16f, 0.16f, 0.16f, 0.88f); // 43 43 43 224
 	colors[ImGuiCol_TextLink]                  = ImVec4(0.28f, 0.51f, 0.80f, 0.88f); // 71 114 179 224
 	colors[ImGuiCol_TextSelectedBg]            = ImVec4(0.28f, 0.51f, 0.80f, 0.88f); // 71 114 179 224
-	colors[ImGuiCol_TreeLines]                 = ImVec4(0.24f, 0.24f, 0.24f, 0.88f); // 61 61 61 224
+	colors[ImGuiCol_TreeLines]                 = ImVec4(0.40f, 0.40f, 0.40f, 1.00f); // 102 102 102 255
 	colors[ImGuiCol_DragDropTarget]            = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
 	colors[ImGuiCol_NavCursor]                 = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
 	colors[ImGuiCol_NavWindowingHighlight]     = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
 	colors[ImGuiCol_NavWindowingDimBg]         = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 	colors[ImGuiCol_ModalWindowDimBg]          = ImVec4(0.16f, 0.16f, 0.16f, 0.73f);
 
+	style.FramePadding  = ImVec2(10.0f, 3.0f);
+	style.FrameRounding = 3.0f;
+	style.GrabRounding  = 2.0f;
 	style.ScrollbarSize = 10.0f;
-
-	auto& io = ImGui::GetIO();
-	if (auto* font = io.Fonts->AddFontFromFileTTF("runtime/fonts/inter.ttf")) io.FontDefault = font;
+	
+	if (const std::filesystem::path interFont = "runtime/fonts/inter.ttf"; IsFile(interFont))
+	{
+		auto& io = ImGui::GetIO();
+		io.FontDefault = io.Fonts->AddFontFromFileTTF(interFont.string().c_str());
+	}
 }
 
 static void SetThemeClassic(ImGuiStyle& style)

@@ -1,4 +1,4 @@
-// ui-settings.cpp
+// SettingsWindow.cpp
 // @author octopoulos
 // @version 2025-08-02
 
@@ -188,7 +188,7 @@ public:
 			if (ImGui::TreeNodeEx("UI", SHOW_TREE(Show_SystemUI)))
 			{
 				tree |= Show_SystemUI;
-				AddSliderInt("aspectRatio", "Aspect Ratio", nullptr);
+				AddCombo("aspectRatio", "Aspect Ratio");
 				if (AddDragFloat("fontScale", "Font Scale", 0.001f, "%.3f")) ImGui::GetStyle().FontScaleMain = xsettings.fontScale;
 				AddSliderInt("fullScreen", "Full Screen", nullptr);
 				AddSliderFloat("iconSize", "Icon Size", "%.0f");
