@@ -78,6 +78,7 @@ struct EngineSettings
 	// [ui]
 	int   aspectRatio;        ///< frame aspect ratio
 	float fontScale;          ///< FontScaleMain
+	bool  labelLeft;          ///< labels on the left of the inputs
 	str32 shortcutControls;   ///
 	str32 shortcutLog;        ///
 	str32 shortcutOpen;       ///

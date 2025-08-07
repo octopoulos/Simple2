@@ -1,6 +1,6 @@
 // ui-common.cpp
 // @author octopoulos
-// @version 2025-08-01
+// @version 2025-08-02
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -10,24 +10,106 @@
 namespace ui
 {
 
-static std::unordered_map<std::string, uint32_t> textures;
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // HELPERS
 //////////
 
-bool AddCombo(const std::string& name, const char* text)
+static void LabelLeft(const char* label, int components)
+{
+	float valueWidth = 0.0f;
+	if (!xsettings.labelLeft)
+		valueWidth = ImGui::CalcItemWidth();
+	else
+	{
+		ImGui::AlignTextToFramePadding();
+
+		const float spacingX = ImGui::GetStyle().ItemInnerSpacing.x;
+		const float width    = ImGui::GetContentRegionAvail().x;
+		valueWidth           = width * 0.6f - spacingX;
+
+		if (auto labelEnd = ImGui::FindRenderedTextEnd(label); label != labelEnd)
+		{
+			const float posX = ImGui::GetCursorPosX();
+			const auto  size = ImGui::CalcTextSize(label);
+
+			ImGui::SetCursorPosX(posX + width * 0.4f - size.x - spacingX);
+			ImGui::TextEx(label, labelEnd);
+			ImGui::SameLine(0.0f, spacingX * 2);
+		}
+	}
+
+	ImGui::PushMultiItemsWidths(components, valueWidth);
+}
+
+static void LabelRight(const char* label)
+{
+	if (!xsettings.labelLeft)
+	{
+		const float spacingX = ImGui::GetStyle().ItemInnerSpacing.x;
+
+		if (auto label_end = ImGui::FindRenderedTextEnd(label); label != label_end)
+		{
+			ImGui::SameLine(0, spacingX);
+			ImGui::TextEx(label, label_end);
+		}
+	}
+}
+
+/// mode: 1=combo 2=text
+static void PushBlender(int mode)
+{
+	if (xsettings.theme == Theme_Blender)
+	{
+		// clang-format off
+		if (mode == 1)
+		{
+			ImGui::PushStyleColor(ImGuiCol_FrameBg       , ImVec4(0.16f, 0.16f, 0.16f, 1.00f));
+			ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.19f, 0.19f, 0.19f, 1.00f));
+			ImGui::PushStyleColor(ImGuiCol_FrameBgActive , ImVec4(0.27f, 0.38f, 0.56f, 1.00f));
+			ImGui::PushStyleColor(ImGuiCol_Button        , ImVec4(0.16f, 0.16f, 0.16f, 1.00f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered , ImVec4(0.19f, 0.19f, 0.19f, 1.00f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive  , ImVec4(0.27f, 0.38f, 0.56f, 1.00f));
+		}
+		else
+		{
+			ImGui::PushStyleColor(ImGuiCol_FrameBg       , ImVec4(0.11f, 0.11f, 0.11f, 0.88f)); // 29
+			ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.14f, 0.14f, 0.14f, 1.00f)); // 35
+			ImGui::PushStyleColor(ImGuiCol_FrameBgActive , ImVec4(0.09f, 0.09f, 0.09f, 1.00f)); // 24
+		}
+		// clang-format on
+	}
+}
+
+static void PopBlender(int mode)
+{
+	if (xsettings.theme == Theme_Blender)
+		ImGui::PopStyleColor(mode == 1 ? 6 : 3);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FUNCTIONS
+////////////
+
+#define LABEL_ID(label) fmt::format("##{}", label).c_str()
+
+bool AddCombo(const std::string& name, const char* label)
 {
 	bool result = false;
 	if (auto config = ConfigFind(name))
 	{
-		result = ImGui::Combo(text, (int*)config->ptr, config->names, config->count);
+		LabelLeft(label, 1);
+		PushBlender(1);
+
+		result = ImGui::Combo(LABEL_ID(label), (int*)config->ptr, config->names, config->count);
 		result |= ItemEvent(name);
+
+		PopBlender(1);
+		LabelRight(label);
 	}
 	return result;
 }
 
-bool AddCombo(const std::string& name, const char* text, const char* texts[], const VEC_INT values)
+bool AddCombo(const std::string& name, const char* label, const char* texts[], const VEC_INT values)
 {
 	bool result = false;
 	if (auto config = ConfigFind(name))
@@ -35,12 +117,18 @@ bool AddCombo(const std::string& name, const char* text, const char* texts[], co
 		auto it    = std::find(values.begin(), values.end(), *(int*)config->ptr);
 		int  index = (it != values.end()) ? TO_INT(std::distance(values.begin(), it)) : 0;
 
-		if (ImGui::Combo(text, &index, texts, TO_INT(values.size())))
+		LabelLeft(label, 1);
+		PushBlender(1);
+
+		if (ImGui::Combo(LABEL_ID(label), &index, texts, TO_INT(values.size())))
 		{
 			*(int*)config->ptr = values[index];
 			result             = true;
 		}
 		result |= ItemEvent(name);
+
+		PopBlender(1);
+		LabelRight(label);
 	}
 	return result;
 }
@@ -49,13 +137,15 @@ bool AddCombo(const std::string& name, const char* text, const char* texts[], co
 /// @param mode: 0:slider, 1:drag
 static bool AddDragScalarN(int mode, const std::string& name, const char* label, ImGuiDataType data_type, size_t type_size, void* p_data, int components, float v_speed, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags = 0)
 {
-	const float spacingX      = ImGui::GetStyle().ItemInnerSpacing.x;
-	bool        value_changed = false;
+	const float spacingX     = ImGui::GetStyle().ItemInnerSpacing.x;
+	bool        valueChanged = false;
 
 	ImGui::BeginGroup();
 	ImGui::PushID(label);
+
 	components = std::max(components, 1);
-	ImGui::PushMultiItemsWidths(components, ImGui::CalcItemWidth());
+	LabelLeft(label, components);
+
 	for (int i = 0; i < components; ++i)
 	{
 		ImGui::PushID(i);
@@ -63,11 +153,11 @@ static bool AddDragScalarN(int mode, const std::string& name, const char* label,
 			ImGui::SameLine(0, spacingX);
 
 		if (mode == 0)
-			value_changed |= ImGui::SliderScalar(fmt::format("##{}{}", name, i).c_str(), data_type, p_data, p_min, p_max, format, flags);
+			valueChanged |= ImGui::SliderScalar(fmt::format("##{}{}", name, i).c_str(), data_type, p_data, p_min, p_max, format, flags);
 		else
-			value_changed |= ImGui::DragScalar(fmt::format("##{}{}", name, i).c_str(), data_type, p_data, v_speed, p_min, p_max, format, flags);
+			valueChanged |= ImGui::DragScalar(fmt::format("##{}{}", name, i).c_str(), data_type, p_data, v_speed, p_min, p_max, format, flags);
 
-		value_changed |= ItemEvent(name, i);
+		valueChanged |= ItemEvent(name, i);
 
 		ImGui::SameLine();
 		ImGui::PopID();
@@ -76,14 +166,10 @@ static bool AddDragScalarN(int mode, const std::string& name, const char* label,
 	}
 	ImGui::PopID();
 
-	if (auto label_end = ImGui::FindRenderedTextEnd(label); label != label_end)
-	{
-		ImGui::SameLine(0, spacingX);
-		ImGui::TextEx(label, label_end);
-	}
+	LabelRight(label);
 
 	ImGui::EndGroup();
-	return value_changed;
+	return valueChanged;
 }
 
 bool AddDragFloat(const std::string& name, const char* text, float speed, const char* format)
@@ -100,6 +186,18 @@ bool AddDragInt(const std::string& name, const char* text, float speed, const ch
 	if (auto config = ConfigFind(name))
 		result = AddDragScalarN(1, name, text, ImGuiDataType_S32, sizeof(int32_t), (int*)config->ptr, config->count, speed, &config->minInt, &config->maxFloat, format);
 	return result;
+}
+
+void AddInputText(const std::string& name, const char* label, size_t size, int flags)
+{
+	LabelLeft(label, 1);
+	PushBlender(2);
+
+	if (auto config = ConfigFind(name))
+		ImGui::InputText(LABEL_ID(label), (char*)config->ptr, size, flags);
+
+	PopBlender(2);
+	LabelRight(label);
 }
 
 bool AddSliderBool(const std::string& name, const char* text, const char* format, bool vertical, const ImVec2& size)

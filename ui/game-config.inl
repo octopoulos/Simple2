@@ -31,7 +31,8 @@ X_ENUM (XSETTINGS, system, 0, vsync      , Vsync_Adaptive, sVSyncs),
 
 // [ui]
 X_ENUM  (XSETTINGS, ui, 0, aspectRatio       , AspectRatio_Native, sAspectRatios),
-X_FLOAT (XSETTINGS, ui, 0, fontScale         , 0.834f, 0.1f, 10.0f),
+X_FLOAT (XSETTINGS, ui, 0, fontScale         , 0.65f, 0.1f, 10.0f),
+X_BOOL  (XSETTINGS, ui, 0, labelLeft         , true),
 X_STRING(XSETTINGS, ui, 0, shortcutControls  , ""),
 X_STRING(XSETTINGS, ui, 0, shortcutLog       , ""),
 X_STRING(XSETTINGS, ui, 0, shortcutOpen      , ""),

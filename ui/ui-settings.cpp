@@ -84,7 +84,7 @@ public:
 			if (ImGui::TreeNodeEx("Global", SHOW_TREE(Show_AnalysisGlobal)))
 			{
 				tree |= Show_AnalysisGlobal;
-				ImGui::InputText("App Id", xsettings.appId, sizeof(xsettings.appId), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
+				AddInputText("appId", "AppId", 256, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
 				AddSliderInt("gameId", "Game Id", nullptr);
 				if (ImGui::Button("Load Defaults")) LoadGameSettings(xsettings.gameId, "", "-def");
 				ImGui::SameLine();
@@ -127,9 +127,9 @@ public:
 			if (ImGui::TreeNodeEx("User", SHOW_TREE(Show_NetUser)))
 			{
 				tree |= Show_NetUser;
-				ImGui::InputText("Host", xsettings.userHost, sizeof(xsettings.userHost));
-				ImGui::InputText("Email", xsettings.userEmail, sizeof(xsettings.userEmail));
-				ImGui::InputText("Password", xsettings.userPw, sizeof(xsettings.userPw), ImGuiInputTextFlags_Password);
+				AddInputText("userHost", "Host");
+				AddInputText("userEmail", "Email");
+				AddInputText("userPw", "Password", 256, ImGuiInputTextFlags_Password);
 				//if (ImGui::Button("UserLogin")) app->UserLogin();
 				ImGui::SameLine();
 				//if (ImGui::Button("UserGet")) app->UserGet();
@@ -196,10 +196,12 @@ public:
 				AddSliderBool("stretch", "Stretch");
 				if (AddCombo("theme", "Theme")) UpdateTheme();
 				AddDragFloat("uiScale", "UI Scale");
-				ImGui::DragInt2("Window Pos", xsettings.windowPos, 1, -1, 5120);
-				ItemEvent("windowPos");
-				ImGui::DragInt2("Window Size", xsettings.windowSize, 1, 0, 5120);
-				ItemEvent("windowSize");
+				AddDragInt("windowPos", "Window Pos");
+				AddDragInt("windowSize", "Window Size");
+				//ImGui::DragInt2("Window Pos", xsettings.windowPos, 1, -1, 5120);
+				//ItemEvent("windowPos");
+				//ImGui::DragInt2("Window Size", xsettings.windowSize, 1, 0, 5120);
+				//ItemEvent("windowSize");
 
 				if (xsettings.fullScreen != prevSettings.fullScreen || xsettings.maximized != prevSettings.maximized
 				    || memcmp(xsettings.windowPos, prevSettings.windowPos, sizeof(xsettings.windowPos)) != 0
