@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-08-03
+// @version 2025-08-04
 
 #pragma once
 
@@ -30,23 +30,20 @@ class Object3d
 public:
 	std::vector<sObject3d> children    = {};                         ///< sub-objects
 	int                    id          = 0;                          ///< unique id
+	glm::mat4              matrix      = glm::mat4(1.0f);            ///< full local transform (S * R * T)
+	glm::mat4              matrixWorld = glm::mat4(1.0f);            ///< parent->matrixWorld * matrix
 	std::string            name        = "";                         ///< object name (used to find in scene)
 	Object3d*              parent      = nullptr;                    ///< parent object
-	int                    type        = ObjectType_Basic;           ///< ObjectTypes_
 	glm::vec3              position    = glm::vec3(0.0f);            ///< x, y, z
 	glm::quat              quaternion  = glm::identity<glm::quat>(); ///< quaternion
 	glm::quat              rotation    = glm::vec3(0.0f);            ///< rotation: Euler angles
 	glm::vec3              scale       = glm::vec3(1.0f);            ///< sx, sy, sz
 	glm::mat4              scaleMatrix = glm::mat4(1.0f);            ///< uses scale
 	glm::mat4              transform   = {};                         ///< computed from S * R * T
-	glm::mat4              localMatrix = glm::mat4(1.0f);            ///< full local transform (S * R * T)
-	glm::mat4              worldMatrix = glm::mat4(1.0f);            ///< parent->worldMatrix * localMatrix
+	int                    type        = ObjectType_Basic;           ///< ObjectTypes_
+	bool                   visible     = true;                       ///< object is rendered if true
 
-	Object3d()
-	{
-		type = ObjectType_Basic;
-	}
-
+	Object3d()          = default;
 	virtual ~Object3d() = default;
 
 	/// Add a child to the object

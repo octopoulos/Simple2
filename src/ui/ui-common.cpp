@@ -1,6 +1,6 @@
 // ui-common.cpp
 // @author octopoulos
-// @version 2025-08-02
+// @version 2025-08-04
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -276,7 +276,6 @@ void ShowTable(const std::vector<std::tuple<std::string, std::string>>& stats)
 		ImGui::EndTable();
 	}
 }
-
 
 static CommonWindow commonWindow;
 

@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-08-02
+// @version 2025-08-04
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -19,8 +19,8 @@ namespace ui
 // see app:ShowMoreFlags
 enum ShowFlags : int
 {
-	Show_Analysis          = 1 << 0, // main
-	Show_AnalysisGlobal    = 1 << 1,
+	Show_App               = 1 << 0, // main
+	Show_AppGlobal         = 1 << 1,
 	Show_Capture           = 1 << 2, // main
 	Show_CaptureDevice     = 1 << 3,
 	Show_CaptureFile       = 1 << 4,
@@ -62,34 +62,40 @@ public:
 		}
 
 		CHECK_DRAW();
+		
+		auto&      style      = ImGui::GetStyle();
+		const auto paddingX   = style.WindowPadding.x;
+		const int  settingPad = xsettings.settingPad;
+		if (settingPad >= 0) ImGui::PushStyleVarX(ImGuiStyleVar_WindowPadding, xsettings.settingPad);
+
 		if (!ImGui::Begin("Settings", &isOpen))
 		{
 			ImGui::End();
+			ImGui::PopStyleVar();
 			return;
 		}
 
 		//const auto app = static_cast<App*>(engine.get());
 		//app->ScreenFocused(0);
-		int tree = xsettings.tree & ~(Show_Analysis | Show_Capture | Show_Net | Show_System);
+		int tree = xsettings.tree & ~(Show_App | Show_Capture | Show_Net | Show_System);
 
-		// ANALYSIS
-		///////////
+		// APP
+		//////
 
 		ui::AddSpace();
-		if (ImGui::CollapsingHeader("Analysis", SHOW_TREE(Show_Analysis)))
+		if (ImGui::CollapsingHeader("App", SHOW_TREE(Show_App)))
 		{
-			tree |= Show_Analysis;
+			tree |= Show_App;
 
 			// global
-			if (ImGui::TreeNodeEx("Global", SHOW_TREE(Show_AnalysisGlobal)))
+			BEGIN_TREE("Global", Show_AppGlobal, 3)
 			{
-				tree |= Show_AnalysisGlobal;
 				AddInputText("appId", "AppId", 256, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
 				AddSliderInt("gameId", "Game Id", nullptr);
 				if (ImGui::Button("Load Defaults")) LoadGameSettings(xsettings.gameId, "", "-def");
 				ImGui::SameLine();
 				if (ImGui::Button("Save Defaults")) SaveGameSettings("", true, "-def");
-				ImGui::TreePop();
+				END_TREE();
 			}
 		}
 
@@ -103,9 +109,8 @@ public:
 			tree &= ~(Show_NetMain | Show_NetUser);
 
 			// main
-			if (ImGui::TreeNodeEx("Main", SHOW_TREE(Show_NetMain)))
+			BEGIN_TREE("Main", Show_NetMain, 1)
 			{
-				tree |= Show_NetMain;
 				//AddDragInt("mousePos", "Mouse Pos");
 				if (ImGui::IsMousePosValid())
 				{
@@ -114,38 +119,24 @@ public:
 					//const auto& pos2 = app->GetMousePos();
 					//const auto& rect = app->GetScreenRect();
 					//ImGui::Text("%.0f %.0f %d - %.0f %.0f %d - %.0f %.0f", pos.x, pos.y, io.MouseDown[0] ? 1 : 0, pos2[0], pos2[1], app->GetMouseButton(), (pos.x - rect[0]) / rect[2], (pos.y - rect[1]) / rect[3]);
+					ImGui::Text("%.0f %.0f %d", pos.x, pos.y, io.MouseDown[0] ? 1 : 0);
 				}
 				else ImGui::TextUnformatted("<Invalid>");
 
 				//AddSliderInt("netDebug", "Net Debug");
 				//AddSliderInt("netRecheck", "Net Recheck");
 				//AddSliderInt("netTransfers", "Net Transfers");
-				ImGui::TreePop();
+				END_TREE();
 			}
 
 			// user
-			if (ImGui::TreeNodeEx("User", SHOW_TREE(Show_NetUser)))
+			BEGIN_TREE("User", Show_NetUser, 4)
 			{
-				tree |= Show_NetUser;
 				AddInputText("userHost", "Host");
 				AddInputText("userEmail", "Email");
 				AddInputText("userPw", "Password", 256, ImGuiInputTextFlags_Password);
-				//if (ImGui::Button("UserLogin")) app->UserLogin();
-				ImGui::SameLine();
-				//if (ImGui::Button("UserGet")) app->UserGet();
-				ImGui::SameLine();
-				//if (ImGui::Button("SystemGet")) app->SystemGet();
-				//if (ImGui::Button("LogTest")) app->LogTest();
-				ImGui::SameLine();
-				//if (ImGui::Button("MailAdd")) app->MailAdd(0);
-				ImGui::SameLine();
-				//if (ImGui::Button("MailOcr")) app->MailOcr();
 				if (ImGui::Button("Clear Logs")) ClearLog(-1);
-				ImGui::SameLine();
-				//if (ImGui::Button("Toggle Czur")) app->FindCaptureWindow();
-				//ImGui::InputInt("Eid Flags", &xsettings.userEid);
-				//if (ImGui::Button("EidCard")) app->UserInfo(InfoState_RequestInfo);
-				ImGui::TreePop();
+				END_TREE();
 			}
 		}
 
@@ -159,9 +150,8 @@ public:
 			tree &= ~(Show_SystemPerformance | Show_SystemRender | Show_SystemUI);
 
 			// performance
-			if (ImGui::TreeNodeEx("Performance", SHOW_TREE(Show_SystemPerformance)))
+			BEGIN_TREE("Performance", Show_SystemPerformance, 7)
 			{
-				tree |= Show_SystemPerformance;
 				AddSliderBool("benchmark", "Benchmark");
 				AddSliderInt("drawEvery", "Draw Every");
 				AddSliderInt("ioFrameUs", "I/O us");
@@ -169,30 +159,34 @@ public:
 				AddDragFloat("idleMs", "Idle ms");
 				AddDragFloat("idleTimeout", "Idle Timeout");
 				AddSliderInt("vsync", "VSync", nullptr);
-				ImGui::TreePop();
+				END_TREE();
 			}
 
 			// render
-			if (ImGui::TreeNodeEx("Render", SHOW_TREE(Show_SystemRender)))
+			BEGIN_TREE("Render", Show_SystemRender, 5)
 			{
-				tree |= Show_SystemRender;
 				AddDragFloat("center", "Center");
 				AddDragFloat("eye", "Eye");
 				AddSliderBool("fixedView", "Fixed View");
 				AddSliderInt("projection", "Projection", nullptr);
 				AddSliderInt("renderMode", "Render Mode", nullptr);
-				ImGui::TreePop();
+				END_TREE();
 			}
 
 			// ui
-			if (ImGui::TreeNodeEx("UI", SHOW_TREE(Show_SystemUI)))
+			const bool applyChange =
+			    xsettings.fullScreen != prevSettings.fullScreen || xsettings.maximized != prevSettings.maximized
+			    || memcmp(xsettings.windowPos, prevSettings.windowPos, sizeof(xsettings.windowPos)) != 0
+			    || memcmp(xsettings.windowSize, prevSettings.windowSize, sizeof(xsettings.windowSize)) != 0;
+
+			BEGIN_TREE("UI", Show_SystemUI, 11 + (applyChange ? 1 : 0))
 			{
-				tree |= Show_SystemUI;
 				AddCombo("aspectRatio", "Aspect Ratio");
 				if (AddDragFloat("fontScale", "Font Scale", 0.001f, "%.3f")) ImGui::GetStyle().FontScaleMain = xsettings.fontScale;
 				AddSliderInt("fullScreen", "Full Screen", nullptr);
 				AddSliderFloat("iconSize", "Icon Size", "%.0f");
 				AddSliderBool("maximized", "Maximized");
+				AddSliderInt("settingPad", "Setting Pad");
 				AddSliderBool("stretch", "Stretch");
 				if (AddCombo("theme", "Theme")) UpdateTheme();
 				AddDragFloat("uiScale", "UI Scale");
@@ -203,9 +197,7 @@ public:
 				//ImGui::DragInt2("Window Size", xsettings.windowSize, 1, 0, 5120);
 				//ItemEvent("windowSize");
 
-				if (xsettings.fullScreen != prevSettings.fullScreen || xsettings.maximized != prevSettings.maximized
-				    || memcmp(xsettings.windowPos, prevSettings.windowPos, sizeof(xsettings.windowPos)) != 0
-				    || memcmp(xsettings.windowSize, prevSettings.windowSize, sizeof(xsettings.windowSize)) != 0)
+				if (applyChange)
 				{
 					if (ImGui::Button("Apply Changes"))
 					{
@@ -227,13 +219,14 @@ public:
 						memcpy(&prevSettings, &xsettings, sizeof(XSettings));
 					}
 				}
-				ImGui::TreePop();
+				END_TREE();
 			}
 		}
 
 		xsettings.tree = tree;
 
 		ImGui::End();
+		if (settingPad >= 0) ImGui::PopStyleVar();
 	}
 };
 

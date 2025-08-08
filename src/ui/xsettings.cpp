@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-08-02
+// @version 2025-08-04
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -28,9 +28,9 @@ XSettings xsettings;
 
 // clang-format off
 static std::vector<Config> configs = {
-	// [analysis]
-	X_STRING (XSettings, analysis, 1, appId , ""),
-	X_ENUM   (XSettings, analysis, 1, gameId, 0, sGames),
+	// [app]
+	X_STRING (XSettings, app, 1, appId , ""),
+	X_ENUM   (XSettings, app, 1, gameId, 0, sGames),
 
 	// [input]
 	X_FLOAT  (XSettings, input, 0, cameraSpeed   , 10.0f, 1.0f, 100.0f),
@@ -69,6 +69,7 @@ static std::vector<Config> configs = {
 	X_BOOL   (XSettings, ui, 0, labelLeft     , true),
 	X_BOOL   (XSettings, ui, 0, nvidiaEnc     , false),
 	X_STRINGS(XSettings, ui, 0, recentFiles   , "", 6),
+	X_INT    (XSettings, ui, 0, settingPad    , 2, -1, 16),
 	X_BOOL   (XSettings, ui, 0, stretch       , true),
 	X_BOOL   (XSettings, ui, 0, textButton    , true),
 	X_ENUM   (XSettings, ui, 0, theme         , Theme_Blender, sThemes),
@@ -152,11 +153,11 @@ int SaveGameSettings(std::string baseName, bool saveGame, std::string_view suffi
 {
 	SaveSettings(baseName, suffix, sections);
 
-	// save HD/Omega.ini as well - only analysis section
+	// save HD/Omega.ini as well - only app section
 	if (saveGame && sections.empty())
 	{
 		if (const auto gameId = xsettings.gameId; gameId >= 0 && gameId < NUM_GAMES)
-			SaveSettings(fmt::format("{}{}.ini", sGames[gameId], suffix), "", { "analysis", "capture", "ocr", "user" });
+			SaveSettings(fmt::format("{}{}.ini", sGames[gameId], suffix), "", { "app", "user" });
 	}
 	return 1;
 }

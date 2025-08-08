@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-08-02
+// @version 2025-08-04
 
 #pragma once
 
@@ -59,7 +59,7 @@ enum XVSyncs_ : int
 
 struct XSettings
 {
-	// [analysis]
+	// [app]
 	str256 appId;  ///< appId to synchronize with the browser
 	int    gameId; ///< 0: gori, 1: custom
 
@@ -100,6 +100,7 @@ struct XSettings
 	bool  labelLeft;      ///< labels on the left of the inputs
 	bool  nvidiaEnc;      ///< use nVidia encoding
 	str2k recentFiles[6]; ///< recent files for quick load
+	int   settingPad;     ///< override windows padding for CommonWindow
 	int   stretch;        ///< stretch capture to window
 	int   textButton;     ///< show text under the button
 	int   theme;          ///< Blender, Dark, Light

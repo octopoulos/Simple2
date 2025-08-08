@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-08-04
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -68,17 +68,16 @@ void Object3d::TraverseAndRender(uint8_t viewId, int renderFlags)
 
 void Object3d::UpdateLocalMatrix()
 {
-	transform   = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(quaternion) * scaleMatrix;
-	localMatrix = transform;
+	matrix = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(quaternion) * scaleMatrix;
 	UpdateWorldMatrix();
 }
 
 void Object3d::UpdateWorldMatrix()
 {
 	if (parent)
-		worldMatrix = parent->worldMatrix * localMatrix;
+		matrixWorld = parent->matrixWorld * matrix;
 	else
-		worldMatrix = localMatrix;
+		matrixWorld = matrix;
 
 	for (auto& child : children)
 		child->UpdateWorldMatrix();

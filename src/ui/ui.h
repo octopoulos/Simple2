@@ -1,6 +1,6 @@
 // ui.h
 // @author octopoulos
-// @version 2025-08-03
+// @version 2025-08-04
 
 #pragma once
 
@@ -76,6 +76,69 @@ void ShowTable(const std::vector<std::tuple<std::string, std::string>>& stats);
 
 //uint32_t LoadTexture(const std::filesystem::path& path, std::string name);
 //uint32_t LoadTexture(const uint8_t* data, uint32_t size, std::string name);
+
+/// Utility class:
+/// - indent
+/// - destruction: unindent
+class IndentGuard
+{
+private:
+	float indent = 0.0f;
+
+public:
+	IndentGuard(float indent = 10.0f)
+	    : indent(indent)
+	{
+		ImGui::Indent(indent);
+	}
+
+	~IndentGuard()
+	{
+		ImGui::Unindent(indent);
+	}
+};
+
+/// Utility class:
+/// - indent + prepare child
+/// - destruction: unindent + close tree
+class TreeGuard
+{
+private:
+	float indent2  = 0.0f;
+	float paddingX = 8.0f;
+
+public:
+	TreeGuard(float paddingX = 8.0f, float indent = 10.0f)
+	    : paddingX(paddingX)
+	{
+		const auto& style = ImGui::GetStyle();
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - style.ItemSpacing.y);
+		indent2 = indent + style.IndentSpacing;
+		ImGui::Unindent(indent2);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(paddingX, 8.0f));
+	}
+
+	~TreeGuard()
+	{
+		ImGui::PopStyleVar();
+		ImGui::Indent(indent2);
+		ImGui::TreePop();
+	}
+};
+
+#define BEGIN_TREE(name, flag, numRow)                                                                                                                   \
+	{                                                                                                                                                    \
+		ui::IndentGuard indentGuard;                                                                                                                     \
+		if (ImGui::TreeNodeEx(name, SHOW_TREE(flag) | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Selected | ImGuiTreeNodeFlags_SpanFullWidth)) \
+		{                                                                                                                                                \
+			ui::TreeGuard treeGuard(paddingX);                                                                                                           \
+			if (ImGui::BeginChild(name, ImVec2(0.0f, (numRow) * ImGui::GetFrameHeightWithSpacing() + 12.0f), ImGuiChildFlags_AlwaysUseWindowPadding))    \
+			{                                                                                                                                            \
+				tree |= Show_SystemRender;
+
+// clang-format off
+#define END_TREE() } ImGui::EndChild(); } }
+// clang-format on
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CONTROLS
