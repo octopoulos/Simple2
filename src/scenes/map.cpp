@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-08-02
+// @version 2025-08-04
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -65,11 +65,12 @@ void App::MapUi()
 		const float imagePadding = style.FramePadding.x * 2;
 		const float imageSize    = xsettings.iconSize;
 		const float spacing      = std::clamp(xsettings.iconSize / 16.0f, 2.0f, 8.0f);
-		const int   itemsPerRow  = std::max(1, int((wsize.x - style.IndentSpacing - style.ScrollbarSize) / (imageSize + imagePadding + spacing)));
+		const int   itemsPerRow  = std::max(1, int((wsize.x - style.ScrollbarSize) / (imageSize + imagePadding + spacing)));
 
+		ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 0.0f);
 		for (const auto& [kit, models] : kitModels)
 		{
-			if (ImGui::TreeNode(fmt::format("[{}] {}", models.size(), kit.size() ? kit : "*"s).c_str()))
+			if (ImGui::TreeNodeEx(fmt::format("[{}] {}", models.size(), kit.size() ? kit : "*"s).c_str(), ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Selected | ImGuiTreeNodeFlags_SpanFullWidth))
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(spacing, spacing));
 
@@ -140,6 +141,8 @@ void App::MapUi()
 				ImGui::TreePop();
 			}
 		}
+
+		ImGui::PopStyleVar();
 	}
 	ImGui::End();
 }

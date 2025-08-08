@@ -52,6 +52,7 @@ public:
 	/// Add a child and specify its name
 	void AddNamedChild(sObject3d child, std::string&& name)
 	{
+		type |= ObjectType_Group;
 		child->name = std::move(name);
 		AddChild(child);
 	}

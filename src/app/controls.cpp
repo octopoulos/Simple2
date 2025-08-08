@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-08-02
+// @version 2025-08-04
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -315,7 +315,7 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 			}
 		}
 
-		parent->AddNamedChild(std::move(object), fmt::format("{}:{}", name, scene->children.size()));
+		parent->AddNamedChild(std::move(object), fmt::format("{}:{}", name, parent->children.size()));
 	}
 }
 

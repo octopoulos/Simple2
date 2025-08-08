@@ -1,6 +1,6 @@
 // Scene.h
 // @author octopoulos
-// @version 2025-08-03
+// @version 2025-08-04
 
 #pragma once
 
@@ -58,8 +58,11 @@ public:
 
 	void RenderScene(uint8_t viewId, int renderFlags)
 	{
-		for (const auto& child : children)
-			child->Render(viewId, renderFlags);
-		// TraverseAndRender(viewId, renderFlags);
+		if (visible)
+		{
+			for (const auto& child : children)
+				child->Render(viewId, renderFlags);
+			// TraverseAndRender(viewId, renderFlags);
+		}
 	}
 };

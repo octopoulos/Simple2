@@ -1,6 +1,6 @@
 // SceneWindow.cpp
 // @author octopoulos
-// @version 2025-08-03
+// @version 2025-08-04
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -19,7 +19,7 @@ public:
 	void Draw()
 	{
 		CHECK_DRAW();
-		auto& style = ImGui::GetStyle();
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
 		if (!ImGui::Begin("Scene", &isOpen))
 		{
@@ -27,50 +27,72 @@ public:
 			return;
 		}
 
-		static ImGuiTableFlags table_flags = ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody;
-
-		if (ImGui::BeginTable("3ways", 3, table_flags))
+		if (ImGui::BeginTable("3ways", 3, ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody))
 		{
 			const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
 
 			ImGui::TableSetupColumn("##Name", ImGuiTableColumnFlags_NoHide);
-			ImGui::TableSetupColumn("##Size", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 3.0f);
+			ImGui::TableSetupColumn("##Vis" , ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 5.0f);
 			ImGui::TableSetupColumn("##Type", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 3.0f);
-			//ImGui::TableHeadersRow();
 
-			DrawObject(app->scene.get());
+			DrawObject(app->scene.get(), 0);
 
 			ImGui::EndTable();
 		}
 
+		ImGui::PopStyleVar();
 		ImGui::End();
 	}
 
-	void DrawObject(Object3d* node)
+	void DrawCells(Object3d* node)
 	{
-		static ImGuiTreeNodeFlags tree_node_flags_base = ImGuiTreeNodeFlags_SpanAllColumns | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_DrawLinesToNodes;
+		if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+			ui::Log("SceneWindow/DrawObject: {}", node->name);
+
+		ImGui::TableNextColumn();
+		ImGui::PushID(node->name.c_str());
+
+		if (node->visible)
+		{
+			if (ImGui::SmallButton("VIS"))
+				node->visible = !node->visible;
+		}
+		else if (ImGui::SmallButton("HID"))
+			node->visible = !node->visible;
+
+		ImGui::PopID();
+		ImGui::TableNextColumn();
+		ImGui::Text("%d", node->type);
+	}
+
+	void DrawObject(Object3d* node, int depth)
+	{
+		static const ImGuiTreeNodeFlags treeBaseFlags = ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_SpanAvailWidth;
 
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
 
-		if (node->children.size())
-		{
-			if (ImGui::TreeNodeEx(node->name.c_str(), tree_node_flags_base))
-			{
-				for (const auto& child : node->children)
-					DrawObject(child.get());
+		const bool hidden = !node->visible;
+		if (hidden) ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
 
+		if (const auto numChild = node->children.size())
+		{
+			if (ImGui::TreeNodeEx(fmt::format("({}) {}", numChild, node->name).c_str(), treeBaseFlags | (depth ? 0 : ImGuiTreeNodeFlags_DefaultOpen)))
+			{
+				DrawCells(node);
+				for (const auto& child : node->children)
+					DrawObject(child.get(), depth + 1);
 				ImGui::TreePop();
 			}
+			else DrawCells(node);
 		}
 		else
 		{
-			ImGui::TreeNodeEx(node->name.c_str(), tree_node_flags_base | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-			ImGui::TableNextColumn();
-			ImGui::Text("%d", node->name.size());
-			ImGui::TableNextColumn();
-			ImGui::Text("%d", node->type);
+			ImGui::TreeNodeEx(node->name.c_str(), treeBaseFlags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+			DrawCells(node);
 		}
+
+		if (hidden) ImGui::PopStyleColor();
 	}
 };
 

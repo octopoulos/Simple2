@@ -22,6 +22,8 @@ void Object3d::RemoveChild(const sObject3d& child)
 
 void Object3d::Render(uint8_t viewId, int renderFlags)
 {
+	if (!visible) return;
+
 	if (type & ObjectType_Group)
 	{
 		for (const auto& child : children)
@@ -68,7 +70,8 @@ void Object3d::TraverseAndRender(uint8_t viewId, int renderFlags)
 
 void Object3d::UpdateLocalMatrix()
 {
-	matrix = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(quaternion) * scaleMatrix;
+	transform = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(quaternion) * scaleMatrix;
+	matrix    = transform;
 	UpdateWorldMatrix();
 }
 

@@ -288,8 +288,8 @@ static void SetThemeBlender(ImGuiStyle& style)
 	colors[ImGuiCol_TableHeaderBg]             = ImVec4(0.190f, 0.190f, 0.200f, 1.000f);
 	colors[ImGuiCol_TableBorderStrong]         = ImVec4(0.310f, 0.310f, 0.350f, 1.000f);
 	colors[ImGuiCol_TableBorderLight]          = ImVec4(0.230f, 0.230f, 0.250f, 1.000f);
-	colors[ImGuiCol_TableRowBg]                = ImVec4(0.150f, 0.150f, 0.150f, 0.880f); // 40 40 40 224
-	colors[ImGuiCol_TableRowBgAlt]             = ImVec4(0.160f, 0.160f, 0.160f, 0.880f); // 43 43 43 224
+	colors[ImGuiCol_TableRowBg]                = ImVec4(0.152f, 0.152f, 0.152f, 0.880f); // 40 40 40 224
+	colors[ImGuiCol_TableRowBgAlt]             = ImVec4(0.165f, 0.165f, 0.165f, 0.880f); // 43 43 43 224
 	colors[ImGuiCol_TextLink]                  = ImVec4(0.280f, 0.470f, 0.750f, 0.880f); // 71 114 179 224
 	colors[ImGuiCol_TextSelectedBg]            = ImVec4(0.280f, 0.470f, 0.750f, 0.880f); // 71 114 179 224
 	colors[ImGuiCol_TreeLines]                 = ImVec4(0.400f, 0.400f, 0.400f, 1.000f); // 102 102 102 255

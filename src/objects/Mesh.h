@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-08-04
 
 #pragma once
 
@@ -97,7 +97,7 @@ public:
 		type = ObjectType_Mesh;
 	}
 
-	~Mesh() { Destroy(); }
+	virtual ~Mesh() override { Destroy(); }
 
 	/// Make an instanced copy of itself => faster loading
 	sMesh CloneInstance();

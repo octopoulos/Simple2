@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-08-03
+// @version 2025-08-04
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -103,7 +103,7 @@ int App::InitializeScene()
 
 	// 3) add default objects
 	{
-		// cube
+		// Earth
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
 			cubeMesh->geometry = CreateIcosahedronGeometry(3.0f, 8);
@@ -113,12 +113,11 @@ int App::InitializeScene()
 			cubeMesh->ScaleRotationPosition(
 			    { 1.0f, 1.0f, 1.0f },
 			    { bx::kPi, -bx::kPiQuarter, 0.0f },
-			    //{ MerseneFloat(0.0f, bx::kPi2), MerseneFloat(0.0f, bx::kPi2), MerseneFloat(0.0f, bx::kPi2) },
 			    { 0.0f, 7.0f, 0.0f }
 			);
 			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Sphere, 8.0f);
 
-			scene->AddNamedChild(std::move(cubeMesh), "cube");
+			scene->AddNamedChild(std::move(cubeMesh), "Earth");
 		}
 
 		// cursor
@@ -129,7 +128,8 @@ int App::InitializeScene()
 			cursor->ScaleRotationPosition(
 			    { 1.0f, 1.02f, 1.0f },
 			    { 0.0f, 0.0f, 0.0f },
-			    { 0.5f, 1.0f, 0.5f });
+			    { 0.5f, 1.0f, 0.5f }
+			);
 		}
 
 		// floor
@@ -150,35 +150,43 @@ int App::InitializeScene()
 		}
 
 		// 4 walls
-		for (int i = 0; i < 2; ++i)
 		{
-			auto cubeMesh      = std::make_shared<Mesh>();
-			cubeMesh->geometry = CreateBoxGeometry(39.0f, 6.0f, 1.0f, 4, 1, 4);
-			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_model_texture", "fs_model_texture"));
-			cubeMesh->LoadTextures("brick_diffuse.jpg");
+			auto parent = std::make_shared<Mesh>();
 
-			cubeMesh->ScaleRotationPosition(
-			    { 1.0f, 1.0f, 1.0f },
-			    { 0.0f, 0.0f, 0.0f },
-			    { i ? -0.5f : 0.5f, 3.0f, i ? -19.5f : 19.5f });
-			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f);
+			for (int i = 0; i < 2; ++i)
+			{
+				auto cubeMesh      = std::make_shared<Mesh>();
+				cubeMesh->geometry = CreateBoxGeometry(39.0f, 6.0f, 1.0f, 4, 1, 4);
+				cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_model_texture", "fs_model_texture"));
+				cubeMesh->LoadTextures("brick_diffuse.jpg");
 
-			scene->AddNamedChild(std::move(cubeMesh), fmt::format("wall-{}", 1 + i));
-		}
-		for (int i = 0; i < 2; ++i)
-		{
-			auto cubeMesh      = std::make_shared<Mesh>();
-			cubeMesh->geometry = CreateBoxGeometry(1.0f, 6.0f, 39.0f, 4, 1, 4);
-			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_model_texture", "fs_model_texture"));
-			cubeMesh->LoadTextures("hardwood2_diffuse.jpg");
+				cubeMesh->ScaleRotationPosition(
+				    { 1.0f, 1.0f, 1.0f },
+				    { 0.0f, 0.0f, 0.0f },
+				    { i ? -0.5f : 0.5f, 3.0f, i ? -19.5f : 19.5f }
+				);
+				cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f);
 
-			cubeMesh->ScaleRotationPosition(
-			    { 1.0f, 1.0f, 1.0f },
-			    { 0.0f, 0.0f, 0.0f },
-			    { i ? 19.5f : -19.5f, 3.0f, i ? -0.5f : 0.5f });
-			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f);
+				parent->AddNamedChild(std::move(cubeMesh), fmt::format("wall-{}", 1 + i));
+			}
+			for (int i = 0; i < 2; ++i)
+			{
+				auto cubeMesh      = std::make_shared<Mesh>();
+				cubeMesh->geometry = CreateBoxGeometry(1.0f, 6.0f, 39.0f, 4, 1, 4);
+				cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_model_texture", "fs_model_texture"));
+				cubeMesh->LoadTextures("hardwood2_diffuse.jpg");
 
-			scene->AddNamedChild(std::move(cubeMesh), fmt::format("wall-{}", 3 + i));
+				cubeMesh->ScaleRotationPosition(
+				    { 1.0f, 1.0f, 1.0f },
+				    { 0.0f, 0.0f, 0.0f },
+				    { i ? 19.5f : -19.5f, 3.0f, i ? -0.5f : 0.5f }
+				);
+				cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f);
+
+				parent->AddNamedChild(std::move(cubeMesh), fmt::format("wall-{}", 3 + i));
+			}
+
+			scene->AddNamedChild(std::move(parent), "wall-group");
 		}
 	}
 

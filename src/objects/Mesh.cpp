@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-08-04
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -243,6 +243,8 @@ void Mesh::LoadTextures(std::string_view colorName, std::string_view normalName)
 
 void Mesh::Render(uint8_t viewId, int renderFlags)
 {
+	if (!visible) return;
+
 	//if (type & ObjectType_Instance) return;
 	//ui::Log("Render: {} {}", type, name);
 
