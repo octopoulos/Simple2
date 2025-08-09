@@ -139,8 +139,8 @@ void App::OpenedFile(int action, const std::filesystem::path& path)
 
 	switch (action)
 	{
-	case OpenAction_OpenScene: scene->OpenScene(path); break;
-	case OpenAction_SaveScene: scene->SaveScene(path); break;
+	case OpenAction_OpenScene: std::static_pointer_cast<Scene>(scene)->OpenScene(path); break;
+	case OpenAction_SaveScene: std::static_pointer_cast<Scene>(scene)->SaveScene(path); break;
 	default:
 		ui::Log("OpenedFile: Unknown action: {} {}", action, path);
 	}

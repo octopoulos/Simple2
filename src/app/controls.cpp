@@ -262,6 +262,11 @@ void App::FluidControls()
 	}
 }
 
+void App::SelectObject(const sObject3d& obj)
+{
+	selectedObj = obj;
+}
+
 void App::ThrowGeometry(int action, int geometryType, std::string_view textureName)
 {
 	if (geometryType == GeometryType_None)
@@ -272,7 +277,7 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 	auto       groupName = fmt::format("{}-group", name);
 
 	Mesh* parent    = nullptr;
-	auto  parentObj = scene->GetObjectByName(groupName);
+	auto  parentObj = std::static_pointer_cast<Scene>(scene)->GetObjectByName(groupName);
 	if (parentObj)
 	{
 		if (parentObj->type & ObjectType_Mesh)
@@ -325,7 +330,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, std::strin
 	auto groupName = fmt::format("{}-group", name);
 
 	Mesh* parent = nullptr;
-	auto  parentObj  = scene->GetObjectByName(groupName);
+	auto  parentObj = std::static_pointer_cast<Scene>(scene)->GetObjectByName(groupName);
 	if (parentObj)
 	{
 		if (parentObj->type & ObjectType_Mesh)

@@ -25,11 +25,11 @@ void Scene::Clear()
 	names.clear();
 }
 
-Object3d* Scene::GetObjectByName(std::string_view name) const
+sObject3d Scene::GetObjectByName(std::string_view name) const
 {
 	if (const auto& it = names.find(name); it != names.end())
 	{
-		if (auto sp = it->second.lock()) return sp.get();
+		if (auto sp = it->second.lock()) return sp;
 	}
 	return nullptr;
 }

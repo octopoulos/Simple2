@@ -26,7 +26,7 @@ public:
 	void Clear();
 
 	/// Find an direct child by name
-	Object3d* GetObjectByName(std::string_view name) const;
+	sObject3d GetObjectByName(std::string_view name) const;
 
 	/// Open a scene file + replace the scene
 	bool OpenScene(const std::filesystem::path& filename);

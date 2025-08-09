@@ -35,7 +35,7 @@ public:
 			ImGui::TableSetupColumn("##Vis" , ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 5.0f);
 			ImGui::TableSetupColumn("##Type", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 3.0f);
 
-			DrawObject(app->scene.get(), 0);
+			DrawObject(app->scene, 0);
 
 			ImGui::EndTable();
 		}
@@ -44,10 +44,13 @@ public:
 		ImGui::End();
 	}
 
-	void DrawCells(Object3d* node)
+	void DrawCells(const sObject3d& node)
 	{
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+		{
+			app->SelectObject(node);
 			ui::Log("SceneWindow/DrawObject: {}", node->name);
+		}
 
 		ImGui::TableNextColumn();
 		ImGui::PushID(node->name.c_str());
@@ -65,7 +68,7 @@ public:
 		ImGui::Text("%d", node->type);
 	}
 
-	void DrawObject(Object3d* node, int depth)
+	void DrawObject(const sObject3d& node, int depth)
 	{
 		static const ImGuiTreeNodeFlags treeBaseFlags = ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_SpanAvailWidth;
 
@@ -81,7 +84,7 @@ public:
 			{
 				DrawCells(node);
 				for (const auto& child : node->children)
-					DrawObject(child.get(), depth + 1);
+					DrawObject(child, depth + 1);
 				ImGui::TreePop();
 			}
 			else DrawCells(node);

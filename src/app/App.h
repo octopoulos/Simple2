@@ -62,6 +62,9 @@ public:
 	/// Controls function executed every frame, and run before Render
 	void Controls();
 
+	/// Select an object
+	void SelectObject(const sObject3d& obj);
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// LEARN
 	////////
@@ -76,9 +79,10 @@ private:
 	//////
 
 private:
-	sMesh                cursor    = nullptr; ///< current cursor for placing tiles
-	MAP_STR<MAP_STR_INT> kitModels = {};      ///< model database: [title, filename]
-	sObject3d            mapNode   = nullptr; ///< root of the map scene
+	sMesh                   cursor      = nullptr; ///< current cursor for placing objects
+	MAP_STR<MAP_STR_INT>    kitModels   = {};      ///< model database: [title, filename]
+	sObject3d               mapNode     = nullptr; ///< root of the map scene
+	std::weak_ptr<Object3d> selectedObj = {};      ///< selected object for edit
 
 	/// Insert a geometry into the map
 	void AddGeometry(uGeometry geometry);
@@ -135,7 +139,7 @@ private:
 	int InitializeScene();
 
 public:
-	std::unique_ptr<Scene> scene = nullptr; ///< scene container
+	sObject3d scene = nullptr; ///< scene container
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// SETTINGS
