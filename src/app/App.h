@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-08-03
+// @version 2025-08-05
 
 #pragma once
 
@@ -18,15 +18,6 @@ enum Popups_ : int
 	Popup_AddMap      = 1 << 2,
 	Popup_AddMesh     = 1 << 3,
 	Popup_Any         = Popup_Add | Popup_AddGeometry | Popup_AddMap | Popup_AddMesh,
-};
-
-struct Tile
-{
-	sMesh       mesh = nullptr; ///< link to visual node
-	std::string name = "";      ///< resource name
-	float       x    = 0.0f;    ///< right
-	float       y    = 0.0f;    ///< up
-	float       z    = 0.0f;    ///< front
 };
 
 class App
@@ -88,7 +79,6 @@ private:
 	sMesh                cursor    = nullptr; ///< current cursor for placing tiles
 	MAP_STR<MAP_STR_INT> kitModels = {};      ///< model database: [title, filename]
 	sObject3d            mapNode   = nullptr; ///< root of the map scene
-	std::vector<Tile>    tiles     = {};      ///< tiles
 
 	/// Insert a geometry into the map
 	void AddGeometry(uGeometry geometry);

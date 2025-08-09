@@ -44,7 +44,7 @@ void Object3d::Render(uint8_t viewId, int renderFlags)
 {
 	if (!visible) return;
 
-	if (type & ObjectType_Group)
+	if (type & (ObjectType_Group | ObjectType_Scene))
 	{
 		for (const auto& child : children)
 			child->Render(viewId, renderFlags);

@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-08-04
+// @version 2025-08-05
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -99,15 +99,13 @@ int App::InitializeScene()
 	// 2)
 	physics = std::make_unique<PhysicsWorld>();
 
-	auto& shaderManager = GetShaderManager();
-
 	// 3) add default objects
 	{
 		// Earth
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
 			cubeMesh->geometry = CreateIcosahedronGeometry(3.0f, 8);
-			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_model_texture_normal", "fs_model_texture_normal"));
+			cubeMesh->material = std::make_shared<Material>("vs_model_texture_normal", "fs_model_texture_normal");
 			cubeMesh->LoadTextures("earth_day_4096.jpg", "earth_normal_2048.jpg");
 
 			cubeMesh->ScaleRotationPosition(
@@ -123,7 +121,7 @@ int App::InitializeScene()
 		// cursor
 		{
 			cursor->geometry = CreateBoxGeometry(1.0f, 2.0f, 1.0f, 2, 2, 2);
-			cursor->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_cursor", "fs_cursor"));
+			cursor->material = std::make_shared<Material>("vs_cursor", "fs_cursor");
 
 			cursor->ScaleRotationPosition(
 			    { 1.0f, 1.02f, 1.0f },
@@ -136,7 +134,7 @@ int App::InitializeScene()
 		{
 			auto cubeMesh      = std::make_shared<Mesh>();
 			cubeMesh->geometry = CreateBoxGeometry(40.0f, 2.0f, 40.0f, 4, 1, 4);
-			cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_model_texture", "fs_model_texture"));
+			cubeMesh->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
 			cubeMesh->LoadTextures("FloorsCheckerboard_S_Diffuse.jpg", "FloorsCheckerboard_S_Normal.jpg");
 
 			cubeMesh->ScaleRotationPosition(
@@ -157,7 +155,7 @@ int App::InitializeScene()
 			{
 				auto cubeMesh      = std::make_shared<Mesh>();
 				cubeMesh->geometry = CreateBoxGeometry(39.0f, 6.0f, 1.0f, 4, 1, 4);
-				cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_model_texture", "fs_model_texture"));
+				cubeMesh->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
 				cubeMesh->LoadTextures("brick_diffuse.jpg");
 
 				cubeMesh->ScaleRotationPosition(
@@ -173,7 +171,7 @@ int App::InitializeScene()
 			{
 				auto cubeMesh      = std::make_shared<Mesh>();
 				cubeMesh->geometry = CreateBoxGeometry(1.0f, 6.0f, 39.0f, 4, 1, 4);
-				cubeMesh->material = std::make_shared<Material>(shaderManager.LoadProgram("vs_model_texture", "fs_model_texture"));
+				cubeMesh->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
 				cubeMesh->LoadTextures("hardwood2_diffuse.jpg");
 
 				cubeMesh->ScaleRotationPosition(
@@ -213,7 +211,7 @@ int App::InitializeScene()
 	}
 	if (auto object = MeshLoader::LoadModel("bunny_decimated", true))
 	{
-		object->program = shaderManager.LoadProgram("vs_mesh", "fs_mesh");
+		object->material = std::make_shared<Material>("vs_mesh", "fs_mesh");
 		object->ScaleRotationPosition(
 		    { 1.0f, 1.0f, 1.0f },
 		    { 0.0f, 1.5f, 0.0f },
@@ -224,7 +222,7 @@ int App::InitializeScene()
 	}
 	if (auto object = MeshLoader::LoadModel("donut"))
 	{
-		object->program = shaderManager.LoadProgram("vs_model", "fs_model");
+		object->material = std::make_shared<Material>("vs_model", "fs_model");
 		object->ScaleRotationPosition(
 		    { 1.5f, 1.5f, 1.5f },
 		    { 0.0f, 3.0f, 0.0f },
@@ -308,7 +306,7 @@ void App::Render()
 		renderFlags = 0;
 		if (xsettings.instancing) renderFlags |= RenderFlag_Instancing;
 
-		scene->RenderScene(0, renderFlags);
+		scene->Render(0, renderFlags);
 		if (xsettings.bulletDebug) physics->DrawDebug();
 	}
 

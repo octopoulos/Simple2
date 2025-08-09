@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-08-04
+// @version 2025-08-05
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -282,7 +282,7 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 	{
 		mesh->type |= ObjectType_Group | ObjectType_Instance;
 		mesh->geometry = CreateAnyGeometry(geometryType);
-		mesh->material = std::make_shared<Material>(GetShaderManager().LoadProgram("vs_model_texture_instance", "fs_model_texture_instance"));
+		mesh->material = std::make_shared<Material>("vs_model_texture_instance", "fs_model_texture_instance");
 		if (textureName.size()) mesh->LoadTextures(textureName);
 		scene->AddNamedChild(mesh, std::move(groupName));
 
@@ -294,7 +294,7 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 	// 2) clone an instance
 	if (auto object = parent->CloneInstance())
 	{
-		object->program = GetShaderManager().LoadProgram("vs_model_texture", "fs_model_texture");
+		object->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
 
 		const auto  pos   = camera->pos2;
 		const float scale = std::clamp(NormalFloat(1.0f, 0.2f), 0.25f, 1.5f);
@@ -334,7 +334,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, std::strin
 	else if (auto mesh = MeshLoader::LoadModelFull(name, textureName))
 	{
 		mesh->type |= ObjectType_Group | ObjectType_Instance;
-		mesh->program = GetShaderManager().LoadProgram("vs_model_texture_instance", "fs_model_texture_instance");
+		mesh->material->LoadProgram("vs_model_texture_instance", "fs_model_texture_instance");
 		//if (textureName.size()) mesh->LoadTextures(textureName);
 		scene->AddNamedChild(mesh, std::move(groupName));
 
@@ -346,7 +346,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, std::strin
 	// 2) clone an instance
 	if (auto object = parent->CloneInstance())
 	{
-		object->program = GetShaderManager().LoadProgram("vs_model_texture", "fs_model_texture");
+		object->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
 
 		bx::Vec3 pos = camera->pos2;
 		bx::Vec3 rot = bx::InitZero;

@@ -239,8 +239,16 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 
 void Mesh::LoadTextures(std::string_view colorName, std::string_view normalName)
 {
-	if (colorName.size()) texColor = GetTextureManager().LoadTexture(colorName);
-	if (normalName.size()) texNormal = GetTextureManager().LoadTexture(normalName);
+	if (colorName.size())
+	{
+		texColor    = GetTextureManager().LoadTexture(colorName);
+		texNames[0] = colorName;
+	}
+	if (normalName.size())
+	{
+		texNormal   = GetTextureManager().LoadTexture(normalName);
+		texNames[1] = normalName;
+	}
 	Initialize();
 }
 
@@ -292,32 +300,35 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 				else ui::LogError("allocInstanceDataBuffer");
 
 				// render
-				if (geometry && material)
+				if (material)
 				{
-					bgfx::setVertexBuffer(0, geometry->vbh);
-					bgfx::setIndexBuffer(geometry->ibh);
-					bgfx::setInstanceDataBuffer(&idb);
-
-					if (bgfx::isValid(texColor)) bgfx::setTexture(0, sTexColor, texColor);
-					if (bgfx::isValid(texNormal)) bgfx::setTexture(1, sTexNormal, texNormal);
-
-					bgfx::setState(useState);
-					bgfx::submit(viewId, material->program);
-				}
-				else if (bgfx::isValid(program))
-				{
-					for (const auto& group : groups)
+					if (geometry)
 					{
-						bgfx::setIndexBuffer(group.m_ibh);
-						bgfx::setVertexBuffer(0, group.m_vbh);
+						bgfx::setVertexBuffer(0, geometry->vbh);
+						bgfx::setIndexBuffer(geometry->ibh);
 						bgfx::setInstanceDataBuffer(&idb);
 
 						if (bgfx::isValid(texColor)) bgfx::setTexture(0, sTexColor, texColor);
 						if (bgfx::isValid(texNormal)) bgfx::setTexture(1, sTexNormal, texNormal);
 
 						bgfx::setState(useState);
-						bgfx::submit(0, program);
-						break;
+						bgfx::submit(viewId, material->program);
+					}
+					else if (bgfx::isValid(material->program))
+					{
+						for (const auto& group : groups)
+						{
+							bgfx::setIndexBuffer(group.m_ibh);
+							bgfx::setVertexBuffer(0, group.m_vbh);
+							bgfx::setInstanceDataBuffer(&idb);
+
+							if (bgfx::isValid(texColor)) bgfx::setTexture(0, sTexColor, texColor);
+							if (bgfx::isValid(texNormal)) bgfx::setTexture(1, sTexNormal, texNormal);
+
+							bgfx::setState(useState);
+							bgfx::submit(0, material->program);
+							break;
+						}
 					}
 				}
 			}
@@ -328,22 +339,25 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 			}
 		}
 	}
-	else if (geometry && material)
+	else if (material)
 	{
-		bgfx::setTransform(glm::value_ptr(matrixWorld));
-		bgfx::setVertexBuffer(0, geometry->vbh);
-		bgfx::setIndexBuffer(geometry->ibh);
-		material->Apply();
+		if (geometry)
+		{
+			bgfx::setTransform(glm::value_ptr(matrixWorld));
+			bgfx::setVertexBuffer(0, geometry->vbh);
+			bgfx::setIndexBuffer(geometry->ibh);
+			material->Apply();
 
-		if (bgfx::isValid(texColor)) bgfx::setTexture(0, sTexColor, texColor);
-		if (bgfx::isValid(texNormal)) bgfx::setTexture(1, sTexNormal, texNormal);
+			if (bgfx::isValid(texColor)) bgfx::setTexture(0, sTexColor, texColor);
+			if (bgfx::isValid(texNormal)) bgfx::setTexture(1, sTexNormal, texNormal);
 
-		bgfx::setState(useState);
-		bgfx::submit(viewId, material->program);
-	}
-	else if (bgfx::isValid(program))
-	{
-		Submit(viewId, program, glm::value_ptr(matrixWorld), useState);
+			bgfx::setState(useState);
+			bgfx::submit(viewId, material->program);
+		}
+		else if (bgfx::isValid(material->program))
+		{
+			Submit(viewId, material->program, glm::value_ptr(matrixWorld), useState);
+		}
 	}
 }
 
@@ -370,6 +384,17 @@ int Mesh::Serialize(fmt::memory_buffer& outString, int bounds) const
 	{
 		WRITE_KEY("material");
 		material->Serialize(outString);
+	}
+	if (texNames[0].size() || texNames[1].size() || texNames[2].size() || texNames[3].size())
+	{
+		WRITE_KEY("texNames");
+		WRITE_CHAR('[');
+		for (int i = 0; i < 4; ++i)
+		{
+			if (i > 0) WRITE_CHAR(',');
+			WRITE_JSON_STRING(texNames[i]);
+		}
+		WRITE_CHAR(']');
 	}
 	if (bounds & 2) WRITE_CHAR('}');
 	return keyId;

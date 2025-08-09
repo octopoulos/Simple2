@@ -1,6 +1,6 @@
 // MeshLoader.cpp
 // @author octopoulos
-// @version 2025-07-31
+// @version 2025-08-05
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -30,7 +30,7 @@ sMesh MeshLoader::LoadModelFull(std::string_view name, std::string_view textureN
 	if (!mesh) return nullptr;
 
 	// 1) default shader
-	mesh->program = GetShaderManager().LoadProgram("vs_model_texture", "fs_model_texture");
+	mesh->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
 
 	// 2) find a texture
 	if (textureName.size())

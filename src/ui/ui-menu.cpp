@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-02
+// @version 2025-08-05
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -121,7 +121,7 @@ void App::OpenFile(int action)
 		.path  = FindDefault(actionFolders, action, "."),
 		.flags = ImGuiFileDialogFlags_Modal,
 	};
-	ImGuiFileDialog::Instance()->OpenDialog("OpenFileX", FindDefault(titles, action, "Choose File"), "((.*))", config);
+	ImGuiFileDialog::Instance()->OpenDialog("OpenFileX", FindDefault(titles, action, "Choose File"), ".json", config);
 }
 
 void App::OpenedFile(int action, const std::filesystem::path& path)
@@ -131,8 +131,8 @@ void App::OpenedFile(int action, const std::filesystem::path& path)
 
 	switch (action)
 	{
-	case OpenAction_OpenScene: OpenMap(path); break;
-	case OpenAction_SaveScene: SaveMap(path); break;
+	case OpenAction_OpenScene: scene->OpenScene(path); break;
+	case OpenAction_SaveScene: scene->SaveScene(path); break;
 	default:
 		ui::Log("OpenedFile: Unknown action: {} {}", action, path);
 	}

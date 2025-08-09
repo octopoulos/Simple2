@@ -1,6 +1,6 @@
 // Scene.h
 // @author octopoulos
-// @version 2025-08-04
+// @version 2025-08-05
 
 #pragma once
 
@@ -9,7 +9,7 @@
 class Scene : public Object3d
 {
 public:
-	UMAP_STR<std::weak_ptr<Object3d>> names = {};
+	UMAP_STR<std::weak_ptr<Object3d>> names = {}; ///< named children
 
 	Scene()
 	{
@@ -19,49 +19,21 @@ public:
 
 	~Scene() = default;
 
-	void AddChild(sObject3d child) override
-	{
-		if (child->name.size())
-		{
-			const auto& [it, inserted] = names.try_emplace(child->name, child);
-			if (!inserted) ui::LogWarning("Scene/AddChild: {} already exists", child->name);
-		}
+	/// Add a child and map its name
+	void AddChild(sObject3d child) override;
 
-		child->id     = TO_INT(children.size());
-		child->parent = this;
-		children.push_back(std::move(child));
-	}
+	/// Clear the scene
+	void Clear();
 
-	void Clear()
-	{
-		children.clear();
-		names.clear();
-	}
+	/// Find an direct child by name
+	Object3d* GetObjectByName(std::string_view name) const;
 
-	Object3d* GetObjectByName(std::string_view name) const
-	{
-		if (const auto& it = names.find(name); it != names.end())
-		{
-			if (auto sp = it->second.lock()) return sp.get();
-		}
-		return nullptr;
-	}
+	/// Open a scene file + replace the scene
+	bool OpenScene(const std::filesystem::path& filename);
 
-	void RemoveChild(const sObject3d& child) override
-	{
-		if (child && child->name.size())
-			if (const auto& it = names.find(child->name); it != names.end())
-				names.erase(it);
+	/// Remove a child and unmap its name
+	void RemoveChild(const sObject3d& child) override;
 
-		Object3d::RemoveChild(child);
-	}
-
-	void RenderScene(uint8_t viewId, int renderFlags)
-	{
-		if (visible)
-		{
-			for (const auto& child : children)
-				child->Render(viewId, renderFlags);
-		}
-	}
+	/// Save the scene to a file
+	bool SaveScene(const std::filesystem::path& filename);
 };

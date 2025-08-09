@@ -18,7 +18,7 @@ void App::AddGeometry(uGeometry geometry)
 
 	auto object      = std::make_shared<Mesh>();
 	object->geometry = geometry;
-	object->material = std::make_shared<Material>(GetShaderManager().LoadProgram("vs_model_texture", "fs_model_texture"));
+	object->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
 	object->LoadTextures("colors.png");
 
 	object->ScaleRotationPosition(
@@ -147,43 +147,6 @@ void App::MapUi()
 	ImGui::End();
 }
 
-bool App::OpenMap(const std::filesystem::path& filename)
-{
-	mapNode.reset();
-	tiles.clear();
-
-	ReadLines(filename, [&](std::string_view line, int lineId) {
-		if (line.empty() || line[0] == '#') return;
-
-		const auto splits = SplitStringView(line, '\t');
-		if (splits.size() == 4)
-		{
-			const auto  name = std::string(splits[0]);
-			const float x    = FastAtof(splits[1]);
-			const float y    = FastAtof(splits[2]);
-			const float z    = FastAtof(splits[3]);
-
-			auto mesh      = std::make_shared<Mesh>();
-			mesh->id       = 0;
-			mesh->name     = name;
-			mesh->position = glm::vec3(x, y, z);
-			mapNode->AddChild(mesh);
-
-			Tile tile = {
-				.mesh = mesh,
-				.name = name,
-				.x    = x,
-				.y    = y,
-				.z    = z,
-			};
-			tiles.push_back(tile);
-			ui::Log("Loaded tile: {} at ({}, {}, {})", tile.name, tile.x, tile.y, tile.z);
-		}
-	});
-
-	return true;
-}
-
 void App::RescanAssets()
 {
 	const std::filesystem::path& MODEL_SRC_DIR   = "assets/models";
@@ -287,15 +250,6 @@ void App::RescanAssets()
 	}
 
 	ui::Log("Models: {}  Textures: {}", modelSources.size(), textureOutputs.size());
-}
-
-bool App::SaveMap(const std::filesystem::path& filename)
-{
-	fmt::memory_buffer outString;
-	scene->Serialize(outString);
-	ui::Log("outString={}", OUTSTRING_VIEW);
-	WriteData(filename, OUTSTRING_VIEW);
-	return true;
 }
 
 void App::ScanModels(const std::filesystem::path& folder, const std::filesystem::path& folderPrev, int depth, const std::string& relative)

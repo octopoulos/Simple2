@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-08-04
+// @version 2025-08-05
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -445,6 +445,7 @@ int Body::Serialize(fmt::memory_buffer& outString, int bounds) const
 {
 	if (bounds & 1) WRITE_CHAR('{');
 	WRITE_INIT();
+	WRITE_KEY_DOUBLE(mass);
 	WRITE_KEY_STRING2("shapeType", ShapeName(shapeType));
 	if (bounds & 2) WRITE_CHAR('}');
 	return keyId;
