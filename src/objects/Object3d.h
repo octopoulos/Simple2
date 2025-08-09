@@ -1,8 +1,12 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-08-04
+// @version 2025-08-05
 
 #pragma once
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OBJECT3D
+///////////
 
 class Object3d;
 using sObject3d = std::shared_ptr<Object3d>;
@@ -14,10 +18,11 @@ enum ObjectTypes_ : int
 	ObjectType_Camera    = 1 << 1, ///< camera object
 	ObjectType_Clone     = 1 << 2, ///< clone of another object (doesn't own groups)
 	ObjectType_Group     = 1 << 3, ///< group (no render)
-	ObjectType_Instance  = 1 << 4, ///< instance
-	ObjectType_Mesh      = 1 << 5, ///< mesh
-	ObjectType_RubikCube = 1 << 6, ///< Rubic cube
-	ObjectType_Scene     = 1 << 7, ///< scene
+	ObjectType_HasBody   = 1 << 4, ///< contains bodies (Mesh only)
+	ObjectType_Instance  = 1 << 5, ///< instance
+	ObjectType_Mesh      = 1 << 6, ///< mesh
+	ObjectType_RubikCube = 1 << 7, ///< Rubic cube
+	ObjectType_Scene     = 1 << 8, ///< scene
 };
 
 enum RenderFlags_ : int
@@ -39,7 +44,6 @@ public:
 	glm::quat              rotation    = glm::vec3(0.0f);            ///< rotation: Euler angles
 	glm::vec3              scale       = glm::vec3(1.0f);            ///< sx, sy, sz
 	glm::mat4              scaleMatrix = glm::mat4(1.0f);            ///< uses scale
-	glm::mat4              transform   = {};                         ///< computed from S * R * T
 	int                    type        = ObjectType_Basic;           ///< ObjectTypes_
 	bool                   visible     = true;                       ///< object is rendered if true
 
@@ -69,15 +73,23 @@ public:
 	/// Apply scale then quaternion then translation
 	void ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat& _quaternion, const glm::vec3& _position);
 
+	/// Serialize for JSON output
+	virtual int Serialize(fmt::memory_buffer& outString, int bounds = 3) const;
+
 	/// Synchronize physics transform
 	virtual void SynchronizePhysics();
-
-	/// Render the object + recursively for all children
-	void TraverseAndRender(uint8_t viewId, int renderFlags);
 
 	/// Update local matrix from scale * quaternion * position
 	void UpdateLocalMatrix();
 
 	/// Calculate world matrix + recursively for all children
+	/// - if HasBody => matrixWorld is left untouched because it comes from bullet3
 	void UpdateWorldMatrix();
 };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FUNCTIONS
+////////////
+
+/// Convert object type to string
+std::string ObjectName(int type);

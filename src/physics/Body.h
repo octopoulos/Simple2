@@ -1,6 +1,6 @@
 // Body.h
 // @author octopoulos
-// @version 2025-07-31
+// @version 2025-08-04
 
 #pragma once
 
@@ -40,8 +40,9 @@ public:
 	btCollisionShape*        shape   = nullptr; ///< shape
 	btDiscreteDynamicsWorld* world   = nullptr; ///< physical world
 
-	btVector3 inertia = { 0.0f, 0.0f, 0.0f }; ///
-	float     mass    = 0.0f;                 ///
+	btVector3 inertia   = { 0.0f, 0.0f, 0.0f }; ///
+	float     mass      = 0.0f;                 ///
+	int       shapeType = ShapeType_None;       ///
 
 public:
 	Body(PhysicsWorld* physics)
@@ -66,6 +67,9 @@ public:
 
 	/// Destroy shape + resets the pointer
 	void DestroyShape();
+
+	/// Serialize for JSON output
+	int Serialize(fmt::memory_buffer& outString, int bounds = 3) const;
 };
 
 using uBody = std::unique_ptr<Body>;
@@ -76,3 +80,6 @@ using uBody = std::unique_ptr<Body>;
 
 /// Find the most appropriate body shape for a given geometry type
 int GeometryShape(int geometryType, bool hasMass = true, int detail = 0);
+
+/// Convert shape type to string
+std::string ShapeName(int type);

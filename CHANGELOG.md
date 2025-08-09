@@ -1,5 +1,23 @@
 
+**2025-08-09**
+- Show/hide nodes in Scene graph
+
+**2025-08-08**
+- BEGIN_TREE ... END_TREE with child background
+
+**2025-08-07**
+- Basic scene tree
+- Consolidate settings into xsettings
+- Move all source code to src
+- Left/write labels + load Inter.ttf
+
+**2025-08-06**
+- ImGui 1.92.2 support + scalable font + Blender theme
+- Open & save imgui.ini
+
 **2025-08-05**
+- ImGui/docking support
+- add CHANGELOG.md
 - added ImGuiFileDialog
 - KeyToAscii + ImGui inputChar
 

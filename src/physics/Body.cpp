@@ -1,10 +1,11 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-08-01
+// @version 2025-08-04
 
 #include "stdafx.h"
 #include "physics/Body.h"
 //
+#include "loaders/writer.h"
 #include "objects/Mesh.h"
 
 #include <BulletCollision/CollisionShapes/btBox2dShape.h>
@@ -19,6 +20,25 @@ static const USET_INT shapesNoOffsets = {
 	ShapeType_Plane,
 	ShapeType_TriangleMesh,
 };
+
+// clang-format off
+static const UMAP_INT_STR SHAPE_NAMES = {
+	{ ShapeType_None        , "None"         },
+	{ ShapeType_Box         , "Box"          },
+	{ ShapeType_Box2d       , "Box2d"        },
+	{ ShapeType_BoxObb      , "BoxObb"       },
+	{ ShapeType_Capsule     , "Capsule"      },
+	{ ShapeType_Compound    , "Compound"     },
+	{ ShapeType_Cone        , "Cone"         },
+	{ ShapeType_Convex2d    , "Convex2d"     },
+	{ ShapeType_ConvexHull  , "ConvexHull"   },
+	{ ShapeType_Cylinder    , "Cylinder"     },
+	{ ShapeType_Plane       , "Plane"        },
+	{ ShapeType_Sphere      , "Sphere"       },
+	{ ShapeType_Terrain     , "Terrain"      },
+	{ ShapeType_TriangleMesh, "TriangleMesh" },
+};
+// clang-format on
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // HELPERS
@@ -97,6 +117,8 @@ void Body::CreateBody(float _mass, const btVector3& pos, const btQuaternion& qua
 
 void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 {
+	shapeType = type;
+
 	// 1) compound rules:
 	// - if multiple groups or center is not (0, 0, 0) => use a compound
 	const int  numGroup = mesh ? TO_INT(mesh->groups.size()) : 0;
@@ -419,6 +441,15 @@ void Body::DestroyShape()
 	}
 }
 
+int Body::Serialize(fmt::memory_buffer& outString, int bounds) const
+{
+	if (bounds & 1) WRITE_CHAR('{');
+	WRITE_INIT();
+	WRITE_KEY_STRING2("shapeType", ShapeName(shapeType));
+	if (bounds & 2) WRITE_CHAR('}');
+	return keyId;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FUNCTIONS
 ////////////
@@ -477,4 +508,9 @@ TEST_CASE("GeometryShape")
 		SUBCASE_FMT("{}_{}_{}_{}", ++i, geometryType, hasMass, detail)
 		CHECK(GeometryShape(geometryType, hasMass, detail) == answer);
 	}
+}
+
+std::string ShapeName(int type)
+{
+	return FindDefault(SHAPE_NAMES, type, "???");
 }

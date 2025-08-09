@@ -1,6 +1,6 @@
 // Material.h
 // @author octopoulos
-// @version 2025-07-05
+// @version 2025-08-04
 
 #pragma once
 
@@ -17,4 +17,7 @@ public:
 		// Set uniforms, textures, etc. if needed
 		assert(bgfx::isValid(program));
 	}
+
+	/// Serialize for JSON output
+	int Serialize(fmt::memory_buffer& outString, int bounds = 3);
 };

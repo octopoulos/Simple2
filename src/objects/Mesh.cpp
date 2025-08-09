@@ -1,9 +1,11 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-08-04
+// @version 2025-08-05
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
+//
+#include "loaders/writer.h"
 #include "textures/TextureManager.h"
 
 #include <meshoptimizer.h>
@@ -39,6 +41,7 @@ void Mesh::CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, con
 	body->CreateShape(shapeType, this, dims);
 	body->CreateBody(mass, GlmToBullet(position), GlmToBullet(quaternion));
 	bodies.push_back(std::move(body));
+	type |= ObjectType_HasBody;
 }
 
 void Mesh::Destroy()
@@ -273,7 +276,7 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 					for (const auto& child : children)
 					{
 						float* mtx = (float*)data;
-						std::memcpy(mtx, glm::value_ptr(child->transform), 64);
+						std::memcpy(mtx, glm::value_ptr(child->matrixWorld), 64);
 
 						float* color = (float*)&data[64];
 						{
@@ -327,7 +330,7 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 	}
 	else if (geometry && material)
 	{
-		bgfx::setTransform(glm::value_ptr(transform));
+		bgfx::setTransform(glm::value_ptr(matrixWorld));
 		bgfx::setVertexBuffer(0, geometry->vbh);
 		bgfx::setIndexBuffer(geometry->ibh);
 		material->Apply();
@@ -340,8 +343,36 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 	}
 	else if (bgfx::isValid(program))
 	{
-		Submit(viewId, program, glm::value_ptr(transform), useState);
+		Submit(viewId, program, glm::value_ptr(matrixWorld), useState);
 	}
+}
+
+int Mesh::Serialize(fmt::memory_buffer& outString, int bounds) const
+{
+	int keyId = Object3d::Serialize(outString, (bounds & 1) ? 1 : 0);
+	if (bodies.size())
+	{
+		WRITE_KEY("bodies");
+		WRITE_CHAR('[');
+		for (int id = -1; const auto& body : bodies)
+		{
+			if (++id > 0) WRITE_CHAR(',');
+			body->Serialize(outString);
+		}
+		WRITE_CHAR(']');
+	}
+	if (geometry)
+	{
+		WRITE_KEY("geometry");
+		geometry->Serialize(outString);
+	}
+	if (material)
+	{
+		WRITE_KEY("material");
+		material->Serialize(outString);
+	}
+	if (bounds & 2) WRITE_CHAR('}');
+	return keyId;
 }
 
 void Mesh::Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, uint64_t state) const
@@ -414,7 +445,7 @@ void Mesh::SynchronizePhysics()
 
 			float matrix[16];
 			bTransform.getOpenGLMatrix(matrix);
-			transform = glm::make_mat4(matrix) * scaleMatrix;
+			matrixWorld = glm::make_mat4(matrix) * scaleMatrix;
 		}
 	}
 }

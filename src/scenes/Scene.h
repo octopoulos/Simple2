@@ -62,7 +62,6 @@ public:
 		{
 			for (const auto& child : children)
 				child->Render(viewId, renderFlags);
-			// TraverseAndRender(viewId, renderFlags);
 		}
 	}
 };

@@ -1,9 +1,11 @@
 // Geometry.cpp
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-08-04
 
 #include "stdafx.h"
 #include "geometries/Geometry.h"
+//
+#include "loaders/writer.h"
 
 // clang-format off
 static const UMAP_INT_STR GEOMETRY_NAMES = {
@@ -22,6 +24,23 @@ static const UMAP_INT_STR GEOMETRY_NAMES = {
 	{ GeometryType_TorusKnot   , "TorusKnot"    },
 };
 // clang-format on
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// GEOMETRY
+///////////
+
+int Geometry::Serialize(fmt::memory_buffer& outString, int bounds) const
+{
+	if (bounds & 1) WRITE_CHAR('{');
+	WRITE_INIT();
+	WRITE_KEY_STRING2("type", GeometryName(type));
+	if (bounds & 2) WRITE_CHAR('}');
+	return keyId;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FUNCTIONS
+////////////
 
 uGeometry CreateAnyGeometry(int type)
 {

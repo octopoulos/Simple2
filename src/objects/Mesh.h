@@ -122,6 +122,9 @@ public:
 	/// - if a group => render the children only
 	virtual void Render(uint8_t viewId, int renderFlags) override;
 
+	/// Serialize for JSON output
+	virtual int Serialize(fmt::memory_buffer& outString, int bounds = 3) const override;
+
 	/// Submit for render pass
 	void Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, uint64_t state) const;
 

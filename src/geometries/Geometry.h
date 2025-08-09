@@ -1,6 +1,6 @@
 // Geometry.h
 // @author octopoulos
-// @version 2025-07-31
+// @version 2025-08-04
 
 #pragma once
 
@@ -68,6 +68,9 @@ public:
 		if (bgfx::isValid(ibh)) bgfx::destroy(ibh);
 		if (bgfx::isValid(vbh)) bgfx::destroy(vbh);
 	}
+
+	/// Serialize for JSON output
+	int Serialize(fmt::memory_buffer& outString, int bounds = 3) const;
 };
 
 using uGeometry = std::shared_ptr<Geometry>;
@@ -180,5 +183,5 @@ uGeometry CreateTorusGeometry(float radius = 1.0f, float tube = 0.4f, int radial
 /// @param q: how many times the geometry winds around a circle in the interior of the torus
 uGeometry CreateTorusKnotGeometry(float radius = 1.0f, float tube = 0.4f, int tubularSegments = 64, int radialSegments = 8, int p = 2, int q = 3);
 
-/// Convert type to string
+/// Convert geometry type to string
 std::string GeometryName(int type);

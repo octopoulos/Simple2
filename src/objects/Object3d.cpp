@@ -1,9 +1,29 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-08-04
+// @version 2025-08-05
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
+//
+#include "loaders/writer.h"
+
+// clang-format off
+static const MAP_INT_STR OBJECT_NAMES = {
+	{ ObjectType_Basic    , "Basic"     },
+	{ ObjectType_Camera   , "Camera"    },
+	{ ObjectType_Clone    , "Clone"     },
+	{ ObjectType_Group    , "Group"     },
+	{ ObjectType_HasBody  , "HasBody"   },
+	{ ObjectType_Instance , "Instance"  },
+	{ ObjectType_Mesh     , "Mesh"      },
+	{ ObjectType_RubikCube, "RubikCube" },
+	{ ObjectType_Scene    , "Scene"     },
+};
+// clang-format on
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OBJECT3D
+///////////
 
 void Object3d::AddChild(sObject3d child)
 {
@@ -53,35 +73,68 @@ void Object3d::ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat&
 	UpdateLocalMatrix();
 }
 
+int Object3d::Serialize(fmt::memory_buffer& outString, int bounds) const
+{
+	if (bounds & 1) WRITE_CHAR('{');
+	WRITE_INIT();
+	if (!(type & ObjectType_HasBody) && matrix != glm::mat4(1.0f)) WRITE_KEY_MATRIX(matrix);
+	if (matrixWorld != glm::mat4(1.0f)) WRITE_KEY_MATRIX(matrixWorld);
+	WRITE_KEY_STRING(name);
+	WRITE_KEY_STRING2("type", ObjectName(type));
+	WRITE_KEY_BOOL(visible);
+	if (children.size())
+	{
+		WRITE_KEY("children");
+		WRITE_CHAR('[');
+		for (size_t i = 0; i < children.size(); ++i)
+		{
+			if (i > 0) WRITE_CHAR(',');
+			children[i]->Serialize(outString, 3);
+		}
+		WRITE_CHAR(']');
+	}
+	if (bounds & 2) WRITE_CHAR('}');
+	return keyId;
+}
+
 void Object3d::SynchronizePhysics()
 {
 }
 
-void Object3d::TraverseAndRender(uint8_t viewId, int renderFlags)
-{
-	if (!(type & ObjectType_Group))
-		if (type & ObjectType_Instance) return;
-
-	//UpdateWorldMatrix();
-	Render(viewId, renderFlags);
-	for (const auto& child : children)
-		child->TraverseAndRender(viewId, renderFlags);
-}
-
 void Object3d::UpdateLocalMatrix()
 {
-	transform = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(quaternion) * scaleMatrix;
-	matrix    = transform;
+	matrix = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(quaternion) * scaleMatrix;
 	UpdateWorldMatrix();
 }
 
 void Object3d::UpdateWorldMatrix()
 {
-	if (parent)
-		matrixWorld = parent->matrixWorld * matrix;
-	else
-		matrixWorld = matrix;
+	if (!(type & ObjectType_HasBody))
+	{
+		if (parent)
+			matrixWorld = parent->matrixWorld * matrix;
+		else
+			matrixWorld = matrix;
+	}
 
 	for (auto& child : children)
 		child->UpdateWorldMatrix();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FUNCTIONS
+////////////
+
+std::string ObjectName(int type)
+{
+	std::string result;
+	for (const auto& [flag, name] : OBJECT_NAMES)
+	{
+		if (type & flag)
+		{
+			if (result.size()) result += ' ';
+			result += name;
+		}
+	}
+	return result;
 }

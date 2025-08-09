@@ -357,7 +357,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, std::strin
 			if (numChild)
 			{
 				const auto& child = parent->children.back();
-				const auto& cpos  = child->transform[3];
+				const auto& cpos  = child->matrixWorld[3];
 				ui::Log(" - {}: {} {} {}", child->name, cpos[0], cpos[1], cpos[2]);
 				pos.y = std::max(pos.x, cpos[1] + 0.5f);
 			}
