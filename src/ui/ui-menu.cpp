@@ -11,6 +11,10 @@
 
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
 
+#ifdef WITH_FX
+void FxTestBed();
+#endif // WITH_FX
+
 enum OpenActions_ : int
 {
 	OpenAction_None      = 0,
@@ -59,6 +63,10 @@ int App::MainUi()
 	}
 
 	LearnUi();
+
+#ifdef WITH_FX
+	if (showFxTest) FxTestBed();
+#endif // WITH_FX
 
 	// popups
 	static int currentPopup;
@@ -263,7 +271,9 @@ void App::ShowMainMenu(float alpha)
 			ui::AddMenu("Scene"       , nullptr, ui::GetSceneWindow());
 			ui::AddMenu("Settings"    , nullptr, ui::GetSettingsWindow());
 			ImGui::Separator();
+			ImGui::MenuItem("ImGui Demo", nullptr, &showImGuiDemo);
 			ui::AddMenu("Theme Editor", nullptr, ui::GetThemeWindow());
+			ImGui::MenuItem("FX Test", nullptr, &showFxTest);
 			// clang-format on
 
 			ImGui::EndMenu();
@@ -272,7 +282,6 @@ void App::ShowMainMenu(float alpha)
 		// help
 		if (ImGui::BeginMenu("Help"))
 		{
-			ImGui::MenuItem("ImGui Demo", nullptr, &showImGuiDemo);
 			ImGui::MenuItem("Good Luck!");
 			ImGui::EndMenu();
 		}

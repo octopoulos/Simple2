@@ -42,6 +42,10 @@ void App::Destroy()
 
 	bgfx::destroy(uLight);
 	bgfx::destroy(uTime);
+
+	// synchronize settings at exit
+	bx::store(xsettings.cameraEye, camera->pos2);
+	bx::store(xsettings.cameraAt, camera->target2);
 }
 
 int App::Initialize()

@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-08-04
+// @version 2025-08-05
 
 #pragma once
 
@@ -75,14 +75,14 @@ struct XSettings
 	bool physPaused;  ///< paused physics
 
 	// [render]
-	float center[3];   ///< scene center
-	float distance;   ///< distance between camera and cursor
-	float eye[3];     ///< scene eye
-	bool  fixedView;  ///< don't move the view with the mouse
-	bool  instancing; ///< use mesh instancing
-	float orthoZoom;  ///< zoom in orthographic projection
-	int   projection; ///< 0: ortho, 1: perspective
-	int   renderMode; ///< &1: screen, &2: model
+	float cameraAt[3];  ///< camera lookAt
+	float cameraEye[3]; ///< camera eye
+	float distance;     ///< distance between camera and cursor
+	bool  fixedView;    ///< don't move the view with the mouse
+	bool  instancing;   ///< use mesh instancing
+	float orthoZoom;    ///< zoom in orthographic projection
+	int   projection;   ///< 0: ortho, 1: perspective
+	int   renderMode;   ///< &1: screen, &2: model
 
 	// [system]
 	float activeMs;    ///< ms per frame when mouse moving + focused

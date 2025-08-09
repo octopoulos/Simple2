@@ -1,6 +1,6 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-08-05
 
 #include "stdafx.h"
 #include "core/Camera.h"
@@ -15,10 +15,10 @@ void Camera::Initialize()
 	distance = 0.1f;
 	orbit[0] = 0.0f;
 	orbit[1] = 0.0f;
-	pos      = { 0.0f, 5.0f, -13.0f };
-	pos2     = { 0.0f, 5.0f, -13.0f };
-	target   = { 0.0f, 0.0f, 0.0f };
-	target2  = { 0.0f, 0.0f, 0.0f };
+	pos      = bx::load<bx::Vec3>(xsettings.cameraEye);
+	pos2     = bx::load<bx::Vec3>(xsettings.cameraEye);
+	target   = bx::load<bx::Vec3>(xsettings.cameraAt);
+	target2  = bx::load<bx::Vec3>(xsettings.cameraAt);
 }
 
 void Camera::ConsumeOrbit(float amount)

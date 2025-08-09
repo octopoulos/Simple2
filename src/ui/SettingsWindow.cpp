@@ -1,13 +1,11 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-08-04
+// @version 2025-08-05
 
 #include "stdafx.h"
 #include "ui/ui.h"
 //
 #include "app/App.h"
-
-//extern std::unique_ptr<Engine> engine;
 
 namespace ui
 {
@@ -62,7 +60,7 @@ public:
 		}
 
 		CHECK_DRAW();
-		
+	
 		auto&      style      = ImGui::GetStyle();
 		const auto paddingX   = style.WindowPadding.x;
 		const int  settingPad = xsettings.settingPad;
@@ -165,8 +163,8 @@ public:
 			// render
 			BEGIN_TREE("Render", Show_SystemRender, 5)
 			{
-				AddDragFloat("center", "Center");
-				AddDragFloat("eye", "Eye");
+				//AddDragFloat("cameraAt", "Camera At");
+				//AddDragFloat("cameraEye", "Camera Eye");
 				AddSliderBool("fixedView", "Fixed View");
 				AddSliderInt("projection", "Projection", nullptr);
 				AddSliderInt("renderMode", "Render Mode", nullptr);

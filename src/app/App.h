@@ -156,6 +156,7 @@ private:
 	UMAP_INT_STR actionFolders = {};    ///< open image & save screenshot in different folders
 	int          fileAction    = 0;     ///< action to take in OpenedFile
 	std::string  fileFolder    = {};    ///< folder after OpenFile
+	bool         showFxTest    = false; ///< show FxTestBed
 	bool         showImGuiDemo = false; ///< show ImGui demo window
 	int          videoFrame    = 0;     ///< how many video frames have been captured so far
 
