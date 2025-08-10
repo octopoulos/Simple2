@@ -1,6 +1,6 @@
 // SceneWindow.cpp
 // @author octopoulos
-// @version 2025-08-04
+// @version 2025-08-06
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -48,7 +48,7 @@ public:
 	{
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
 		{
-			app->SelectObject(node);
+			app->selectedObj = node;
 			ui::Log("SceneWindow/DrawObject: {}", node->name);
 		}
 
@@ -70,32 +70,61 @@ public:
 
 	void DrawObject(const sObject3d& node, int depth)
 	{
-		static const ImGuiTreeNodeFlags treeBaseFlags = ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_SpanAvailWidth;
+		ImGuiTreeNodeFlags treeFlag = ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_SpanAvailWidth;
 
 		ImGui::TableNextRow();
+
+		// blue background
+		const bool selected = (node == app->selectedObj.lock());
+		if (selected)
+		{
+			const ImU32 color = ImGui::GetColorU32(ImVec4(0.2f, 0.3f, 0.5f, 1.0f));
+			ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, color);
+		}
+
 		ImGui::TableNextColumn();
 
-		const bool hidden = !node->visible;
-		if (hidden) ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
+		// grey or orange text
+		int pushed = 0;
+		if (!node->visible)
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
+			pushed = 1;
+		}
+		else if (selected)
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.99f, 0.68f, 0.16f, 1.0f));
+			pushed = 2;
+		}
 
+		// draw children nodes
 		if (const auto numChild = node->children.size())
 		{
-			if (ImGui::TreeNodeEx(fmt::format("({}) {}", numChild, node->name).c_str(), treeBaseFlags | (depth ? 0 : ImGuiTreeNodeFlags_DefaultOpen)))
+			if (!depth) treeFlag |= ImGuiTreeNodeFlags_DefaultOpen;
+
+			if (ImGui::TreeNodeEx(fmt::format("({}) {}", numChild, node->name).c_str(), treeFlag))
 			{
 				DrawCells(node);
+				if (pushed == 2)
+				{
+					ImGui::PopStyleColor();
+					pushed = 0;
+				}
+
 				for (const auto& child : node->children)
 					DrawObject(child, depth + 1);
 				ImGui::TreePop();
 			}
 			else DrawCells(node);
 		}
+		// draw node itself
 		else
 		{
-			ImGui::TreeNodeEx(node->name.c_str(), treeBaseFlags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+			ImGui::TreeNodeEx(node->name.c_str(), treeFlag | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
 			DrawCells(node);
 		}
 
-		if (hidden) ImGui::PopStyleColor();
+		if (pushed) ImGui::PopStyleColor();
 	}
 };
 

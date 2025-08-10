@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-06
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -262,11 +262,6 @@ void App::FluidControls()
 	}
 }
 
-void App::SelectObject(const sObject3d& obj)
-{
-	selectedObj = obj;
-}
-
 void App::ThrowGeometry(int action, int geometryType, std::string_view textureName)
 {
 	if (geometryType == GeometryType_None)
@@ -281,7 +276,7 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 	if (parentObj)
 	{
 		if (parentObj->type & ObjectType_Mesh)
-			parent = static_cast<Mesh*>(parentObj);
+			parent = static_cast<Mesh*>(parentObj.get());
 	}
 	else if (auto mesh = std::make_shared<Mesh>())
 	{
@@ -334,7 +329,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, std::strin
 	if (parentObj)
 	{
 		if (parentObj->type & ObjectType_Mesh)
-			parent = static_cast<Mesh*>(parentObj);
+			parent = static_cast<Mesh*>(parentObj.get());
 	}
 	else if (auto mesh = MeshLoader::LoadModelFull(name, textureName))
 	{

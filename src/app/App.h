@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-06
 
 #pragma once
 
@@ -62,9 +62,6 @@ public:
 	/// Controls function executed every frame, and run before Render
 	void Controls();
 
-	/// Select an object
-	void SelectObject(const sObject3d& obj);
-
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// LEARN
 	////////
@@ -79,10 +76,8 @@ private:
 	//////
 
 private:
-	sMesh                   cursor      = nullptr; ///< current cursor for placing objects
-	MAP_STR<MAP_STR_INT>    kitModels   = {};      ///< model database: [title, filename]
-	sObject3d               mapNode     = nullptr; ///< root of the map scene
-	std::weak_ptr<Object3d> selectedObj = {};      ///< selected object for edit
+	MAP_STR<MAP_STR_INT> kitModels = {};      ///< model database: [title, filename]
+	sObject3d            mapNode   = nullptr; ///< root of the map scene
 
 	/// Insert a geometry into the map
 	void AddGeometry(uGeometry geometry);
@@ -126,20 +121,21 @@ public:
 
 private:
 	sCamera                       camera       = nullptr; ///< camera
+	sMesh                         cursor       = nullptr; ///< current cursor for placing objects
+	float                         curTime      = 0.0f;    ///< current time
+	float                         deltaTime    = 0.0f;    ///< last delta (current - last)
+	float                         lastTime     = 0.0f;    ///< last rendered time
+	int64_t                       lastUs       = 0;       ///< microseconds
 	std::unique_ptr<PhysicsWorld> physics      = nullptr; ///< physics world
 	int                           physicsFrame = 0;       ///< current physics frame
-
-	float   curTime   = 0.0f; ///< current time
-	float   deltaTime = 0.0f; ///< last delta (current - last)
-	float   lastTime  = 0.0f; ///< last rendered time
-	int64_t lastUs    = 0;    ///< microseconds
-	int64_t startTime = 0;    ///< initial time
+	int64_t                       startTime    = 0;       ///< initial time
 
 	/// Create scene and physics
 	int InitializeScene();
 
 public:
-	sObject3d scene = nullptr; ///< scene container
+	sObject3d               scene       = nullptr; ///< scene container
+	std::weak_ptr<Object3d> selectedObj = {};      ///< selected object for edit
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// SETTINGS

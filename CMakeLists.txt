@@ -234,6 +234,7 @@ set(       APP_SRC_DIR "${SRC_DIR}/app")
 set(    COMMON_SRC_DIR "${SRC_DIR}/common")
 set(      CORE_SRC_DIR "${SRC_DIR}/core")
 set(     ENTRY_SRC_DIR "${SRC_DIR}/common/entry")
+set(    EXTRAS_SRC_DIR "${SRC_DIR}/extras")
 set(GEOMETRIES_SRC_DIR "${SRC_DIR}/geometries")
 set(   LOADERS_SRC_DIR "${SRC_DIR}/loaders")
 set( MATERIALS_SRC_DIR "${SRC_DIR}/materials")
@@ -251,6 +252,7 @@ file(GLOB         BX_SRC_FILES CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bx/src/amalgam
 file(GLOB     COMMON_SRC_FILES CONFIGURE_DEPENDS "${COMMON_SRC_DIR}/*.cpp" "${COMMON_SRC_DIR}/*.h" "${COMMON_SRC_DIR}/debugdraw/*.cpp" "${COMMON_SRC_DIR}/debugdraw/*.h" "${COMMON_SRC_DIR}/imgui/imgui.cpp")
 file(GLOB       CORE_SRC_FILES CONFIGURE_DEPENDS "${CORE_SRC_DIR}/*.cpp" "${CORE_SRC_DIR}/*.h")
 file(GLOB      ENTRY_SRC_FILES CONFIGURE_DEPENDS "${ENTRY_SRC_DIR}/cmd.cpp" "${ENTRY_SRC_DIR}/dialog.cpp" "${ENTRY_SRC_DIR}/entry.cpp" "${ENTRY_SRC_DIR}/input.*")
+file(GLOB     EXTRAS_SRC_FILES CONFIGURE_DEPENDS "${EXTRAS_SRC_DIR}/*.cpp" "${EXTRAS_SRC_DIR}/*.h" "${EXTRAS_SRC_DIR}/*.inl")
 file(GLOB GEOMETRIES_SRC_FILES CONFIGURE_DEPENDS "${GEOMETRIES_SRC_DIR}/*.cpp" "${GEOMETRIES_SRC_DIR}/*.h")
 file(GLOB    LOADERS_SRC_FILES CONFIGURE_DEPENDS "${LOADERS_SRC_DIR}/*.cpp" "${LOADERS_SRC_DIR}/*.h")
 file(GLOB  MATERIALS_SRC_FILES CONFIGURE_DEPENDS "${MATERIALS_SRC_DIR}/*.cpp" "${MATERIALS_SRC_DIR}/*.h")
@@ -595,6 +597,7 @@ source_group(TREE        "${APP_SRC_DIR}" PREFIX "App"        FILES ${APP_SRC_FI
 source_group(TREE     "${COMMON_SRC_DIR}" PREFIX "Common"     FILES ${COMMON_SRC_FILES})
 source_group(TREE       "${CORE_SRC_DIR}" PREFIX "Core"       FILES ${CORE_SRC_FILES})
 source_group(TREE      "${ENTRY_SRC_DIR}" PREFIX "Entry"      FILES ${ENTRY_SRC_FILES})
+source_group(TREE     "${EXTRAS_SRC_DIR}" PREFIX "Extras"     FILES ${EXTRAS_SRC_FILES})
 source_group(TREE       "${CPP_3RDPARTY}" PREFIX "Global"     FILES ${BGFX_SRC_FILES} ${BIMG_SRC_FILES} ${BX_SRC_FILES})
 source_group(TREE "${GEOMETRIES_SRC_DIR}" PREFIX "Geometries" FILES ${GEOMETRIES_SRC_FILES})
 source_group(TREE    "${LOADERS_SRC_DIR}" PREFIX "Loaders"    FILES ${LOADERS_SRC_FILES})
@@ -623,7 +626,7 @@ set(SOURCES
 	       ${APP_SRC_FILES}
 	      ${CORE_SRC_FILES}
 	     ${ENTRY_SRC_FILES}
-	     ${EXTRA_SRC_FILES}
+	    ${EXTRAS_SRC_FILES}
 	${GEOMETRIES_SRC_FILES}
 	   ${LOADERS_SRC_FILES}
 	 ${MATERIALS_SRC_FILES}
