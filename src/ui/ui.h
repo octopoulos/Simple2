@@ -1,6 +1,6 @@
 // ui.h
 // @author octopoulos
-// @version 2025-08-04
+// @version 2025-08-06
 
 #pragma once
 
@@ -11,6 +11,19 @@ class App;
 namespace ui
 {
 
+enum WindowTypes_
+{
+	WindowType_None     = 0,
+	WindowType_Controls = 1 << 0,
+	WindowType_Entry    = 1 << 1,
+	WindowType_Log      = 1 << 2,
+	WindowType_Map      = 1 << 3,
+	WindowType_Scene    = 1 << 4,
+	WindowType_Settings = 1 << 5,
+	WindowType_Theme    = 1 << 6,
+	WindowType_Vars     = 1 << 7,
+};
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // COMMON
 /////////
@@ -18,18 +31,18 @@ namespace ui
 #define CHECK_DRAW() \
 	if (!isOpen || (hidden & 1)) return
 
-#define ESHOW_TREE(flag) ((appSettings->tree & flag) ? ImGuiTreeNodeFlags_DefaultOpen : 0)
-#define SHOW_TREE(flag)  ((xsettings.tree & flag) ? ImGuiTreeNodeFlags_DefaultOpen : 0)
+#define SHOW_TREE(flag) ((xsettings.settingTree & flag) ? ImGuiTreeNodeFlags_DefaultOpen : 0)
 
 class CommonWindow
 {
 public:
-	float       alpha  = 1.0f;    ///< window opacity
-	App*        app    = nullptr; ///< pointer to App, to display App properties
-	int         drawn  = 0;       ///< used for initial setup
-	int         hidden = 0;       ///< automatic flag, 2=cannot be hidden
-	bool        isOpen = false;   ///< manual flag, the user opened/closed the window
-	std::string name;             ///< Controls, Log, Scene, Settings, Theme
+	float       alpha  = 1.0f;            ///< window opacity
+	App*        app    = nullptr;         ///< pointer to App, to display App properties
+	int         drawn  = 0;               ///< used for initial setup
+	int         hidden = 0;               ///< automatic flag, 2=cannot be hidden
+	bool        isOpen = false;           ///< manual flag, the user opened/closed the window
+	std::string name   = "";              ///< Controls, Log, Scene, Settings, Theme
+	int         type   = WindowType_None; ///< WindowTypes_
 
 	virtual ~CommonWindow() {}
 	virtual void Draw() {}
@@ -134,7 +147,7 @@ public:
 			ui::TreeGuard treeGuard(paddingX);                                                                                                           \
 			if (ImGui::BeginChild(name, ImVec2(0.0f, (numRow) * ImGui::GetFrameHeightWithSpacing() + 12.0f), ImGuiChildFlags_AlwaysUseWindowPadding))    \
 			{                                                                                                                                            \
-				tree |= Show_SystemRender;
+				tree |= flag;
 
 // clang-format off
 #define END_TREE() } ImGui::EndChild(); } }
@@ -181,6 +194,12 @@ void Tab(int value);
 #define LogWarning(...) AddLog(3, fmt::format(__VA_ARGS__))
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// MAP
+//////
+
+CommonWindow& GetMapWindow();
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // MENU
 ///////
 
@@ -220,6 +239,9 @@ void DrawWindows();
 
 /// Create a list of the windows
 void ListWindows(App* app);
+
+/// Save windows open states
+void SaveWindows();
 
 /// Set alpha for the next window
 bool SetAlpha(float alpha);

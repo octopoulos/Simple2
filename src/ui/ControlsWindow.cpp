@@ -1,6 +1,6 @@
 // ControlsWindow.cpp
 // @author octopoulos
-// @version 2025-08-02
+// @version 2025-08-06
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -71,8 +71,8 @@ private:
 public:
 	ControlsWindow()
 	{
-		name   = "Controls";
-		isOpen = true;
+		name = "Controls";
+		type = WindowType_Controls;
 	}
 
 	void Draw()

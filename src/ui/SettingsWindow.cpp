@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-06
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -20,18 +20,15 @@ enum ShowFlags : int
 	Show_App               = 1 << 0, // main
 	Show_AppGlobal         = 1 << 1,
 	Show_Capture           = 1 << 2, // main
-	Show_CaptureDevice     = 1 << 3,
-	Show_CaptureFile       = 1 << 4,
-	Show_CaptureFolder     = 1 << 5,
-	Show_CaptureOcr        = 1 << 6,
-	Show_CaptureProcess    = 1 << 7,
-	Show_Net               = 1 << 8, // main
-	Show_NetMain           = 1 << 9,
-	Show_NetUser           = 1 << 10,
-	Show_System            = 1 << 11, // main
-	Show_SystemPerformance = 1 << 12,
-	Show_SystemRender      = 1 << 13,
-	Show_SystemUI          = 1 << 14,
+	Show_CaptureFile       = 1 << 3,
+	Show_CaptureProcess    = 1 << 4,
+	Show_Net               = 1 << 5, // main
+	Show_NetMain           = 1 << 6,
+	Show_NetUser           = 1 << 7,
+	Show_System            = 1 << 8, // main
+	Show_SystemPerformance = 1 << 9,
+	Show_SystemRender      = 1 << 10,
+	Show_SystemUI          = 1 << 11,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -45,9 +42,9 @@ private:
 public:
 	SettingsWindow()
 	{
-		name   = "Settings";
-		isOpen = true;
-		ui::Log("SettingsWindow: tree={}", xsettings.tree);
+		name = "Settings";
+		type = WindowType_Settings;
+		ui::Log("SettingsWindow: settingTree={}", xsettings.settingTree);
 	}
 
 	void Draw()
@@ -75,7 +72,7 @@ public:
 
 		//const auto app = static_cast<App*>(engine.get());
 		//app->ScreenFocused(0);
-		int tree = xsettings.tree & ~(Show_App | Show_Capture | Show_Net | Show_System);
+		int tree = xsettings.settingTree & ~(Show_App | Show_Capture | Show_Net | Show_System);
 
 		// APP
 		//////
@@ -84,6 +81,7 @@ public:
 		if (ImGui::CollapsingHeader("App", SHOW_TREE(Show_App)))
 		{
 			tree |= Show_App;
+			tree &= ~Show_AppGlobal;
 
 			// global
 			BEGIN_TREE("Global", Show_AppGlobal, 3)
@@ -93,6 +91,28 @@ public:
 				if (ImGui::Button("Load Defaults")) LoadGameSettings(xsettings.gameId, "", "-def");
 				ImGui::SameLine();
 				if (ImGui::Button("Save Defaults")) SaveGameSettings("", true, "-def");
+				END_TREE();
+			}
+		}
+
+		// CAPTURE
+		//////////
+
+		ui::AddSpace();
+		if (ImGui::CollapsingHeader("Capture", SHOW_TREE(Show_Capture)))
+		{
+			tree |= Show_Capture;
+			tree &= ~(Show_CaptureFile | Show_CaptureProcess);
+
+			// file
+			BEGIN_TREE("File", Show_CaptureFile, 1)
+			{
+				END_TREE();
+			}
+
+			// process
+			BEGIN_TREE("Process", Show_CaptureProcess, 1)
+			{
 				END_TREE();
 			}
 		}
@@ -161,10 +181,8 @@ public:
 			}
 
 			// render
-			BEGIN_TREE("Render", Show_SystemRender, 5)
+			BEGIN_TREE("Render", Show_SystemRender, 3)
 			{
-				//AddDragFloat("cameraAt", "Camera At");
-				//AddDragFloat("cameraEye", "Camera Eye");
 				AddSliderBool("fixedView", "Fixed View");
 				AddSliderInt("projection", "Projection", nullptr);
 				AddSliderInt("renderMode", "Render Mode", nullptr);
@@ -221,7 +239,7 @@ public:
 			}
 		}
 
-		xsettings.tree = tree;
+		xsettings.settingTree = tree;
 
 		ImGui::End();
 		if (settingPad >= 0) ImGui::PopStyleVar();

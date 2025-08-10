@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-06
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -44,14 +44,14 @@ static std::vector<Config> configs = {
 	X_BOOL   (XSettings, physics, 0, physPaused , false),
 
 	// [render]
-	X_FLOATS (XSettings, render, 0, cameraAt   , "0.0|0.0|0.0", -100.0f, 100.0f, 3),
-	X_FLOATS (XSettings, render, 0, cameraEye  , "0.0|0.0|1.5", -100.0f, 100.0f, 3),
-	X_FLOAT  (XSettings, render, 0, distance   , 10.0f, 0.50f, 100.0f),
-	X_BOOL   (XSettings, render, 0, fixedView  , true),
-	X_BOOL   (XSettings, render, 0, instancing , true),
-	X_FLOAT  (XSettings, render, 0, orthoZoom  , 1.0f, 0.001f, 10.0f),
-	X_ENUM   (XSettings, render, 0, projection , Projection_Perspective, sProjections),
-	X_ENUM   (XSettings, render, 0, renderMode , RenderMode_Screen, sRenderModes),
+	X_FLOATS (XSettings, render, 0, cameraAt  , "0.0|0.0|0.0", -100.0f, 100.0f, 3),
+	X_FLOATS (XSettings, render, 0, cameraEye , "0.0|0.0|1.5", -100.0f, 100.0f, 3),
+	X_FLOAT  (XSettings, render, 0, distance  , 10.0f, 0.50f, 100.0f),
+	X_BOOL   (XSettings, render, 0, fixedView , true),
+	X_BOOL   (XSettings, render, 0, instancing, true),
+	X_FLOAT  (XSettings, render, 0, orthoZoom , 1.0f, 0.001f, 10.0f),
+	X_ENUM   (XSettings, render, 0, projection, Projection_Perspective, sProjections),
+	X_ENUM   (XSettings, render, 0, renderMode, RenderMode_Screen, sRenderModes),
 
 	// [system]
 	X_FLOAT  (XSettings, system, 0, activeMs   , 0.0f, 0.0f, 1000.0f),
@@ -63,19 +63,20 @@ static std::vector<Config> configs = {
 	X_ENUM   (XSettings, system, 0, vsync      , Vsync_Adaptive, sVSyncs),
 
 	// [ui]
-	X_ENUM   (XSettings, ui, 0, aspectRatio   , AspectRatio_Native, sAspectRatios),
-	X_FLOAT  (XSettings, ui, 0, fontScale     , 0.65f, 0.1f, 10.0f),
-	X_FLOAT  (XSettings, ui, 0, iconSize      , 64.0f, 8.0f, 256.0f),
-	X_BOOL   (XSettings, ui, 0, labelLeft     , true),
-	X_BOOL   (XSettings, ui, 0, nvidiaEnc     , false),
-	X_STRINGS(XSettings, ui, 0, recentFiles   , "", 6),
-	X_INT    (XSettings, ui, 0, settingPad    , 2, -1, 16),
-	X_BOOL   (XSettings, ui, 0, stretch       , true),
-	X_BOOL   (XSettings, ui, 0, textButton    , true),
-	X_ENUM   (XSettings, ui, 0, theme         , Theme_Blender, sThemes),
-	X_INT    (XSettings, ui, 0, tree          , 46619401, 0, -1),
-	X_FLOAT  (XSettings, ui, 0, uiScale       , 1.0f, 1.0f, 2.5f),
+	X_ENUM   (XSettings, ui, 0, aspectRatio , AspectRatio_Native, sAspectRatios),
+	X_FLOAT  (XSettings, ui, 0, fontScale   , 0.65f, 0.1f, 10.0f),
+	X_FLOAT  (XSettings, ui, 0, iconSize    , 64.0f, 8.0f, 256.0f),
+	X_BOOL   (XSettings, ui, 0, labelLeft   , true),
+	X_BOOL   (XSettings, ui, 0, nvidiaEnc   , false),
+	X_STRINGS(XSettings, ui, 0, recentFiles , "", 6),
+	X_INT    (XSettings, ui, 0, settingPad  , 2, -1, 16),
+	X_INT    (XSettings, ui, 0, settingTree , 0, 0, -1),
+	X_BOOL   (XSettings, ui, 0, stretch     , true),
+	X_BOOL   (XSettings, ui, 0, textButton  , true),
+	X_ENUM   (XSettings, ui, 0, theme       , Theme_Blender, sThemes),
+	X_FLOAT  (XSettings, ui, 0, uiScale     , 1.0f, 1.0f, 2.5f),
 	X_BOOL   (XSettings, ui, 0, videoCapture, false),
+	X_INT    (XSettings, ui, 0, winOpen     , 0, 0, -1),
 
 	// [user]
 	X_STRING (XSettings, user, 0, userEmail, ""),

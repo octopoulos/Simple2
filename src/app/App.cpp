@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-06
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -30,6 +30,11 @@ extern std::string VERSION;
 
 void App::Destroy()
 {
+	// synchronize settings at exit
+	ui::SaveWindows();
+	bx::store(xsettings.cameraEye, camera->pos2);
+	bx::store(xsettings.cameraAt, camera->target2);
+
 	// make sure that everything is removed from the physical world before deleting physics
 	// mapNode is shared with the App => not destroyed with the scene
 	mapNode.reset();
@@ -42,10 +47,6 @@ void App::Destroy()
 
 	bgfx::destroy(uLight);
 	bgfx::destroy(uTime);
-
-	// synchronize settings at exit
-	bx::store(xsettings.cameraEye, camera->pos2);
-	bx::store(xsettings.cameraAt, camera->target2);
 }
 
 int App::Initialize()

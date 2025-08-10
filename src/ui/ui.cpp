@@ -1,9 +1,11 @@
 // ui.cpp
 // @author octopoulos
-// @version 2025-08-03
+// @version 2025-08-06
 
 #include "stdafx.h"
 #include "ui.h"
+//
+#include "ui/xsettings.h"
 
 namespace ui
 {
@@ -35,6 +37,7 @@ void ListWindows(App* app)
 	// clang-format off
 	windows.push_back(&GetControlsWindow());
 	windows.push_back(&GetLogWindow     ());
+	windows.push_back(&GetMapWindow     ());
 	windows.push_back(&GetSceneWindow   ());
 	windows.push_back(&GetSettingsWindow());
 	windows.push_back(&GetThemeWindow   ());
@@ -42,8 +45,19 @@ void ListWindows(App* app)
 
 	for (const auto& window : windows)
 	{
-		window->app               = app;
+		window->app    = app;
+		window->isOpen = (window->type & xsettings.winOpen);
+
 		windowNames[window->name] = window;
+	}
+}
+
+void SaveWindows()
+{
+	xsettings.winOpen = 0;
+	for (const auto& window : windows)
+	{
+		if (window->isOpen) xsettings.winOpen |= window->type;
 	}
 }
 

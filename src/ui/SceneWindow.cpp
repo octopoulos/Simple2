@@ -14,7 +14,11 @@ namespace ui
 class SceneWindow : public CommonWindow
 {
 public:
-	SceneWindow() { name = "Scene"; }
+	SceneWindow()
+	{
+		name = "Scene";
+		type = WindowType_Scene;
+	}
 
 	void Draw()
 	{

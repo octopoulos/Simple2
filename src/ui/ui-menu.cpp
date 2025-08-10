@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-06
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -55,7 +55,6 @@ int App::MainUi()
 	{
 		drawnFlag |= 2;
 
-		MapUi();
 		FilesUi();
 
 		ui::DrawWindows();
@@ -268,6 +267,7 @@ void App::ShowMainMenu(float alpha)
 			// clang-format off
 			ui::AddMenu("Controls"    , nullptr, ui::GetControlsWindow());
 			ui::AddMenu("Log"         , nullptr, ui::GetLogWindow());
+			ui::AddMenu("Map"         , nullptr, ui::GetMapWindow());
 			ui::AddMenu("Scene"       , nullptr, ui::GetSceneWindow());
 			ui::AddMenu("Settings"    , nullptr, ui::GetSettingsWindow());
 			ImGui::Separator();

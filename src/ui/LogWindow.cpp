@@ -1,6 +1,6 @@
 // LogWindow.cpp
 // @author octopoulos
-// @version 2025-08-02
+// @version 2025-08-06
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -47,8 +47,8 @@ class LogWindow : public CommonWindow
 public:
 	LogWindow()
 	{
-		name   = "Log";
-		isOpen = true;
+		name = "Log";
+		type = WindowType_Log;
 	}
 
 	void AddLog(int id, const std::string& text)

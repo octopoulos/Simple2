@@ -1,6 +1,6 @@
 // ThemeWindow.cpp
 // @author octopoulos
-// @version 2025-08-04
+// @version 2025-08-06
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -21,13 +21,15 @@ static const char* GetTreeLinesFlagsName(ImGuiTreeNodeFlags flags)
 class ThemeWindow : public CommonWindow
 {
 public:
-	ThemeWindow() { name = "Theme"; }
+	ThemeWindow()
+	{
+		name = "Theme";
+		type = WindowType_Theme;
+	}
 
 	void Draw()
 	{
 		CHECK_DRAW();
-		auto& style = ImGui::GetStyle();
-
 		if (!ImGui::Begin("Theme Editor", &isOpen))
 		{
 			ImGui::End();
@@ -37,6 +39,8 @@ public:
 		ImGui::Button("Import Custom");
 		ImGui::SameLine();
 		ImGui::Button("Export Custom");
+
+		auto& style = ImGui::GetStyle();
 
 		if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
 		{

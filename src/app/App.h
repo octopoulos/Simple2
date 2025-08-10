@@ -76,17 +76,10 @@ private:
 	//////
 
 private:
-	MAP_STR<MAP_STR_INT> kitModels = {};      ///< model database: [title, filename]
-	sObject3d            mapNode   = nullptr; ///< root of the map scene
+	sObject3d mapNode = nullptr; ///< root of the map scene
 
 	/// Insert a geometry into the map
 	void AddGeometry(uGeometry geometry);
-
-	/// Insert an object into the map
-	void AddObject(const std::string& name);
-
-	/// UI for the map maker
-	void MapUi();
 
 	/// Open a map file
 	bool OpenMap(const std::filesystem::path& filename);
@@ -99,6 +92,12 @@ private:
 
 	/// Scan models in the given folder and its subfolders
 	void ScanModels(const std::filesystem::path& folder, const std::filesystem::path& folderPrev, int depth = 0, const std::string& relative = "");
+
+public:
+	MAP_STR<MAP_STR_INT> kitModels = {}; ///< model database: [title, filename]
+
+	/// Insert an object into the map
+	void AddObject(const std::string& name);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// RENDER

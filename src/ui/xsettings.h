@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-06
 
 #pragma once
 
@@ -101,12 +101,13 @@ struct XSettings
 	bool  nvidiaEnc;      ///< use nVidia encoding
 	str2k recentFiles[6]; ///< recent files for quick load
 	int   settingPad;     ///< override windows padding for CommonWindow
+	int   settingTree;    ///< which setting tree nodes are open in the panel
 	int   stretch;        ///< stretch capture to window
 	int   textButton;     ///< show text under the button
 	int   theme;          ///< Blender, Dark, Light
-	int   tree;           ///< which tree nodes are open in the panel
 	float uiScale;        ///< general scale
 	bool  videoCapture;   ///< allow video capture
+	int   winOpen;        ///< which windows are open (flag)
 
 	// [user]
 	str256 userEmail; ///< login
