@@ -1,6 +1,6 @@
 // Geometry.h
 // @author octopoulos
-// @version 2025-08-04
+// @version 2025-08-05
 
 #pragma once
 
@@ -38,21 +38,21 @@ struct PosNormalUV
 class Geometry
 {
 public:
-	bgfx::IndexBufferHandle  ibh      = BGFX_INVALID_HANDLE; ///< indices
-	std::vector<uint16_t>    indices  = {};                  ///< used by ConvexHull + TriangleMesh
-	int                      type     = GeometryType_None;   ///< GeometryTypes_
-	bgfx::VertexBufferHandle vbh      = BGFX_INVALID_HANDLE; ///< vertices
-	std::vector<PosNormalUV> vertices = {};                  ///< used by ConvexHull + TriangleMesh
-
-	// shape
-	btVector3 aabb   = { 1.0f, 1.0f, 1.0f }; ///< aabb half extents
-	btVector3 dims   = { 1.0f, 1.0f, 1.0f }; ///< dims for CreateShape (ex: radius, height)
-	float     radius = 1.0f;                 ///< bounding sphere
+	btVector3                aabb     = { 1.0f, 1.0f, 1.0f }; ///< aabb half extents
+	std::string              args     = "";                   ///< constructor args for serialization
+	btVector3                dims     = { 1.0f, 1.0f, 1.0f }; ///< dims for CreateShape (ex: radius, height)
+	bgfx::IndexBufferHandle  ibh      = BGFX_INVALID_HANDLE;  ///< indices
+	std::vector<uint16_t>    indices  = {};                   ///< used by ConvexHull + TriangleMesh
+	float                    radius   = 1.0f;                 ///< bounding sphere
+	int                      type     = GeometryType_None;    ///< GeometryTypes_
+	bgfx::VertexBufferHandle vbh      = BGFX_INVALID_HANDLE;  ///< vertices
+	std::vector<PosNormalUV> vertices = {};                   ///< used by ConvexHull + TriangleMesh
 
 	Geometry() = default;
 
-	Geometry(int type, bgfx::VertexBufferHandle vbh, bgfx::IndexBufferHandle ibh, const btVector3& aabb, const btVector3& dims, float radius, std::vector<PosNormalUV>&& vertices = {}, std::vector<uint16_t>&& indices = {})
+	Geometry(int type, std::string&& args, bgfx::VertexBufferHandle vbh, bgfx::IndexBufferHandle ibh, const btVector3& aabb, const btVector3& dims, float radius, std::vector<PosNormalUV>&& vertices = {}, std::vector<uint16_t>&& indices = {})
 	    : type(type)
+		, args(std::move(args))
 	    , vbh(vbh)
 	    , ibh(ibh)
 	    , aabb(aabb)
@@ -149,7 +149,7 @@ uGeometry CreatePlaneGeometry(float width = 1.0f, float height = 1.0f, int width
 /// @param indices: flat array of indices describing the base shape
 /// @param radius: radius of the shape
 /// @param detail: how many levels to subdivide the geometry
-uGeometry CreatePolyhedronGeometry(int type, const float* vertices, int vertexCount, const uint16_t* indices, int indexCount, float radius, int detail);
+uGeometry CreatePolyhedronGeometry(int type, std::string&& args, const float* vertices, int vertexCount, const uint16_t* indices, int indexCount, float radius, int detail);
 
 /// Constructs a new sphere geometry
 /// @param radius: sphere radius

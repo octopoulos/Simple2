@@ -1,6 +1,6 @@
 // SphereGeometry.cpp
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-08-05
 //
 // based on THREE.js SphereGeometry implementation
 
@@ -9,6 +9,8 @@
 
 uGeometry CreateSphereGeometry(float radius, int widthSegments, int heightSegments, float phiStart, float phiLength, float thetaStart, float thetaLength)
 {
+	std::string args = fmt::format("{} {} {} {} {} {} {}", radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength);
+
 	// 1) geometry
 	widthSegments  = std::max(3, widthSegments);
 	heightSegments = std::max(2, heightSegments);
@@ -98,5 +100,5 @@ uGeometry CreateSphereGeometry(float radius, int widthSegments, int heightSegmen
 	// 4) bounds
 	const btVector3 dims = { radius, radius, radius };
 
-	return std::make_shared<Geometry>(GeometryType_Sphere, vbh, ibh, dims, dims, radius);
+	return std::make_shared<Geometry>(GeometryType_Sphere, std::move(args), vbh, ibh, dims, dims, radius);
 }

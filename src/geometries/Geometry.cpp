@@ -1,6 +1,6 @@
 // Geometry.cpp
 // @author octopoulos
-// @version 2025-08-04
+// @version 2025-08-05
 
 #include "stdafx.h"
 #include "geometries/Geometry.h"
@@ -33,6 +33,7 @@ int Geometry::Serialize(fmt::memory_buffer& outString, int bounds) const
 {
 	if (bounds & 1) WRITE_CHAR('{');
 	WRITE_INIT();
+	WRITE_KEY_STRING(args);
 	WRITE_KEY_STRING2("type", GeometryName(type));
 	if (bounds & 2) WRITE_CHAR('}');
 	return keyId;

@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-08-06
+// @version 2025-08-08
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -457,7 +457,7 @@ public:
 			    | BGFX_DEBUG_TEXT;
 			reset = 0
 			    //| BGFX_RESET_HDR10
-			    | (xsettings.videoCapture ? BGFX_RESET_CAPTURE : 0)
+			    | (xsettings.captureVideo ? BGFX_RESET_CAPTURE : 0)
 			    | BGFX_RESET_MSAA_X8
 			    | BGFX_RESET_VSYNC;
 

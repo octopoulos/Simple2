@@ -1,6 +1,6 @@
 // ui-common.cpp
 // @author octopoulos
-// @version 2025-08-04
+// @version 2025-08-08
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -14,20 +14,20 @@ namespace ui
 // HELPERS
 //////////
 
-static void LabelLeft(const char* label, int components)
+static void LabelLeft(const char* label, int components, float forceLeft = -1.0f)
 {
 	float valueWidth = 0.0f;
-	if (!xsettings.labelLeft)
+	if (!xsettings.labelLeft && forceLeft < 0.0f)
 		valueWidth = ImGui::CalcItemWidth();
 	else
 	{
 		ImGui::AlignTextToFramePadding();
 
-		const float spacingX = 6.0f; //ImGui::GetStyle().ItemInnerSpacing.x;
+		const float spacingX = (forceLeft >= 0.0f) ? forceLeft : 6.0f; //ImGui::GetStyle().ItemInnerSpacing.x;
 		const float width    = ImGui::GetContentRegionAvail().x;
 		valueWidth           = width * 0.6f - spacingX;
 
-		if (auto labelEnd = ImGui::FindRenderedTextEnd(label); label != labelEnd)
+		if (auto labelEnd = ImGui::FindRenderedTextEnd(label))//; label != labelEnd)
 		{
 			const float posX = ImGui::GetCursorPosX();
 			const auto  size = ImGui::CalcTextSize(label);
@@ -41,11 +41,11 @@ static void LabelLeft(const char* label, int components)
 	ImGui::PushMultiItemsWidths(components, valueWidth);
 }
 
-static void LabelRight(const char* label)
+static void LabelRight(const char* label, float forceRight = -1.0f)
 {
-	if (!xsettings.labelLeft)
+	if (!xsettings.labelLeft || forceRight >= 0.0f)
 	{
-		const float spacingX = 6.0f; //ImGui::GetStyle().ItemInnerSpacing.x;
+		const float spacingX = (forceRight >= 0.0f) ? forceRight : 6.0f; //ImGui::GetStyle().ItemInnerSpacing.x;
 		if (auto label_end = ImGui::FindRenderedTextEnd(label); label != label_end)
 		{
 			ImGui::SameLine(0, spacingX);
@@ -93,6 +93,21 @@ static void PopBlender(int pushed)
 ////////////
 
 #define LABEL_ID(label) fmt::format("##{}", label).c_str()
+
+bool AddCheckBox(const std::string& name, const char* labelLeft, const char* labelRight)
+{
+	bool result = false;
+	if (auto config = ConfigFind(name))
+	{
+		LabelLeft(labelLeft, 1, 6.0f);
+
+		result = ImGui::Checkbox(LABEL_ID(name), (bool*)config->ptr);
+		result |= ItemEvent(name);
+
+		LabelRight(labelRight, 8.0f);
+	}
+	return result;
+}
 
 bool AddCombo(const std::string& name, const char* label)
 {

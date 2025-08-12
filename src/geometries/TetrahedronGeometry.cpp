@@ -1,6 +1,6 @@
 // TetrahedronGeometry.cpp
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-08-05
 //
 // based on THREE.js TetrahedronGeometry implementation
 
@@ -9,6 +9,8 @@
 
 uGeometry CreateTetrahedronGeometry(float radius, int detail)
 {
+	std::string args = fmt::format("{} {}", radius, detail);
+
 	// clang-format off
 	constexpr float vertices[] = {
 		1, 1, 1,  -1, -1, 1,  -1, 1, -1,  1, -1, -1,
@@ -19,5 +21,5 @@ uGeometry CreateTetrahedronGeometry(float radius, int detail)
 	};
 	// clang-format on
 
-	return CreatePolyhedronGeometry(GeometryType_Tetrahedron, vertices, BX_COUNTOF(vertices), indices, BX_COUNTOF(indices), radius, detail);
+	return CreatePolyhedronGeometry(GeometryType_Tetrahedron, std::move(args), vertices, BX_COUNTOF(vertices), indices, BX_COUNTOF(indices), radius, detail);
 }

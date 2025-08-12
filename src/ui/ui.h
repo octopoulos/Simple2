@@ -1,6 +1,6 @@
 // ui.h
 // @author octopoulos
-// @version 2025-08-06
+// @version 2025-08-08
 
 #pragma once
 
@@ -51,31 +51,34 @@ public:
 CommonWindow& GetCommonWindow();
 
 /// Add a combo with label left/right + special Blender support
+bool AddCheckBox(const std::string& name, const char* labelLeft, const char* labelRight);
+
+/// Add a combo with label left/right + special Blender support
 bool AddCombo(const std::string& name, const char* label);
 
 /// Add a combo with label left/right + special Blender support
 bool AddCombo(const std::string& name, const char* label, const char* texts[], const VEC_INT values);
 
-/// Add a drag float with label left/right + special Blender support
+/// Add a drag float with label left/right
 bool AddDragFloat(const std::string& name, const char* text, float speed = 0.0005f, const char* format = "%.3f");
 
-/// Add a drag int with label left/right + special Blender support
+/// Add a drag int with label left/right
 bool AddDragInt(const std::string& name, const char* text, float speed = 1.0f, const char* format = "%d");
 
 /// Add an input text input with label left/right + special Blender support
 void AddInputText(const std::string& name, const char* label, size_t size = 256, int flags = 0);
 
-/// Add a slider bool with label left/right + special Blender support
+/// Add a slider bool with label left/right
 bool AddSliderBool(const std::string& name, const char* text, const char* format = "%d", bool vertical = false, const ImVec2& size = { 30, 120 });
 
-/// Add a slider float with label left/right + special Blender support
+/// Add a slider float with label left/right
 bool AddSliderFloat(const std::string& name, const char* text, const char* format = "%.3f");
 
-/// Create an horizontal or vertical slider, with label left/right + special Blender support
+/// Create an horizontal or vertical slider, with label left/right
 /// @param format: nullptr => slider enum, to use instead of AddCombo
 bool AddSliderInt(const std::string& name, const char* text, const char* format = "%d", bool vertical = false, const ImVec2& size = { 30, 120 }, bool isBool = false);
 
-/// Create an horizontal or vertical slider, with label left/right + special Blender support
+/// Create an horizontal or vertical slider, with label left/right
 /// @param format: nullptr => slider enum, to use instead of AddCombo
 bool AddSliderInt(const std::string& name, const char* text, int* value, int count, int min, int max, const char* format = "%d");
 
@@ -117,8 +120,8 @@ public:
 class TreeGuard
 {
 private:
-	float indent2  = 0.0f;
-	float paddingX = 8.0f;
+	float indent2  = 0.0f; ///< total indent amount, to restore later
+	float paddingX = 8.0f; ///< temporary change paddingX
 
 public:
 	TreeGuard(float paddingX = 8.0f, float indent = 10.0f)
@@ -126,31 +129,51 @@ public:
 	{
 		const auto& style = ImGui::GetStyle();
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - style.ItemSpacing.y);
-		indent2 = indent + style.IndentSpacing;
-		ImGui::Unindent(indent2);
+		if (indent)
+		{
+			indent2 = indent + style.IndentSpacing;
+			ImGui::Unindent(indent2);
+		}
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(paddingX, 8.0f));
 	}
 
 	~TreeGuard()
 	{
 		ImGui::PopStyleVar();
-		ImGui::Indent(indent2);
-		ImGui::TreePop();
+		if (indent2) ImGui::Indent(indent2);
 	}
 };
+
+#define BEGIN_CHILD(name, flag, numRow, indent)                                                                                               \
+	tree |= flag;                                                                                                                             \
+	ui::TreeGuard treeGuard(paddingX, indent);                                                                                                \
+	if (ImGui::BeginChild(name, ImVec2(0.0f, (numRow) * ImGui::GetFrameHeightWithSpacing() + 12.0f), ImGuiChildFlags_AlwaysUseWindowPadding)) \
+	{
+
+#define BEGIN_COLLAPSE(name, flag, numRow)              \
+	if (ImGui::CollapsingHeader(name, SHOW_TREE(flag))) \
+	{                                                   \
+		BEGIN_CHILD(name, flag, numRow, 0.0f)
 
 #define BEGIN_TREE(name, flag, numRow)                                                                                                                   \
 	{                                                                                                                                                    \
 		ui::IndentGuard indentGuard;                                                                                                                     \
 		if (ImGui::TreeNodeEx(name, SHOW_TREE(flag) | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Selected | ImGuiTreeNodeFlags_SpanFullWidth)) \
 		{                                                                                                                                                \
-			ui::TreeGuard treeGuard(paddingX);                                                                                                           \
-			if (ImGui::BeginChild(name, ImVec2(0.0f, (numRow) * ImGui::GetFrameHeightWithSpacing() + 12.0f), ImGuiChildFlags_AlwaysUseWindowPadding))    \
-			{                                                                                                                                            \
-				tree |= flag;
+			BEGIN_CHILD(name, flag, numRow, 10.0f)
+
+#define END_COLLAPSE() \
+		}              \
+	}                  \
+	ImGui::EndChild();
 
 // clang-format off
-#define END_TREE() } ImGui::EndChild(); } }
+#define END_TREE()             \
+				}              \
+			}                  \
+			ImGui::EndChild(); \
+			ImGui::TreePop();  \
+		}
 // clang-format on
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

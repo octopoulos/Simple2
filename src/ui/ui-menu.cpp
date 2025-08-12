@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-06
+// @version 2025-08-08
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -236,9 +236,9 @@ void App::ShowMainMenu(float alpha)
 				const bool canCapture = (*entryReset & BGFX_RESET_CAPTURE);
 
 				ImGui::Separator();
-				if (ImGui::MenuItem("Allow Video Capture", "", &xsettings.videoCapture))
+				if (ImGui::MenuItem("Allow Video Capture", "", &xsettings.captureVideo))
 				{
-					if (xsettings.videoCapture && !canCapture)
+					if (xsettings.captureVideo && !canCapture)
 					{
 						ui::Log("need to RESET");
 						// bgfx::reset(xsettings.windowSize[0], xsettings.windowSize[1], *entryReset);

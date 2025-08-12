@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-08-06
+// @version 2025-08-08
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -31,6 +31,11 @@ static std::vector<Config> configs = {
 	// [app]
 	X_STRING (XSettings, app, 1, appId , ""),
 	X_ENUM   (XSettings, app, 1, gameId, 0, sGames),
+
+	// [capture]
+	X_STRING (XSettings, capture, 0, captureDir  , "temp"),
+	X_BOOL   (XSettings, capture, 1, captureVideo, false),
+	X_BOOL   (XSettings, capture, 0, nvidiaEnc   , false),
 
 	// [input]
 	X_FLOAT  (XSettings, input, 0, cameraSpeed   , 10.0f, 1.0f, 100.0f),
@@ -63,20 +68,17 @@ static std::vector<Config> configs = {
 	X_ENUM   (XSettings, system, 0, vsync      , Vsync_Adaptive, sVSyncs),
 
 	// [ui]
-	X_ENUM   (XSettings, ui, 0, aspectRatio , AspectRatio_Native, sAspectRatios),
-	X_FLOAT  (XSettings, ui, 0, fontScale   , 0.65f, 0.1f, 10.0f),
-	X_FLOAT  (XSettings, ui, 0, iconSize    , 64.0f, 8.0f, 256.0f),
-	X_BOOL   (XSettings, ui, 0, labelLeft   , true),
-	X_BOOL   (XSettings, ui, 0, nvidiaEnc   , false),
-	X_STRINGS(XSettings, ui, 0, recentFiles , "", 6),
-	X_INT    (XSettings, ui, 0, settingPad  , 2, -1, 16),
-	X_INT    (XSettings, ui, 0, settingTree , 0, 0, -1),
-	X_BOOL   (XSettings, ui, 0, stretch     , true),
-	X_BOOL   (XSettings, ui, 0, textButton  , true),
-	X_ENUM   (XSettings, ui, 0, theme       , Theme_Blender, sThemes),
-	X_FLOAT  (XSettings, ui, 0, uiScale     , 1.0f, 1.0f, 2.5f),
-	X_BOOL   (XSettings, ui, 0, videoCapture, false),
-	X_INT    (XSettings, ui, 0, winOpen     , 0, 0, -1),
+	X_ENUM   (XSettings, ui, 0, aspectRatio, AspectRatio_Native, sAspectRatios),
+	X_FLOAT  (XSettings, ui, 0, fontScale  , 0.65f, 0.1f, 10.0f),
+	X_FLOAT  (XSettings, ui, 0, iconSize   , 64.0f, 8.0f, 256.0f),
+	X_BOOL   (XSettings, ui, 0, labelLeft  , true),
+	X_STRINGS(XSettings, ui, 0, recentFiles, "", 6),
+	X_INT    (XSettings, ui, 0, settingPad , 2, -1, 16),
+	X_INT    (XSettings, ui, 0, settingTree, 0, 0, -1),
+	X_BOOL   (XSettings, ui, 0, textButton , true),
+	X_ENUM   (XSettings, ui, 0, theme      , Theme_Blender, sThemes),
+	X_FLOAT  (XSettings, ui, 0, uiScale    , 1.0f, 1.0f, 2.5f),
+	X_INT    (XSettings, ui, 0, winOpen    , 0, 0, -1),
 
 	// [user]
 	X_STRING (XSettings, user, 0, userEmail, ""),
