@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-10
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -61,7 +61,7 @@ void Mesh::Destroy()
 		groups.clear();
 
 		// TODO: check if something must be done with the texture?
-		bgfx::destroy(sTexColor);
+		// bgfx::destroy(sTexColor);
 	}
 }
 

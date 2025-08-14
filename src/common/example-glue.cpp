@@ -1,4 +1,4 @@
-// @version 2025-07-29
+// @version 2025-08-10
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -248,6 +248,7 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 #else
 	ImGui::Text("Renderer: %s", bgfx::getRendererName(bgfx::getRendererType()));
 	ImGui::Text("Backend: %s", entry::GetEntryName());
+	ImGui::Text("DPR: %d", xsettings.dpr);
 #endif // 0
 
 	const bgfx::Stats* stats   = bgfx::getStats();
@@ -261,7 +262,7 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 	bx::snprintf(frameTextOverlay, BX_COUNTOF(frameTextOverlay), "%s%.3fms, %s%.3fms\nAvg: %.3fms, %.1f FPS", ICON_FA_ARROW_DOWN, s_frameTime.m_min, ICON_FA_ARROW_UP, s_frameTime.m_max, s_frameTime.m_avg, 1000.0f / s_frameTime.m_avg);
 
 	ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImColor(0.0f, 0.5f, 0.15f, 1.0f).Value);
-	ImGui::PlotHistogram("Frame", s_frameTime.m_values, SampleData::kNumSamples, s_frameTime.m_offset, frameTextOverlay, 0.0f, 60.0f, ImVec2(0.0f, 45.0f));
+	ImGui::PlotHistogram("##Frame", s_frameTime.m_values, SampleData::kNumSamples, s_frameTime.m_offset, frameTextOverlay, 0.0f, 60.0f, ImVec2(0.0f, 90.0f));
 	ImGui::PopStyleColor();
 
 	ImGui::Text("Submit CPU %0.3f, GPU %0.3f (L: %d)", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * toMsCpu, double(stats->gpuTimeEnd - stats->gpuTimeBegin) * toMsGpu, stats->maxGpuLatency);

@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-08-08
+// @version 2025-08-10
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -146,7 +146,7 @@ public:
 			// render
 			BEGIN_TREE("Render", Show_SystemRender, 3)
 			{
-				AddSliderBool("fixedView", "Fixed View");
+				AddCheckBox("fixedView", "", "Fixed View");
 				AddSliderInt("projection", "Projection", nullptr);
 				AddSliderInt("renderMode", "Render Mode", nullptr);
 				END_TREE();
@@ -158,9 +158,10 @@ public:
 			    || memcmp(xsettings.windowPos, prevSettings.windowPos, sizeof(xsettings.windowPos)) != 0
 			    || memcmp(xsettings.windowSize, prevSettings.windowSize, sizeof(xsettings.windowSize)) != 0;
 
-			BEGIN_TREE("UI", Show_SystemUI, 10 + (applyChange ? 1 : 0))
+			BEGIN_TREE("UI", Show_SystemUI, 11 + (applyChange ? 1 : 0))
 			{
 				AddCombo("aspectRatio", "Aspect Ratio");
+				AddSliderInt("dpr", "DPR");
 				if (AddDragFloat("fontScale", "Font Scale", 0.001f, "%.3f")) ImGui::GetStyle().FontScaleMain = xsettings.fontScale;
 				AddSliderInt("fullScreen", "Full Screen", nullptr);
 				AddSliderFloat("iconSize", "Icon Size", "%.0f");

@@ -1,6 +1,6 @@
 // entry_sdl3.cpp
 // @author octopoulos
-// @version 2025-07-31
+// @version 2025-08-10
 
 #include "stdafx.h"
 #include "entry_p.h"
@@ -458,7 +458,11 @@ struct Context
 		SDL_Init(SDL_INIT_GAMEPAD);
 
 		m_windowAlloc.alloc();
-		m_window[0] = SDL_CreateWindow("Loading ...", xsettings.windowSize[0], xsettings.windowSize[1], SDL_WINDOW_RESIZABLE);
+		m_window[0] = SDL_CreateWindow("Loading ...", xsettings.windowSize[0], xsettings.windowSize[1], SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_RESIZABLE);
+
+		int fbWidth, fbHeight;
+		SDL_GetWindowSizeInPixels(m_window[0], &fbWidth, &fbHeight);
+		xsettings.dpr = bx::max(1, fbWidth / xsettings.windowSize[0]);
 
 		m_flags[0] = 0
 		    | ENTRY_WINDOW_FLAG_ASPECT_RATIO
@@ -516,8 +520,10 @@ struct Context
 				case SDL_EVENT_MOUSE_MOTION:
 				{
 					const SDL_MouseMotionEvent& mev = event.motion;
-					m_mx                            = mev.x;
-					m_my                            = mev.y;
+					{
+						m_mx = mev.x * xsettings.dpr;
+						m_my = mev.y * xsettings.dpr;
+					}
 
 					WindowHandle handle = findHandle(mev.windowID);
 					if (isValid(handle))
@@ -541,7 +547,7 @@ struct Context
 						case SDL_BUTTON_RIGHT: button = MouseButton::Right; break;
 						}
 
-						m_eventQueue.postMouseEvent(handle, mev.x, mev.y, m_mz, button, mev.type == SDL_EVENT_MOUSE_BUTTON_DOWN);
+						m_eventQueue.postMouseEvent(handle, mev.x * xsettings.dpr, mev.y * xsettings.dpr, m_mz, button, mev.type == SDL_EVENT_MOUSE_BUTTON_DOWN);
 					}
 				}
 				break;
@@ -575,15 +581,6 @@ struct Context
 						uint8_t   modifiers = translateKeyModifiers(kev.mod);
 						Key::Enum key       = translateKey(kev.scancode);
 						if (!key) ui::Log("SDL3: Unknown code: {} {}", TO_INT(kev.scancode), SDL_GetScancodeName(kev.scancode));
-
-#	if 0
-						DBG("SDL scancode %d, key %d, name %s, key name %s"
-							, kev.scancode
-							, key
-							, SDL_GetScancodeName(kev.scancode)
-							, SDL_GetKeyName(kev.scancode)
-							);
-#	endif // 0
 
 						/// If you only press (e.g.) 'shift' and nothing else, then key == 'shift', modifier == 0.
 						/// Further along, pressing 'shift' + 'ctrl' would be: key == 'shift', modifier == 'ctrl.
@@ -635,7 +632,7 @@ struct Context
 					WindowHandle handle = findHandle(wev.windowID);
 					uint32_t     width  = wev.data1;
 					uint32_t     height = wev.data2;
-					if (width != xsettings.windowSize[0] || height != xsettings.windowSize[1])
+					if (width != xsettings.windowSize[0] * xsettings.dpr || height != xsettings.windowSize[1] * xsettings.dpr)
 						m_eventQueue.postSizeEvent(handle, width, height);
 				}
 				break;
@@ -753,7 +750,7 @@ struct Context
 						WindowHandle handle = getWindowHandle(uev);
 						Msg*         msg    = (Msg*)uev.data2;
 
-						m_window[handle.idx] = SDL_CreateWindow(msg->m_title.c_str(), msg->m_width, msg->m_height, SDL_WINDOW_RESIZABLE);
+						m_window[handle.idx] = SDL_CreateWindow(msg->m_title.c_str(), msg->m_width, msg->m_height, SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_RESIZABLE);
 
 						m_flags[handle.idx] = msg->m_flags;
 

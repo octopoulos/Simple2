@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-08-08
+// @version 2025-08-10
 
 #pragma once
 
@@ -117,6 +117,7 @@ struct XSettings
 	str256 userPw;    ///< password
 
 	// [window]
+	int  dpr;           ///< device pixel ratio, usually 1 but on OSX: 2
 	int  fullScreen;    ///< 1: FS, 2: FS desktop
 	bool maximized;     ///< start in maximized window
 	int  windowPos[2];  ///< -1 = centered

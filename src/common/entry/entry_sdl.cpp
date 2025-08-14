@@ -1,4 +1,4 @@
-// @version 2025-07-30
+// @version 2025-08-10
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -454,7 +454,11 @@ struct Context
 		SDL_Init(SDL_INIT_GAMECONTROLLER);
 
 		m_windowAlloc.alloc();
-		m_window[0] = SDL_CreateWindow("Loading ...", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, xsettings.windowSize[0], xsettings.windowSize[1], SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+		m_window[0] = SDL_CreateWindow("Loading ...", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, xsettings.windowSize[0], xsettings.windowSize[1], SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+
+		int fbWidth, fbHeight;
+		SDL_GL_GetDrawableSize(m_window[0], &fbWidth, &fbHeight);
+		xsettings.dpr = bx::max(1, fbWidth / xsettings.windowSize[0]);
 
 		m_flags[0] = 0
 		    | ENTRY_WINDOW_FLAG_ASPECT_RATIO
@@ -512,8 +516,10 @@ struct Context
 				case SDL_MOUSEMOTION:
 				{
 					const SDL_MouseMotionEvent& mev = event.motion;
-					m_mx                            = mev.x;
-					m_my                            = mev.y;
+					{
+						m_mx = mev.x * xsettings.dpr;
+						m_my = mev.y * xsettings.dpr;
+					}
 
 					WindowHandle handle = findHandle(mev.windowID);
 					if (isValid(handle))
@@ -537,7 +543,7 @@ struct Context
 						case SDL_BUTTON_RIGHT: button = MouseButton::Right; break;
 						}
 
-						m_eventQueue.postMouseEvent(handle, mev.x, mev.y, m_mz, button, mev.type == SDL_MOUSEBUTTONDOWN);
+						m_eventQueue.postMouseEvent(handle, mev.x * xsettings.dpr, mev.y * xsettings.dpr, m_mz, button, mev.type == SDL_MOUSEBUTTONDOWN);
 					}
 				}
 				break;
@@ -571,10 +577,6 @@ struct Context
 						uint8_t   modifiers = translateKeyModifiers(kev.keysym.mod);
 						Key::Enum key       = translateKey(kev.keysym.scancode);
 						if (!key) ui::Log("SDL2: Unknown code: {} {}", TO_INT(kev.keysym.scancode), SDL_GetScancodeName(kev.keysym.scancode));
-
-#	if 1
-						DBG("SDL scancode %d, key %d, name %s, key name %s", kev.keysym.scancode, key, SDL_GetScancodeName(kev.keysym.scancode), SDL_GetKeyName(kev.keysym.scancode));
-#	endif // 0
 
 						/// If you only press (e.g.) 'shift' and nothing else, then key == 'shift', modifier == 0.
 						/// Further along, pressing 'shift' + 'ctrl' would be: key == 'shift', modifier == 'ctrl.

@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-08-08
+// @version 2025-08-10
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -358,7 +358,7 @@ void App::SynchronizeEvents(uint32_t _screenX, uint32_t _screenY)
 {
 	if (screenX != _screenX || screenY != _screenY)
 	{
-		ui::Log("Resize {}x{} => {}x{}", screenX, screenY, _screenX, _screenY);
+		ui::Log("SynchronizeEvents: {}x{} => {}x{}", screenX, screenY, _screenX, _screenY);
 		screenX = _screenX;
 		screenY = _screenY;
 	}
@@ -434,9 +434,11 @@ private:
 	std::unique_ptr<App> app      = nullptr; ///< main application
 	BgfxCallback         callback = {};      ///< for video capture + screenshot
 	uint32_t             debug    = 0;       ///
-	uint32_t             height   = 800;     ///
+	uint32_t             fheight  = 800;     ///< framebuffer height
+	uint32_t             fwidth   = 1328;    ///< framebuffer width
+	uint32_t             iheight  = 800;     ///< original height
+	uint32_t             iwidth   = 1328;    ///< original width
 	uint32_t             reset    = 0;       ///
-	uint32_t             width    = 1328;    ///
 
 public:
 	EntryApp(const char* _name, const char* _description, const char* _url)
@@ -444,20 +446,24 @@ public:
 	{
 	}
 
-	virtual void init(int32_t _argc, const char* const* _argv, uint32_t _width, uint32_t _height) override
+	virtual void init(int32_t _argc, const char* const* _argv, uint32_t width, uint32_t height) override
 	{
 		Args args(_argc, _argv);
 
 		// 1) bgfx
 		{
-			width  = _width;
-			height = _height;
+			iheight = height;
+			iwidth  = width;
+			fheight = iheight * xsettings.dpr;
+			fwidth  = iwidth * xsettings.dpr;
+
 			debug  = 0
 			    | BGFX_DEBUG_PROFILER
 			    | BGFX_DEBUG_TEXT;
 			reset = 0
-			    //| BGFX_RESET_HDR10
 			    | (xsettings.captureVideo ? BGFX_RESET_CAPTURE : 0)
+				| BGFX_RESET_HIDPI
+			    //| BGFX_RESET_HDR10
 			    | BGFX_RESET_MSAA_X8
 			    | BGFX_RESET_VSYNC;
 
@@ -467,10 +473,12 @@ public:
 			init.platformData.nwh  = entry::getNativeWindowHandle(entry::kDefaultWindowHandle);
 			init.platformData.ndt  = entry::getNativeDisplayHandle();
 			init.platformData.type = entry::getNativeWindowHandleType();
-			init.resolution.width  = width;
-			init.resolution.height = height;
+			init.resolution.width  = fwidth;
+			init.resolution.height = fheight;
 			init.resolution.reset  = reset;
 			init.callback          = &callback;
+
+			ui::Log("App/init: {}x{}x{} => {}x{}", iwidth, iheight, xsettings.dpr, fwidth, fheight);
 			bgfx::init(init);
 
 			bgfx::setDebug(debug);
@@ -513,9 +521,9 @@ public:
 			callback.wantVideo = app->wantVideo;
 			ginput.ResetAscii();
 
-			if (entry::processEvents(width, height, debug, reset)) return false;
+			if (entry::processEvents(fwidth, fheight, debug, reset)) return false;
 
-			app->SynchronizeEvents(width, height);
+			app->SynchronizeEvents(fwidth, fheight);
 			app->Controls();
 		}
 
@@ -526,7 +534,7 @@ public:
 			const auto  imButton = (buttons[1] ? IMGUI_MBUT_LEFT : 0) | (buttons[3] ? IMGUI_MBUT_RIGHT : 0) | (buttons[2] ? IMGUI_MBUT_MIDDLE : 0);
 			const auto& mouseAbs = ginput.mouseAbs;
 
-			imguiBeginFrame(mouseAbs[0], mouseAbs[1], imButton, mouseAbs[2], uint16_t(width), uint16_t(height), ginput.lastAscii);
+			imguiBeginFrame(mouseAbs[0], mouseAbs[1], imButton, mouseAbs[2], uint16_t(fwidth), uint16_t(fheight), ginput.lastAscii);
 			{
 				if (app->MainUi() & 2) showExampleDialog(this);
 			}
@@ -535,7 +543,7 @@ public:
 
 		// 3) render
 		{
-			bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
+			bgfx::setViewRect(0, 0, 0, uint16_t(fwidth), uint16_t(fheight));
 			bgfx::touch(0);
 
 			app->Render();

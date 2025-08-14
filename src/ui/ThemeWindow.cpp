@@ -1,6 +1,6 @@
 // ThemeWindow.cpp
 // @author octopoulos
-// @version 2025-08-06
+// @version 2025-08-10
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -225,6 +225,7 @@ void UpdateFonts()
 
 static void CommonStyle(ImGuiStyle& style)
 {
+	style.FontScaleDpi      = xsettings.dpr;
 	style.FontScaleMain     = xsettings.fontScale;
 	style.FramePadding      = ImVec2(10.0f, 4.0f);
 	style.FrameRounding     = 5.0f;
@@ -431,7 +432,7 @@ void UpdateTheme()
 	// clang-format on
 
 	ImGui::GetStyle() = style;
-	ImGui::GetStyle().ScaleAllSizes(xsettings.uiScale);
+	ImGui::GetStyle().ScaleAllSizes(xsettings.dpr * xsettings.uiScale);
 }
 
 } // namespace ui

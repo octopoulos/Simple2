@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-08-08
+// @version 2025-08-10
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -69,7 +69,7 @@ static std::vector<Config> configs = {
 
 	// [ui]
 	X_ENUM   (XSettings, ui, 0, aspectRatio, AspectRatio_Native, sAspectRatios),
-	X_FLOAT  (XSettings, ui, 0, fontScale  , 0.65f, 0.1f, 10.0f),
+	X_FLOAT  (XSettings, ui, 0, fontScale  , 0.65f, 0.3f, 10.0f),
 	X_FLOAT  (XSettings, ui, 0, iconSize   , 64.0f, 8.0f, 256.0f),
 	X_BOOL   (XSettings, ui, 0, labelLeft  , true),
 	X_STRINGS(XSettings, ui, 0, recentFiles, "", 6),
@@ -86,6 +86,7 @@ static std::vector<Config> configs = {
 	X_CRYPT  (XSettings, user, 0, userPw   , ""),
 
 	// [window]
+	X_INT    (XSettings, window, 0, dpr       , 1, 1, 4),
 	X_ENUM   (XSettings, window, 0, fullScreen, FullScreen_Off, sFullScreens),
 	X_BOOL   (XSettings, window, 0, maximized , false),
 	X_INTS   (XSettings, window, 0, windowPos , "-1|-1", -1, 5120, 2),

@@ -1,4 +1,4 @@
-// @version 2025-07-26
+// @version 2025-08-10
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -6,6 +6,7 @@
 
 #include "stdafx.h"
 #include "entry_p.h"
+#include "ui/xsettings.h"
 
 #if ENTRY_CONFIG_USE_NATIVE && BX_PLATFORM_OSX
 
@@ -284,7 +285,11 @@ struct Context
 			case NSEventTypeLeftMouseDragged:
 			case NSEventTypeRightMouseDragged:
 			case NSEventTypeOtherMouseDragged:
+			{
+				CGFloat scaleFactor = [window backingScaleFactor];
 				getMousePos(window, &m_mx, &m_my);
+				m_mx = int32_t(m_mx * scaleFactor + 0.1f);
+				m_my = int32_t(m_my * scaleFactor + 0.1f);
 
 				if (window == m_mouseLock)
 				{
@@ -294,6 +299,7 @@ struct Context
 				}
 				else m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_scroll, false, 0, 0);
 				break;
+			}
 
 			case NSEventTypeLeftMouseDown:
 				{
@@ -393,8 +399,9 @@ struct Context
 		WindowHandle handle = findHandle(window);
 		NSRect originalFrame = [window frame];
 		NSRect rect = [window contentRectForFrameRect: originalFrame];
-		uint32_t width  = uint32_t(rect.size.width);
-		uint32_t height = uint32_t(rect.size.height);
+		CGFloat scaleFactor = [window backingScaleFactor];
+		uint32_t width  = uint32_t(rect.size.width * scaleFactor + 0.1f);
+		uint32_t height = uint32_t(rect.size.height * scaleFactor + 0.1f);
 		m_eventQueue.postSizeEvent(handle, width, height);
 
 		// Make sure mouse button state is 'up' after resize.
@@ -459,8 +466,8 @@ struct Context
 			;
 
 		NSRect screenRect = [[NSScreen mainScreen] frame];
-		const float centerX = (screenRect.size.width  - (float)ENTRY_DEFAULT_WIDTH )*0.5f;
-		const float centerY = (screenRect.size.height - (float)ENTRY_DEFAULT_HEIGHT)*0.5f;
+		const float centerX = (screenRect.size.width  - (float)ENTRY_DEFAULT_WIDTH ) * 0.5f;
+		const float centerY = (screenRect.size.height - (float)ENTRY_DEFAULT_HEIGHT) * 0.5f;
 		NSString* appName = [[NSProcessInfo processInfo] processName];
 		createWindow(centerX, centerY, ENTRY_DEFAULT_WIDTH, ENTRY_DEFAULT_HEIGHT, ENTRY_WINDOW_FLAG_NONE, [appName UTF8String]);
 
@@ -568,18 +575,30 @@ WindowHandle createWindow(int32_t _x, int32_t _y, uint32_t _width, uint32_t _hei
 				[NSWindow alloc]
 				initWithContentRect:rect
 				styleMask:s_ctx.m_style
-				backing:NSBackingStoreBuffered defer:NO
-				];
+				backing:NSBackingStoreBuffered
+				defer:NO
+			];
 			NSString* appName = [NSString stringWithUTF8String:_title];
 			[window setTitle:appName];
 			[window makeKeyAndOrderFront:window];
 			[window setAcceptsMouseMovedEvents:YES];
 			[window setBackgroundColor:[NSColor blackColor]];
+
+			// Enable Retina support
+			[[window contentView] setWantsLayer:YES]; // Ensures the view is layer-backed for Retina
+			[window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+
 			[[Window sharedDelegate] windowCreated:window];
 
 			s_ctx.m_window[handle.idx] = window;
 
-			s_ctx.m_eventQueue.postSizeEvent(handle, _width, _height);
+			// Get the backing scale factor for Retina displays
+			CGFloat scaleFactor = [window backingScaleFactor];
+			uint32_t pixelWidth = _width * scaleFactor;
+			uint32_t pixelHeight = _height * scaleFactor;
+			xsettings.dpr = int(scaleFactor + 0.1f);
+
+			s_ctx.m_eventQueue.postSizeEvent(handle, pixelWidth, pixelHeight);
 			s_ctx.m_eventQueue.postWindowEvent(handle, window);
 		};
 

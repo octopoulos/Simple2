@@ -1,4 +1,4 @@
-// @version 2025-07-31
+// @version 2025-08-10
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -586,7 +586,7 @@ int runApp(AppI* _app, int _argc, const char* const* _argv)
 
 void EntryBegin(const char* name)
 {
-	ui::Log("EntryBegin: {}", name);
+	ui::Log("EntryBegin: {} debug={}", name, BX_CONFIG_DEBUG);
 	entryName = name;
 
 	FindAppDirectory(true);
@@ -820,8 +820,8 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 				win.m_width      = width;
 				win.m_height     = height;
 
-				xsettings.windowSize[0] = width;
-				xsettings.windowSize[1] = height;
+				xsettings.windowSize[0] = width / xsettings.dpr;
+				xsettings.windowSize[1] = height / xsettings.dpr;
 
 				handle  = size->m_handle;
 				_width  = width;

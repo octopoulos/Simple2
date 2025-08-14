@@ -1,4 +1,4 @@
-// @version 2025-07-30
+// @version 2025-08-10
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -401,16 +401,25 @@ struct Context
 		glfwSetJoystickCallback(joystickCb);
 
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_TRUE);
 
 		WindowHandle handle = { m_windowAlloc.alloc() };
 		m_window[0]         = glfwCreateWindow(xsettings.windowSize[0], xsettings.windowSize[1], "Loading ...", NULL, NULL);
-
 		if (!m_window[0])
 		{
 			DBG("glfwCreateWindow failed!");
 			glfwTerminate();
 			return bx::kExitFailure;
 		}
+
+		float xscale, yscale;
+		glfwGetWindowContentScale(m_window[0], &xscale, &yscale);
+		ui::Log("xscale={} yscale={}", xscale, yscale);
+
+		int fbWidth, fbHeight;
+		glfwGetFramebufferSize(m_window[0], &fbWidth, &fbHeight);
+		xsettings.dpr = bx::max(1, fbWidth / xsettings.windowSize[0]);
+		// xsettings.dpr = 1;
 
 		glfwSetKeyCallback(m_window[0], keyCb);
 		glfwSetCharCallback(m_window[0], charCb);
@@ -420,7 +429,7 @@ struct Context
 		glfwSetWindowSizeCallback(m_window[0], windowSizeCb);
 		glfwSetDropCallback(m_window[0], dropFileCb);
 
-		m_eventQueue.postSizeEvent(handle, xsettings.windowSize[0], xsettings.windowSize[1]);
+		m_eventQueue.postSizeEvent(handle, fbWidth, fbHeight);
 
 		for (uint32_t ii = 0; ii < ENTRY_CONFIG_MAX_GAMEPADS; ++ii)
 		{
@@ -639,13 +648,13 @@ void Context::scrollCb(GLFWwindow* _window, double _dx, double _dy)
 	double       mx, my;
 	glfwGetCursorPos(_window, &mx, &my);
 	s_ctx.m_scrollPos += _dy;
-	s_ctx.m_eventQueue.postMouseEvent(handle, (int32_t)mx, (int32_t)my, (int32_t)s_ctx.m_scrollPos, false, 0, 0);
+	s_ctx.m_eventQueue.postMouseEvent(handle, (int32_t)(mx * xsettings.dpr), (int32_t)(my * xsettings.dpr), (int32_t)s_ctx.m_scrollPos, false, 0, 0);
 }
 
 void Context::cursorPosCb(GLFWwindow* _window, double _mx, double _my)
 {
 	WindowHandle handle = s_ctx.findHandle(_window);
-	s_ctx.m_eventQueue.postMouseEvent(handle, (int32_t)_mx, (int32_t)_my, (int32_t)s_ctx.m_scrollPos, false, 0, 0);
+	s_ctx.m_eventQueue.postMouseEvent(handle, (int32_t)(_mx * xsettings.dpr), (int32_t)(_my * xsettings.dpr), (int32_t)s_ctx.m_scrollPos, false, 0, 0);
 }
 
 void Context::mouseButtonCb(GLFWwindow* _window, int32_t _button, int32_t _action, int32_t _mods)
@@ -655,7 +664,7 @@ void Context::mouseButtonCb(GLFWwindow* _window, int32_t _button, int32_t _actio
 	bool         down   = _action == GLFW_PRESS;
 	double       mx, my;
 	glfwGetCursorPos(_window, &mx, &my);
-	s_ctx.m_eventQueue.postMouseEvent(handle, (int32_t)mx, (int32_t)my, (int32_t)s_ctx.m_scrollPos, translateMouseButton(_button), down);
+	s_ctx.m_eventQueue.postMouseEvent(handle, (int32_t)(mx * xsettings.dpr), (int32_t)(my * xsettings.dpr), (int32_t)s_ctx.m_scrollPos, translateMouseButton(_button), down);
 }
 
 void Context::windowSizeCb(GLFWwindow* _window, int32_t _width, int32_t _height)
