@@ -1,6 +1,6 @@
 // SceneWindow.cpp
 // @author octopoulos
-// @version 2025-08-06
+// @version 2025-08-15
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -52,8 +52,9 @@ public:
 	{
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
 		{
-			app->selectedObj = node;
+			app->SelectObject(node);
 			ui::Log("SceneWindow/DrawObject: {}", node->name);
+			ImGui::SetWindowFocus(nullptr);
 		}
 
 		ImGui::TableNextColumn();

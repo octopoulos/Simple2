@@ -1,6 +1,6 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-15
 
 #include "stdafx.h"
 #include "core/Camera.h"
@@ -30,7 +30,7 @@ void Camera::ConsumeOrbit(float amount)
 	orbit[1] -= consume[1];
 
 	// ui::Log("orbit={:7.3} {:7.3}", orbit[0], orbit[1]);
-	if (std::abs(orbit[0]) < 1e-5f && std::abs(orbit[1]) < 1e-5f) return;
+	if (bx::abs(orbit[0]) < 1e-5f && bx::abs(orbit[1]) < 1e-5f) return;
 
 	const bx::Vec3 toPos       = bx::sub(pos, target);
 	const float    toPosLen    = bx::length(toPos);
@@ -59,11 +59,10 @@ void Camera::Move(int cameraDir, float speed)
 {
 	const auto& dir = (cameraDir == CameraDir_Forward) ? forward : ((cameraDir == CameraDir_Right) ? right : up);
 
-
-	distance    = 0.1f;
-	isFollowing = false;
-	pos2        = bx::mad(dir, speed, pos2);
-	target2     = bx::mad(forward, distance, pos2);
+	distance = 0.1f;
+	pos2     = bx::mad(dir, speed, pos2);
+	target2  = bx::mad(forward, distance, pos2);
+	follow &= ~CameraFollow_Active;
 }
 
 void Camera::Orbit(float dx, float dy)
@@ -98,7 +97,7 @@ void Camera::Update(float delta)
 	forward2 = bx::normalize(bx::sub(target2, pos2));
 
 	// fallback to Z-up if forward is too close to worldUp (camera looking straight up/down)
-	const bx::Vec3 up2 = (std::abs(bx::dot(forward, worldUp)) > 0.999f) ? bx::Vec3(0.0f, 0.0f, 1.0f) : worldUp;
+	const bx::Vec3 up2 = (bx::abs(bx::dot(forward, worldUp)) > 0.999f) ? bx::Vec3(0.0f, 0.0f, 1.0f) : worldUp;
 
 	right = bx::normalize(bx::cross(up2, forward));
 	up    = bx::cross(forward, right);
@@ -132,7 +131,7 @@ void Camera::Zoom(float ratio)
 	xsettings.distance  = xsettings.orthoZoom * xsettings.windowSize[1] / bx::tan(glm::radians(fovY) * 0.5f);
 
 	// 2) update pos2
-	distance    = xsettings.distance;
-	isFollowing = true;
-	pos2        = bx::mad(forward2, -distance, target2);
+	distance = xsettings.distance;
+	pos2     = bx::mad(forward2, -distance, target2);
+	follow |= CameraFollow_Active;
 }

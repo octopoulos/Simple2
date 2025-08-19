@@ -1,6 +1,6 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-07-30
+// @version 2025-08-10
 
 #pragma once
 
@@ -11,6 +11,14 @@ enum CameraDirs : int
 	CameraDir_Forward = 0,
 	CameraDir_Right   = 1,
 	CameraDir_Up      = 2,
+};
+
+enum CameraFollows : int
+{
+	CameraFollow_None        = 0, ///
+	CameraFollow_Active      = 1, ///< follow cursor/selObj, otherwise free look
+	CameraFollow_Cursor      = 2, ///< follow the cursor
+	CameraFollow_SelectedObj = 4, ///< follow the selected object
 };
 
 class Camera : public Object3d
@@ -25,15 +33,15 @@ private:
 	bx::Vec3 target    = bx::InitZero;          ///< target: current (look at)
 
 public:
-	float    distance    = 0.1f;                  ///< current distance to use between pos and target
-	bool     isFollowing = false;                 ///< following target or free look?
-	bx::Vec3 forward     = { 0.0f, 0.0f, 1.0f };  ///< forward dir (current)
-	bx::Vec3 forward2    = { 0.0f, 0.0f, 1.0f };  ///< forward dir (wanted)
-	bx::Vec3 pos2        = { 0.0f, 0.0f, -3.0f }; ///< position: destination
-	bx::Vec3 right       = { 1.0f, 0.0f, 0.0f };  ///< right dir
-	bx::Vec3 target2     = bx::InitZero;          ///< target: destination
-	bx::Vec3 up          = { 0.0f, 1.0f, 0.0f };  ///< up dir
-	bx::Vec3 worldUp     = { 0.0f, 1.0f, 0.0f };  ///< world up dir
+	float    distance = 0.1f;                  ///< current distance to use between pos and target
+	int      follow   = CameraFollow_Cursor;   ///< CameraFollows
+	bx::Vec3 forward  = { 0.0f, 0.0f, 1.0f };  ///< forward dir (current)
+	bx::Vec3 forward2 = { 0.0f, 0.0f, 1.0f };  ///< forward dir (wanted)
+	bx::Vec3 pos2     = { 0.0f, 0.0f, -3.0f }; ///< position: destination
+	bx::Vec3 right    = { 1.0f, 0.0f, 0.0f };  ///< right dir
+	bx::Vec3 target2  = bx::InitZero;          ///< target: destination
+	bx::Vec3 up       = { 0.0f, 1.0f, 0.0f };  ///< up dir
+	bx::Vec3 worldUp  = { 0.0f, 1.0f, 0.0f };  ///< world up dir
 
 	Camera()
 	{

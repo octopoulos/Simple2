@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-08-06
+// @version 2025-08-15
 
 #pragma once
 
@@ -18,7 +18,7 @@ enum ObjectTypes_ : int
 	ObjectType_Camera    = 1 << 1, ///< camera object
 	ObjectType_Clone     = 1 << 2, ///< clone of another object (doesn't own groups)
 	ObjectType_Group     = 1 << 3, ///< group (no render)
-	ObjectType_HasBody   = 1 << 4, ///< contains bodies (Mesh only)
+	ObjectType_HasBody   = 1 << 4, ///< has a body (Mesh only)
 	ObjectType_Instance  = 1 << 5, ///< instance
 	ObjectType_Mesh      = 1 << 6, ///< mesh
 	ObjectType_RubikCube = 1 << 7, ///< Rubic cube
@@ -35,6 +35,7 @@ class Object3d
 public:
 	std::vector<sObject3d> children    = {};                         ///< sub-objects
 	int                    id          = 0;                          ///< unique id
+	int                    irot[3]     = {};                         ///< number of 45 deg rotations
 	glm::mat4              matrix      = glm::mat4(1.0f);            ///< full local transform (S * R * T)
 	glm::mat4              matrixWorld = glm::mat4(1.0f);            ///< parent->matrixWorld * matrix
 	std::string            name        = "";                         ///< object name (used to find in scene)
@@ -68,6 +69,9 @@ public:
 	virtual void Render(uint8_t viewId, int renderFlags);
 
 	/// Apply scale then rotation then translation
+	void ScaleIrotationPosition(const glm::vec3& _scale, const std::array<int, 3>& _irot, const glm::vec3& _position);
+
+	/// Apply scale then rotation then translation
 	void ScaleRotationPosition(const glm::vec3& _scale, const glm::vec3& _rotation, const glm::vec3& _position);
 
 	/// Apply scale then quaternion then translation
@@ -80,11 +84,13 @@ public:
 	virtual void SynchronizePhysics();
 
 	/// Update local matrix from scale * quaternion * position
-	void UpdateLocalMatrix();
+	/// @param force: recompute matrixWorld even if has a body
+	void UpdateLocalMatrix(bool force = false);
 
 	/// Calculate world matrix + recursively for all children
 	/// - if HasBody => matrixWorld is left untouched because it comes from bullet3
-	void UpdateWorldMatrix();
+	/// @param force: recompute even if has a body
+	void UpdateWorldMatrix(bool force = false);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

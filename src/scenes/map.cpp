@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-08-06
+// @version 2025-08-15
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -46,17 +46,17 @@ void App::AddObject(const std::string& name)
 
 void App::RescanAssets()
 {
-	const std::filesystem::path& MODEL_SRC_DIR   = "assets/models";
-	const std::filesystem::path& MODEL_OUT_DIR   = "runtime/models";
-	const std::filesystem::path& PREVIEW_OUT_DIR = "runtime/models-prev";
-	const std::filesystem::path& TEXTURE_OUT_DIR = "runtime/textures";
+	const std::filesystem::path MODEL_OUT_DIR   = "runtime/models";
+	const std::filesystem::path MODEL_SRC_DIR   = "assets/models";
+	const std::filesystem::path PREVIEW_OUT_DIR = "runtime/models-prev";
+	const std::filesystem::path TEXTURE_OUT_DIR = "runtime/textures";
 
-	static const USET_STR validModelExts   = { ".glb", ".obj" };
-	static const USET_STR validTextureExts = { ".png", ".jpg", ".dds", ".tga" };
+	static const USET_STR modelExts   = { ".glb", ".obj" };
+	static const USET_STR textureExts = { ".png", ".jpg", ".dds", ".tga" };
 
-	std::vector<std::filesystem::path> modelSources;
-	std::vector<std::filesystem::path> modelOutputs;
-	std::vector<std::filesystem::path> textureOutputs;
+	std::vector<std::filesystem::path> modelOuts;
+	std::vector<std::filesystem::path> modelSrcs;
+	std::vector<std::filesystem::path> textureOuts;
 
 	for (auto& entry : std::filesystem::recursive_directory_iterator(MODEL_SRC_DIR))
 	{
@@ -64,17 +64,19 @@ void App::RescanAssets()
 		if (!IsFile(path)) continue;
 
 		const std::string ext = path.extension().string();
-		if (!validModelExts.contains(ext)) continue;
+		if (!modelExts.contains(ext)) continue;
 
-		std::filesystem::path relPath     = std::filesystem::relative(path, MODEL_SRC_DIR);
-		std::string           modelName   = path.stem().string();
-		std::filesystem::path firstFolder = relPath.empty() ? "" : *relPath.begin();
+		const auto modelName   = path.stem().string();
+		const auto relPath     = std::filesystem::relative(path, MODEL_SRC_DIR);
+		const auto firstFolder = (relPath.empty() || relPath.parent_path().empty()) ? "" : *relPath.begin();
 
-		std::filesystem::path modelOut = firstFolder.empty()
+		ui::Log("       path={}\n    relPath={}\nfirstFolder={}", path, relPath, firstFolder);
+
+		const auto modelOut = firstFolder.empty()
 		    ? (MODEL_OUT_DIR / (modelName + ".bin"))
 		    : (MODEL_OUT_DIR / firstFolder / (modelName + ".bin"));
 
-		std::filesystem::path previewOut = firstFolder.empty()
+		const auto previewOut = firstFolder.empty()
 		    ? std::filesystem::path()
 		    : (PREVIEW_OUT_DIR / firstFolder / (modelName + ".png"));
 
@@ -104,18 +106,13 @@ void App::RescanAssets()
 
 			CreateDirectories(modelOut.parent_path());
 
-			std::string cmd = fmt::format(
-			    "geometryc -f \"{}\" -o \"{}\"",
-			    path.string(), modelOut.string());
-
-			int result = std::system(cmd.c_str());
-
-			if (result != 0)
-				ui::Log("ERROR: geometryc failed with code {}", result);
+			const auto cmd    = fmt::format(R"(geometryc -f "{}" -o "{}")", path.string(), modelOut.string());
+			const int  result = std::system(cmd.c_str());
+			if (result != 0) ui::Log("ERROR: geometryc failed with code {}", result);
 		}
 
-		modelSources.push_back(path);
-		modelOutputs.push_back(modelOut);
+		modelOuts.push_back(modelOut);
+		modelSrcs.push_back(path);
 
 		if (!firstFolder.empty())
 		{
@@ -128,7 +125,7 @@ void App::RescanAssets()
 				if (texPath.parent_path().filename() != "Textures") continue;
 
 				std::string ext = texPath.extension().string();
-				if (!validTextureExts.contains(ext)) continue;
+				if (!textureExts.contains(ext)) continue;
 
 				const auto texName = texPath.filename();
 				const auto texOut  = TEXTURE_OUT_DIR / firstFolder / texName;
@@ -139,14 +136,14 @@ void App::RescanAssets()
 					if (CopyFileX(texPath, texOut, false))
 					{
 						ui::Log("Copy: {} -> {}", texPath, texOut);
-						textureOutputs.push_back(texOut);
+						textureOuts.push_back(texOut);
 					}
 				}
 			}
 		}
 	}
 
-	ui::Log("Models: {}  Textures: {}", modelSources.size(), textureOutputs.size());
+	ui::Log("Models: {}  Textures: {}", modelSrcs.size(), textureOuts.size());
 }
 
 void App::ScanModels(const std::filesystem::path& folder, const std::filesystem::path& folderPrev, int depth, const std::string& relative)

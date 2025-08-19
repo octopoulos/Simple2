@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-08-06
+// @version 2025-08-10
 
 #pragma once
 
@@ -45,6 +45,9 @@ private:
 	float inputLag   = 0.0f;          ///< accumulated lag for fixed-step input
 	int   showPopup  = 0;             ///< show specific ImGui popups
 
+	/// Check if arrows are being pushed, &1: down, &2: left, &4: right, &8: up
+	int ArrowsFlag();
+
 	/// Fixed-rate input logic (ex: key movement, snap-to-grid)
 	void FixedControls();
 
@@ -84,9 +87,6 @@ private:
 	/// Open a map file
 	bool OpenMap(const std::filesystem::path& filename);
 
-	/// Rescan folders to update the assets
-	void RescanAssets();
-
 	/// Save a map file
 	bool SaveMap(const std::filesystem::path& filename);
 
@@ -98,6 +98,9 @@ public:
 
 	/// Insert an object into the map
 	void AddObject(const std::string& name);
+
+	/// Rescan folders to update the assets
+	void RescanAssets();
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// RENDER
@@ -127,6 +130,7 @@ private:
 	int64_t                       lastUs       = 0;       ///< microseconds
 	std::unique_ptr<PhysicsWorld> physics      = nullptr; ///< physics world
 	int                           physicsFrame = 0;       ///< current physics frame
+	std::weak_ptr<Object3d>       prevSelected = {};      ///< previously selected object
 	int64_t                       startTime    = 0;       ///< initial time
 
 	/// Create scene and physics
@@ -135,6 +139,8 @@ private:
 public:
 	sObject3d               scene       = nullptr; ///< scene container
 	std::weak_ptr<Object3d> selectedObj = {};      ///< selected object for edit
+
+	void SelectObject(const sObject3d& obj);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// SETTINGS

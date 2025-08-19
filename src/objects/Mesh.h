@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-15
 
 #pragma once
 
@@ -73,7 +73,7 @@ using sMesh = std::shared_ptr<class Mesh>;
 class Mesh : public Object3d
 {
 public:
-	std::vector<uBody>               bodies      = {};                  ///< one physical body per group
+	uBody                            body        = {};                  ///< one body for the whole mesh
 	std::shared_ptr<Geometry>        geometry    = nullptr;             ///
 	std::vector<Group>               groups      = {};                  ///< groups of vertices
 	bgfx::VertexLayout               layout      = {};                  ///
@@ -100,6 +100,9 @@ public:
 
 	virtual ~Mesh() override { Destroy(); }
 
+	/// Activate/deactivate physics
+	void ActivatePhysics(bool activate);
+
 	/// Make an instanced copy of itself => faster loading
 	sMesh CloneInstance();
 
@@ -125,6 +128,9 @@ public:
 
 	/// Serialize for JSON output
 	virtual int Serialize(fmt::memory_buffer& outString, int bounds = 3) const override;
+
+	/// Convert matrixTransform to bullet3:transform
+	void SetBodyTransform();
 
 	/// Submit for render pass
 	void Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, uint64_t state) const;

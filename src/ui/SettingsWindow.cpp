@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-08-10
+// @version 2025-08-15
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -78,7 +78,7 @@ public:
 		// ui::AddSpace();
 		BEGIN_COLLAPSE("App", Show_App, 3)
 		{
-			AddInputText("appId", "AppId", 256, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
+			//AddInputText("appId", "AppId", 256, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
 			AddSliderInt("gameId", "Game Id", nullptr);
 			if (ImGui::Button("Load Defaults")) LoadGameSettings(xsettings.gameId, "", "-def");
 			ImGui::SameLine();
@@ -101,11 +101,10 @@ public:
 		// MAP
 		//////
 
-		BEGIN_COLLAPSE("Map", Show_Map, 3)
+		BEGIN_COLLAPSE("Map", Show_Map, 2)
 		{
-			// AddInputText("captureDir", "Directory");
-			// AddCheckBox("captureVideo", "", "Enable Video");
-			// AddCheckBox("nvidiaEnc", "", "Use nVidia Encoding");
+			AddSliderFloat("iconSize", "Icon Size", "%.0f");
+			if (ImGui::Button("Rescan Assets")) app->RescanAssets();
 			END_COLLAPSE();
 		}
 
@@ -158,43 +157,26 @@ public:
 			    || memcmp(xsettings.windowPos, prevSettings.windowPos, sizeof(xsettings.windowPos)) != 0
 			    || memcmp(xsettings.windowSize, prevSettings.windowSize, sizeof(xsettings.windowSize)) != 0;
 
-			BEGIN_TREE("UI", Show_SystemUI, 11 + (applyChange ? 1 : 0))
+			BEGIN_TREE("UI", Show_SystemUI, 10 + (applyChange ? 1 : 0))
 			{
 				AddCombo("aspectRatio", "Aspect Ratio");
 				AddSliderInt("dpr", "DPR");
 				if (AddDragFloat("fontScale", "Font Scale", 0.001f, "%.3f")) ImGui::GetStyle().FontScaleMain = xsettings.fontScale;
 				AddSliderInt("fullScreen", "Full Screen", nullptr);
-				AddSliderFloat("iconSize", "Icon Size", "%.0f");
 				AddSliderInt("settingPad", "Setting Pad");
 				if (AddCombo("theme", "Theme")) UpdateTheme();
 				AddDragFloat("uiScale", "UI Scale");
 				AddDragInt("windowPos", "Window Pos");
 				AddDragInt("windowSize", "Window Size");
 				AddCheckBox("maximized", "", "Maximized");
-				//ImGui::DragInt2("Window Pos", xsettings.windowPos, 1, -1, 5120);
-				//ItemEvent("windowPos");
-				//ImGui::DragInt2("Window Size", xsettings.windowSize, 1, 0, 5120);
-				//ItemEvent("windowSize");
 
 				if (applyChange)
 				{
 					if (ImGui::Button("Apply Changes"))
 					{
-						int      winX;
-						int      winY;
-						uint32_t fullFlags;
-						//app->GetNewPositionFlags(winX, winY, &fullFlags, nullptr);
-
-						//auto window = app->GetWindow();
-						//if (xsettings.maximized)
-						//	SDL_MaximizeWindow(window);
-						//else
-						//{
-						//	SDL_SetWindowFullscreen(window, fullFlags);
-						//	if (!fullFlags) SDL_RestoreWindow(window);
-						//	SDL_SetWindowSize(window, xsettings.windowSize[0], xsettings.windowSize[1]);
-						//	SDL_SetWindowPosition(window, winX, winY);
-						//}
+						// int      winX;
+						// int      winY;
+						// uint32_t fullFlags;
 						memcpy(&prevSettings, &xsettings, sizeof(XSettings));
 					}
 				}

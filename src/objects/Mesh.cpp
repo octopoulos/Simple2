@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-08-10
+// @version 2025-08-15
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -23,6 +23,13 @@ namespace bgfx
 	int32_t read(bx::ReaderI* reader, bgfx::VertexLayout& layout, bx::Error* err);
 }
 
+void Mesh::ActivatePhysics(bool activate)
+{
+	body->enabled = activate;
+	body->body->setActivationState(activate ? ACTIVE_TAG : DISABLE_SIMULATION);
+	body->body->activate(activate);
+}
+
 sMesh Mesh::CloneInstance()
 {
 	auto clone = std::make_shared<Mesh>();
@@ -37,10 +44,9 @@ sMesh Mesh::CloneInstance()
 
 void Mesh::CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, const btVector4& dims)
 {
-	auto body = std::make_unique<Body>(physics);
+	body = std::make_unique<Body>(physics);
 	body->CreateShape(shapeType, this, dims);
 	body->CreateBody(mass, GlmToBullet(position), GlmToBullet(quaternion));
-	bodies.push_back(std::move(body));
 	type |= ObjectType_HasBody;
 }
 
@@ -364,16 +370,10 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 int Mesh::Serialize(fmt::memory_buffer& outString, int bounds) const
 {
 	int keyId = Object3d::Serialize(outString, (bounds & 1) ? 1 : 0);
-	if (bodies.size())
+	if (body)
 	{
-		WRITE_KEY("bodies");
-		WRITE_CHAR('[');
-		for (int id = -1; const auto& body : bodies)
-		{
-			if (++id > 0) WRITE_CHAR(',');
-			body->Serialize(outString);
-		}
-		WRITE_CHAR(']');
+		WRITE_KEY("body");
+		body->Serialize(outString);
 	}
 	if (geometry)
 	{
@@ -398,6 +398,34 @@ int Mesh::Serialize(fmt::memory_buffer& outString, int bounds) const
 	}
 	if (bounds & 2) WRITE_CHAR('}');
 	return keyId;
+}
+
+void Mesh::SetBodyTransform()
+{
+	position = matrixWorld[3];
+
+	for(int i = 0; i < 3; i++)
+		scale[i] = glm::length(glm::vec3(matrixWorld[i]));
+
+	const glm::mat3 rotMtx(
+		glm::vec3(matrixWorld[0]) / scale[0],
+		glm::vec3(matrixWorld[1]) / scale[1],
+		glm::vec3(matrixWorld[2]) / scale[2]);
+
+	quaternion  = glm::quat_cast(rotMtx);
+	rotation    = glm::eulerAngles(quaternion);
+	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+	UpdateLocalMatrix();
+
+	btTransform transform;
+	transform.setIdentity();
+	transform.setOrigin(btVector3(position.x, position.y, position.z));
+	transform.setRotation(btQuaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w));
+
+	// update transform
+	body->body->setWorldTransform(transform);
+	if (auto* motionState = body->body->getMotionState())
+		motionState->setWorldTransform(transform);
 }
 
 void Mesh::Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, uint64_t state) const
@@ -459,19 +487,15 @@ void Mesh::SynchronizePhysics()
 		for (auto& child : children)
 			child->SynchronizePhysics();
 	}
-	else if (bodies.size())
+	else if (body && body->enabled && body->mass >= 0.0f)
 	{
-		const auto& body = bodies[0];
-		if (body->mass >= 0.0f)
-		{
-			btTransform bTransform;
-			auto        motionState = body->body->getMotionState();
-			motionState->getWorldTransform(bTransform);
+		btTransform bTransform;
+		auto        motionState = body->body->getMotionState();
+		motionState->getWorldTransform(bTransform);
 
-			float matrix[16];
-			bTransform.getOpenGLMatrix(matrix);
-			matrixWorld = glm::make_mat4(matrix) * scaleMatrix;
-		}
+		float matrix[16];
+		bTransform.getOpenGLMatrix(matrix);
+		matrixWorld = glm::make_mat4(matrix) * scaleMatrix;
 	}
 }
 

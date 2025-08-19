@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-08-06
+// @version 2025-08-15
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -22,6 +22,24 @@ enum ThrowActions_ : int
 static inline float SignNonZero(float v)
 {
 	return (v >= 0.0f) ? 1.0f : -1.0f;
+}
+
+int App::ArrowsFlag()
+{
+	using namespace entry;
+
+	auto&       ginput = GetGlobalInput();
+	const auto& downs  = ginput.keyDowns;
+
+	// clang-format off
+	const int flag = 0
+		| DOWN_OR_REPEAT(Key::Down ) * 1
+		| DOWN_OR_REPEAT(Key::Left ) * 2
+		| DOWN_OR_REPEAT(Key::Right) * 4
+		| DOWN_OR_REPEAT(Key::Up   ) * 8;
+	// clang-format on
+
+	return flag;
 }
 
 void App::Controls()
@@ -62,7 +80,8 @@ void App::FixedControls()
 	const int   modifier = ginput.IsModifier();
 
 	// ignore inputs when using the GUI?
-	if (ImGui::MouseOverArea())
+	const bool guiFocused = ImGui::IsAnyItemFocused() || ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow);
+	if (guiFocused) //ImGui::MouseOverArea()
 	{
 	}
 	// 1) alt
@@ -76,8 +95,48 @@ void App::FixedControls()
 	// 3) shift
 	else if (modifier & Modifier_Shift)
 	{
+		// unpause + restore physics to every object
+		if (downs[Key::KeyP])
+		{
+			xsettings.physPaused = false;
+			for (const auto& object : scene->children)
+			{
+				if (object->type & ObjectType_HasBody)
+				{
+					const auto mesh = std::static_pointer_cast<Mesh>(object);
+					if (auto& body = mesh->body; !body->enabled)
+					{
+						mesh->SetBodyTransform();
+						mesh->ActivatePhysics(true);
+					}
+				}
+			}
+		}
+
 		// print with GUI
 		if (downs[Key::Print]) wantScreenshot = 1;
+
+		// rotate cursor
+		if (const int flag = ArrowsFlag())
+		{
+			if (auto target = (camera->follow & CameraFollow_Cursor) ? cursor : selectedObj.lock())
+			{
+				if (flag & (1 | 8)) target->irot[0] = (target->irot[0] + ((flag & 1) ? 7 : 1)) & 7;
+				if (flag & (2 | 4)) target->irot[1] = (target->irot[1] + ((flag & 2) ? 7 : 1)) & 7;
+
+				target->rotation   = glm::vec3(target->irot[0], target->irot[1], target->irot[2]) * bx::kPiQuarter;
+				target->quaternion = glm::quat(target->rotation);
+				target->UpdateLocalMatrix(true);
+
+				// deactivate physical body
+				if (target->type & ObjectType_HasBody)
+				{
+					auto mesh = std::static_pointer_cast<Mesh>(target);
+					mesh->SetBodyTransform();
+					mesh->ActivatePhysics(false);
+				}
+			}
+		}
 	}
 	// 4) no modifier
 	else
@@ -98,6 +157,20 @@ void App::FixedControls()
 		// TODO: Shape_Capsule doesn't work
 		if (downs[Key::Key2]) ThrowMesh(ThrowAction_Throw, "kenney_car-kit/taxi", ShapeType_Box);
 		if (downs[Key::Key3]) ThrowGeometry(ThrowAction_Throw, GeometryType_None, "colors.png");
+		if (downs[Key::Key0])
+		{
+			if (const auto& temp = prevSelected.lock())
+			{
+				prevSelected = selectedObj;
+				selectedObj  = temp;
+
+				if (auto target = selectedObj.lock())
+				{
+					camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(target->position));
+					camera->Zoom();
+				}
+			}
+		}
 
 		// move cursor
 		{
@@ -107,42 +180,47 @@ void App::FixedControls()
 			// keep used camera position locked until all keys are released
 			if (keys[Key::Down] || keys[Key::Left] || keys[Key::Right] || keys[Key::Up])
 			{
-				// clang-format off
-				const int flag = 0
-				    | DOWN_OR_REPEAT(Key::Down ) * 1
-				    | DOWN_OR_REPEAT(Key::Left ) * 2
-				    | DOWN_OR_REPEAT(Key::Right) * 4
-				    | DOWN_OR_REPEAT(Key::Up   ) * 8;
-				// clang-format on
-				if (flag)
+				if (const int flag = ArrowsFlag())
 				{
-					if (flag & (1 | 8))
+					if (auto target = (camera->follow & CameraFollow_Cursor) ? cursor : selectedObj.lock())
 					{
-						const float dir = (flag & 8) ? 1.0f : -1.0f;
-						const float fx  = cacheForward.x;
-						const float fz  = cacheForward.z;
+						if (flag & (1 | 8))
+						{
+							const float dir = (flag & 8) ? 1.0f : -1.0f;
+							const float fx  = cacheForward.x;
+							const float fz  = cacheForward.z;
 
-						if (std::abs(fx) > std::abs(fz))
-							cursor->position.x = std::floor(cursor->position.x + dir * SignNonZero(fx)) + 0.5f;
-						else
-							cursor->position.z = std::floor(cursor->position.z + dir * SignNonZero(fz)) + 0.5f;
+							if (bx::abs(fx) > bx::abs(fz))
+								target->position.x = bx::floor(target->position.x + dir * SignNonZero(fx)) + 0.5f;
+							else
+								target->position.z = bx::floor(target->position.z + dir * SignNonZero(fz)) + 0.5f;
+						}
+						if (flag & (2 | 4))
+						{
+							const float dir = (flag & 4) ? 1.0f : -1.0f;
+							const float fx  = cacheRight.x;
+							const float fz  = cacheRight.z;
+
+							if (bx::abs(fx) > bx::abs(fz))
+								target->position.x = bx::floor(target->position.x + dir * SignNonZero(fx)) + 0.5f;
+							else
+								target->position.z = bx::floor(target->position.z + dir * SignNonZero(fz)) + 0.5f;
+						}
+
+						target->UpdateLocalMatrix(true);
+						const auto& m = target->matrixWorld;
+
+						// deactivate physical body
+						if (target->type & ObjectType_HasBody)
+						{
+							auto mesh = std::static_pointer_cast<Mesh>(target);
+							mesh->SetBodyTransform();
+							mesh->ActivatePhysics(false);
+						}
+
+						camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(target->position));
+						camera->Zoom();
 					}
-					if (flag & (2 | 4))
-					{
-						const float dir = (flag & 4) ? 1.0f : -1.0f;
-						const float fx  = cacheRight.x;
-						const float fz  = cacheRight.z;
-
-						if (std::abs(fx) > std::abs(fz))
-							cursor->position.x = std::floor(cursor->position.x + dir * SignNonZero(fx)) + 0.5f;
-						else
-							cursor->position.z = std::floor(cursor->position.z + dir * SignNonZero(fz)) + 0.5f;
-					}
-
-					cursor->UpdateLocalMatrix();
-
-					camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(cursor->position));
-					camera->Zoom();
 				}
 			}
 			else
@@ -262,6 +340,18 @@ void App::FluidControls()
 	}
 }
 
+void App::SelectObject(const sObject3d& obj)
+{
+	prevSelected = selectedObj;
+	selectedObj  = obj;
+
+	camera->follow |= CameraFollow_Active | CameraFollow_SelectedObj;
+	camera->follow &= ~CameraFollow_Cursor;
+
+	camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(obj->position));
+	camera->Zoom();
+}
+
 void App::ThrowGeometry(int action, int geometryType, std::string_view textureName)
 {
 	if (geometryType == GeometryType_None)
@@ -308,11 +398,8 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 		if (action == ThrowAction_Throw)
 		{
 			const auto impulse = bx::mul(camera->forward, 40.0f);
-			for (auto& body : object->bodies)
-			{
-				const auto offset = btVector3(NormalFloat(), NormalFloat(), NormalFloat()) * 0.02f * scale;
-				body->body->applyImpulse(BxToBullet(impulse), offset);
-			}
+			const auto offset  = btVector3(NormalFloat(), NormalFloat(), NormalFloat()) * 0.02f * scale;
+			object->body->body->applyImpulse(BxToBullet(impulse), offset);
 		}
 
 		parent->AddNamedChild(std::move(object), fmt::format("{}:{}", name, parent->children.size()));
@@ -386,11 +473,8 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, std::strin
 		if (action == ThrowAction_Throw)
 		{
 			const auto impulse = bx::mul(camera->forward, 40.0f);
-			for (auto& body : object->bodies)
-			{
-				const auto offset = btVector3(NormalFloat(), NormalFloat(), NormalFloat()) * 0.02f * scale;
-				body->body->applyImpulse(BxToBullet(impulse), offset);
-			}
+			const auto offset  = btVector3(NormalFloat(), NormalFloat(), NormalFloat()) * 0.02f * scale;
+			object->body->body->applyImpulse(BxToBullet(impulse), offset);
 		}
 
 		parent->AddNamedChild(object, fmt::format("{}:{}", name, parent->children.size()));

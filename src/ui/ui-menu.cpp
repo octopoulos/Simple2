@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-08
+// @version 2025-08-15
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -204,7 +204,7 @@ void App::ShowMainMenu(float alpha)
 			ImGui::Separator();
 			if (ImGui::MenuItem("Save Scene...")) OpenFile(OpenAction_SaveScene);
 			ImGui::Separator();
-			if (ImGui::MenuItem("Rescan assets")) RescanAssets();
+			if (ImGui::MenuItem("Rescan Assets")) RescanAssets();
 			ImGui::Separator();
 			if (ImGui::MenuItem("Exit")) quit = true;
 

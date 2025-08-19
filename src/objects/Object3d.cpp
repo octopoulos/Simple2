@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-15
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -51,6 +51,19 @@ void Object3d::Render(uint8_t viewId, int renderFlags)
 	}
 }
 
+void Object3d::ScaleIrotationPosition(const glm::vec3& _scale, const std::array<int, 3>& _irot, const glm::vec3& _position)
+{
+	std::memcpy(irot, _irot.data(), sizeof(irot));
+
+	position    = _position;
+	rotation    = glm::vec3(irot[0], irot[1], irot[2]) * bx::kPiQuarter;
+	scale       = _scale;
+	quaternion  = glm::quat(rotation);
+	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+
+	UpdateLocalMatrix();
+}
+
 void Object3d::ScaleRotationPosition(const glm::vec3& _scale, const glm::vec3& _rotation, const glm::vec3& _position)
 {
 	position    = _position;
@@ -58,6 +71,10 @@ void Object3d::ScaleRotationPosition(const glm::vec3& _scale, const glm::vec3& _
 	scale       = _scale;
 	quaternion  = glm::quat(rotation);
 	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+
+	irot[0] = int(rotation.x / bx::kPiQuarter + 0.1f);
+	irot[1] = int(rotation.x / bx::kPiQuarter + 0.1f);
+	irot[2] = int(rotation.x / bx::kPiQuarter + 0.1f);
 
 	UpdateLocalMatrix();
 }
@@ -69,6 +86,10 @@ void Object3d::ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat&
 	scale       = _scale;
 	rotation    = glm::eulerAngles(quaternion);
 	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+
+	irot[0] = int(rotation.x / bx::kPiQuarter + 0.1f);
+	irot[1] = int(rotation.x / bx::kPiQuarter + 0.1f);
+	irot[2] = int(rotation.x / bx::kPiQuarter + 0.1f);
 
 	UpdateLocalMatrix();
 }
@@ -101,17 +122,17 @@ void Object3d::SynchronizePhysics()
 {
 }
 
-void Object3d::UpdateLocalMatrix()
+void Object3d::UpdateLocalMatrix(bool force)
 {
 	matrix = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(quaternion) * scaleMatrix;
-	UpdateWorldMatrix();
+	UpdateWorldMatrix(force);
 }
 
-void Object3d::UpdateWorldMatrix()
+void Object3d::UpdateWorldMatrix(bool force)
 {
-	if (!(type & ObjectType_HasBody))
+	if (!(type & ObjectType_HasBody) || force)
 	{
-		if (parent)
+		if (parent && !(parent->type & ObjectType_Scene))
 			matrixWorld = parent->matrixWorld * matrix;
 		else
 			matrixWorld = matrix;

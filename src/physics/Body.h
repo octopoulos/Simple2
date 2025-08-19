@@ -1,6 +1,6 @@
 // Body.h
 // @author octopoulos
-// @version 2025-08-04
+// @version 2025-08-15
 
 #pragma once
 
@@ -36,6 +36,7 @@ class Body
 {
 public:
 	btRigidBody*             body    = nullptr; ///< rigid body
+	bool                     enabled = true;    ///< physics enabled
 	PhysicsWorld*            physics = nullptr; ///< physics reference
 	btCollisionShape*        shape   = nullptr; ///< shape
 	btDiscreteDynamicsWorld* world   = nullptr; ///< physical world
