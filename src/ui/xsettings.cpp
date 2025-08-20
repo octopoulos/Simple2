@@ -45,8 +45,10 @@ static std::vector<Config> configs = {
 	X_FLOAT  (XSettings, input, 0, zoomWheel     , 10.0f, 1.0f, 100.0f),
 
 	// [map]
-	X_INT    (XSettings, map, 0, angleInc, 90, 1, 180),
-	X_FLOAT  (XSettings, map, 0, iconSize, 64.0f, 8.0f, 256.0f),
+	X_INT    (XSettings, map, 0, angleInc  , 90, 1, 180),
+	X_FLOAT  (XSettings, map, 0, iconSize  , 64.0f, 8.0f, 256.0f),
+	X_BOOL   (XSettings, map, 0, smoothPos , false),
+	X_BOOL   (XSettings, map, 0, smoothQuat, true),
 
 	// [physics]
 	X_BOOL   (XSettings, physics, 0, bulletDebug, false),

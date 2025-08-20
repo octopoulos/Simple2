@@ -101,10 +101,12 @@ public:
 		// MAP
 		//////
 
-		BEGIN_COLLAPSE("Map", Show_Map, 2)
+		BEGIN_COLLAPSE("Map", Show_Map, 5)
 		{
 			AddSliderInt("angleInc", "Angle Increment");
 			AddSliderFloat("iconSize", "Icon Size", "%.0f");
+			AddCheckBox("smoothPos", "Smooth",  "Translation");
+			AddCheckBox("smoothQuat", "",  "Rotation");
 			if (ImGui::Button("Rescan Assets")) app->RescanAssets();
 			END_COLLAPSE();
 		}

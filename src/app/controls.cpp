@@ -183,6 +183,18 @@ void App::FixedControls()
 				{
 					if (auto target = (camera->follow & CameraFollow_Cursor) ? cursor : selectedObj.lock())
 					{
+						if (target->posTs > 0.0)
+						{
+							target->position = target->position2;
+							target->posTs    = 0.0;
+						}
+						if (xsettings.smoothPos)
+						{
+							target->position1 = target->position;
+							target->position2 = target->position;
+						}
+						auto& result = xsettings.smoothPos ? target->position2 : target->position;
+
 						if (flag & (1 | 8))
 						{
 							const float dir = (flag & 8) ? 1.0f : -1.0f;
@@ -190,9 +202,9 @@ void App::FixedControls()
 							const float fz  = cacheForward.z;
 
 							if (bx::abs(fx) > bx::abs(fz))
-								target->position.x = bx::floor(target->position.x + dir * SignNonZero(fx)) + 0.5f;
+								result.x = bx::floor(target->position.x + dir * SignNonZero(fx)) + 0.5f;
 							else
-								target->position.z = bx::floor(target->position.z + dir * SignNonZero(fz)) + 0.5f;
+								result.z = bx::floor(target->position.z + dir * SignNonZero(fz)) + 0.5f;
 						}
 						if (flag & (2 | 4))
 						{
@@ -201,13 +213,15 @@ void App::FixedControls()
 							const float fz  = cacheRight.z;
 
 							if (bx::abs(fx) > bx::abs(fz))
-								target->position.x = bx::floor(target->position.x + dir * SignNonZero(fx)) + 0.5f;
+								result.x = bx::floor(target->position.x + dir * SignNonZero(fx)) + 0.5f;
 							else
-								target->position.z = bx::floor(target->position.z + dir * SignNonZero(fz)) + 0.5f;
+								result.z = bx::floor(target->position.z + dir * SignNonZero(fz)) + 0.5f;
 						}
 
-						target->UpdateLocalMatrix(true);
-						const auto& m = target->matrixWorld;
+						if (xsettings.smoothPos)
+							target->posTs = Nowd();
+						else
+							target->UpdateLocalMatrix(true);
 
 						// deactivate physical body
 						if (target->type & ObjectType_HasBody)
@@ -217,7 +231,7 @@ void App::FixedControls()
 							mesh->ActivatePhysics(false);
 						}
 
-						camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(target->position));
+						camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(result));
 						camera->Zoom();
 					}
 				}

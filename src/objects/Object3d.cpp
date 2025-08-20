@@ -62,8 +62,14 @@ void Object3d::RotationFromIrot()
 		irot[i] = TO_INT(round(degrees / snap) * snap);
 	}
 
-	rotation   = glm::vec3(bx::toRad(TO_FLOAT(irot[0])), bx::toRad(TO_FLOAT(irot[1])), bx::toRad(TO_FLOAT(irot[2])));
-	quaternion = glm::quat(rotation);
+	rotation = glm::vec3(bx::toRad(TO_FLOAT(irot[0])), bx::toRad(TO_FLOAT(irot[1])), bx::toRad(TO_FLOAT(irot[2])));
+	if (xsettings.smoothQuat)
+	{
+		quaternion1 = quaternion;
+		quaternion2 = glm::quat(rotation);
+		quatTs      = Nowd();
+	}
+	else quaternion = glm::quat(rotation);
 }
 
 void Object3d::ScaleIrotPosition(const glm::vec3& _scale, const std::array<int, 3>& _irot, const glm::vec3& _position)

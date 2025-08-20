@@ -1,12 +1,13 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-08-15
+// @version 2025-08-16
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
 //
 #include "loaders/writer.h"
 #include "textures/TextureManager.h"
+#include "ui/xsettings.h"
 
 #include <meshoptimizer.h>
 
@@ -487,6 +488,7 @@ void Mesh::SynchronizePhysics()
 		for (auto& child : children)
 			child->SynchronizePhysics();
 	}
+	// physics?
 	else if (body && body->enabled && body->mass >= 0.0f)
 	{
 		btTransform bTransform;
@@ -496,6 +498,34 @@ void Mesh::SynchronizePhysics()
 		float matrix[16];
 		bTransform.getOpenGLMatrix(matrix);
 		matrixWorld = glm::make_mat4(matrix) * scaleMatrix;
+	}
+	// interpolation
+	else if (posTs > 0.0 || quatTs > 0.0)
+	{
+		const double interval = xsettings.repeatInterval * 1e-3;
+		const double nowd     = Nowd();
+
+		if (posTs > 0.0)
+		{
+			if (const double elapsed  = nowd - posTs; elapsed < interval)
+				position = glm::mix(position1, position2, TO_FLOAT(elapsed / interval));
+			else
+			{
+				position = position2;
+				posTs    = 0;
+			}
+		}
+		if (quatTs > 0.0)
+		{
+			if (const double elapsed  = nowd - quatTs; elapsed < interval)
+				quaternion = glm::slerp(quaternion1, quaternion2, TO_FLOAT(elapsed / interval));
+			else
+			{
+				quaternion = quaternion2;
+				quatTs     = 0;
+			}
+		}
+		UpdateLocalMatrix(true);
 	}
 }
 

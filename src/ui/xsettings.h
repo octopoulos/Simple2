@@ -76,8 +76,10 @@ struct XSettings
 	float   zoomWheel;      ///< zoom speed with the mouse wheel
 
 	// [map]
-	int   angleInc; ///< angle increment in degrees
-	float iconSize; ///< map icon size
+	int   angleInc;   ///< angle increment in degrees
+	float iconSize;   ///< map icon size
+	bool  smoothPos;  ///< smooth translation
+	bool  smoothQuat; ///< smooth rotation
 
 	// [physics]
 	bool bulletDebug; ///< bullet debug draw

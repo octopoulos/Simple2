@@ -40,8 +40,14 @@ public:
 	glm::mat4              matrixWorld = glm::mat4(1.0f);            ///< parent->matrixWorld * matrix
 	std::string            name        = "";                         ///< object name (used to find in scene)
 	Object3d*              parent      = nullptr;                    ///< parent object
-	glm::vec3              position    = glm::vec3(0.0f);            ///< x, y, z
+	glm::vec3              position    = glm::vec3(0.0f);            ///< position
+	glm::vec3              position1   = glm::vec3(0.0f);            ///< position: origin
+	glm::vec3              position2   = glm::vec3(0.0f);            ///< position: target
+	double                 posTs       = 0.0;                        ///< stamp when moved
 	glm::quat              quaternion  = glm::identity<glm::quat>(); ///< quaternion
+	glm::quat              quaternion1 = glm::identity<glm::quat>(); ///< quaternion: origin
+	glm::quat              quaternion2 = glm::identity<glm::quat>(); ///< quaternion: target
+	double                 quatTs      = 0.0;                        ///< stamp when rotated
 	glm::quat              rotation    = glm::vec3(0.0f);            ///< rotation: Euler angles
 	glm::vec3              scale       = glm::vec3(1.0f);            ///< sx, sy, sz
 	glm::mat4              scaleMatrix = glm::mat4(1.0f);            ///< uses scale
