@@ -1,6 +1,6 @@
 // writer.h
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-16
 
 #pragma once
 
@@ -39,6 +39,20 @@
 		WRITE_KEY(#name);     \
 		WRITE_JSON_INT(name); \
 	}                         \
+	while (0)
+
+#define WRITE_KEY_INT3(name)     \
+	do                           \
+	{                            \
+		WRITE_KEY(#name);        \
+		WRITE_CHAR('[');         \
+		WRITE_JSON_INT(name[0]); \
+		WRITE_CHAR(',');         \
+		WRITE_JSON_INT(name[1]); \
+		WRITE_CHAR(',');         \
+		WRITE_JSON_INT(name[2]); \
+		WRITE_CHAR(']');         \
+	}                            \
 	while (0)
 
 #define WRITE_KEY_MATRIX(name)                    \

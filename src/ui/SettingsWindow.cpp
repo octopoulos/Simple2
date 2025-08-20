@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-08-15
+// @version 2025-08-16
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -103,6 +103,7 @@ public:
 
 		BEGIN_COLLAPSE("Map", Show_Map, 2)
 		{
+			AddSliderInt("angleInc", "Angle Increment");
 			AddSliderFloat("iconSize", "Icon Size", "%.0f");
 			if (ImGui::Button("Rescan Assets")) app->RescanAssets();
 			END_COLLAPSE();

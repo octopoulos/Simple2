@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-08-10
+// @version 2025-08-16
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -44,6 +44,10 @@ static std::vector<Config> configs = {
 	X_FLOAT  (XSettings, input, 0, zoomKb        , 10.0f, 1.0f, 100.0f),
 	X_FLOAT  (XSettings, input, 0, zoomWheel     , 10.0f, 1.0f, 100.0f),
 
+	// [map]
+	X_INT    (XSettings, map, 0, angleInc, 90, 1, 180),
+	X_FLOAT  (XSettings, map, 0, iconSize, 64.0f, 8.0f, 256.0f),
+
 	// [physics]
 	X_BOOL   (XSettings, physics, 0, bulletDebug, false),
 	X_BOOL   (XSettings, physics, 0, physPaused , false),
@@ -70,7 +74,6 @@ static std::vector<Config> configs = {
 	// [ui]
 	X_ENUM   (XSettings, ui, 0, aspectRatio, AspectRatio_Native, sAspectRatios),
 	X_FLOAT  (XSettings, ui, 0, fontScale  , 0.65f, 0.3f, 10.0f),
-	X_FLOAT  (XSettings, ui, 0, iconSize   , 64.0f, 8.0f, 256.0f),
 	X_BOOL   (XSettings, ui, 0, labelLeft  , true),
 	X_STRINGS(XSettings, ui, 0, recentFiles, "", 6),
 	X_INT    (XSettings, ui, 0, settingPad , 2, -1, 16),

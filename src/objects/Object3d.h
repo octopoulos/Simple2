@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-08-15
+// @version 2025-08-16
 
 #pragma once
 
@@ -68,8 +68,11 @@ public:
 	/// Render the object
 	virtual void Render(uint8_t viewId, int renderFlags);
 
+	/// Calculate rotation and quaternion from irot
+	void RotationFromIrot();
+
 	/// Apply scale then rotation then translation
-	void ScaleIrotationPosition(const glm::vec3& _scale, const std::array<int, 3>& _irot, const glm::vec3& _position);
+	void ScaleIrotPosition(const glm::vec3& _scale, const std::array<int, 3>& _irot, const glm::vec3& _position);
 
 	/// Apply scale then rotation then translation
 	void ScaleRotationPosition(const glm::vec3& _scale, const glm::vec3& _rotation, const glm::vec3& _position);

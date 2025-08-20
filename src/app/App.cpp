@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-08-15
+// @version 2025-08-16
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -113,9 +113,9 @@ int App::InitializeScene()
 			cubeMesh->material = std::make_shared<Material>("vs_model_texture_normal", "fs_model_texture_normal");
 			cubeMesh->LoadTextures("earth_day_4096.jpg", "earth_normal_2048.jpg");
 
-			cubeMesh->ScaleIrotationPosition(
+			cubeMesh->ScaleIrotPosition(
 			    { 1.0f, 1.0f, 1.0f },
-			    { 4, -1, 0 },
+			    { 180, -45, 0 },
 			    { 0.0f, 7.0f, 0.0f }
 			);
 			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Sphere, 8.0f);
@@ -128,7 +128,7 @@ int App::InitializeScene()
 			cursor->geometry = CreateBoxGeometry(1.0f, 2.0f, 1.0f, 2, 2, 2);
 			cursor->material = std::make_shared<Material>("vs_cursor", "fs_cursor");
 
-			cursor->ScaleIrotationPosition(
+			cursor->ScaleIrotPosition(
 			    { 1.0f, 1.02f, 1.0f },
 			    { 0, 0, 0 },
 			    { 0.5f, 1.0f, 0.5f }
@@ -142,7 +142,7 @@ int App::InitializeScene()
 			cubeMesh->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
 			cubeMesh->LoadTextures("FloorsCheckerboard_S_Diffuse.jpg", "FloorsCheckerboard_S_Normal.jpg");
 
-			cubeMesh->ScaleIrotationPosition(
+			cubeMesh->ScaleIrotPosition(
 			    { 1.0f, 1.0f, 1.0f },
 			    { 0, 0, 0 },
 			    { 0.0f, -1.0f, 0.0f }
@@ -163,7 +163,7 @@ int App::InitializeScene()
 				cubeMesh->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
 				cubeMesh->LoadTextures("brick_diffuse.jpg");
 
-				cubeMesh->ScaleIrotationPosition(
+				cubeMesh->ScaleIrotPosition(
 				    { 1.0f, 1.0f, 1.0f },
 				    { 0, 0, 0 },
 				    { i ? -0.5f : 0.5f, 3.0f, i ? -19.5f : 19.5f }
@@ -179,7 +179,7 @@ int App::InitializeScene()
 				cubeMesh->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
 				cubeMesh->LoadTextures("hardwood2_diffuse.jpg");
 
-				cubeMesh->ScaleIrotationPosition(
+				cubeMesh->ScaleIrotPosition(
 				    { 1.0f, 1.0f, 1.0f },
 				    { 0, 0, 0 },
 				    { i ? 19.5f : -19.5f, 3.0f, i ? -0.5f : 0.5f }
@@ -206,9 +206,9 @@ int App::InitializeScene()
 	}
 	if (auto object = MeshLoader::LoadModelFull("kenney_city-kit-commercial_20/building-n"))
 	{
-		object->ScaleIrotationPosition(
+		object->ScaleIrotPosition(
 		    { 1.0f, 1.0f, 1.0f },
-		    { 0, 2, 0 },
+		    { 0, 90, 0 },
 		    { 4.0f, 0.0f, -2.0f }
 		);
 		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh);
@@ -217,9 +217,9 @@ int App::InitializeScene()
 	if (auto object = MeshLoader::LoadModel("bunny_decimated", true))
 	{
 		object->material = std::make_shared<Material>("vs_mesh", "fs_mesh");
-		object->ScaleIrotationPosition(
+		object->ScaleIrotPosition(
 		    { 1.0f, 1.0f, 1.0f },
-		    { 0, 2, 0 },
+		    { 0, 90, 0 },
 		    { -3.0f, 5.0f, 0.0f }
 		);
 		object->CreateShapeBody(physics.get(), ShapeType_Cylinder, 3.0f);
@@ -228,9 +228,9 @@ int App::InitializeScene()
 	if (auto object = MeshLoader::LoadModel("donut"))
 	{
 		object->material = std::make_shared<Material>("vs_model", "fs_model");
-		object->ScaleIrotationPosition(
+		object->ScaleIrotPosition(
 		    { 1.5f, 1.5f, 1.5f },
-		    { 0, 4, 0 },
+		    { 0, 180, 0 },
 		    { 0.0f, 1.0f, -2.0f }
 		);
 		object->CreateShapeBody(physics.get(), ShapeType_Box, 1.0f);

@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-08-15
+// @version 2025-08-16
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -121,11 +121,10 @@ void App::FixedControls()
 		{
 			if (auto target = (camera->follow & CameraFollow_Cursor) ? cursor : selectedObj.lock())
 			{
-				if (flag & (1 | 8)) target->irot[0] = (target->irot[0] + ((flag & 1) ? 7 : 1)) & 7;
-				if (flag & (2 | 4)) target->irot[1] = (target->irot[1] + ((flag & 2) ? 7 : 1)) & 7;
-
-				target->rotation   = glm::vec3(target->irot[0], target->irot[1], target->irot[2]) * bx::kPiQuarter;
-				target->quaternion = glm::quat(target->rotation);
+				const int angleInc = xsettings.angleInc;
+				if (flag & (1 | 8)) target->irot[0] += (flag & 1) ? -angleInc : angleInc;
+				if (flag & (2 | 4)) target->irot[1] += (flag & 2) ? -angleInc : angleInc;
+				target->RotationFromIrot();
 				target->UpdateLocalMatrix(true);
 
 				// deactivate physical body

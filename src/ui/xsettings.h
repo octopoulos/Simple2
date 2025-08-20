@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-08-10
+// @version 2025-08-16
 
 #pragma once
 
@@ -75,6 +75,10 @@ struct XSettings
 	float   zoomKb;         ///< zoom speed with the keyboard
 	float   zoomWheel;      ///< zoom speed with the mouse wheel
 
+	// [map]
+	int   angleInc; ///< angle increment in degrees
+	float iconSize; ///< map icon size
+
 	// [physics]
 	bool bulletDebug; ///< bullet debug draw
 	bool physPaused;  ///< paused physics
@@ -101,7 +105,6 @@ struct XSettings
 	// [ui]
 	int   aspectRatio;    ///< frame aspect ratio
 	float fontScale;      ///< FontScaleMain
-	float iconSize;       ///< map icon size
 	bool  labelLeft;      ///< labels on the left of the inputs
 	str2k recentFiles[6]; ///< recent files for quick load
 	int   settingPad;     ///< override windows padding for CommonWindow

@@ -1,11 +1,12 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-08-15
+// @version 2025-08-16
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
 //
 #include "loaders/writer.h"
+#include "ui/xsettings.h"
 
 // clang-format off
 static const MAP_INT_STR OBJECT_NAMES = {
@@ -51,16 +52,29 @@ void Object3d::Render(uint8_t viewId, int renderFlags)
 	}
 }
 
-void Object3d::ScaleIrotationPosition(const glm::vec3& _scale, const std::array<int, 3>& _irot, const glm::vec3& _position)
+void Object3d::RotationFromIrot()
+{
+	// normalize irot to [-180, 180] degrees
+	const int snap = xsettings.angleInc;
+	for (int i = 0; i < 3; ++i)
+	{
+		const float degrees = TO_INT(bx::mod(TO_FLOAT(irot[i]) + 180.0f, 360.0f) - 180.0f);
+		irot[i] = TO_INT(round(degrees / snap) * snap);
+	}
+
+	rotation   = glm::vec3(bx::toRad(TO_FLOAT(irot[0])), bx::toRad(TO_FLOAT(irot[1])), bx::toRad(TO_FLOAT(irot[2])));
+	quaternion = glm::quat(rotation);
+}
+
+void Object3d::ScaleIrotPosition(const glm::vec3& _scale, const std::array<int, 3>& _irot, const glm::vec3& _position)
 {
 	std::memcpy(irot, _irot.data(), sizeof(irot));
 
 	position    = _position;
-	rotation    = glm::vec3(irot[0], irot[1], irot[2]) * bx::kPiQuarter;
 	scale       = _scale;
-	quaternion  = glm::quat(rotation);
 	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
 
+	RotationFromIrot();
 	UpdateLocalMatrix();
 }
 
@@ -72,9 +86,9 @@ void Object3d::ScaleRotationPosition(const glm::vec3& _scale, const glm::vec3& _
 	quaternion  = glm::quat(rotation);
 	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
 
-	irot[0] = int(rotation.x / bx::kPiQuarter + 0.1f);
-	irot[1] = int(rotation.x / bx::kPiQuarter + 0.1f);
-	irot[2] = int(rotation.x / bx::kPiQuarter + 0.1f);
+	irot[0] = TO_INT(bx::toDeg(rotation.x));
+	irot[1] = TO_INT(bx::toDeg(rotation.y));
+	irot[2] = TO_INT(bx::toDeg(rotation.z));
 
 	UpdateLocalMatrix();
 }
@@ -87,9 +101,9 @@ void Object3d::ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat&
 	rotation    = glm::eulerAngles(quaternion);
 	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
 
-	irot[0] = int(rotation.x / bx::kPiQuarter + 0.1f);
-	irot[1] = int(rotation.x / bx::kPiQuarter + 0.1f);
-	irot[2] = int(rotation.x / bx::kPiQuarter + 0.1f);
+	irot[0] = TO_INT(bx::toDeg(rotation.x));
+	irot[1] = TO_INT(bx::toDeg(rotation.y));
+	irot[2] = TO_INT(bx::toDeg(rotation.z));
 
 	UpdateLocalMatrix();
 }
@@ -98,6 +112,7 @@ int Object3d::Serialize(fmt::memory_buffer& outString, int bounds) const
 {
 	if (bounds & 1) WRITE_CHAR('{');
 	WRITE_INIT();
+	WRITE_KEY_INT3(irot);
 	if (!(type & ObjectType_HasBody) && matrix != glm::mat4(1.0f)) WRITE_KEY_MATRIX(matrix);
 	if (matrixWorld != glm::mat4(1.0f)) WRITE_KEY_MATRIX(matrixWorld);
 	WRITE_KEY_STRING(name);
