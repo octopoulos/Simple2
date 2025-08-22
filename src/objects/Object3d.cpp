@@ -129,11 +129,13 @@ int Object3d::Serialize(fmt::memory_buffer& outString, int bounds) const
 	if (bounds & 1) WRITE_CHAR('{');
 	WRITE_INIT();
 	if (irot[0] || irot[1] || irot[2]) WRITE_KEY_INT3(irot);
-	if (!(type & ObjectType_HasBody) && matrix != glm::mat4(1.0f)) WRITE_KEY_MATRIX(matrix);
-	if (matrixWorld != glm::mat4(1.0f)) WRITE_KEY_MATRIX(matrixWorld);
+	// if (!(type & ObjectType_HasBody) && matrix != glm::mat4(1.0f)) WRITE_KEY_MATRIX(matrix);
+	// if (matrixWorld != glm::mat4(1.0f)) WRITE_KEY_MATRIX(matrixWorld);
 	WRITE_KEY_STRING(name);
+	WRITE_KEY_VEC3(position);
+	if (scale != glm::vec3(1.0f)) WRITE_KEY_VEC3(scale);
 	WRITE_KEY_STRING2("type", ObjectName(type));
-	WRITE_KEY_BOOL(visible);
+	if (!visible) WRITE_KEY_BOOL(visible);
 	if (children.size())
 	{
 		WRITE_KEY("children");

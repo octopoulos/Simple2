@@ -199,80 +199,7 @@ void App::FixedControls()
 		if (downs[Key::Delete]) {}
 
 		// move cursor
-		{
-			static bx::Vec3 cacheForward = bx::InitZero;
-			static bx::Vec3 cacheRight   = bx::InitZero;
-
-			// keep used camera position locked until all keys are released
-			if (keys[Key::Down] || keys[Key::Left] || keys[Key::Right] || keys[Key::Up])
-			{
-				if (const int flag = ArrowsFlag())
-				{
-					if (auto target = (camera->follow & CameraFollow_Cursor) ? cursor : selectedObj.lock())
-					{
-						ui::Log("MOVE: {}", target->name);
-						if (target->posTs > 0.0)
-						{
-							target->position = target->position2;
-							target->posTs    = 0.0;
-						}
-						if (xsettings.smoothPos)
-						{
-							target->position1 = target->position;
-							target->position2 = target->position;
-						}
-						auto& result = xsettings.smoothPos ? target->position2 : target->position;
-
-						if (flag & (1 | 8))
-						{
-							const float dir = (flag & 8) ? 1.0f : -1.0f;
-							const float fx  = cacheForward.x;
-							const float fz  = cacheForward.z;
-
-							if (bx::abs(fx) > bx::abs(fz))
-								result.x = bx::floor(target->position.x + dir * SignNonZero(fx)) + 0.5f;
-							else
-								result.z = bx::floor(target->position.z + dir * SignNonZero(fz)) + 0.5f;
-						}
-						if (flag & (2 | 4))
-						{
-							const float dir = (flag & 4) ? 1.0f : -1.0f;
-							const float fx  = cacheRight.x;
-							const float fz  = cacheRight.z;
-
-							if (bx::abs(fx) > bx::abs(fz))
-								result.x = bx::floor(target->position.x + dir * SignNonZero(fx)) + 0.5f;
-							else
-								result.z = bx::floor(target->position.z + dir * SignNonZero(fz)) + 0.5f;
-						}
-
-						if (xsettings.smoothPos)
-							target->posTs = Nowd();
-						else
-						{
-							ui::Log("Move: {}", target->name);
-							target->UpdateLocalMatrix(true);
-						}
-
-						// deactivate physical body
-						if (target->type & ObjectType_HasBody)
-						{
-							auto mesh = std::static_pointer_cast<Mesh>(target);
-							mesh->SetBodyTransform();
-							mesh->ActivatePhysics(false);
-						}
-
-						camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(result));
-						camera->Zoom();
-					}
-				}
-			}
-			else
-			{
-				cacheForward = camera->forward;
-				cacheRight   = camera->right;
-			}
-		}
+		MoveCursor(false);
 
 		if (downs[Key::NumPad1]) camera->SetOrthographic({ 0.0f, 0.0f, -1.0f });
 		if (downs[Key::NumPad3]) camera->SetOrthographic({ 1.0f, 0.0f, 0.0f });
@@ -374,6 +301,101 @@ void App::FluidControls()
 	}
 }
 
+void App::MoveCursor(bool force)
+{
+	using namespace entry;
+
+	static bx::Vec3 cacheForward = bx::InitZero;
+	static bx::Vec3 cacheRight   = bx::InitZero;
+
+	auto&       ginput = GetGlobalInput();
+	const auto& keys   = ginput.keys;
+
+	// keep used camera position locked until all keys are released
+	if (force || keys[Key::Down] || keys[Key::Left] || keys[Key::Right] || keys[Key::Up])
+	{
+		if (const int flag = ArrowsFlag(); flag || force)
+		{
+			const bool isCursor = camera->follow & CameraFollow_Cursor;
+			if (auto target = isCursor ? cursor : selectedObj.lock())
+			{
+				ui::Log("MOVE: {}", target->name);
+				if (target->posTs > 0.0)
+				{
+					target->position = target->position2;
+					target->posTs    = 0.0;
+				}
+				if (xsettings.smoothPos)
+				{
+					target->position1 = target->position;
+					target->position2 = target->position;
+				}
+				auto& result = xsettings.smoothPos ? target->position2 : target->position;
+
+				if (flag & (1 | 8))
+				{
+					const float dir = (flag & 8) ? 1.0f : -1.0f;
+					const float fx  = cacheForward.x;
+					const float fz  = cacheForward.z;
+
+					if (bx::abs(fx) > bx::abs(fz))
+						result.x = bx::floor(target->position.x + dir * SignNonZero(fx)) + 0.5f;
+					else
+						result.z = bx::floor(target->position.z + dir * SignNonZero(fz)) + 0.5f;
+				}
+				if (flag & (2 | 4))
+				{
+					const float dir = (flag & 4) ? 1.0f : -1.0f;
+					const float fx  = cacheRight.x;
+					const float fz  = cacheRight.z;
+
+					if (bx::abs(fx) > bx::abs(fz))
+						result.x = bx::floor(target->position.x + dir * SignNonZero(fx)) + 0.5f;
+					else
+						result.z = bx::floor(target->position.z + dir * SignNonZero(fz)) + 0.5f;
+				}
+
+				if (xsettings.smoothPos)
+					target->posTs = Nowd();
+				else
+				{
+					ui::Log("Move: {}", target->name);
+					target->UpdateLocalMatrix(true);
+				}
+
+				// move cursor at the same time as the selectedObj?
+				if (!isCursor)
+				{
+					cursor->position    = target->position;
+					cursor->position.y  = 1.0f;
+					cursor->position1   = target->position1;
+					cursor->position1.y = 1.0f;
+					cursor->position2   = target->position2;
+					cursor->position2.y = 1.0f;
+					cursor->posTs       = target->posTs;
+					if (!xsettings.smoothPos) cursor->UpdateLocalMatrix(true);
+				}
+
+				// deactivate physical body
+				if (target->type & ObjectType_HasBody)
+				{
+					auto mesh = std::static_pointer_cast<Mesh>(target);
+					mesh->SetBodyTransform();
+					mesh->ActivatePhysics(false);
+				}
+
+				camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(result));
+				camera->Zoom();
+			}
+		}
+	}
+	else
+	{
+		cacheForward = camera->forward;
+		cacheRight   = camera->right;
+	}
+}
+
 void App::SelectObject(const sObject3d& obj)
 {
 	prevSelected = selectedObj;
@@ -385,6 +407,7 @@ void App::SelectObject(const sObject3d& obj)
 	camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(obj->position));
 	camera->Zoom();
 
+	MoveCursor(true);
 	PrintMatrix(obj->matrixWorld, obj->name);
 }
 

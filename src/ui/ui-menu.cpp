@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-17
+// @version 2025-08-18
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -84,8 +84,8 @@ void App::OpenFile(int action)
 	fileAction = action;
 
 	IGFD::FileDialogConfig config = {
-		.path  = FindDefault(actionFolders, action, "."),
-		.flags = ImGuiFileDialogFlags_Modal,
+		.path  = FindDefault(actionFolders, action, "data"),
+		.flags = ((action == OpenAction_SaveScene) ? ImGuiFileDialogFlags_ConfirmOverwrite : 0) | ImGuiFileDialogFlags_Modal,
 	};
 	ImGuiFileDialog::Instance()->OpenDialog("OpenFileX", FindDefault(titles, action, "Choose File"), ".json", config);
 }

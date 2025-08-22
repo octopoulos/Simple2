@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-08-17
+// @version 2025-08-18
 
 #pragma once
 
@@ -52,6 +52,9 @@ private:
 
 	/// Per-frame input logic (ex: smooth camera movement)
 	void FluidControls();
+
+	/// Move the cursor using the arrows
+	void MoveCursor(bool force);
 
 	/// Throw a geometry
 	/// @param geometryType: GeometryType_None for random

@@ -386,16 +386,21 @@ int Mesh::Serialize(fmt::memory_buffer& outString, int bounds) const
 		WRITE_KEY("material");
 		material->Serialize(outString);
 	}
-	if (texNames[0].size() || texNames[1].size() || texNames[2].size() || texNames[3].size())
+	// textures
 	{
-		WRITE_KEY("texNames");
-		WRITE_CHAR('[');
-		for (int i = 0; i < 4; ++i)
+		int texNum = 4;
+		while (texNum > 0 && texNames[texNum - 1].empty()) --texNum;
+		if (texNum > 0)
 		{
-			if (i > 0) WRITE_CHAR(',');
-			WRITE_JSON_STRING(texNames[i]);
+			WRITE_KEY("texNames");
+			WRITE_CHAR('[');
+			for (int i = 0; i < texNum; ++i)
+			{
+				if (i > 0) WRITE_CHAR(',');
+				WRITE_JSON_STRING(texNames[i]);
+			}
+			WRITE_CHAR(']');
 		}
-		WRITE_CHAR(']');
 	}
 	if (bounds & 2) WRITE_CHAR('}');
 	return keyId;
