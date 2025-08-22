@@ -1,6 +1,6 @@
 // Scene.h
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-17
 
 #pragma once
 
@@ -12,9 +12,8 @@ public:
 	UMAP_STR<std::weak_ptr<Object3d>> names = {}; ///< named children
 
 	Scene()
+	    : Object3d("Scene", ObjectType_Scene)
 	{
-		name = "Scene";
-		type = ObjectType_Scene;
 	}
 
 	~Scene() = default;

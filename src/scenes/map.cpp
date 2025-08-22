@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-08-15
+// @version 2025-08-17
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -11,7 +11,7 @@ void App::AddGeometry(uGeometry geometry)
 {
 	const auto& coord = cursor->position;
 
-	auto object      = std::make_shared<Mesh>();
+	auto object      = std::make_shared<Mesh>(fmt::format("{}:{}:{}:{} => {}", GeometryName(geometry->type), coord.x, coord.y, coord.z, GeometryShape(geometry->type, false)));
 	object->geometry = geometry;
 	object->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
 	object->LoadTextures("colors.png");
@@ -23,24 +23,26 @@ void App::AddGeometry(uGeometry geometry)
 	);
 	object->CreateShapeBody(physics.get(), GeometryShape(geometry->type, false));
 
-	mapNode->AddNamedChild(object, fmt::format("{}:{}:{}:{} => {}", GeometryName(geometry->type), coord.x, coord.y, coord.z, GeometryShape(geometry->type, false)));
+	mapNode->AddChild(object);
 }
 
-void App::AddObject(const std::string& name)
+void App::AddObject(std::string_view modelName)
 {
 	const auto& coord = cursor->position;
+	const auto& irot  = cursor->irot;
 
-	ui::Log("AddObject: {} @ {} {} {}", name, coord.x, coord.y, coord.z);
-	if (auto object = MeshLoader::LoadModelFull(name))
+	ui::Log("AddObject: {} @ {} {} {}", modelName, coord.x, coord.y, coord.z);
+	if (auto object = MeshLoader::LoadModelFull(fmt::format("{}:{}:{}:{}", modelName, coord.x, coord.y, coord.z), modelName))
 	{
-		object->ScaleRotationPosition(
+		object->ScaleIrotPosition(
 		    { 1.0f, 1.0f, 1.0f },
-		    { 0.0f, 0.0f, 0.0f },
+		    { irot[0], irot[1], irot[2] },
 		    { coord.x, coord.y, coord.z }
 		);
 		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh);
 
-		mapNode->AddNamedChild(object, fmt::format("{}:{}:{}:{}", name, coord.x, coord.y, coord.z));
+		mapNode->AddChild(object);
+		SelectObject(object);
 	}
 }
 

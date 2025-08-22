@@ -1,12 +1,13 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-08-16
+// @version 2025-08-18
 
 #include "stdafx.h"
 #include "app/App.h"
 //
 #include "common/imgui/imgui.h"
 #include "core/ShaderManager.h"
+#include "core/common3d.h"
 #include "entry/input.h"
 #include "loaders/MeshLoader.h"
 
@@ -66,6 +67,18 @@ void App::Controls()
 	}
 }
 
+void App::DeleteSelected()
+{
+	if (auto target = selectedObj.lock())
+	{
+		if (!(target->type & (ObjectType_Cursor | ObjectType_Map | ObjectType_Scene)))
+		{
+			if (auto* parent = target->parent)
+				parent->RemoveChild(target);
+		}
+	}
+}
+
 void App::FixedControls()
 {
 	using namespace entry;
@@ -116,7 +129,7 @@ void App::FixedControls()
 		// print with GUI
 		if (downs[Key::Print]) wantScreenshot = 1;
 
-		// rotate cursor
+		// rotate object
 		if (const int flag = ArrowsFlag())
 		{
 			if (auto target = (camera->follow & CameraFollow_Cursor) ? cursor : selectedObj.lock())
@@ -124,7 +137,8 @@ void App::FixedControls()
 				const int angleInc = xsettings.angleInc;
 				if (flag & (1 | 8)) target->irot[0] += (flag & 1) ? -angleInc : angleInc;
 				if (flag & (2 | 4)) target->irot[1] += (flag & 2) ? -angleInc : angleInc;
-				target->RotationFromIrot();
+				target->RotationFromIrot(false);
+				ui::Log("Rotate: {}", target->name);
 				target->UpdateLocalMatrix(true);
 
 				// deactivate physical body
@@ -141,9 +155,9 @@ void App::FixedControls()
 	else
 	{
 		// 4.a) new keys
-		if (downs[Key::KeyH]) showPopup ^= Popup_AddGeometry;
-		if (downs[Key::KeyJ]) showPopup ^= Popup_AddMesh;
-		if (downs[Key::KeyM]) showPopup ^= Popup_AddMap;
+		if (downs[Key::KeyH]) ShowPopup(Popup_AddGeometry);
+		if (downs[Key::KeyJ]) ShowPopup(Popup_AddMesh);
+		if (downs[Key::KeyM]) ShowPopup(Popup_AddMap);
 
 		if (DOWN_OR_REPEAT(Key::KeyO))
 		{
@@ -151,6 +165,7 @@ void App::FixedControls()
 			pauseNextFrame       = true;
 		}
 		if (downs[Key::KeyP]) xsettings.physPaused = !xsettings.physPaused;
+		if (downs[Key::KeyX]) ShowPopup(Popup_Delete);
 
 		if (downs[Key::Key1]) ThrowMesh(ThrowAction_Throw, "donut3", ShapeType_Cylinder, "donut_base.png");
 		// TODO: Shape_Capsule doesn't work
@@ -171,6 +186,18 @@ void App::FixedControls()
 			}
 		}
 
+		if (downs[Key::Esc]) hidePopup |= 1;
+		if (downs[Key::Tab]) showLearn = !showLearn;
+
+		if (downs[Key::F4]) xsettings.bulletDebug = !xsettings.bulletDebug;
+		if (downs[Key::F5]) xsettings.projection = 1 - xsettings.projection;
+		if (downs[Key::F11]) xsettings.instancing = !xsettings.instancing;
+
+		// print without GUI
+		if (downs[Key::Print]) wantScreenshot = 2;
+
+		if (downs[Key::Delete]) {}
+
 		// move cursor
 		{
 			static bx::Vec3 cacheForward = bx::InitZero;
@@ -183,6 +210,7 @@ void App::FixedControls()
 				{
 					if (auto target = (camera->follow & CameraFollow_Cursor) ? cursor : selectedObj.lock())
 					{
+						ui::Log("MOVE: {}", target->name);
 						if (target->posTs > 0.0)
 						{
 							target->position = target->position2;
@@ -221,7 +249,10 @@ void App::FixedControls()
 						if (xsettings.smoothPos)
 							target->posTs = Nowd();
 						else
+						{
+							ui::Log("Move: {}", target->name);
 							target->UpdateLocalMatrix(true);
+						}
 
 						// deactivate physical body
 						if (target->type & ObjectType_HasBody)
@@ -242,16 +273,6 @@ void App::FixedControls()
 				cacheRight   = camera->right;
 			}
 		}
-
-		if (downs[Key::Esc]) hidePopup |= 1;
-		if (downs[Key::Tab]) showLearn = !showLearn;
-
-		if (downs[Key::F4]) xsettings.bulletDebug = !xsettings.bulletDebug;
-		if (downs[Key::F5]) xsettings.projection = 1 - xsettings.projection;
-		if (downs[Key::F11]) xsettings.instancing = !xsettings.instancing;
-
-		// print without GUI
-		if (downs[Key::Print]) wantScreenshot = 2;
 
 		if (downs[Key::NumPad1]) camera->SetOrthographic({ 0.0f, 0.0f, -1.0f });
 		if (downs[Key::NumPad3]) camera->SetOrthographic({ 1.0f, 0.0f, 0.0f });
@@ -314,7 +335,7 @@ void App::FluidControls()
 	if (!ImGui::MouseOverArea())
 	{
 		// mouse clicks
-		if (ginput.buttonDowns[3]) showPopup ^= Popup_Add;
+		if (ginput.buttonDowns[3]) ShowPopup(Popup_Add);
 
 		// holding key down
 		if (const auto& keys = ginput.keys)
@@ -363,6 +384,8 @@ void App::SelectObject(const sObject3d& obj)
 
 	camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(obj->position));
 	camera->Zoom();
+
+	PrintMatrix(obj->matrixWorld, obj->name);
 }
 
 void App::ThrowGeometry(int action, int geometryType, std::string_view textureName)
@@ -381,13 +404,12 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 		if (parentObj->type & ObjectType_Mesh)
 			parent = static_cast<Mesh*>(parentObj.get());
 	}
-	else if (auto mesh = std::make_shared<Mesh>())
+	else if (auto mesh = std::make_shared<Mesh>(std::move(groupName), ObjectType_Group | ObjectType_Instance))
 	{
-		mesh->type |= ObjectType_Group | ObjectType_Instance;
 		mesh->geometry = CreateAnyGeometry(geometryType);
 		mesh->material = std::make_shared<Material>("vs_model_texture_instance", "fs_model_texture_instance");
 		if (textureName.size()) mesh->LoadTextures(textureName);
-		scene->AddNamedChild(mesh, std::move(groupName));
+		scene->AddChild(mesh);
 
 		parent = mesh.get();
 		ui::Log("ThrowGeometry: new parent: {}", name);
@@ -395,16 +417,16 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 	if (!parent) return;
 
 	// 2) clone an instance
-	if (auto object = parent->CloneInstance())
+	if (auto object = parent->CloneInstance(fmt::format("{}:{}", name, parent->children.size())))
 	{
 		object->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
 
 		const auto  pos   = camera->pos2;
 		const float scale = std::clamp(NormalFloat(1.0f, 0.2f), 0.25f, 1.5f);
 
-		object->ScaleRotationPosition(
+		object->ScaleIrotPosition(
 		    { scale, scale, scale },
-		    { 0.0f, 0.0f, 0.0f },
+		    { 0, 0, 0 },
 		    { pos.x, pos.y, pos.z });
 		object->CreateShapeBody(physics.get(), GeometryShape(geometryType), 1.0f);
 
@@ -415,7 +437,7 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 			object->body->body->applyImpulse(BxToBullet(impulse), offset);
 		}
 
-		parent->AddNamedChild(std::move(object), fmt::format("{}:{}", name, parent->children.size()));
+		parent->AddChild(std::move(object));
 	}
 }
 
@@ -431,12 +453,12 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, std::strin
 		if (parentObj->type & ObjectType_Mesh)
 			parent = static_cast<Mesh*>(parentObj.get());
 	}
-	else if (auto mesh = MeshLoader::LoadModelFull(name, textureName))
+	else if (auto mesh = MeshLoader::LoadModelFull(groupName, name, textureName))
 	{
 		mesh->type |= ObjectType_Group | ObjectType_Instance;
 		mesh->material->LoadProgram("vs_model_texture_instance", "fs_model_texture_instance");
 		//if (textureName.size()) mesh->LoadTextures(textureName);
-		scene->AddNamedChild(mesh, std::move(groupName));
+		scene->AddChild(mesh);
 
 		parent = mesh.get();
 		ui::Log("ThrowMesh: new parent: {}", name);
@@ -444,7 +466,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, std::strin
 	if (!parent) return;
 
 	// 2) clone an instance
-	if (auto object = parent->CloneInstance())
+	if (auto object = parent->CloneInstance(fmt::format("{}:{}", name, parent->children.size())))
 	{
 		object->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
 
@@ -490,6 +512,6 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, std::strin
 			object->body->body->applyImpulse(BxToBullet(impulse), offset);
 		}
 
-		parent->AddNamedChild(object, fmt::format("{}:{}", name, parent->children.size()));
+		parent->AddChild(object);
 	}
 }

@@ -1,6 +1,6 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-08-10
+// @version 2025-08-17
 
 #pragma once
 
@@ -43,9 +43,9 @@ public:
 	bx::Vec3 up       = { 0.0f, 1.0f, 0.0f };  ///< up dir
 	bx::Vec3 worldUp  = { 0.0f, 1.0f, 0.0f };  ///< world up dir
 
-	Camera()
+	Camera(std::string_view name)
+	    : Object3d(name, ObjectType_Camera)
 	{
-		type = ObjectType_Camera;
 		Initialize();
 	}
 

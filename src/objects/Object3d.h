@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-08-16
+// @version 2025-08-18
 
 #pragma once
 
@@ -14,15 +14,17 @@ using sObject3d = std::shared_ptr<Object3d>;
 /// An object can have multiple types (like a flag)
 enum ObjectTypes_ : int
 {
-	ObjectType_Basic     = 1 << 0, ///< basic object
-	ObjectType_Camera    = 1 << 1, ///< camera object
-	ObjectType_Clone     = 1 << 2, ///< clone of another object (doesn't own groups)
-	ObjectType_Group     = 1 << 3, ///< group (no render)
-	ObjectType_HasBody   = 1 << 4, ///< has a body (Mesh only)
-	ObjectType_Instance  = 1 << 5, ///< instance
-	ObjectType_Mesh      = 1 << 6, ///< mesh
-	ObjectType_RubikCube = 1 << 7, ///< Rubic cube
-	ObjectType_Scene     = 1 << 8, ///< scene
+	ObjectType_Basic     = 1 << 0,  ///< basic object
+	ObjectType_Camera    = 1 << 1,  ///< camera object
+	ObjectType_Clone     = 1 << 2,  ///< clone of another object (doesn't own groups)
+	ObjectType_Cursor    = 1 << 3,  ///< cursor for placing objects
+	ObjectType_Group     = 1 << 4,  ///< group (no render)
+	ObjectType_HasBody   = 1 << 5,  ///< has a body (Mesh only)
+	ObjectType_Instance  = 1 << 6,  ///< instance
+	ObjectType_Map       = 1 << 7,  ///< map
+	ObjectType_Mesh      = 1 << 8,  ///< mesh
+	ObjectType_RubikCube = 1 << 9,  ///< Rubic cube
+	ObjectType_Scene     = 1 << 10, ///< scene
 };
 
 enum RenderFlags_ : int
@@ -54,19 +56,16 @@ public:
 	int                    type        = ObjectType_Basic;           ///< ObjectTypes_
 	bool                   visible     = true;                       ///< object is rendered if true
 
-	Object3d()          = default;
+	Object3d(std::string_view name, int type = ObjectType_Basic)
+		: name(name)
+	    , type(type)
+	{
+	}
+
 	virtual ~Object3d() = default;
 
 	/// Add a child to the object
 	virtual void AddChild(sObject3d child);
-
-	/// Add a child and specify its name
-	void AddNamedChild(sObject3d child, std::string&& name)
-	{
-		type |= ObjectType_Group;
-		child->name = std::move(name);
-		AddChild(child);
-	}
 
 	/// Remove a child from the object
 	virtual void RemoveChild(const sObject3d& child);
@@ -75,7 +74,8 @@ public:
 	virtual void Render(uint8_t viewId, int renderFlags);
 
 	/// Calculate rotation and quaternion from irot
-	void RotationFromIrot();
+	/// @param instant: instant rotation, no smoothing
+	void RotationFromIrot(bool instant);
 
 	/// Apply scale then rotation then translation
 	void ScaleIrotPosition(const glm::vec3& _scale, const std::array<int, 3>& _irot, const glm::vec3& _position);

@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-08-10
+// @version 2025-08-17
 
 #pragma once
 
@@ -17,7 +17,8 @@ enum Popups_ : int
 	Popup_AddGeometry = 1 << 1,
 	Popup_AddMap      = 1 << 2,
 	Popup_AddMesh     = 1 << 3,
-	Popup_Any         = Popup_Add | Popup_AddGeometry | Popup_AddMap | Popup_AddMesh,
+	Popup_Delete      = 1 << 4,
+	Popup_Any         = Popup_Add | Popup_AddGeometry | Popup_AddMap | Popup_AddMesh | Popup_Delete,
 };
 
 class App
@@ -39,11 +40,9 @@ public:
 	///////////
 
 private:
-	int   hidePopup  = 0;             ///< close specific ImGui popups
 	float inputDelta = 1.0f / 120.0f; ///< input fixed time step (in seconds)
 	int   inputFrame = 0;             ///< current input frame
 	float inputLag   = 0.0f;          ///< accumulated lag for fixed-step input
-	int   showPopup  = 0;             ///< show specific ImGui popups
 
 	/// Check if arrows are being pushed, &1: down, &2: left, &4: right, &8: up
 	int ArrowsFlag();
@@ -97,7 +96,7 @@ public:
 	MAP_STR<MAP_STR_INT> kitModels = {}; ///< model database: [title, filename]
 
 	/// Insert an object into the map
-	void AddObject(const std::string& name);
+	void AddObject(std::string_view modelName);
 
 	/// Rescan folders to update the assets
 	void RescanAssets();
@@ -133,6 +132,9 @@ private:
 	std::weak_ptr<Object3d>       prevSelected = {};      ///< previously selected object
 	int64_t                       startTime    = 0;       ///< initial time
 
+	/// Delete the selected object
+	void DeleteSelected();
+
 	/// Create scene and physics
 	int InitializeScene();
 
@@ -140,6 +142,7 @@ public:
 	sObject3d               scene       = nullptr; ///< scene container
 	std::weak_ptr<Object3d> selectedObj = {};      ///< selected object for edit
 
+	/// Select the object to follow
 	void SelectObject(const sObject3d& obj);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -161,8 +164,10 @@ private:
 	UMAP_INT_STR actionFolders = {};    ///< open image & save screenshot in different folders
 	int          fileAction    = 0;     ///< action to take in OpenedFile
 	std::string  fileFolder    = {};    ///< folder after OpenFile
+	int          hidePopup     = 0;     ///< close specific ImGui popups
 	bool         showFxTest    = false; ///< show FxTestBed
 	bool         showImGuiDemo = false; ///< show ImGui demo window
+	int          showPopup     = 0;     ///< show specific ImGui popups
 	int          videoFrame    = 0;     ///< how many video frames have been captured so far
 
 	/// Handle file dialogs
@@ -174,8 +179,14 @@ private:
 	/// Opened a file with the dialog
 	void OpenedFile(int action, const std::filesystem::path& path);
 
+	/// Show all the popups
+	void PopupsUi();
+
 	/// Show the menu bar
 	void ShowMainMenu(float alpha);
+
+	/// Show/hide popups
+	void ShowPopup(int flag);
 
 public:
 	int  wantScreenshot = 0;     ///< capture a screenshot this frame? &1: with UI, &2: without UI, &4: capture next frame

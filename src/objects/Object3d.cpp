@@ -1,10 +1,11 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-08-16
+// @version 2025-08-18
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
 //
+#include "core/common3d.h"
 #include "loaders/writer.h"
 #include "ui/xsettings.h"
 
@@ -28,6 +29,7 @@ static const MAP_INT_STR OBJECT_NAMES = {
 
 void Object3d::AddChild(sObject3d child)
 {
+	type |= ObjectType_Group;
 	child->parent = this;
 	children.push_back(std::move(child));
 }
@@ -52,8 +54,9 @@ void Object3d::Render(uint8_t viewId, int renderFlags)
 	}
 }
 
-void Object3d::RotationFromIrot()
+void Object3d::RotationFromIrot(bool instant)
 {
+	ui::Log("RotationFromIrot: {} {} : {} {} {}", name, instant, irot[0], irot[1], irot[2]);
 	// normalize irot to [-180, 180] degrees
 	const int snap = xsettings.angleInc;
 	for (int i = 0; i < 3; ++i)
@@ -63,13 +66,17 @@ void Object3d::RotationFromIrot()
 	}
 
 	rotation = glm::vec3(bx::toRad(TO_FLOAT(irot[0])), bx::toRad(TO_FLOAT(irot[1])), bx::toRad(TO_FLOAT(irot[2])));
-	if (xsettings.smoothQuat)
+	if ((!instant || true) && xsettings.smoothQuat)
 	{
 		quaternion1 = quaternion;
 		quaternion2 = glm::quat(rotation);
 		quatTs      = Nowd();
 	}
-	else quaternion = glm::quat(rotation);
+	else
+	{
+		quaternion = glm::quat(rotation);
+		quatTs     = 0.0;
+	}
 }
 
 void Object3d::ScaleIrotPosition(const glm::vec3& _scale, const std::array<int, 3>& _irot, const glm::vec3& _position)
@@ -80,7 +87,8 @@ void Object3d::ScaleIrotPosition(const glm::vec3& _scale, const std::array<int, 
 	scale       = _scale;
 	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
 
-	RotationFromIrot();
+	RotationFromIrot(true);
+	ui::Log("ScaleIrotPosition: {}", name);
 	UpdateLocalMatrix();
 }
 
@@ -96,6 +104,7 @@ void Object3d::ScaleRotationPosition(const glm::vec3& _scale, const glm::vec3& _
 	irot[1] = TO_INT(bx::toDeg(rotation.y));
 	irot[2] = TO_INT(bx::toDeg(rotation.z));
 
+	ui::Log("ScaleRotationPosition: {}", name);
 	UpdateLocalMatrix();
 }
 
@@ -111,6 +120,7 @@ void Object3d::ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat&
 	irot[1] = TO_INT(bx::toDeg(rotation.y));
 	irot[2] = TO_INT(bx::toDeg(rotation.z));
 
+	ui::Log("ScaleQuaternionPosition: {}", name);
 	UpdateLocalMatrix();
 }
 
@@ -118,7 +128,7 @@ int Object3d::Serialize(fmt::memory_buffer& outString, int bounds) const
 {
 	if (bounds & 1) WRITE_CHAR('{');
 	WRITE_INIT();
-	WRITE_KEY_INT3(irot);
+	if (irot[0] || irot[1] || irot[2]) WRITE_KEY_INT3(irot);
 	if (!(type & ObjectType_HasBody) && matrix != glm::mat4(1.0f)) WRITE_KEY_MATRIX(matrix);
 	if (matrixWorld != glm::mat4(1.0f)) WRITE_KEY_MATRIX(matrixWorld);
 	WRITE_KEY_STRING(name);
@@ -147,6 +157,8 @@ void Object3d::UpdateLocalMatrix(bool force)
 {
 	matrix = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(quaternion) * scaleMatrix;
 	UpdateWorldMatrix(force);
+	ui::Log("UpdateLocalMatrix: {} {} {} {} : {} {} {}", name, position.x, position.y, position.z, irot[0], irot[1], irot[2]);
+	PrintMatrix(matrixWorld, name);
 }
 
 void Object3d::UpdateWorldMatrix(bool force)

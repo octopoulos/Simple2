@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-08-16
+// @version 2025-08-18
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -31,9 +31,9 @@ void Mesh::ActivatePhysics(bool activate)
 	body->body->activate(activate);
 }
 
-sMesh Mesh::CloneInstance()
+sMesh Mesh::CloneInstance(std::string_view cloneName)
 {
-	auto clone = std::make_shared<Mesh>();
+	auto clone = std::make_shared<Mesh>(cloneName);
 	{
 		clone->geometry = geometry;
 		clone->groups   = groups;
@@ -416,6 +416,7 @@ void Mesh::SetBodyTransform()
 	quaternion  = glm::quat_cast(rotMtx);
 	rotation    = glm::eulerAngles(quaternion);
 	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+	ui::Log("SetBodyTransform: {}", name);
 	UpdateLocalMatrix();
 
 	btTransform transform;
@@ -502,6 +503,7 @@ void Mesh::SynchronizePhysics()
 	// interpolation
 	else if (posTs > 0.0 || quatTs > 0.0)
 	{
+		ui::Log("SynchronizePhysics/interpolation: {} {} {}", name, posTs, quatTs);
 		const double interval = xsettings.repeatInterval * 1e-3;
 		const double nowd     = Nowd();
 
@@ -533,19 +535,19 @@ void Mesh::SynchronizePhysics()
 // FUNCTIONS
 ////////////
 
-static sMesh MeshLoad(bx::ReaderSeekerI* reader, bool ramcopy)
+static sMesh MeshLoad(std::string_view name, bx::ReaderSeekerI* reader, bool ramcopy)
 {
-	auto mesh = std::make_shared<Mesh>();
+	auto mesh = std::make_shared<Mesh>(name);
 	mesh->Load(reader, ramcopy);
 	return mesh;
 }
 
-sMesh MeshLoad(const bx::FilePath& filePath, bool ramcopy)
+sMesh MeshLoad(std::string_view name, const bx::FilePath& filePath, bool ramcopy)
 {
 	bx::FileReaderI* reader = entry::getFileReader();
 	if (bx::open(reader, filePath))
 	{
-		auto mesh = MeshLoad(reader, ramcopy);
+		auto mesh = MeshLoad(name, reader, ramcopy);
 		bx::close(reader);
 		return mesh;
 	}

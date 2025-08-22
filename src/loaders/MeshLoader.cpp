@@ -1,6 +1,6 @@
 // MeshLoader.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-17
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -8,25 +8,25 @@
 #include "core/ShaderManager.h"
 #include "textures/TextureManager.h"
 
-sMesh MeshLoader::LoadModel(std::string_view name, bool ramcopy)
+sMesh MeshLoader::LoadModel(std::string_view name, std::string_view modelName, bool ramcopy)
 {
 	std::filesystem::path path = "runtime/models";
-	path /= fmt::format("{}.bin", name);
+	path /= fmt::format("{}.bin", modelName);
 
 	bx::FilePath filePath(path.string().c_str());
 
-	auto mesh = MeshLoad(filePath, ramcopy);
+	auto mesh = MeshLoad(name, filePath, ramcopy);
 	if (!mesh)
 	{
-		ui::LogError("LoadModel: Cannot load: {} @{}", name, path);
+		ui::LogError("LoadModel: Cannot load: {} @{}", modelName, path);
 		return nullptr;
 	}
 	return mesh;
 }
 
-sMesh MeshLoader::LoadModelFull(std::string_view name, std::string_view textureName)
+sMesh MeshLoader::LoadModelFull(std::string_view name, std::string_view modelName, std::string_view textureName)
 {
-	auto mesh = LoadModel(name, true);
+	auto mesh = LoadModel(name, modelName, true);
 	if (!mesh) return nullptr;
 
 	// 1) default shader
@@ -40,28 +40,28 @@ sMesh MeshLoader::LoadModelFull(std::string_view name, std::string_view textureN
 	}
 	else
 	{
-		const auto parent      = std::filesystem::path(name).parent_path();
+		const auto parent      = std::filesystem::path(modelName).parent_path();
 		const auto texturePath = std::filesystem::path("runtime/textures") / parent;
 
 		if (!parent.empty() && IsDirectory(texturePath))
 		{
-			VEC_STR names;
+			VEC_STR texNames;
 			for (const auto& dirEntry : std::filesystem::directory_iterator { texturePath })
 			{
 				const auto& path     = dirEntry.path();
 				const auto  filename = path.filename();
-				const auto  name     = fmt::format("{}/{}", parent.string(), filename.string());
-				names.push_back(name);
+				const auto  texName  = fmt::format("{}/{}", parent.string(), filename.string());
+				texNames.push_back(texName);
 			}
 
 			// load all texture variations
-			if (const int size = TO_INT(names.size()))
+			if (const int size = TO_INT(texNames.size()))
 			{
-				for (int id = -1; const auto& name : names)
+				for (int id = -1; const auto& texName : texNames)
 				{
-					const auto& texture = GetTextureManager().LoadTexture(name);
+					const auto& texture = GetTextureManager().LoadTexture(texName);
 					if (bgfx::isValid(texture)) mesh->textures.push_back(texture);
-					ui::Log("=> {} {} {}", id, name, bgfx::isValid(texture));
+					ui::Log("=> {} {} {}", id, texName, bgfx::isValid(texture));
 				}
 			}
 		}

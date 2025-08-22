@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-08-15
+// @version 2025-08-17
 
 #pragma once
 
@@ -86,16 +86,16 @@ public:
 	bgfx::TextureHandle              texNormal   = BGFX_INVALID_HANDLE; ///
 	std::vector<bgfx::TextureHandle> textures    = {};                  ///< all found textures
 
-	Mesh()
+	Mesh(std::string_view name, int typeFlag = 0)
+	    : Object3d(name, ObjectType_Mesh | typeFlag)
 	{
-		type = ObjectType_Mesh;
 	}
 
-	Mesh(std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material)
-	    : geometry(std::move(geometry))
+	Mesh(std::string_view name, std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material)
+		: Object3d(name, ObjectType_Mesh)
+	    , geometry(std::move(geometry))
 	    , material(std::move(material))
 	{
-		type = ObjectType_Mesh;
 	}
 
 	virtual ~Mesh() override { Destroy(); }
@@ -104,7 +104,7 @@ public:
 	void ActivatePhysics(bool activate);
 
 	/// Make an instanced copy of itself => faster loading
-	sMesh CloneInstance();
+	sMesh CloneInstance(std::string_view cloneName);
 
 	/// Utility to create a shape then a body
 	void CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass = 0.0f, const btVector4& dims = { 0.0f, 0.0f, 0.0f, 0.0f });
@@ -147,6 +147,6 @@ public:
 // FUNCTIONS
 ////////////
 
-sMesh      MeshLoad(const bx::FilePath& filePath, bool ramcopy = false);
+sMesh      MeshLoad(std::string_view name, const bx::FilePath& filePath, bool ramcopy = false);
 MeshState* MeshStateCreate();
 void       MeshStateDestroy(MeshState* meshState);

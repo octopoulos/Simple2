@@ -1,6 +1,6 @@
 // ui-common.cpp
 // @author octopoulos
-// @version 2025-08-08
+// @version 2025-08-17
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -62,19 +62,19 @@ static int PushBlender(int mode)
 		// clang-format off
 		if (mode == 1)
 		{
-			ImGui::PushStyleColor(ImGuiCol_FrameBg       , ImVec4(0.16f, 0.16f, 0.16f, 1.00f));
-			ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.19f, 0.19f, 0.19f, 1.00f));
-			ImGui::PushStyleColor(ImGuiCol_FrameBgActive , ImVec4(0.27f, 0.38f, 0.56f, 1.00f));
-			ImGui::PushStyleColor(ImGuiCol_Button        , ImVec4(0.16f, 0.16f, 0.16f, 1.00f));
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered , ImVec4(0.19f, 0.19f, 0.19f, 1.00f));
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive  , ImVec4(0.27f, 0.38f, 0.56f, 1.00f));
+			ImGui::PushStyleColor(ImGuiCol_FrameBg       , ImVec4(0.160f, 0.160f, 0.160f, 1.000f));
+			ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.190f, 0.190f, 0.190f, 1.000f));
+			ImGui::PushStyleColor(ImGuiCol_FrameBgActive , ImVec4(0.270f, 0.380f, 0.560f, 1.000f));
+			ImGui::PushStyleColor(ImGuiCol_Button        , ImVec4(0.160f, 0.160f, 0.160f, 1.000f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered , ImVec4(0.190f, 0.190f, 0.190f, 1.000f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive  , ImVec4(0.270f, 0.380f, 0.560f, 1.000f));
 			return 6;
 		}
 		else
 		{
-			ImGui::PushStyleColor(ImGuiCol_FrameBg       , ImVec4(0.11f, 0.11f, 0.11f, 0.88f)); // 29
-			ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.14f, 0.14f, 0.14f, 1.00f)); // 35
-			ImGui::PushStyleColor(ImGuiCol_FrameBgActive , ImVec4(0.09f, 0.09f, 0.09f, 1.00f)); // 24
+			ImGui::PushStyleColor(ImGuiCol_FrameBg       , ImVec4(0.110f, 0.110f, 0.110f, 0.880f)); // 29
+			ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.140f, 0.140f, 0.140f, 1.000f)); // 35
+			ImGui::PushStyleColor(ImGuiCol_FrameBgActive , ImVec4(0.090f, 0.090f, 0.090f, 1.000f)); // 24
 			return 3;
 		}
 		// clang-format on

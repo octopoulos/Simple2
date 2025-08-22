@@ -1,6 +1,6 @@
 // MapWindow.cpp
 // @author octopoulos
-// @version 2025-08-06
+// @version 2025-08-17
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -68,7 +68,10 @@ public:
 
 								ImTextureID texId = (ImTextureID)(uintptr_t)handle.idx;
 								if (ImGui::ImageButton(fmt::format("##{}", kitName).c_str(), ImTextureRef(texId), ImVec2(imageSize, imageSize), uv0, uv1))
+								{
 									app->AddObject(kitName);
+									ImGui::SetWindowFocus(nullptr);
+								}
 
 								if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", name.c_str());
 								hasImage = true;
@@ -80,7 +83,10 @@ public:
 						{
 							const ImVec2 boxSize = { imageSize + imagePadding, imageSize + imagePadding };
 							if (ImGui::Button(fmt::format("##{}", kitName).c_str(), boxSize))
+							{
 								app->AddObject(kitName);
+								ImGui::SetWindowFocus(nullptr);
+							}
 
 							// draw wrapped text manually inside the button
 							const ImVec2 textMin   = ImGui::GetItemRectMin();

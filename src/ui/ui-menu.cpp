@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-15
+// @version 2025-08-17
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -67,48 +67,7 @@ int App::MainUi()
 	if (showFxTest) FxTestBed();
 #endif // WITH_FX
 
-	// popups
-	static int currentPopup;
-	if (showPopup & Popup_Any)
-	{
-		ImGui::OpenPopup("popup_Add");
-		currentPopup = showPopup;
-		showPopup &= ~Popup_Any;
-	}
-	if (ImGui::BeginPopup("popup_Add"))
-	{
-		if (currentPopup & Popup_AddGeometry)
-		{
-			ImGui::Text("Add geometry");
-			ImGui::Separator();
-			for (int type = GeometryType_None + 1; type < GeometryType_Count; ++type)
-			{
-				if (ImGui::MenuItem(GeometryName(type).c_str()))
-				{
-					ui::Log("Add geometry: {} {}", type, GeometryName(type));
-					auto geometry = CreateAnyGeometry(type);
-					AddGeometry(std::move(geometry));
-				}
-			}
-		}
-		else if (currentPopup & Popup_AddMap)
-		{
-			ImGui::Text("Add map tile");
-			ImGui::Separator();
-		}
-		else if (currentPopup & Popup_AddMesh)
-		{
-			ImGui::Text("Add mesh");
-			ImGui::Separator();
-		}
-
-		if (hidePopup & Popup_Any)
-		{
-			ImGui::CloseCurrentPopup();
-			hidePopup &= ~Popup_Any;
-		}
-		ImGui::EndPopup();
-	}
+	PopupsUi();
 
 	return drawnFlag;
 }
@@ -142,6 +101,79 @@ void App::OpenedFile(int action, const std::filesystem::path& path)
 	case OpenAction_SaveScene: std::static_pointer_cast<Scene>(scene)->SaveScene(path); break;
 	default:
 		ui::Log("OpenedFile: Unknown action: {} {}", action, path);
+	}
+}
+
+void App::PopupsUi()
+{
+	static int currentPopup;
+	if (showPopup & Popup_Any)
+	{
+		ImGui::OpenPopup("popup_Any");
+		currentPopup = showPopup;
+		showPopup &= ~Popup_Any;
+
+		int offX = 0.0f;
+		int offY = 0.0f;
+		if (currentPopup & Popup_Delete)
+		{
+			offX = 322.0f;
+			offY = 118.0f;
+		}
+
+		const ImVec2 mousePos = ImGui::GetMousePos();
+		const ImVec2 popupPos = ImVec2(bx::max(mousePos.x - offX, 0.0f), bx::max(mousePos.y - offY, 0.0f));
+		ImGui::SetNextWindowPos(popupPos);
+	}
+	if (ImGui::BeginPopup("popup_Any"))
+	{
+		if (currentPopup & Popup_AddGeometry)
+		{
+			ImGui::Text("Add geometry");
+			ImGui::Separator();
+			for (int type = GeometryType_None + 1; type < GeometryType_Count; ++type)
+			{
+				if (ImGui::MenuItem(GeometryName(type).c_str()))
+				{
+					ui::Log("Add geometry: {} {}", type, GeometryName(type));
+					auto geometry = CreateAnyGeometry(type);
+					AddGeometry(std::move(geometry));
+				}
+			}
+		}
+		else if (currentPopup & Popup_AddMap)
+		{
+			ImGui::Text("Add map tile");
+			ImGui::Separator();
+		}
+		else if (currentPopup & Popup_AddMesh)
+		{
+			ImGui::Text("Add mesh");
+			ImGui::Separator();
+		}
+		else if (currentPopup & Popup_Delete)
+		{
+			if (auto target = selectedObj.lock())
+			{
+				ImGui::Text("Delete selected object?");
+				ImGui::Text("(%s)", target->name.c_str());
+				ImGui::Dummy(ImVec2(0.0f, 8.0f));
+				if (ImGui::Button("Cancel", ImVec2(160.0f, 0.0f))) hidePopup |= Popup_Delete;
+				ImGui::SameLine();
+				ImGui::PushStyleColor(ImGuiCol_Button        , ImVec4(0.278f, 0.447f, 0.702f, 1.00f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered , ImVec4(0.384f, 0.545f, 0.792f, 1.00f));
+				if (ImGui::Button("Delete", ImVec2(160.0f, 0.0f))) DeleteSelected();
+				ImGui::PopStyleColor(2);
+			}
+			else hidePopup |= Popup_Delete;
+		}
+
+		if (hidePopup & Popup_Any)
+		{
+			ImGui::CloseCurrentPopup();
+			hidePopup &= ~Popup_Any;
+		}
+		ImGui::EndPopup();
 	}
 }
 
@@ -297,6 +329,11 @@ void App::ShowMainMenu(float alpha)
 	// drawGui();
 
 	// ImGui::PopStyleColor();
+}
+
+void App::ShowPopup(int flag)
+{
+	showPopup ^= flag;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
