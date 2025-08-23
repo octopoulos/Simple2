@@ -36,8 +36,12 @@ void App::Destroy()
 	bx::store(xsettings.cameraAt, camera->target2);
 
 	// make sure that everything is removed from the physical world before deleting physics
-	// mapNode is shared with the App => not destroyed with the scene
-	mapNode.reset();
+	// camera/cursor/mapNode are shared with the App => not destroyed with the scene
+	{
+		camera.reset();
+		cursor.reset();
+		mapNode.reset();
+	}
 	scene.reset();
 
 	physics.reset();
@@ -124,7 +128,7 @@ int App::InitializeScene()
 	}
 
 	// 2) load a scene
-	if (xsettings.autoLoad && false)
+	if (xsettings.autoLoad)
 	{
 		if (auto recent = xsettings.recentFiles[0]; *recent)
 		{

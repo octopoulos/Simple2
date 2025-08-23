@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-19
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -22,7 +22,7 @@ static const USET_INT shapesNoOffsets = {
 };
 
 // clang-format off
-static const UMAP_INT_STR SHAPE_NAMES = {
+static const UMAP_INT_STR shapeTypeNames = {
 	{ ShapeType_None        , "None"         },
 	{ ShapeType_Box         , "Box"          },
 	{ ShapeType_Box2d       , "Box2d"        },
@@ -513,5 +513,17 @@ TEST_CASE("GeometryShape")
 
 std::string ShapeName(int type)
 {
-	return FindDefault(SHAPE_NAMES, type, "???");
+	return FindDefault(shapeTypeNames, type, "???");
+}
+
+int ShapeType(std::string_view name)
+{
+	static UMAP_STR_INT shapeNameTypes;
+	if (shapeNameTypes.empty())
+	{
+		for (const auto& [type, name] : shapeTypeNames)
+			shapeNameTypes[name] = type;
+	}
+
+	return FindDefault(shapeNameTypes, name, GeometryType_None);
 }

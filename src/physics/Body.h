@@ -1,6 +1,6 @@
 // Body.h
 // @author octopoulos
-// @version 2025-08-15
+// @version 2025-08-19
 
 #pragma once
 
@@ -82,5 +82,8 @@ using uBody = std::unique_ptr<Body>;
 /// Find the most appropriate body shape for a given geometry type
 int GeometryShape(int geometryType, bool hasMass = true, int detail = 0);
 
-/// Convert shape type to string
+/// Convert shape type: int to string
 std::string ShapeName(int type);
+
+/// Convert shape type: string to int
+int ShapeType(std::string_view name);

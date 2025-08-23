@@ -9,8 +9,6 @@
 class Scene : public Object3d
 {
 public:
-	UMAP_STR<std::weak_ptr<Object3d>> names = {}; ///< named children
-
 	Scene()
 	    : Object3d("Scene", ObjectType_Scene)
 	{
@@ -18,15 +16,6 @@ public:
 
 	~Scene() = default;
 
-	/// Add a child and map its name
-	void AddChild(sObject3d child) override;
-
-	/// Clear the scene
+	/// Clear the scene, but keep: camera/cursor/map
 	void Clear();
-
-	/// Find an direct child by name
-	sObject3d GetObjectByName(std::string_view name) const;
-
-	/// Remove a child and unmap its name
-	void RemoveChild(const sObject3d& child) override;
 };

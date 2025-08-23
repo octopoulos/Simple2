@@ -1,6 +1,6 @@
 // Geometry.h
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-19
 
 #pragma once
 
@@ -81,7 +81,8 @@ using uGeometry = std::shared_ptr<Geometry>;
 
 /// Helper to create any type of geometry
 /// @param type: GeometryType_None for random
-uGeometry CreateAnyGeometry(int type);
+/// @param args: arguments in string format: "2 8 5.5"
+uGeometry CreateAnyGeometry(int type, std::string_view sargs = {});
 
 /// Constructs a new box geometry
 /// @param width: length of the edges parallel to the X axis
@@ -183,5 +184,8 @@ uGeometry CreateTorusGeometry(float radius = 1.0f, float tube = 0.4f, int radial
 /// @param q: how many times the geometry winds around a circle in the interior of the torus
 uGeometry CreateTorusKnotGeometry(float radius = 1.0f, float tube = 0.4f, int tubularSegments = 64, int radialSegments = 8, int p = 2, int q = 3);
 
-/// Convert geometry type to string
+/// Convert geometry type: int to string
 std::string GeometryName(int type);
+
+/// Convert geometry type: string to int
+int GeometryType(std::string_view name);

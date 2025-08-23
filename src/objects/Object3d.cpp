@@ -10,13 +10,15 @@
 #include "ui/xsettings.h"
 
 // clang-format off
-static const MAP_INT_STR ObjectTypeNames = {
+static const MAP_INT_STR objectTypeNames = {
 	{ ObjectType_Basic    , "Basic"     },
 	{ ObjectType_Camera   , "Camera"    },
 	{ ObjectType_Clone    , "Clone"     },
+	{ ObjectType_Cursor   , "Cursor"    },
 	{ ObjectType_Group    , "Group"     },
 	{ ObjectType_HasBody  , "HasBody"   },
 	{ ObjectType_Instance , "Instance"  },
+	{ ObjectType_Map      , "Map"       },
 	{ ObjectType_Mesh     , "Mesh"      },
 	{ ObjectType_RubikCube, "RubikCube" },
 	{ ObjectType_Scene    , "Scene"     },
@@ -30,12 +32,33 @@ static const MAP_INT_STR ObjectTypeNames = {
 void Object3d::AddChild(sObject3d child)
 {
 	type |= ObjectType_Group;
+
+	if (child->name.size())
+	{
+		const auto& [it, inserted] = names.try_emplace(child->name, child);
+		if (!inserted) ui::LogWarning("AddChild: {} already exists", child->name);
+	}
+
+	child->id     = TO_INT(children.size());
 	child->parent = this;
 	children.push_back(std::move(child));
 }
 
+sObject3d Object3d::GetObjectByName(std::string_view name) const
+{
+	if (const auto& it = names.find(name); it != names.end())
+	{
+		if (auto sp = it->second.lock()) return sp;
+	}
+	return nullptr;
+}
+
 void Object3d::RemoveChild(const sObject3d& child)
 {
+	if (child && child->name.size())
+		if (const auto& it = names.find(child->name); it != names.end())
+			names.erase(it);
+
 	if (const auto& it = std::find(children.begin(), children.end(), child); it != children.end())
 	{
 		(*it)->parent = nullptr;
@@ -184,7 +207,7 @@ void Object3d::UpdateWorldMatrix(bool force)
 std::string ObjectName(int type)
 {
 	std::string result;
-	for (const auto& [flag, name] : ObjectTypeNames)
+	for (const auto& [flag, name] : objectTypeNames)
 	{
 		if (type & flag)
 		{
@@ -197,16 +220,16 @@ std::string ObjectName(int type)
 
 int ObjectType(std::string_view name)
 {
-	static UMAP_STR_INT ObjectNameTypes;
-	if (ObjectNameTypes.empty())
+	static UMAP_STR_INT objectNameTypes;
+	if (objectNameTypes.empty())
 	{
-		for (const auto& [type, name] : ObjectTypeNames)
-			ObjectNameTypes[name] = type;
+		for (const auto& [type, name] : objectTypeNames)
+			objectNameTypes[name] = type;
 	}
 
 	int result = 0;
 	SplitStringView(name, ' ', false, [&](std::string_view split, int) {
-		result |= FindDefault(ObjectNameTypes, split, 0);
+		result |= FindDefault(objectNameTypes, split, 0);
 	});
 	return result;
 }

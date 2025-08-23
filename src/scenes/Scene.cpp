@@ -3,8 +3,8 @@
 // @version 2025-08-19
 
 #include "stdafx.h"
-#include "app/App.h"
 #include "scenes/Scene.h"
+#include "app/App.h"
 //
 #include "core/Camera.h"
 #include "loaders/MeshLoader.h"
@@ -37,25 +37,28 @@ static void AddRecent(const std::filesystem::path& filename)
 	}
 }
 
-static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, void* physics)
+static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObject3d scene, void* physics)
 {
 	// 1) default values
-	std::array<int, 3> irot     = {};
-	std::string        name     = "";
-	glm::vec3          position = glm::vec3(0.0f);
-	glm::vec3          scale    = glm::vec3(1.0f);
-	std::string        stype    = "";
-	bool               tempBool = true;
-	int                type     = ObjectType_Basic;
-	bool               visible  = true;
+	std::array<int, 3> irot       = {};
+	std::string        name       = "";
+	glm::vec3          position   = glm::vec3(0.0f);
+	glm::vec3          scale      = glm::vec3(1.0f);
+	int                type       = ObjectType_Basic;
+	bool               visible    = true;
+
+	// temp vars
+	simdjson::ondemand::array  array      = {};
+	simdjson::ondemand::object obj        = {};
+	bool                       tempBool   = true;
+	std::string                tempString = "";
 
 	// 2) name / type / visible
 	if (!doc["name"].get_string().get(name)) {}
-	if (!doc["type"].get_string().get(stype)) type = ObjectType(stype);
+	if (!doc["type"].get_string().get(tempString)) type = ObjectType(tempString);
 	if (!doc["visible"].get_bool().get(tempBool)) visible = tempBool;
 
 	// 3) irot
-	simdjson::ondemand::array array;
 	if (!doc["irot"].get_array().get(array))
 	{
 		for (int i = -1; auto val : array)
@@ -95,9 +98,25 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, void*
 	}
 
 	// 6) create object based on type
-	sObject3d object = nullptr;
+	sObject3d exist      = nullptr;
+	sObject3d object     = nullptr;
+	bool      positioned = false;
+
 	if (type & ObjectType_Camera)
-		object = std::make_shared<Camera>(name);
+	{
+		exist = scene->GetObjectByName("Camera");
+		if (exist) object = exist;
+	}
+	else if (type & ObjectType_Cursor)
+	{
+		exist = scene->GetObjectByName("Cursor");
+		if (exist) object = exist;
+	}
+	else if (type & ObjectType_Map)
+	{
+		exist = scene->GetObjectByName("Map");
+		if (exist) object = exist;
+	}
 	else if (type & ObjectType_Mesh)
 	{
 		int64_t load = 0;
@@ -111,40 +130,83 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, void*
 		if (!object) object = std::make_shared<Mesh>(name, type);
 		auto mesh = std::static_pointer_cast<Mesh>(object);
 
-		// parse geometry/material/textures + physics ...
-		simdjson::ondemand::object obj;
+		// geometry
+		if (!doc["geometry"].get_object().get(obj))
+		{
+			std::string args;
+			if (!obj["args"].get_string().get(args)) {}
+			if (!obj["type"].get_string().get(tempString))
+			{
+				const int geometryType = GeometryType(tempString);
+				mesh->geometry = CreateAnyGeometry(geometryType, args);
+			}
+		}
+
+		// material
 		if (!doc["material"].get_object().get(obj))
 		{
 			std::string fsName;
 			std::string vsName;
-			if (!obj["vsName"].get_string().get(vsName) && !obj["fsName"].get_string().get(fsName))
-			{
-				// mesh->geometry = CreateIcosahedronGeometry(3.0f, 8);
-				// mesh->material = std::make_shared<Material>("vs_model_texture_normal", "fs_model_texture_normal");
-				// mesh->LoadTextures("earth_day_4096.jpg", "earth_normal_2048.jpg");
-			}
+			if (!obj["fsName"].get_string().get(fsName) && !obj["vsName"].get_string().get(vsName))
+				mesh->material = std::make_shared<Material>(vsName, fsName);
 		}
 
-		mesh->CreateShapeBody((PhysicsWorld*)physics, ShapeType_Box, 0.0f);
-		mesh->geometry = CreateBoxGeometry();
+		// textures
+		if (!doc["texNames"].get_array().get(array))
+		{
+			std::string colorName;
+			std::string normalName;
+			for (int i = -1; std::string_view texName : array)
+			{
+				++i;
+				switch (i)
+				{
+				case 0: colorName = texName; break;
+				case 1: normalName = texName; break;
+				}
+			}
+			mesh->LoadTextures(colorName, normalName);
+		}
+
+		// body
+		{
+			double mass      = 0.0;
+			int    shapeType = ShapeType_Box;
+
+			if (!doc["body"].get_object().get(obj))
+			{
+				if (!obj["mass"].get_double().get(mass)) {}
+				if (!obj["shapeType"].get_string().get(tempString)) shapeType = ShapeType(tempString);
+			}
+
+			mesh->ScaleIrotPosition(scale, irot, position);
+			positioned = true;
+			mesh->CreateShapeBody((PhysicsWorld*)physics, shapeType, TO_FLOAT(mass));
+		}
 	}
 	else if (type & ObjectType_Scene)
-		object = std::make_shared<Scene>();
-	else
-		object = std::make_shared<Object3d>(name, type);
+	{
+		exist = scene;
+		if (exist) object = exist;
+	}
+	else object = std::make_shared<Object3d>(name, type);
 
 	// 7) set properties
-	object->visible = visible;
-	object->ScaleIrotPosition(scale, irot, position);
+	if (object)
+	{
+		object->visible = visible;
+		if (!positioned) object->ScaleIrotPosition(scale, irot, position);
+	}
 
 	// 8) connect node
-	parent->AddChild(object);
+	if (object && !exist)
+		parent->AddChild(object);
 
 	// 8) check children
 	if (!doc["children"].get_array().get(array))
 	{
 		for (simdjson::ondemand::object child : array)
-			ParseObject(child, object, physics);
+			ParseObject(child, object ? object : parent, scene, physics);
 	}
 }
 
@@ -163,13 +225,13 @@ bool App::OpenScene(const std::filesystem::path& filename)
 	{
 		AddRecent(filename);
 		ui::Log("Parsing JSON object from file: {}", filename.string());
-		ParseObject(obj, scene, physics.get());
+		std::static_pointer_cast<Scene>(scene)->Clear();
+		ParseObject(obj, scene, scene, physics.get());
 		return true;
 	}
 
 	return false;
 }
-
 
 bool App::SaveScene(const std::filesystem::path& filename)
 {
@@ -185,39 +247,11 @@ bool App::SaveScene(const std::filesystem::path& filename)
 // SCENE
 ////////
 
-void Scene::AddChild(sObject3d child)
-{
-	if (child->name.size())
-	{
-		const auto& [it, inserted] = names.try_emplace(child->name, child);
-		if (!inserted) ui::LogWarning("Scene/AddChild: {} already exists", child->name);
-	}
-
-	child->id     = TO_INT(children.size());
-	child->parent = this;
-	children.push_back(std::move(child));
-}
-
 void Scene::Clear()
 {
-	children.clear();
-	names.clear();
-}
-
-sObject3d Scene::GetObjectByName(std::string_view name) const
-{
-	if (const auto& it = names.find(name); it != names.end())
+	for (auto& child : children)
 	{
-		if (auto sp = it->second.lock()) return sp;
+		if (!(child->type & (ObjectType_Camera | ObjectType_Cursor | ObjectType_Map)))
+			RemoveChild(child);
 	}
-	return nullptr;
-}
-
-void Scene::RemoveChild(const sObject3d& child)
-{
-	if (child && child->name.size())
-		if (const auto& it = names.find(child->name); it != names.end())
-			names.erase(it);
-
-	Object3d::RemoveChild(child);
 }
