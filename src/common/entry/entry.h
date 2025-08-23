@@ -1,4 +1,4 @@
-// @version 2025-07-25
+// @version 2025-08-19
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -438,6 +438,9 @@ void EntryBegin(const char* name);
 
 ///
 void EntryEnd();
+
+///
+void ExitApp();
 
 ///
 const char* GetEntryName();

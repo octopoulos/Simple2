@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-08-18
+// @version 2025-08-19
 
 #pragma once
 
@@ -106,5 +106,8 @@ public:
 // FUNCTIONS
 ////////////
 
-/// Convert object type to string
+/// Convert object type: int to string
 std::string ObjectName(int type);
+
+/// Convert object type: string to int
+int ObjectType(std::string_view name);

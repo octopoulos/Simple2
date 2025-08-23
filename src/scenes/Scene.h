@@ -1,6 +1,6 @@
 // Scene.h
 // @author octopoulos
-// @version 2025-08-17
+// @version 2025-08-19
 
 #pragma once
 
@@ -27,12 +27,6 @@ public:
 	/// Find an direct child by name
 	sObject3d GetObjectByName(std::string_view name) const;
 
-	/// Open a scene file + replace the scene
-	bool OpenScene(const std::filesystem::path& filename);
-
 	/// Remove a child and unmap its name
 	void RemoveChild(const sObject3d& child) override;
-
-	/// Save the scene to a file
-	bool SaveScene(const std::filesystem::path& filename);
 };

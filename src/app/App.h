@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-08-18
+// @version 2025-08-19
 
 #pragma once
 
@@ -141,6 +141,12 @@ private:
 	/// Create scene and physics
 	int InitializeScene();
 
+	/// Open a scene file + replace the scene
+	bool OpenScene(const std::filesystem::path& filename);
+
+	/// Save the scene to a file
+	bool SaveScene(const std::filesystem::path& filename);
+
 public:
 	sObject3d               scene       = nullptr; ///< scene container
 	std::weak_ptr<Object3d> selectedObj = {};      ///< selected object for edit
@@ -204,11 +210,9 @@ public:
 	/////////
 
 private:
-	bool     hasFocus = true;  ///
-	uint32_t isDebug  = 0;     ///
-	bool     quit     = false; ///< exit the mainloop
-	uint32_t screenX  = 1328;  ///
-	uint32_t screenY  = 800;   ///
+	uint32_t isDebug = 0;    ///
+	uint32_t screenX = 1328; ///
+	uint32_t screenY = 800;  ///
 
 public:
 	uint32_t* entryReset = nullptr; ///< pointer to entry::m_reset

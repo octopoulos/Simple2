@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-18
+// @version 2025-08-19
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -97,8 +97,8 @@ void App::OpenedFile(int action, const std::filesystem::path& path)
 
 	switch (action)
 	{
-	case OpenAction_OpenScene: std::static_pointer_cast<Scene>(scene)->OpenScene(path); break;
-	case OpenAction_SaveScene: std::static_pointer_cast<Scene>(scene)->SaveScene(path); break;
+	case OpenAction_OpenScene: OpenScene(path); break;
+	case OpenAction_SaveScene: SaveScene(path); break;
 	default:
 		ui::Log("OpenedFile: Unknown action: {} {}", action, path);
 	}
@@ -209,28 +209,28 @@ void App::ShowMainMenu(float alpha)
 			if (ImGui::MenuItem("Open Scene...")) OpenFile(OpenAction_OpenScene);
 			if (ImGui::BeginMenu("Open Recent"))
 			{
-				bool first = true;
+				int numRecent = 0;
 				for (const auto& name : xsettings.recentFiles)
 				{
 					if (*name)
 					{
-						if (first)
-						{
-							if (ImGui::MenuItem("List Clear"))
-							{
-								memset(xsettings.recentFiles, 0, sizeof(xsettings.recentFiles));
-								break;
-							}
-							ImGui::Separator();
-							first = false;
-						}
+						++numRecent;
 						std::filesystem::path path = name;
 						if (ImGui::MenuItem(path.filename().string().c_str()))
 							OpenedFile(OpenAction_OpenScene, path);
 					}
 				}
-
-				if (first) ImGui::MenuItem("Empty List");
+				if (!numRecent)
+				{
+					ImGui::MenuItem("Empty List");
+					ImGui::Separator();
+				}
+				else
+				{
+					ImGui::Separator();
+					if (ImGui::MenuItem("Clear List")) memset(xsettings.recentFiles, 0, sizeof(xsettings.recentFiles));
+				}
+				ImGui::MenuItem("Auto Load", nullptr, &xsettings.autoLoad);
 				ImGui::EndMenu();
 			}
 			ImGui::Separator();
@@ -238,7 +238,7 @@ void App::ShowMainMenu(float alpha)
 			ImGui::Separator();
 			if (ImGui::MenuItem("Rescan Assets")) RescanAssets();
 			ImGui::Separator();
-			if (ImGui::MenuItem("Exit")) quit = true;
+			if (ImGui::MenuItem("Exit")) entry::ExitApp();
 
 			ImGui::EndMenu();
 		}

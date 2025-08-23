@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-08-16
+// @version 2025-08-19
 
 #pragma once
 
@@ -106,6 +106,7 @@ struct XSettings
 
 	// [ui]
 	int   aspectRatio;    ///< frame aspect ratio
+	bool  autoLoad;       ///< load most recent scene at startup
 	float fontScale;      ///< FontScaleMain
 	bool  labelLeft;      ///< labels on the left of the inputs
 	str2k recentFiles[6]; ///< recent files for quick load

@@ -213,6 +213,7 @@ find_package(fmt CONFIG REQUIRED)
 #find_package(imgui CONFIG REQUIRED)
 find_package(meshoptimizer CONFIG REQUIRED)
 #find_package(RapidObj CONFIG REQUIRED)
+find_package(simdjson CONFIG REQUIRED)
 
 if(WITH_GLFW)
 	find_package(glfw3 CONFIG REQUIRED)
@@ -315,6 +316,7 @@ target_link_libraries(Simple PRIVATE
 	#imgui::imgui
 	meshoptimizer::meshoptimizer
 	#rapidobj::rapidobj
+	simdjson::simdjson
 )
 
 if(WITH_GLFW)

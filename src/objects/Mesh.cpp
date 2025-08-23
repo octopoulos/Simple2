@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-08-18
+// @version 2025-08-19
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -381,11 +381,13 @@ int Mesh::Serialize(fmt::memory_buffer& outString, int bounds) const
 		WRITE_KEY("geometry");
 		geometry->Serialize(outString);
 	}
+	if (load) WRITE_KEY_INT(load);
 	if (material)
 	{
 		WRITE_KEY("material");
 		material->Serialize(outString);
 	}
+	if (modelName.size()) WRITE_KEY_STRING(modelName);
 	// textures
 	{
 		int texNum = 4;

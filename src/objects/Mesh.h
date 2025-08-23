@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-08-17
+// @version 2025-08-19
 
 #pragma once
 
@@ -10,6 +10,13 @@
 #include "physics/Body.h"
 
 #include <bx/bounds.h>
+
+enum MeshLoads_ : int
+{
+	MeshLoad_None  = 0, ///< created manually, ex: geometry + shaders + textures
+	MeshLoad_Basic = 1, ///< LoadModel
+	MeshLoad_Full  = 2, ///< LoadModelFull
+};
 
 struct Primitive
 {
@@ -77,7 +84,9 @@ public:
 	std::shared_ptr<Geometry>        geometry    = nullptr;             ///
 	std::vector<Group>               groups      = {};                  ///< groups of vertices
 	bgfx::VertexLayout               layout      = {};                  ///
+	int                              load        = 0;                   ///< how the model was loaded (for open/save scene)
 	std::shared_ptr<Material>        material    = nullptr;             ///
+	std::string                      modelName   = "";                  ///< model name (part of filename)
 	uint64_t                         state       = 0;                   ///< if !=0: override default state
 	bgfx::UniformHandle              sTexColor   = BGFX_INVALID_HANDLE; ///< diffuse texture
 	bgfx::UniformHandle              sTexNormal  = BGFX_INVALID_HANDLE; ///

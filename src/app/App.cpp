@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-08-18
+// @version 2025-08-19
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -51,10 +51,11 @@ void App::Destroy()
 
 int App::Initialize()
 {
+	// 1) app directory
 	ui::Log("App::Initialize");
 	FindAppDirectory(true);
 
-	// load imgui.ini
+	// 2) load imgui.ini
 	{
 		InitializeImGui();
 		ImGui::LoadIniSettingsFromDisk(imguiPath.string().c_str());
@@ -63,9 +64,29 @@ int App::Initialize()
 		ui::UpdateTheme();
 	}
 
+	// 3) scan models
 	ScanModels("runtime/models", "runtime/models-prev");
 
+	// 4) physics
+	physics = std::make_unique<PhysicsWorld>();
+
+	// 5) open/create scene
 	if (const int result = InitializeScene(); result < 0) return result;
+
+	// 6) uniforms
+	{
+		uLight = bgfx::createUniform("u_lightDir", bgfx::UniformType::Vec4);
+		uTime  = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
+	}
+
+	// 7) extra inits
+	{
+		ddInit();
+	}
+
+	// 8) time
+	startTime = bx::getHPCounter();
+	lastUs    = NowUs();
 
 	ui::Log("xsettings.aspectRatio={}", xsettings.aspectRatio);
 	return 1;
@@ -73,190 +94,192 @@ int App::Initialize()
 
 int App::InitializeScene()
 {
-	// 1)
-	scene = std::make_unique<Scene>();
-
-	// camera
+	// 1) create a new scene + add default objects
 	{
-		camera = std::make_shared<Camera>("Camera");
-		scene->AddChild(camera);
-	}
+		scene = std::make_unique<Scene>();
 
-	// cursor
-	{
-		cursor = std::make_shared<Mesh>("Cursor", ObjectType_Cursor);
-		scene->AddChild(cursor);
-		cursor->state = 0
-		    | BGFX_STATE_BLEND_ALPHA
-		    | BGFX_STATE_DEPTH_TEST_LESS
-		    | BGFX_STATE_WRITE_A
-		    | BGFX_STATE_WRITE_RGB
-		    | BGFX_STATE_WRITE_Z;
-	}
-
-	// mapNode
-	{
-		mapNode = std::make_shared<Object3d>("Map", ObjectType_Group | ObjectType_Map);
-		scene->AddChild(mapNode);
-	}
-
-	// 2)
-	physics = std::make_unique<PhysicsWorld>();
-
-	// 3) add default objects
-	{
-		// Earth
+		// camera
 		{
-			auto cubeMesh      = std::make_shared<Mesh>("Earth");
-			cubeMesh->geometry = CreateIcosahedronGeometry(3.0f, 8);
-			cubeMesh->material = std::make_shared<Material>("vs_model_texture_normal", "fs_model_texture_normal");
-			cubeMesh->LoadTextures("earth_day_4096.jpg", "earth_normal_2048.jpg");
-
-			cubeMesh->ScaleIrotPosition(
-			    { 1.0f, 1.0f, 1.0f },
-			    { 180, -45, 0 },
-			    { 0.0f, 7.0f, 0.0f }
-			);
-			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Sphere, 8.0f);
-
-			scene->AddChild(std::move(cubeMesh));
+			camera = std::make_shared<Camera>("Camera");
+			scene->AddChild(camera);
 		}
 
 		// cursor
 		{
-			cursor->geometry = CreateBoxGeometry(1.0f, 2.0f, 1.0f, 2, 2, 2);
-			cursor->material = std::make_shared<Material>("vs_cursor", "fs_cursor");
-
-			cursor->ScaleIrotPosition(
-			    { 1.0f, 1.02f, 1.0f },
-			    { 0, 0, 0 },
-			    { 0.5f, 1.0f, 0.5f }
-			);
+			cursor = std::make_shared<Mesh>("Cursor", ObjectType_Cursor);
+			scene->AddChild(cursor);
+			cursor->state = 0
+				| BGFX_STATE_BLEND_ALPHA
+				| BGFX_STATE_DEPTH_TEST_LESS
+				| BGFX_STATE_WRITE_A
+				| BGFX_STATE_WRITE_RGB
+				| BGFX_STATE_WRITE_Z;
 		}
 
-		// floor
+		// mapNode
 		{
-			auto cubeMesh      = std::make_shared<Mesh>("floor");
-			cubeMesh->geometry = CreateBoxGeometry(40.0f, 2.0f, 40.0f, 4, 1, 4);
-			cubeMesh->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
-			cubeMesh->LoadTextures("FloorsCheckerboard_S_Diffuse.jpg", "FloorsCheckerboard_S_Normal.jpg");
-
-			cubeMesh->ScaleIrotPosition(
-			    { 1.0f, 1.0f, 1.0f },
-			    { 0, 0, 0 },
-			    { 0.0f, -1.0f, 0.0f }
-			);
-			cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f);
-
-			scene->AddChild(std::move(cubeMesh));
+			mapNode = std::make_shared<Object3d>("Map", ObjectType_Group | ObjectType_Map);
+			scene->AddChild(mapNode);
 		}
+	}
 
-		// 4 walls
+	// 2) load a scene
+	if (xsettings.autoLoad && false)
+	{
+		if (auto recent = xsettings.recentFiles[0]; *recent)
 		{
-			auto parent = std::make_shared<Mesh>("wall-group");
-
-			for (int i = 0; i < 2; ++i)
+			OpenScene(recent);
+			// if (auto scene2 = std::static_pointer_cast<Scene>(scene))
+			// {
+			// 	// camera  = std::static_pointer_cast<Camera>(scene2->GetObjectByName("Camera"));
+			// 	cursor  = std::static_pointer_cast<Mesh>(scene2->GetObjectByName("Cursor"));
+			// 	mapNode = scene2->GetObjectByName("Map");
+			// }
+		}
+	}
+	// 3) default scene
+	else
+	{
+		// 4) default objects
+		{
+			// Earth
 			{
-				auto cubeMesh      = std::make_shared<Mesh>(fmt::format("wall-{}", 1 + i));
-				cubeMesh->geometry = CreateBoxGeometry(39.0f, 6.0f, 1.0f, 4, 1, 4);
-				cubeMesh->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
-				cubeMesh->LoadTextures("brick_diffuse.jpg");
+				auto cubeMesh      = std::make_shared<Mesh>("Earth");
+				cubeMesh->geometry = CreateIcosahedronGeometry(3.0f, 8);
+				cubeMesh->material = std::make_shared<Material>("vs_model_texture_normal", "fs_model_texture_normal");
+				cubeMesh->LoadTextures("earth_day_4096.jpg", "earth_normal_2048.jpg");
 
 				cubeMesh->ScaleIrotPosition(
-				    { 1.0f, 1.0f, 1.0f },
-				    { 0, 0, 0 },
-				    { i ? -0.5f : 0.5f, 3.0f, i ? -19.5f : 19.5f }
+					{ 1.0f, 1.0f, 1.0f },
+					{ 180, -45, 0 },
+					{ 0.0f, 7.0f, 0.0f }
+				);
+				cubeMesh->CreateShapeBody(physics.get(), ShapeType_Sphere, 8.0f);
+
+				scene->AddChild(std::move(cubeMesh));
+			}
+
+			// cursor
+			{
+				cursor->geometry = CreateBoxGeometry(1.0f, 2.0f, 1.0f, 2, 2, 2);
+				cursor->material = std::make_shared<Material>("vs_cursor", "fs_cursor");
+
+				cursor->ScaleIrotPosition(
+					{ 1.0f, 1.02f, 1.0f },
+					{ 0, 0, 0 },
+					{ 0.5f, 1.0f, 0.5f }
+				);
+			}
+
+			// floor
+			{
+				auto cubeMesh      = std::make_shared<Mesh>("floor");
+				cubeMesh->geometry = CreateBoxGeometry(40.0f, 2.0f, 40.0f, 4, 1, 4);
+				cubeMesh->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
+				cubeMesh->LoadTextures("FloorsCheckerboard_S_Diffuse.jpg", "FloorsCheckerboard_S_Normal.jpg");
+
+				cubeMesh->ScaleIrotPosition(
+					{ 1.0f, 1.0f, 1.0f },
+					{ 0, 0, 0 },
+					{ 0.0f, -1.0f, 0.0f }
 				);
 				cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f);
 
-				parent->AddChild(std::move(cubeMesh));
+				scene->AddChild(std::move(cubeMesh));
 			}
-			for (int i = 0; i < 2; ++i)
+
+			// 4 walls
 			{
-				auto cubeMesh      = std::make_shared<Mesh>(fmt::format("wall-{}", 3 + i));
-				cubeMesh->geometry = CreateBoxGeometry(1.0f, 6.0f, 39.0f, 4, 1, 4);
-				cubeMesh->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
-				cubeMesh->LoadTextures("hardwood2_diffuse.jpg");
+				auto parent = std::make_shared<Mesh>("wall-group");
 
-				cubeMesh->ScaleIrotPosition(
-				    { 1.0f, 1.0f, 1.0f },
-				    { 0, 0, 0 },
-				    { i ? 19.5f : -19.5f, 3.0f, i ? -0.5f : 0.5f }
-				);
-				cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f);
+				for (int i = 0; i < 2; ++i)
+				{
+					auto cubeMesh      = std::make_shared<Mesh>(fmt::format("wall-{}", 1 + i));
+					cubeMesh->geometry = CreateBoxGeometry(39.0f, 6.0f, 1.0f, 4, 1, 4);
+					cubeMesh->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
+					cubeMesh->LoadTextures("brick_diffuse.jpg");
 
-				parent->AddChild(std::move(cubeMesh));
+					cubeMesh->ScaleIrotPosition(
+						{ 1.0f, 1.0f, 1.0f },
+						{ 0, 0, 0 },
+						{ i ? -0.5f : 0.5f, 3.0f, i ? -19.5f : 19.5f }
+					);
+					cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f);
+
+					parent->AddChild(std::move(cubeMesh));
+				}
+				for (int i = 0; i < 2; ++i)
+				{
+					auto cubeMesh      = std::make_shared<Mesh>(fmt::format("wall-{}", 3 + i));
+					cubeMesh->geometry = CreateBoxGeometry(1.0f, 6.0f, 39.0f, 4, 1, 4);
+					cubeMesh->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
+					cubeMesh->LoadTextures("hardwood2_diffuse.jpg");
+
+					cubeMesh->ScaleIrotPosition(
+						{ 1.0f, 1.0f, 1.0f },
+						{ 0, 0, 0 },
+						{ i ? 19.5f : -19.5f, 3.0f, i ? -0.5f : 0.5f }
+					);
+					cubeMesh->CreateShapeBody(physics.get(), ShapeType_Box, 0.0f);
+
+					parent->AddChild(std::move(cubeMesh));
+				}
+
+				scene->AddChild(std::move(parent));
 			}
+		}
 
-			scene->AddChild(std::move(parent));
+		// 5) load BIN model
+		if (auto object = MeshLoader::LoadModelFull("car", "kenney_car-kit/race-future"))
+		{
+			object->ScaleRotationPosition(
+				{ 1.0f, 1.0f, 1.0f },
+				{ -0.3f, 2.5f, 0.0f },
+				{ 0.0f, 1.0f, 0.0f }
+			);
+			object->CreateShapeBody(physics.get(), ShapeType_ConvexHull, 3.0f);
+			scene->AddChild(object);
+		}
+		if (auto object = MeshLoader::LoadModelFull("building", "kenney_city-kit-commercial_20/building-n"))
+		{
+			object->ScaleIrotPosition(
+				{ 1.0f, 1.0f, 1.0f },
+				{ 0, 90, 0 },
+				{ 4.0f, 0.0f, -2.0f }
+			);
+			object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh);
+			scene->AddChild(object);
+		}
+		if (auto object = MeshLoader::LoadModel("bunny", "bunny_decimated", true))
+		{
+			object->material = std::make_shared<Material>("vs_mesh", "fs_mesh");
+			object->ScaleIrotPosition(
+				{ 1.0f, 1.0f, 1.0f },
+				{ 0, 90, 0 },
+				{ -3.0f, 5.0f, 0.0f }
+			);
+			object->CreateShapeBody(physics.get(), ShapeType_Cylinder, 3.0f);
+			scene->AddChild(object);
+		}
+		if (auto object = MeshLoader::LoadModel("donut", "donut"))
+		{
+			object->material = std::make_shared<Material>("vs_model", "fs_model");
+			object->ScaleIrotPosition(
+				{ 1.5f, 1.5f, 1.5f },
+				{ 0, 180, 0 },
+				{ 0.0f, 1.0f, -2.0f }
+			);
+			object->CreateShapeBody(physics.get(), ShapeType_Box, 1.0f);
+			scene->AddChild(object);
 		}
 	}
 
-	// 4) load BIN model
-	if (auto object = MeshLoader::LoadModelFull("car", "kenney_car-kit/race-future"))
-	{
-		object->ScaleRotationPosition(
-		    { 1.0f, 1.0f, 1.0f },
-		    { -0.3f, 2.5f, 0.0f },
-		    { 0.0f, 1.0f, 0.0f }
-		);
-		object->CreateShapeBody(physics.get(), ShapeType_ConvexHull, 3.0f);
-		scene->AddChild(object);
-	}
-	if (auto object = MeshLoader::LoadModelFull("building", "kenney_city-kit-commercial_20/building-n"))
-	{
-		object->ScaleIrotPosition(
-		    { 1.0f, 1.0f, 1.0f },
-		    { 0, 90, 0 },
-		    { 4.0f, 0.0f, -2.0f }
-		);
-		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh);
-		scene->AddChild(object);
-	}
-	if (auto object = MeshLoader::LoadModel("bunny", "bunny_decimated", true))
-	{
-		object->material = std::make_shared<Material>("vs_mesh", "fs_mesh");
-		object->ScaleIrotPosition(
-		    { 1.0f, 1.0f, 1.0f },
-		    { 0, 90, 0 },
-		    { -3.0f, 5.0f, 0.0f }
-		);
-		object->CreateShapeBody(physics.get(), ShapeType_Cylinder, 3.0f);
-		scene->AddChild(object);
-	}
-	if (auto object = MeshLoader::LoadModel("donut", "donut"))
-	{
-		object->material = std::make_shared<Material>("vs_model", "fs_model");
-		object->ScaleIrotPosition(
-		    { 1.5f, 1.5f, 1.5f },
-		    { 0, 180, 0 },
-		    { 0.0f, 1.0f, -2.0f }
-		);
-		object->CreateShapeBody(physics.get(), ShapeType_Box, 1.0f);
-		scene->AddChild(object);
-	}
-
-	// print scene children
+	// 6) print scene children
 	{
 		ui::Log("Scene.children={}", scene->children.size());
 		for (int i = -1; const auto& child : scene->children)
 			ui::Log(" {:2}: {}", ++i, child->name);
 	}
-
-	// 5) uniforms
-	{
-		uLight = bgfx::createUniform("u_lightDir", bgfx::UniformType::Vec4);
-		uTime  = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
-	}
-
-	// 6) extra inits
-	{
-		ddInit();
-	}
-
-	// 7) time
-	startTime = bx::getHPCounter();
-	lastUs    = NowUs();
 	return 1;
 }
 

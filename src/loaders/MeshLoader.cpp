@@ -1,6 +1,6 @@
 // MeshLoader.cpp
 // @author octopoulos
-// @version 2025-08-17
+// @version 2025-08-19
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -21,6 +21,9 @@ sMesh MeshLoader::LoadModel(std::string_view name, std::string_view modelName, b
 		ui::LogError("LoadModel: Cannot load: {} @{}", modelName, path);
 		return nullptr;
 	}
+
+	mesh->load      = MeshLoad_Basic;
+	mesh->modelName = modelName;
 	return mesh;
 }
 
@@ -73,5 +76,8 @@ sMesh MeshLoader::LoadModelFull(std::string_view name, std::string_view modelNam
 		mesh->texColor = mesh->textures[0];
 		mesh->Initialize();
 	}
+
+	mesh->load      = MeshLoad_Full;
+	mesh->modelName = modelName;
 	return mesh;
 }

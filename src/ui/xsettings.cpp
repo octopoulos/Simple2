@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-08-16
+// @version 2025-08-19
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -75,6 +75,7 @@ static std::vector<Config> configs = {
 
 	// [ui]
 	X_ENUM   (XSettings, ui, 0, aspectRatio, AspectRatio_Native, sAspectRatios),
+	X_BOOL   (XSettings, ui, 0, autoLoad   , false),
 	X_FLOAT  (XSettings, ui, 0, fontScale  , 0.65f, 0.3f, 10.0f),
 	X_BOOL   (XSettings, ui, 0, labelLeft  , true),
 	X_STRINGS(XSettings, ui, 0, recentFiles, "", 6),

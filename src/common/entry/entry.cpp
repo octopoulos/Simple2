@@ -1,4 +1,4 @@
-// @version 2025-08-10
+// @version 2025-08-19
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -602,6 +602,12 @@ void EntryEnd()
 {
 	ui::Log("EntryEnd");
 	SaveGameSettings();
+}
+
+void ExitApp()
+{
+	ui::Log("ExitApp: {}", s_exit);
+	s_exit = true;
 }
 
 const char* GetEntryName() { return entryName.c_str(); }

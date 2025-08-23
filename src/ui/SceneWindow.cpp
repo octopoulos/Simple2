@@ -1,6 +1,6 @@
 // SceneWindow.cpp
 // @author octopoulos
-// @version 2025-08-15
+// @version 2025-08-19
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -75,6 +75,7 @@ public:
 
 	void DrawObject(const sObject3d& node, int depth)
 	{
+		if (!node) return;
 		ImGuiTreeNodeFlags treeFlag = ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_SpanAvailWidth;
 
 		ImGui::TableNextRow();

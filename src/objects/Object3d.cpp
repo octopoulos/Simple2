@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-08-18
+// @version 2025-08-19
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -10,7 +10,7 @@
 #include "ui/xsettings.h"
 
 // clang-format off
-static const MAP_INT_STR OBJECT_NAMES = {
+static const MAP_INT_STR ObjectTypeNames = {
 	{ ObjectType_Basic    , "Basic"     },
 	{ ObjectType_Camera   , "Camera"    },
 	{ ObjectType_Clone    , "Clone"     },
@@ -184,7 +184,7 @@ void Object3d::UpdateWorldMatrix(bool force)
 std::string ObjectName(int type)
 {
 	std::string result;
-	for (const auto& [flag, name] : OBJECT_NAMES)
+	for (const auto& [flag, name] : ObjectTypeNames)
 	{
 		if (type & flag)
 		{
@@ -192,5 +192,21 @@ std::string ObjectName(int type)
 			result += name;
 		}
 	}
+	return result;
+}
+
+int ObjectType(std::string_view name)
+{
+	static UMAP_STR_INT ObjectNameTypes;
+	if (ObjectNameTypes.empty())
+	{
+		for (const auto& [type, name] : ObjectTypeNames)
+			ObjectNameTypes[name] = type;
+	}
+
+	int result = 0;
+	SplitStringView(name, ' ', false, [&](std::string_view split, int) {
+		result |= FindDefault(ObjectNameTypes, split, 0);
+	});
 	return result;
 }
