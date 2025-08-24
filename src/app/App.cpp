@@ -131,15 +131,7 @@ int App::InitializeScene()
 	if (xsettings.autoLoad)
 	{
 		if (auto recent = xsettings.recentFiles[0]; *recent)
-		{
 			OpenScene(recent);
-			// if (auto scene2 = std::static_pointer_cast<Scene>(scene))
-			// {
-			// 	// camera  = std::static_pointer_cast<Camera>(scene2->GetObjectByName("Camera"));
-			// 	cursor  = std::static_pointer_cast<Mesh>(scene2->GetObjectByName("Cursor"));
-			// 	mapNode = scene2->GetObjectByName("Map");
-			// }
-		}
 	}
 	// 3) default scene
 	else
@@ -324,11 +316,12 @@ void App::Render()
 	}
 
 	// 4) draw grid
+	if (xsettings.gridDraw)
 	{
 		DebugDrawEncoder dde;
 
 		dde.begin(0);
-		dde.drawGrid(Axis::Y, { 0.0f, 0.0f, 0.0f }, 50);
+		dde.drawGrid(Axis::Y, { 0.0f, 0.0f, 0.0f }, xsettings.gridSize);
 		dde.end();
 	}
 

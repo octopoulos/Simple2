@@ -206,7 +206,9 @@ void App::ShowMainMenu(float alpha)
 		// file
 		if (ImGui::BeginMenu("File"))
 		{
+			if (ImGui::MenuItem("New Scene")) std::static_pointer_cast<Scene>(scene)->Clear();
 			if (ImGui::MenuItem("Open Scene...")) OpenFile(OpenAction_OpenScene);
+			ImGui::Separator();
 			if (ImGui::BeginMenu("Open Recent"))
 			{
 				int numRecent = 0;

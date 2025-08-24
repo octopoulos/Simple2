@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-08-16
+// @version 2025-08-20
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -146,9 +146,11 @@ public:
 			}
 
 			// render
-			BEGIN_TREE("Render", Show_SystemRender, 3)
+			BEGIN_TREE("Render", Show_SystemRender, 5)
 			{
 				AddCheckBox("fixedView", "", "Fixed View");
+				AddCheckBox("gridDraw", "", "Grid");
+				AddSliderInt("gridSize", "Grid Size");
 				AddSliderInt("projection", "Projection", nullptr);
 				AddSliderInt("renderMode", "Render Mode", nullptr);
 				END_TREE();

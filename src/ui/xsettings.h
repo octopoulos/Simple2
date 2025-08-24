@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-08-19
+// @version 2025-08-20
 
 #pragma once
 
@@ -90,6 +90,8 @@ struct XSettings
 	float cameraEye[3]; ///< camera eye
 	float distance;     ///< distance between camera and cursor
 	bool  fixedView;    ///< don't move the view with the mouse
+	bool  gridDraw;     ///< draw grid?
+	int   gridSize;     ///< number of grid divisions
 	bool  instancing;   ///< use mesh instancing
 	float orthoZoom;    ///< zoom in orthographic projection
 	int   projection;   ///< 0: ortho, 1: perspective

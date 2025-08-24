@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-08-19
+// @version 2025-08-20
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -249,9 +249,15 @@ bool App::SaveScene(const std::filesystem::path& filename)
 
 void Scene::Clear()
 {
+	// 1) collect
+	std::vector<sObject3d> removes;
 	for (auto& child : children)
 	{
 		if (!(child->type & (ObjectType_Camera | ObjectType_Cursor | ObjectType_Map)))
-			RemoveChild(child);
+			removes.push_back(child);
 	}
+
+	// 2) remove
+	for (auto& remove : removes)
+		RemoveChild(remove);
 }

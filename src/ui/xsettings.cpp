@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-08-19
+// @version 2025-08-20
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -59,6 +59,8 @@ static std::vector<Config> configs = {
 	X_FLOATS (XSettings, render, 0, cameraEye , "0.0|0.0|1.5", -100.0f, 100.0f, 3),
 	X_FLOAT  (XSettings, render, 0, distance  , 10.0f, 0.50f, 100.0f),
 	X_BOOL   (XSettings, render, 0, fixedView , true),
+	X_BOOL   (XSettings, render, 0, gridDraw  , true),
+	X_INT    (XSettings, render, 0, gridSize  , 50, 1, 500),
 	X_BOOL   (XSettings, render, 0, instancing, true),
 	X_FLOAT  (XSettings, render, 0, orthoZoom , 1.0f, 0.001f, 10.0f),
 	X_ENUM   (XSettings, render, 0, projection, Projection_Perspective, sProjections),
