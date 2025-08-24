@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-08-17
+// @version 2025-08-20
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -44,6 +44,8 @@ void App::AddObject(std::string_view modelName)
 		mapNode->AddChild(object);
 		SelectObject(object);
 	}
+
+	FocusScreen();
 }
 
 void App::RescanAssets()

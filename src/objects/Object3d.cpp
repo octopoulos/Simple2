@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-08-19
+// @version 2025-08-20
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -163,10 +163,11 @@ int Object3d::Serialize(fmt::memory_buffer& outString, int bounds) const
 	{
 		WRITE_KEY("children");
 		WRITE_CHAR('[');
+		bool lastSaved = false;
 		for (size_t i = 0; i < children.size(); ++i)
 		{
-			if (i > 0) WRITE_CHAR(',');
-			children[i]->Serialize(outString, 3);
+			if (lastSaved) WRITE_CHAR(',');
+			lastSaved = (children[i]->Serialize(outString, 3) > -1);
 		}
 		WRITE_CHAR(']');
 	}

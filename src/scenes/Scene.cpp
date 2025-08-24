@@ -151,6 +151,13 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 				mesh->material = std::make_shared<Material>(vsName, fsName);
 		}
 
+		// state
+		{
+			int64_t state;
+			if (!doc["state"].get_int64().get(state))
+				mesh->state = state;
+		}
+
 		// textures
 		if (!doc["texNames"].get_array().get(array))
 		{

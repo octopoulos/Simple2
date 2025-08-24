@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-19
+// @version 2025-08-20
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -102,6 +102,8 @@ void App::OpenedFile(int action, const std::filesystem::path& path)
 	default:
 		ui::Log("OpenedFile: Unknown action: {} {}", action, path);
 	}
+
+	FocusScreen();
 }
 
 void App::PopupsUi()

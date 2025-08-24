@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-08-19
+// @version 2025-08-20
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -118,6 +118,15 @@ int App::InitializeScene()
 				| BGFX_STATE_WRITE_A
 				| BGFX_STATE_WRITE_RGB
 				| BGFX_STATE_WRITE_Z;
+
+			cursor->geometry = CreateBoxGeometry(1.0f, 2.0f, 1.0f, 2, 2, 2);
+			cursor->material = std::make_shared<Material>("vs_cursor", "fs_cursor");
+
+			cursor->ScaleIrotPosition(
+				{ 1.0f, 1.02f, 1.0f },
+				{ 0, 0, 0 },
+				{ 0.5f, 1.0f, 0.5f }
+			);
 		}
 
 		// mapNode
@@ -153,18 +162,6 @@ int App::InitializeScene()
 				cubeMesh->CreateShapeBody(physics.get(), ShapeType_Sphere, 8.0f);
 
 				scene->AddChild(std::move(cubeMesh));
-			}
-
-			// cursor
-			{
-				cursor->geometry = CreateBoxGeometry(1.0f, 2.0f, 1.0f, 2, 2, 2);
-				cursor->material = std::make_shared<Material>("vs_cursor", "fs_cursor");
-
-				cursor->ScaleIrotPosition(
-					{ 1.0f, 1.02f, 1.0f },
-					{ 0, 0, 0 },
-					{ 0.5f, 1.0f, 0.5f }
-				);
 			}
 
 			// floor

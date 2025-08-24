@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-08-19
+// @version 2025-08-20
 
 #pragma once
 
@@ -181,6 +181,9 @@ private:
 
 	/// Handle file dialogs
 	void FilesUi();
+
+	/// Focus on the screen (non UI)
+	void FocusScreen();
 
 	/// Open an ImGuiFileDialog
 	void OpenFile(int action);

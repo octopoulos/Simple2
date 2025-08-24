@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-08-18
+// @version 2025-08-20
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -301,6 +301,11 @@ void App::FluidControls()
 	}
 }
 
+void App::FocusScreen()
+{
+	ImGui::SetWindowFocus(nullptr);
+}
+
 void App::MoveCursor(bool force)
 {
 	using namespace entry;
@@ -409,6 +414,7 @@ void App::SelectObject(const sObject3d& obj)
 
 	MoveCursor(true);
 	PrintMatrix(obj->matrixWorld, obj->name);
+	FocusScreen();
 }
 
 void App::ThrowGeometry(int action, int geometryType, std::string_view textureName)
