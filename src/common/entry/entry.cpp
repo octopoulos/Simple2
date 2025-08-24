@@ -1,4 +1,4 @@
-// @version 2025-08-19
+// @version 2025-08-20
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -9,6 +9,8 @@
 #include <bx/file.h>
 #include <bx/sort.h>
 #include <bgfx/bgfx.h>
+
+#include "common/config.h"
 #include "ui/xsettings.h"
 
 #include <time.h>
@@ -772,7 +774,7 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 			{
 				const CharEvent* chev = static_cast<const CharEvent*>(ev);
 				inputChar(chev->m_len, chev->m_char);
-				ui::Log("char={} {} {} {} {}", chev->m_len, chev->m_char[0], chev->m_char[1], chev->m_char[2], chev->m_char[3]);
+				if (DEV_char) ui::Log("char={} {} {} {} {}", chev->m_len, chev->m_char[0], chev->m_char[1], chev->m_char[2], chev->m_char[3]);
 			}
 			break;
 

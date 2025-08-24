@@ -1,9 +1,11 @@
 // ShaderManager.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-08-20
 
 #include "stdafx.h"
 #include "core/ShaderManager.h"
+//
+#include "common/config.h"
 
 // clang-format off
 static UMAP_INT_STR RENDER_SHADERS = {
@@ -40,7 +42,7 @@ static bgfx::ShaderHandle LoadShader_(bx::FileReaderI* reader, std::string_view 
 	bgfx::ShaderHandle handle = bgfx::createShader(BgfxLoadMemory(reader, path.string().c_str()));
 	bgfx::setName(handle, name.data(), name.size());
 
-	ui::Log("LoadShader: {} : {}", path, (void*)&handle);
+	if (DEV_shader) ui::Log("LoadShader_: {} : {}", path, (void*)&handle);
 	return handle;
 }
 

@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "app/App.h"
 //
+#include "common/config.h"
 #include "loaders/MeshLoader.h"
 
 void App::AddGeometry(uGeometry geometry)
@@ -197,7 +198,7 @@ void App::ScanModels(const std::filesystem::path& folder, const std::filesystem:
 	}
 
 	// 3) summary
-	if (depth == 0) [[unlikely]]
+	if (depth == 0 && DEV_models) [[unlikely]]
 	{
 		for (const auto& [kit, models] : kitModels)
 		{

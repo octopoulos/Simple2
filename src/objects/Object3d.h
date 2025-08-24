@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-08-19
+// @version 2025-08-20
 
 #pragma once
 
@@ -98,7 +98,7 @@ public:
 
 	/// Update local matrix from scale * quaternion * position
 	/// @param force: recompute matrixWorld even if has a body
-	void UpdateLocalMatrix(bool force = false);
+	void UpdateLocalMatrix(std::string_view origin = "", bool force = false);
 
 	/// Calculate world matrix + recursively for all children
 	/// - if HasBody => matrixWorld is left untouched because it comes from bullet3

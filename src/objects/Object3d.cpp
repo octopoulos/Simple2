@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "objects/Object3d.h"
 //
+#include "common/config.h"
 #include "core/common3d.h"
 #include "loaders/writer.h"
 #include "ui/xsettings.h"
@@ -79,7 +80,7 @@ void Object3d::Render(uint8_t viewId, int renderFlags)
 
 void Object3d::RotationFromIrot(bool instant)
 {
-	ui::Log("RotationFromIrot: {} {} : {} {} {}", name, instant, irot[0], irot[1], irot[2]);
+	if (DEV_rotate) ui::Log("RotationFromIrot: {} {} : {} {} {}", name, instant, irot[0], irot[1], irot[2]);
 	// normalize irot to [-180, 180] degrees
 	const int snap = xsettings.angleInc;
 	for (int i = 0; i < 3; ++i)
@@ -111,8 +112,7 @@ void Object3d::ScaleIrotPosition(const glm::vec3& _scale, const std::array<int, 
 	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
 
 	RotationFromIrot(true);
-	ui::Log("ScaleIrotPosition: {}", name);
-	UpdateLocalMatrix();
+	UpdateLocalMatrix("ScaleIrotPosition");
 }
 
 void Object3d::ScaleRotationPosition(const glm::vec3& _scale, const glm::vec3& _rotation, const glm::vec3& _position)
@@ -127,8 +127,7 @@ void Object3d::ScaleRotationPosition(const glm::vec3& _scale, const glm::vec3& _
 	irot[1] = TO_INT(bx::toDeg(rotation.y));
 	irot[2] = TO_INT(bx::toDeg(rotation.z));
 
-	ui::Log("ScaleRotationPosition: {}", name);
-	UpdateLocalMatrix();
+	UpdateLocalMatrix("ScaleRotationPosition");
 }
 
 void Object3d::ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat& _quaternion, const glm::vec3& _position)
@@ -143,8 +142,7 @@ void Object3d::ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat&
 	irot[1] = TO_INT(bx::toDeg(rotation.y));
 	irot[2] = TO_INT(bx::toDeg(rotation.z));
 
-	ui::Log("ScaleQuaternionPosition: {}", name);
-	UpdateLocalMatrix();
+	UpdateLocalMatrix("ScaleQuaternionPosition");
 }
 
 int Object3d::Serialize(fmt::memory_buffer& outString, int bounds) const
@@ -179,12 +177,15 @@ void Object3d::SynchronizePhysics()
 {
 }
 
-void Object3d::UpdateLocalMatrix(bool force)
+void Object3d::UpdateLocalMatrix(std::string_view origin, bool force)
 {
 	matrix = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(quaternion) * scaleMatrix;
 	UpdateWorldMatrix(force);
-	ui::Log("UpdateLocalMatrix: {} {} {} {} : {} {} {}", name, position.x, position.y, position.z, irot[0], irot[1], irot[2]);
-	PrintMatrix(matrixWorld, name);
+	if (DEV_matrix)
+	{
+		ui::Log("UpdateLocalMatrix/{}: {} {} {} {} : {} {} {}", origin, name, position.x, position.y, position.z, irot[0], irot[1], irot[2]);
+		PrintMatrix(matrixWorld, name);
+	}
 }
 
 void Object3d::UpdateWorldMatrix(bool force)

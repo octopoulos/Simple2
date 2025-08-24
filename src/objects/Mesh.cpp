@@ -427,8 +427,7 @@ void Mesh::SetBodyTransform()
 	quaternion  = glm::quat_cast(rotMtx);
 	rotation    = glm::eulerAngles(quaternion);
 	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
-	ui::Log("SetBodyTransform: {}", name);
-	UpdateLocalMatrix();
+	UpdateLocalMatrix("SetBodyTransform");
 
 	btTransform transform;
 	transform.setIdentity();
@@ -514,7 +513,6 @@ void Mesh::SynchronizePhysics()
 	// interpolation
 	else if (posTs > 0.0 || quatTs > 0.0)
 	{
-		ui::Log("SynchronizePhysics/interpolation: {} {} {}", name, posTs, quatTs);
 		const double interval = xsettings.repeatInterval * 1e-3;
 		const double nowd     = Nowd();
 
@@ -538,7 +536,7 @@ void Mesh::SynchronizePhysics()
 				quatTs     = 0;
 			}
 		}
-		UpdateLocalMatrix(true);
+		UpdateLocalMatrix("SynchronizePhysics", true);
 	}
 }
 

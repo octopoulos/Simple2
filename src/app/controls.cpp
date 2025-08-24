@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "app/App.h"
 //
+#include "common/config.h"
 #include "common/imgui/imgui.h"
 #include "core/ShaderManager.h"
 #include "core/common3d.h"
@@ -85,8 +86,11 @@ void App::FixedControls()
 
 	auto& ginput = GetGlobalInput();
 
-	for (int id = 0; id < Key::Count; ++id)
-		if (ginput.keyDowns[id]) ui::Log("Controls: {} {:3} {:5} {}", ginput.keyTimes[id], id, ginput.keys[id], getName((Key::Enum)id));
+	if (DEV_controls)
+	{
+		for (int id = 0; id < Key::Count; ++id)
+			if (ginput.keyDowns[id]) ui::Log("Controls: {} {:3} {:5} {}", ginput.keyTimes[id], id, ginput.keys[id], getName((Key::Enum)id));
+	}
 
 	const auto& downs    = ginput.keyDowns;
 	const auto& keys     = ginput.keys;
@@ -139,7 +143,7 @@ void App::FixedControls()
 				if (flag & (2 | 4)) target->irot[1] += (flag & 2) ? -angleInc : angleInc;
 				target->RotationFromIrot(false);
 				ui::Log("Rotate: {}", target->name);
-				target->UpdateLocalMatrix(true);
+				target->UpdateLocalMatrix("FixedControls", true);
 
 				// deactivate physical body
 				if (target->type & ObjectType_HasBody)
@@ -324,7 +328,6 @@ void App::MoveCursor(bool force)
 			const bool isCursor = camera->follow & CameraFollow_Cursor;
 			if (auto target = isCursor ? cursor : selectedObj.lock())
 			{
-				ui::Log("MOVE: {}", target->name);
 				if (target->posTs > 0.0)
 				{
 					target->position = target->position2;
@@ -363,10 +366,7 @@ void App::MoveCursor(bool force)
 				if (xsettings.smoothPos)
 					target->posTs = Nowd();
 				else
-				{
-					ui::Log("Move: {}", target->name);
-					target->UpdateLocalMatrix(true);
-				}
+					target->UpdateLocalMatrix("MoveCursor", true);
 
 				// move cursor at the same time as the selectedObj?
 				if (!isCursor)
@@ -378,7 +378,7 @@ void App::MoveCursor(bool force)
 					cursor->position2   = target->position2;
 					cursor->position2.y = 1.0f;
 					cursor->posTs       = target->posTs;
-					if (!xsettings.smoothPos) cursor->UpdateLocalMatrix(true);
+					if (!xsettings.smoothPos) cursor->UpdateLocalMatrix("MoveCursor2", true);
 				}
 
 				// deactivate physical body
@@ -413,7 +413,7 @@ void App::SelectObject(const sObject3d& obj)
 	camera->Zoom();
 
 	MoveCursor(true);
-	PrintMatrix(obj->matrixWorld, obj->name);
+	if (DEV_matrix) PrintMatrix(obj->matrixWorld, obj->name);
 	FocusScreen();
 }
 
