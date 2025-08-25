@@ -16,6 +16,7 @@ const char* sGames[]        = { "Custom1", "Custom2", "Custom3" };
 const char* sFullScreens[]  = { "Off", "Desktop", "Screen" };
 const char* sProjections[]  = { "Orthogonal", "Perspective" };
 const char* sRenderModes[]  = { "None", "Screen", "Model", "Screen + Model" };
+const char* sRotateModes[]  = { "Quaternion", "XYZ Euler" }; //, "Axis Angle"};
 const char* sThemes[]       = { "Blender", "Classic", "Custom", "Dark", "Light", "Xemu" };
 const char* sVSyncs[]       = { "Off", "On", "Adaptive" };
 
@@ -81,6 +82,7 @@ static std::vector<Config> configs = {
 	X_FLOAT  (XSettings, ui, 0, fontScale  , 0.65f, 0.3f, 10.0f),
 	X_BOOL   (XSettings, ui, 0, labelLeft  , true),
 	X_STRINGS(XSettings, ui, 0, recentFiles, "", 6),
+	X_ENUM   (XSettings, ui, 0, rotateMode , RotateMode_EulerXyz, sRotateModes),
 	X_INT    (XSettings, ui, 0, settingPad , 2, -1, 16),
 	X_INT    (XSettings, ui, 0, settingTree, 0, 0, -1),
 	X_BOOL   (XSettings, ui, 0, showVars   , false),

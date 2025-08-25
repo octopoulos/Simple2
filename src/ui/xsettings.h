@@ -36,6 +36,13 @@ enum XRenderModes_ : int
 	RenderMode_Both,
 };
 
+enum XRotateModes_ : int
+{
+	RotateMode_Quaternion,
+	RotateMode_EulerXyz,
+	// RotateMode_AxisAngle,
+};
+
 enum XThemes_ : int
 {
 	Theme_Blender,
@@ -112,6 +119,7 @@ struct XSettings
 	float fontScale;      ///< FontScaleMain
 	bool  labelLeft;      ///< labels on the left of the inputs
 	str2k recentFiles[6]; ///< recent files for quick load
+	int   rotateMode;     ///< quaternion, xyz-Euler, axis angle
 	int   settingPad;     ///< override windows padding for CommonWindow
 	int   settingTree;    ///< which setting tree nodes are open in the panel
 	bool  showVars;       ///< show variables (VarsUi)

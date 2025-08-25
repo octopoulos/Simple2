@@ -248,7 +248,7 @@ void App::ShowMainMenu(float alpha)
 				ImGui::EndMenu();
 			}
 			ImGui::Separator();
-			if (ImGui::MenuItem("Save")) OpenFile(OpenAction_SaveScene);
+			if (ImGui::MenuItem("Save")) SaveScene(xsettings.recentFiles[0]);
 			if (ImGui::MenuItem("Save As...")) OpenFile(OpenAction_SaveScene);
 			ImGui::Separator();
 			if (ImGui::MenuItem("Rescan Assets")) RescanAssets();

@@ -60,13 +60,14 @@ bool AddCombo(const std::string& name, const char* label);
 bool AddCombo(const std::string& name, const char* label, const char* texts[], const VEC_INT values);
 
 /// Add a drag float with label left/right
-bool AddDragFloat(const std::string& name, const char* text, float speed = 0.0005f, const char* format = "%.3f");
+bool AddDragFloat(const std::string& name, const char* text, float* dataPtr = nullptr, int count = 1, float speed = 0.0005f, const char* format = "%.3f");
 
 /// Add a drag int with label left/right
-bool AddDragInt(const std::string& name, const char* text, float speed = 1.0f, const char* format = "%d");
+bool AddDragInt(const std::string& name, const char* text, float* dataPtr = nullptr, int count = 1, float speed = 1.0f, const char* format = "%d");
 
 /// Add an input text input with label left/right + special Blender support
-void AddInputText(const std::string& name, const char* label, size_t size = 256, int flags = 0);
+/// @param pstring: if used, then overrides config
+void AddInputText(const std::string& name, const char* label, size_t size = 256, int flags = 0, std::string* pstring = nullptr);
 
 /// Add a slider bool with label left/right
 bool AddSliderBool(const std::string& name, const char* text, const char* format = "%d", bool vertical = false, const ImVec2& size = { 30, 120 });

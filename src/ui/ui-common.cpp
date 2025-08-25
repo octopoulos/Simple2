@@ -88,6 +88,17 @@ static void PopBlender(int pushed)
 	if (pushed) ImGui::PopStyleColor(pushed);
 }
 
+static int InputTextCallback(ImGuiInputTextCallbackData* data)
+{
+	if (data->EventFlag == ImGuiInputTextFlags_CallbackResize)
+	{
+		auto str = (std::string*)data->UserData;
+		str->resize(data->BufTextLen);
+		data->Buf = str->data();
+	}
+	return 0;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FUNCTIONS
 ////////////
@@ -151,67 +162,82 @@ bool AddCombo(const std::string& name, const char* label, const char* texts[], c
 }
 
 /// Same as DraggScalarN but can be reset with right click
-/// @param mode: 0:slider, 1:drag
+/// @param mode: 0: slider, &1: drag, &2: vertical
 static bool AddDragScalarN(int mode, const std::string& name, const char* label, ImGuiDataType data_type, size_t type_size, void* p_data, int components, float v_speed, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags = 0)
 {
+	const bool  isHori       = !(mode & 2);
 	const float spacingX     = ImGui::GetStyle().ItemInnerSpacing.x;
+	const char* subLabels    = "XYZW";
 	bool        valueChanged = false;
 
 	ImGui::BeginGroup();
 	ImGui::PushID(label);
 
 	components = std::max(components, 1);
-	LabelLeft(label, components);
+	if (isHori) LabelLeft(label, components);
 
 	for (int i = 0; i < components; ++i)
 	{
+		if (!isHori) LabelLeft(fmt::format("{}{}{}", !i ? label : "", !i ? " " : "", subLabels[i]).c_str(), 1);
+
 		ImGui::PushID(i);
-		if (i > 0)
+		if (isHori && i > 0)
 			ImGui::SameLine(0, spacingX);
 
-		if (mode == 0)
+		if (!(mode & 1))
 			valueChanged |= ImGui::SliderScalar(fmt::format("##{}{}", name, i).c_str(), data_type, p_data, p_min, p_max, format, flags);
 		else
 			valueChanged |= ImGui::DragScalar(fmt::format("##{}{}", name, i).c_str(), data_type, p_data, v_speed, p_min, p_max, format, flags);
 
 		valueChanged |= ItemEvent(name, i);
 
-		ImGui::SameLine();
+		if (isHori) ImGui::SameLine();
 		ImGui::PopID();
 		ImGui::PopItemWidth();
 		p_data = (void*)((char*)p_data + type_size);
+
+		if (!isHori) LabelRight(label);
 	}
 	ImGui::PopID();
 
-	LabelRight(label);
+	if (isHori) LabelRight(label);
 
 	ImGui::EndGroup();
 	return valueChanged;
 }
 
-bool AddDragFloat(const std::string& name, const char* text, float speed, const char* format)
+bool AddDragFloat(const std::string& name, const char* text, float* dataPtr, int count, float speed, const char* format)
 {
 	bool result = false;
-	if (auto config = ConfigFind(name))
+	if (dataPtr)
+		result = AddDragScalarN(3, name, text, ImGuiDataType_Float, sizeof(float), dataPtr, count, speed, nullptr, nullptr, format);
+	else if (auto config = ConfigFind(name))
 		result = AddDragScalarN(1, name, text, ImGuiDataType_Float, sizeof(float), (float*)config->ptr, config->count, speed, &config->minFloat, &config->maxFloat, format);
 	return result;
 }
 
-bool AddDragInt(const std::string& name, const char* text, float speed, const char* format)
+bool AddDragInt(const std::string& name, const char* text, float* dataPtr, int count, float speed, const char* format)
 {
 	bool result = false;
-	if (auto config = ConfigFind(name))
+	if (dataPtr)
+		result = AddDragScalarN(1, name, text, ImGuiDataType_Float, sizeof(float), dataPtr, count, speed, nullptr, nullptr, format);
+	else if (auto config = ConfigFind(name))
 		result = AddDragScalarN(1, name, text, ImGuiDataType_S32, sizeof(int32_t), (int*)config->ptr, config->count, speed, &config->minInt, &config->maxFloat, format);
 	return result;
 }
 
-void AddInputText(const std::string& name, const char* label, size_t size, int flags)
+void AddInputText(const std::string& name, const char* label, size_t size, int flags, std::string* pstring)
 {
 	LabelLeft(label, 1);
 	const int pushed = PushBlender(2);
 
-	if (auto config = ConfigFind(name))
-		ImGui::InputText(LABEL_ID(label), (char*)config->ptr, size, flags);
+	if (pstring)
+	{
+		flags |= ImGuiInputTextFlags_CallbackResize;
+		ImGui::InputText(LABEL_ID(label), pstring->data(), pstring->capacity() + 1, flags, InputTextCallback, pstring);
+	}
+	else if (auto config = ConfigFind(name))
+		ImGui::InputText(LABEL_ID(label), static_cast<char*>(config->ptr), size, flags);
 
 	PopBlender(pushed);
 	LabelRight(label);

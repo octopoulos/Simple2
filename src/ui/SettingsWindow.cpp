@@ -23,10 +23,11 @@ enum ShowSettingFlags : int
 	Show_Net               = 1 << 3,
 	Show_NetMain           = 1 << 4,
 	Show_NetUser           = 1 << 5,
-	Show_System            = 1 << 6, // main
-	Show_SystemPerformance = 1 << 7,
-	Show_SystemRender      = 1 << 8,
-	Show_SystemUI          = 1 << 9,
+	Show_Object            = 1 << 6,
+	Show_System            = 1 << 7, // main
+	Show_SystemPerformance = 1 << 8,
+	Show_SystemRender      = 1 << 9,
+	Show_SystemUI          = 1 << 10,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -64,7 +65,7 @@ public:
 		}
 
 		const int showTree = xsettings.settingTree;
-		int       tree     = showTree & ~(Show_App | Show_Capture | Show_Map | Show_Net | Show_System);
+		int       tree     = showTree & ~(Show_App | Show_Capture | Show_Map | Show_Net | Show_Object | Show_System);
 
 		// APP
 		//////
@@ -117,6 +118,39 @@ public:
 			END_COLLAPSE();
 		}
 
+		// OBJECT
+		/////////
+
+		BEGIN_COLLAPSE("Object", Show_Object, 11 + (xsettings.rotateMode == RotateMode_Quaternion) * 1)
+		{
+			if (auto object = app->selectedObj.lock())
+			{
+				AddInputText("", "Name", 256, 0, &object->name);
+				if (AddDragFloat("", "Position", glm::value_ptr(object->position), 3, 0.5f))
+					object->UpdateLocalMatrix("Position");
+				if (xsettings.rotateMode == RotateMode_Quaternion)
+				{
+					if (AddDragFloat("", "Quaternion", glm::value_ptr(object->quaternion), 4))
+						object->UpdateLocalMatrix("Quaternion");
+				}
+				else
+				{
+					if (AddDragFloat("", "Rotation", glm::value_ptr(object->rotation), 3))
+					{
+						object->quaternion = glm::quat(object->rotation);
+						object->UpdateLocalMatrix("Rotation");
+					}
+				}
+				AddCombo("rotateMode", "Mode");
+				if (AddDragFloat("", "Scale", glm::value_ptr(object->scale), 3))
+				{
+					object->scaleMatrix = glm::scale(glm::mat4(1.0f), object->scale);
+					object->UpdateLocalMatrix("Scale");
+				}
+			}
+			END_COLLAPSE();
+		}
+
 		// SYSTEM
 		/////////
 
@@ -160,7 +194,8 @@ public:
 			{
 				AddCombo("aspectRatio", "Aspect Ratio");
 				AddSliderInt("dpr", "DPR");
-				if (AddDragFloat("fontScale", "Font Scale", 0.001f, "%.3f")) ImGui::GetStyle().FontScaleMain = xsettings.fontScale;
+				if (AddDragFloat("fontScale", "Font Scale", nullptr, 1, 0.001f, "%.3f"))
+					ImGui::GetStyle().FontScaleMain = xsettings.fontScale;
 				AddSliderInt("fullScreen", "Full Screen", nullptr);
 				AddSliderInt("settingPad", "Setting Pad");
 				if (AddCombo("theme", "Theme")) UpdateTheme();
