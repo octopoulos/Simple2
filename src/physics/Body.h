@@ -1,6 +1,6 @@
 // Body.h
 // @author octopoulos
-// @version 2025-08-19
+// @version 2025-08-21
 
 #pragma once
 
@@ -71,6 +71,9 @@ public:
 
 	/// Serialize for JSON output
 	int Serialize(fmt::memory_buffer& outString, int bounds = 3) const;
+
+	/// Show ImGui table with info
+	void ShowTable();
 };
 
 using uBody = std::unique_ptr<Body>;

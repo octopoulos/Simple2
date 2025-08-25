@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-08-20
+// @version 2025-08-21
 
 #pragma once
 
@@ -114,9 +114,11 @@ struct XSettings
 	str2k recentFiles[6]; ///< recent files for quick load
 	int   settingPad;     ///< override windows padding for CommonWindow
 	int   settingTree;    ///< which setting tree nodes are open in the panel
+	bool  showVars;       ///< show variables (VarsUi)
 	int   textButton;     ///< show text under the button
 	int   theme;          ///< Blender, Dark, Light
 	float uiScale;        ///< general scale
+	int   varTree;        ///< which var tree nodes are open in the panel
 	int   winOpen;        ///< which windows are open (flag)
 
 	// [user]

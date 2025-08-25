@@ -1,12 +1,13 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-08-20
+// @version 2025-08-21
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
 //
 #include "loaders/writer.h"
 #include "textures/TextureManager.h"
+#include "ui/ui.h"
 #include "ui/xsettings.h"
 
 #include <meshoptimizer.h>
@@ -440,6 +441,18 @@ void Mesh::SetBodyTransform()
 		motionState->setWorldTransform(transform);
 }
 
+void Mesh::ShowTable()
+{
+	Object3d::ShowTable();
+	if (body) body->ShowTable();
+
+	// clang-format off
+	ui::ShowTable({
+		{ "state", std::to_string(state) },
+	});
+	// clang-format on
+}
+
 void Mesh::Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, uint64_t state) const
 {
 	// BGFX_STATE_CULL_CCW
@@ -536,7 +549,7 @@ void Mesh::SynchronizePhysics()
 				quatTs     = 0;
 			}
 		}
-		UpdateLocalMatrix("SynchronizePhysics", true);
+		UpdateLocalMatrix("SynchronizePhysics");
 	}
 }
 

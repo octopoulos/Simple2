@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-08-20
+// @version 2025-08-21
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -12,7 +12,7 @@ void App::AddGeometry(uGeometry geometry)
 {
 	const auto& coord = cursor->position;
 
-	auto object      = std::make_shared<Mesh>(fmt::format("{}:{}:{}:{} => {}", GeometryName(geometry->type), coord.x, coord.y, coord.z, GeometryShape(geometry->type, false)));
+	auto object      = std::make_shared<Mesh>(fmt::format("{}:{}", mapNode->children.size(), GeometryName(geometry->type), GeometryShape(geometry->type, false)));
 	object->geometry = geometry;
 	object->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
 	object->LoadTextures("colors.png");
@@ -29,11 +29,11 @@ void App::AddGeometry(uGeometry geometry)
 
 void App::AddObject(std::string_view modelName)
 {
-	const auto& coord = cursor->position;
+	const auto  coord = glm::vec3(cursor->position.x, cursor->position.y - 1.0f, cursor->position.z);
 	const auto& irot  = cursor->irot;
 
 	ui::Log("AddObject: {} @ {} {} {}", modelName, coord.x, coord.y, coord.z);
-	if (auto object = MeshLoader::LoadModelFull(fmt::format("{}:{}:{}:{}", modelName, coord.x, coord.y, coord.z), modelName))
+	if (auto object = MeshLoader::LoadModelFull(fmt::format("{}:{}", mapNode->children.size(), modelName), modelName))
 	{
 		object->ScaleIrotPosition(
 		    { 1.0f, 1.0f, 1.0f },

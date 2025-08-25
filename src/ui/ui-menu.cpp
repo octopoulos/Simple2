@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-20
+// @version 2025-08-21
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -20,6 +20,15 @@ enum OpenActions_ : int
 	OpenAction_None      = 0,
 	OpenAction_OpenScene = 1,
 	OpenAction_SaveScene = 2,
+};
+
+// see app:ShowMoreFlags
+enum ShowVarFlags : int
+{
+	Show_Camera      = 1 << 0,
+	Show_Cursor      = 1 << 1,
+	Show_SelectedObj = 1 << 2,
+	Show_Vars        = 1 << 3,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,6 +67,7 @@ int App::MainUi()
 		FilesUi();
 
 		ui::DrawWindows();
+		VarsUi();
 		if (showImGuiDemo) ImGui::ShowDemoWindow(&showImGuiDemo);
 	}
 
@@ -208,8 +218,8 @@ void App::ShowMainMenu(float alpha)
 		// file
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("New Scene")) std::static_pointer_cast<Scene>(scene)->Clear();
-			if (ImGui::MenuItem("Open Scene...")) OpenFile(OpenAction_OpenScene);
+			if (ImGui::MenuItem("New")) std::static_pointer_cast<Scene>(scene)->Clear();
+			if (ImGui::MenuItem("Open...")) OpenFile(OpenAction_OpenScene);
 			ImGui::Separator();
 			if (ImGui::BeginMenu("Open Recent"))
 			{
@@ -238,7 +248,8 @@ void App::ShowMainMenu(float alpha)
 				ImGui::EndMenu();
 			}
 			ImGui::Separator();
-			if (ImGui::MenuItem("Save Scene...")) OpenFile(OpenAction_SaveScene);
+			if (ImGui::MenuItem("Save")) OpenFile(OpenAction_SaveScene);
+			if (ImGui::MenuItem("Save As...")) OpenFile(OpenAction_SaveScene);
 			ImGui::Separator();
 			if (ImGui::MenuItem("Rescan Assets")) RescanAssets();
 			ImGui::Separator();
@@ -301,11 +312,12 @@ void App::ShowMainMenu(float alpha)
 		if (ImGui::BeginMenu("Windows"))
 		{
 			// clang-format off
-			ui::AddMenu("Controls"    , nullptr, ui::GetControlsWindow());
-			ui::AddMenu("Log"         , nullptr, ui::GetLogWindow());
-			ui::AddMenu("Map"         , nullptr, ui::GetMapWindow());
-			ui::AddMenu("Scene"       , nullptr, ui::GetSceneWindow());
-			ui::AddMenu("Settings"    , nullptr, ui::GetSettingsWindow());
+			ui::AddMenu("Controls", nullptr, ui::GetControlsWindow());
+			ui::AddMenu("Log"     , nullptr, ui::GetLogWindow());
+			ui::AddMenu("Map"     , nullptr, ui::GetMapWindow());
+			ui::AddMenu("Scene"   , nullptr, ui::GetSceneWindow());
+			ui::AddMenu("Settings", nullptr, ui::GetSettingsWindow());
+			ImGui::MenuItem("Vars", nullptr, &xsettings.showVars);
 			ImGui::Separator();
 			ImGui::MenuItem("ImGui Demo", nullptr, &showImGuiDemo);
 			ui::AddMenu("Theme Editor", nullptr, ui::GetThemeWindow());
@@ -338,6 +350,72 @@ void App::ShowMainMenu(float alpha)
 void App::ShowPopup(int flag)
 {
 	showPopup ^= flag;
+}
+
+void App::VarsUi()
+{
+	if (ImGui::Begin("Vars", &xsettings.showVars))
+	{
+		const int showTree = xsettings.varTree;
+		int       tree     = showTree & ~(Show_Camera | Show_Cursor | Show_SelectedObj | Show_Vars);
+
+		BEGIN_PADDING();
+
+		// camera
+		if (ImGui::CollapsingHeader("Camera", SHOW_TREE(Show_Camera)))
+		{
+			tree |= Show_Camera;
+			camera->ShowTable();
+		}
+
+		// cursor
+		if (ImGui::CollapsingHeader("Cursor", SHOW_TREE(Show_Cursor)))
+		{
+			tree |= Show_Cursor;
+			cursor->ShowTable();
+		}
+
+		// cursor
+		if (ImGui::CollapsingHeader("Selected Object", SHOW_TREE(Show_SelectedObj)))
+		{
+			tree |= Show_SelectedObj;
+			if (auto object = selectedObj.lock()) object->ShowTable();
+		}
+
+		// vars
+		if (ImGui::CollapsingHeader("Vars", SHOW_TREE(Show_Vars)))
+		{
+			tree |= Show_Vars;
+
+			// clang-format off
+			ui::ShowTable({
+				{ "BaseFolder"    , BaseFolder().string()                    },
+				{ "current_path"  , std::filesystem::current_path().string() },
+				{ "fileAction"    , std::to_string(fileAction)               },
+				{ "fileFolder"    , fileFolder                               },
+				{ "hidePopup"     , std::to_string(hidePopup)                },
+				{ "inputFrame"    , std::to_string(inputFrame)               },
+				{ "inputLag"      , std::to_string(inputLag)                 },
+				{ "isDebug"       , std::to_string(isDebug)                  },
+				{ "kitModels.size", std::to_string(kitModels.size())         },
+				{ "pauseNextFrame", std::to_string(pauseNextFrame)           },
+				{ "physicsFrame"  , std::to_string(physicsFrame)             },
+				{ "renderFrame"   , std::to_string(renderFrame)              },
+				{ "screenX"       , std::to_string(screenX)                  },
+				{ "screenY"       , std::to_string(screenY)                  },
+				{ "videoFrame"    , std::to_string(videoFrame)               },
+				{ "x.physPaused"  , std::to_string(xsettings.physPaused)     },
+				{ "x.settingTree" , std::to_string(xsettings.settingTree)    },
+				{ "x.varTree"     , std::to_string(xsettings.varTree)        },
+			});
+			// clang-format on
+		}
+
+		xsettings.varTree = tree;
+
+		END_PADDING();
+	}
+	ImGui::End();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

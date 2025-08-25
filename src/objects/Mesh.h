@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-08-19
+// @version 2025-08-21
 
 #pragma once
 
@@ -140,6 +140,9 @@ public:
 
 	/// Convert matrixTransform to bullet3:transform
 	void SetBodyTransform();
+
+	/// Show ImGui table with info
+	virtual void ShowTable() override;
 
 	/// Submit for render pass
 	void Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, uint64_t state) const;

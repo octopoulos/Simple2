@@ -1,12 +1,13 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-08-19
+// @version 2025-08-21
 
 #include "stdafx.h"
 #include "physics/Body.h"
 //
 #include "loaders/writer.h"
 #include "objects/Mesh.h"
+#include "ui/ui.h"
 
 #include <BulletCollision/CollisionShapes/btBox2dShape.h>
 #include <BulletCollision/CollisionShapes/btConvex2dShape.h>
@@ -449,6 +450,17 @@ int Body::Serialize(fmt::memory_buffer& outString, int bounds) const
 	WRITE_KEY_STRING2("shapeType", ShapeName(shapeType));
 	if (bounds & 2) WRITE_CHAR('}');
 	return keyId;
+}
+
+void Body::ShowTable()
+{
+	// clang-format off
+	ui::ShowTable({
+		{ "enabled"  , std::to_string(enabled)                                },
+		{ "mass"     , std::to_string(mass)                                   },
+		{ "shapeType", fmt::format("{}: {}", shapeType, ShapeName(shapeType)) },
+	});
+	// clang-format on
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

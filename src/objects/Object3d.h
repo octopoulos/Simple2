@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-08-20
+// @version 2025-08-21
 
 #pragma once
 
@@ -51,7 +51,7 @@ public:
 	glm::quat                         quaternion1 = glm::identity<glm::quat>(); ///< quaternion: origin
 	glm::quat                         quaternion2 = glm::identity<glm::quat>(); ///< quaternion: target
 	double                            quatTs      = 0.0;                        ///< stamp when rotated
-	glm::quat                         rotation    = glm::vec3(0.0f);            ///< rotation: Euler angles
+	glm::vec3                         rotation    = glm::vec3(0.0f);            ///< rotation: Euler angles
 	glm::vec3                         scale       = glm::vec3(1.0f);            ///< sx, sy, sz
 	glm::mat4                         scaleMatrix = glm::mat4(1.0f);            ///< uses scale
 	int                               type        = ObjectType_Basic;           ///< ObjectTypes_
@@ -93,12 +93,14 @@ public:
 	/// Serialize for JSON output
 	virtual int Serialize(fmt::memory_buffer& outString, int bounds = 3) const;
 
+	/// Show ImGui table with info
+	virtual void ShowTable();
+
 	/// Synchronize physics transform
 	virtual void SynchronizePhysics();
 
 	/// Update local matrix from scale * quaternion * position
-	/// @param force: recompute matrixWorld even if has a body
-	void UpdateLocalMatrix(std::string_view origin = "", bool force = false);
+	void UpdateLocalMatrix(std::string_view origin = "");
 
 	/// Calculate world matrix + recursively for all children
 	/// - if HasBody => matrixWorld is left untouched because it comes from bullet3

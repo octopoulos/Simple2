@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-08-20
+// @version 2025-08-21
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -83,9 +83,11 @@ static std::vector<Config> configs = {
 	X_STRINGS(XSettings, ui, 0, recentFiles, "", 6),
 	X_INT    (XSettings, ui, 0, settingPad , 2, -1, 16),
 	X_INT    (XSettings, ui, 0, settingTree, 0, 0, -1),
+	X_BOOL   (XSettings, ui, 0, showVars   , false),
 	X_BOOL   (XSettings, ui, 0, textButton , true),
 	X_ENUM   (XSettings, ui, 0, theme      , Theme_Blender, sThemes),
 	X_FLOAT  (XSettings, ui, 0, uiScale    , 1.0f, 1.0f, 2.5f),
+	X_INT    (XSettings, ui, 0, varTree    , 0, 0, -1),
 	X_INT    (XSettings, ui, 0, winOpen    , 0, 0, -1),
 
 	// [user]

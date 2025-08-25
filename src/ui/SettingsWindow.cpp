@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-08-20
+// @version 2025-08-21
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -15,7 +15,7 @@ namespace ui
 	app->ActivateRectangle(id)
 
 // see app:ShowMoreFlags
-enum ShowFlags : int
+enum ShowSettingFlags : int
 {
 	Show_App               = 1 << 0,
 	Show_Capture           = 1 << 1,
@@ -42,7 +42,6 @@ public:
 	{
 		name = "Settings";
 		type = WindowType_Settings;
-		ui::Log("SettingsWindow: settingTree={}", xsettings.settingTree);
 	}
 
 	void Draw()
@@ -55,22 +54,17 @@ public:
 		}
 
 		CHECK_DRAW();
-
-		auto&      style      = ImGui::GetStyle();
-		const auto paddingX   = style.WindowPadding.x;
-		const int  settingPad = xsettings.settingPad;
-		if (settingPad >= 0) ImGui::PushStyleVarX(ImGuiStyleVar_WindowPadding, xsettings.settingPad);
+		BEGIN_PADDING();
 
 		if (!ImGui::Begin("Settings", &isOpen))
 		{
 			ImGui::End();
-			ImGui::PopStyleVar();
+			END_PADDING();
 			return;
 		}
 
-		//const auto app = static_cast<App*>(engine.get());
-		//app->ScreenFocused(0);
-		int tree = xsettings.settingTree & ~(Show_App | Show_Capture | Show_Map | Show_Net | Show_System);
+		const int showTree = xsettings.settingTree;
+		int       tree     = showTree & ~(Show_App | Show_Capture | Show_Map | Show_Net | Show_System);
 
 		// APP
 		//////
@@ -192,7 +186,7 @@ public:
 		xsettings.settingTree = tree;
 
 		ImGui::End();
-		if (settingPad >= 0) ImGui::PopStyleVar();
+		END_PADDING();
 	}
 };
 

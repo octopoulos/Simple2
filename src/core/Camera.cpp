@@ -1,10 +1,11 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-08-15
+// @version 2025-08-21
 
 #include "stdafx.h"
 #include "core/Camera.h"
 //
+#include "ui/ui.h"
 #include "ui/xsettings.h"
 
 constexpr float orthoZoomMax = 20.0f;
@@ -77,6 +78,24 @@ void Camera::RotateAroundAxis(const bx::Vec3& axis, float angle)
 	const auto rotated = bx::mul(forward, quat);
 
 	pos2 = bx::mad(rotated, -distance, target2);
+}
+
+void Camera::ShowTable()
+{
+	// clang-format off
+	ui::ShowTable({
+		{ "follow"  , std::to_string(follow)                                                  },
+		{ "forward" , fmt::format("{:.2f}:{:.2f}:{:.2f}", forward.x, forward.y, forward.z)    },
+		{ "pos"     , fmt::format("{:.2f}:{:.2f}:{:.2f}", pos.x, pos.y, pos.z)                },
+		{ "pos2"    , fmt::format("{:.2f}:{:.2f}:{:.2f}", pos2.x, pos2.y, pos2.z)             },
+		{ "position", fmt::format("{:.2f}:{:.2f}:{:.2f}", position.x, position.y, position.z) },
+		{ "right"   , fmt::format("{:.2f}:{:.2f}:{:.2f}", right.x, right.y, right.z)          },
+		{ "target"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", target.x, target.y, target.z)       },
+		{ "target2" , fmt::format("{:.2f}:{:.2f}:{:.2f}", target2.x, target2.y, target2.z)    },
+		{ "up"      , fmt::format("{:.2f}:{:.2f}:{:.2f}", up.x, up.y, up.z)                   },
+		{ "worldUp" , fmt::format("{:.2f}:{:.2f}:{:.2f}", worldUp.x, worldUp.y, worldUp.z)    },
+	});
+	// clang-format on
 }
 
 void Camera::SetOrthographic(const bx::Vec3& axis)

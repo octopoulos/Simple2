@@ -43,6 +43,7 @@ set(IMGUI_DIR "${3RDPARTY_SRC_DIR}/imgui-docking")
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(DEBUG_INT 1)
+	add_definitions(-D_DEBUG)
 else()
 	set(DEBUG_INT 0)
 endif()

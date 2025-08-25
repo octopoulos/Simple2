@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-08-20
+// @version 2025-08-21
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -142,8 +142,7 @@ void App::FixedControls()
 				if (flag & (1 | 8)) target->irot[0] += (flag & 1) ? -angleInc : angleInc;
 				if (flag & (2 | 4)) target->irot[1] += (flag & 2) ? -angleInc : angleInc;
 				target->RotationFromIrot(false);
-				ui::Log("Rotate: {}", target->name);
-				target->UpdateLocalMatrix("FixedControls", true);
+				target->UpdateLocalMatrix("FixedControls");
 
 				// deactivate physical body
 				if (target->type & ObjectType_HasBody)
@@ -366,7 +365,7 @@ void App::MoveCursor(bool force)
 				if (xsettings.smoothPos)
 					target->posTs = Nowd();
 				else
-					target->UpdateLocalMatrix("MoveCursor", true);
+					target->UpdateLocalMatrix("MoveCursor");
 
 				// move cursor at the same time as the selectedObj?
 				if (!isCursor)
@@ -378,7 +377,7 @@ void App::MoveCursor(bool force)
 					cursor->position2   = target->position2;
 					cursor->position2.y = 1.0f;
 					cursor->posTs       = target->posTs;
-					if (!xsettings.smoothPos) cursor->UpdateLocalMatrix("MoveCursor2", true);
+					if (!xsettings.smoothPos) cursor->UpdateLocalMatrix("MoveCursor2");
 				}
 
 				// deactivate physical body

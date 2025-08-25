@@ -1,6 +1,6 @@
 // ui.h
 // @author octopoulos
-// @version 2025-08-08
+// @version 2025-08-21
 
 #pragma once
 
@@ -31,7 +31,7 @@ enum WindowTypes_
 #define CHECK_DRAW() \
 	if (!isOpen || (hidden & 1)) return
 
-#define SHOW_TREE(flag) ((xsettings.settingTree & flag) ? ImGuiTreeNodeFlags_DefaultOpen : 0)
+#define SHOW_TREE(flag) ((showTree & flag) ? ImGuiTreeNodeFlags_DefaultOpen : 0)
 
 class CommonWindow
 {
@@ -155,6 +155,12 @@ public:
 	{                                                   \
 		BEGIN_CHILD(name, flag, numRow, 0.0f)
 
+#define BEGIN_PADDING()                            \
+	auto&      style      = ImGui::GetStyle();     \
+	const auto paddingX   = style.WindowPadding.x; \
+	const int  settingPad = xsettings.settingPad;  \
+	if (settingPad >= 0) ImGui::PushStyleVarX(ImGuiStyleVar_WindowPadding, xsettings.settingPad)
+
 #define BEGIN_TREE(name, flag, numRow)                                                                                                                   \
 	{                                                                                                                                                    \
 		ui::IndentGuard indentGuard;                                                                                                                     \
@@ -165,7 +171,10 @@ public:
 #define END_COLLAPSE() \
 		}              \
 	}                  \
-	ImGui::EndChild();
+	ImGui::EndChild()
+
+#define END_PADDING() \
+	if (settingPad >= 0) ImGui::PopStyleVar()
 
 // clang-format off
 #define END_TREE()             \

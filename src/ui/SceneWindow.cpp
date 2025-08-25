@@ -1,6 +1,6 @@
 // SceneWindow.cpp
 // @author octopoulos
-// @version 2025-08-20
+// @version 2025-08-21
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -31,7 +31,7 @@ public:
 			return;
 		}
 
-		if (ImGui::BeginTable("3ways", 3, ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody))
+		if (ImGui::BeginTable("3ways", 3, ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_RowBg))
 		{
 			const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
 

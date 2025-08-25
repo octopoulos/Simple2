@@ -1,6 +1,6 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-08-17
+// @version 2025-08-21
 
 #pragma once
 
@@ -71,6 +71,9 @@ public:
 
 	/// Enable orthographic projection
 	void SetOrthographic(const bx::Vec3& axis);
+
+	/// Show ImGui table with info
+	void ShowTable();
 
 	/// Update smoothed camera state
 	void Update(float delta);

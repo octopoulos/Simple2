@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-08-20
+// @version 2025-08-21
 
 #pragma once
 
@@ -199,6 +199,10 @@ private:
 
 	/// Show/hide popups
 	void ShowPopup(int flag);
+
+	/// Show variables
+	/// @see goric/app.cpp: MainUi
+	void VarsUi();
 
 public:
 	int  wantScreenshot = 0;     ///< capture a screenshot this frame? &1: with UI, &2: without UI, &4: capture next frame

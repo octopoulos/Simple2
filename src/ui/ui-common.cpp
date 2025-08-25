@@ -1,6 +1,6 @@
 // ui-common.cpp
 // @author octopoulos
-// @version 2025-08-17
+// @version 2025-08-21
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -278,14 +278,17 @@ bool ItemEvent(const std::string& name, int index)
 
 void ShowTable(const std::vector<std::tuple<std::string, std::string>>& stats)
 {
-	if (ImGui::BeginTable("Stats", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_SizingStretchSame))
+	if (ImGui::BeginTable("2ways", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
 	{
+		ImGui::TableSetupColumn("##Name" , ImGuiTableColumnFlags_WidthStretch, 3.0f);
+		ImGui::TableSetupColumn("##Value", ImGuiTableColumnFlags_WidthStretch, 5.0f);
+
 		for (const auto& [name, value] : stats)
 		{
 			ImGui::TableNextRow();
-			ImGui::TableSetColumnIndex(0);
+			ImGui::TableNextColumn();
 			ImGui::TextUnformatted(name.c_str());
-			ImGui::TableSetColumnIndex(1);
+			ImGui::TableNextColumn();
 			ImGui::TextUnformatted(value.c_str());
 		}
 		ImGui::EndTable();

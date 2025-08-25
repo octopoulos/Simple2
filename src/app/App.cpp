@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-08-20
+// @version 2025-08-21
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -92,7 +92,6 @@ int App::Initialize()
 	startTime = bx::getHPCounter();
 	lastUs    = NowUs();
 
-	ui::Log("xsettings.aspectRatio={}", xsettings.aspectRatio);
 	return 1;
 }
 
@@ -282,6 +281,9 @@ int App::InitializeScene()
 
 void App::Render()
 {
+	// hack to remove focus from "Example: App"
+	if (renderFrame < 1) FocusScreen();
+
 	// 1) uniforms
 	{
 		//const auto  lightDir    = bx::normalize(bx::Vec3(sinf(curTime), 1.0f, cosf(curTime)));
@@ -302,15 +304,14 @@ void App::Render()
 		physics->StepSimulation(deltaTime);
 		++physicsFrame;
 
-		for (auto& child : scene->children)
-			child->SynchronizePhysics();
-
 		if (pauseNextFrame)
 		{
 			xsettings.physPaused = true;
 			pauseNextFrame       = false;
 		}
 	}
+	for (auto& child : scene->children)
+		child->SynchronizePhysics();
 
 	// 4) draw grid
 	if (xsettings.gridDraw)
