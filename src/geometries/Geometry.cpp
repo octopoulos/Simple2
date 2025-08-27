@@ -1,6 +1,6 @@
 // Geometry.cpp
 // @author octopoulos
-// @version 2025-08-19
+// @version 2025-08-23
 
 #include "stdafx.h"
 #include "geometries/Geometry.h"
@@ -29,7 +29,7 @@ static const UMAP_INT_STR geometryTypeNames = {
 // GEOMETRY
 ///////////
 
-int Geometry::Serialize(fmt::memory_buffer& outString, int bounds) const
+int Geometry::Serialize(fmt::memory_buffer& outString, int depth, int bounds) const
 {
 	if (bounds & 1) WRITE_CHAR('{');
 	WRITE_INIT();

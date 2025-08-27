@@ -1,6 +1,6 @@
 // ui-common.cpp
 // @author octopoulos
-// @version 2025-08-21
+// @version 2025-08-23
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -108,7 +108,7 @@ static int InputTextCallback(ImGuiInputTextCallbackData* data)
 bool AddCheckBox(const std::string& name, const char* labelLeft, const char* labelRight)
 {
 	bool result = false;
-	if (auto config = ConfigFind(name))
+	if (auto config = ConfigFind(name, "AddCheckBox"))
 	{
 		LabelLeft(labelLeft, 1, 6.0f);
 
@@ -123,7 +123,7 @@ bool AddCheckBox(const std::string& name, const char* labelLeft, const char* lab
 bool AddCombo(const std::string& name, const char* label)
 {
 	bool result = false;
-	if (auto config = ConfigFind(name))
+	if (auto config = ConfigFind(name, "AddCombo"))
 	{
 		LabelLeft(label, 1);
 		const int pushed = PushBlender(1);
@@ -140,7 +140,7 @@ bool AddCombo(const std::string& name, const char* label)
 bool AddCombo(const std::string& name, const char* label, const char* texts[], const VEC_INT values)
 {
 	bool result = false;
-	if (auto config = ConfigFind(name))
+	if (auto config = ConfigFind(name, "AddCombo"))
 	{
 		auto it    = std::find(values.begin(), values.end(), *(int*)config->ptr);
 		int  index = (it != values.end()) ? TO_INT(std::distance(values.begin(), it)) : 0;
@@ -211,7 +211,7 @@ bool AddDragFloat(const std::string& name, const char* text, float* dataPtr, int
 	bool result = false;
 	if (dataPtr)
 		result = AddDragScalarN(3, name, text, ImGuiDataType_Float, sizeof(float), dataPtr, count, speed, nullptr, nullptr, format);
-	else if (auto config = ConfigFind(name))
+	else if (auto config = ConfigFind(name, "AddDragFloat"))
 		result = AddDragScalarN(1, name, text, ImGuiDataType_Float, sizeof(float), (float*)config->ptr, config->count, speed, &config->minFloat, &config->maxFloat, format);
 	return result;
 }
@@ -221,7 +221,7 @@ bool AddDragInt(const std::string& name, const char* text, float* dataPtr, int c
 	bool result = false;
 	if (dataPtr)
 		result = AddDragScalarN(1, name, text, ImGuiDataType_Float, sizeof(float), dataPtr, count, speed, nullptr, nullptr, format);
-	else if (auto config = ConfigFind(name))
+	else if (auto config = ConfigFind(name, "AddDragInt"))
 		result = AddDragScalarN(1, name, text, ImGuiDataType_S32, sizeof(int32_t), (int*)config->ptr, config->count, speed, &config->minInt, &config->maxFloat, format);
 	return result;
 }
@@ -236,7 +236,7 @@ void AddInputText(const std::string& name, const char* label, size_t size, int f
 		flags |= ImGuiInputTextFlags_CallbackResize;
 		ImGui::InputText(LABEL_ID(label), pstring->data(), pstring->capacity() + 1, flags, InputTextCallback, pstring);
 	}
-	else if (auto config = ConfigFind(name))
+	else if (auto config = ConfigFind(name, "AddInputText"))
 		ImGui::InputText(LABEL_ID(label), static_cast<char*>(config->ptr), size, flags);
 
 	PopBlender(pushed);
@@ -251,7 +251,7 @@ bool AddSliderBool(const std::string& name, const char* text, const char* format
 bool AddSliderFloat(const std::string& name, const char* text, const char* format)
 {
 	bool result = false;
-	if (auto config = ConfigFind(name))
+	if (auto config = ConfigFind(name, "AddSliderFloat"))
 		result = AddDragScalarN(0, name, text, ImGuiDataType_Float, sizeof(float), (float*)config->ptr, config->count, 1.0f, &config->minFloat, &config->maxFloat, format);
 	return result;
 }
@@ -259,7 +259,7 @@ bool AddSliderFloat(const std::string& name, const char* text, const char* forma
 bool AddSliderInt(const std::string& name, const char* text, const char* format, bool vertical, const ImVec2& size, bool isBool)
 {
 	bool result = false;
-	if (auto config = ConfigFind(name))
+	if (auto config = ConfigFind(name, "AddSliderInt"))
 	{
 		// slider enum?
 		const int count   = config->type == 'e' ? 1 : config->count;
@@ -291,12 +291,15 @@ void AddSpace(float height)
 
 bool ItemEvent(const std::string& name, int index)
 {
-	if (auto config = ConfigFind(name))
+	if (name.size() && name.front() != '.')
 	{
-		if (ImGui::IsItemClicked(1))
+		if (auto config = ConfigFind(name, "ItemEvent"))
 		{
-			config->ResetDefault(index);
-			return true;
+			if (ImGui::IsItemClicked(1))
+			{
+				config->ResetDefault(index);
+				return true;
+			}
 		}
 	}
 	return false;

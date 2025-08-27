@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-08-21
+// @version 2025-08-23
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -369,27 +369,29 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 	}
 }
 
-int Mesh::Serialize(fmt::memory_buffer& outString, int bounds) const
+int Mesh::Serialize(fmt::memory_buffer& outString, int depth, int bounds) const
 {
 	// skip some objects
 	if (type & (ObjectType_Cursor)) return -1;
 
-	int keyId = Object3d::Serialize(outString, (bounds & 1) ? 1 : 0);
+	int keyId = Object3d::Serialize(outString, depth, (bounds & 1) ? 1 : 0);
+	if (keyId < 0) return keyId;
+
 	if (body)
 	{
 		WRITE_KEY("body");
-		body->Serialize(outString);
+		body->Serialize(outString, depth);
 	}
 	if (geometry)
 	{
 		WRITE_KEY("geometry");
-		geometry->Serialize(outString);
+		geometry->Serialize(outString, depth);
 	}
 	if (load) WRITE_KEY_INT(load);
 	if (material)
 	{
 		WRITE_KEY("material");
-		material->Serialize(outString);
+		material->Serialize(outString, depth);
 	}
 	if (modelName.size()) WRITE_KEY_STRING(modelName);
 	if (state) WRITE_KEY_INT(state);

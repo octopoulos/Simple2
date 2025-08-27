@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-08-21
+// @version 2025-08-23
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -35,10 +35,12 @@ int App::ArrowsFlag()
 
 	// clang-format off
 	const int flag = 0
-		| DOWN_OR_REPEAT(Key::Down ) * 1
-		| DOWN_OR_REPEAT(Key::Left ) * 2
-		| DOWN_OR_REPEAT(Key::Right) * 4
-		| DOWN_OR_REPEAT(Key::Up   ) * 8;
+		| DOWN_OR_REPEAT(Key::Down )     * 1
+		| DOWN_OR_REPEAT(Key::Left )     * 2
+		| DOWN_OR_REPEAT(Key::Right)     * 4
+		| DOWN_OR_REPEAT(Key::Up   )     * 8
+		| DOWN_OR_REPEAT(Key::Quote)     * 16  // y-down
+		| DOWN_OR_REPEAT(Key::Backslash) * 32; // y-up
 	// clang-format on
 
 	return flag;
@@ -189,8 +191,23 @@ void App::FixedControls()
 			}
 		}
 
+		if (downs[Key::Return]) SelectObject(nullptr);
 		if (downs[Key::Esc]) hidePopup |= 1;
 		if (downs[Key::Tab]) showLearn = !showLearn;
+
+		if (const auto numChild = mapNode->children.size())
+		{
+			if (DOWN_OR_REPEAT(Key::LeftBracket))
+			{
+				mapNode->childId = (mapNode->childId + numChild - 1) % numChild;
+				SelectObject(mapNode->children[mapNode->childId]);
+			}
+			if (DOWN_OR_REPEAT(Key::RightBracket))
+			{
+				mapNode->childId = (mapNode->childId + 1) % numChild;
+				SelectObject(mapNode->children[mapNode->childId]);
+			}
+		}
 
 		if (downs[Key::F4]) xsettings.bulletDebug = !xsettings.bulletDebug;
 		if (downs[Key::F5]) xsettings.projection = 1 - xsettings.projection;
@@ -320,7 +337,7 @@ void App::MoveCursor(bool force)
 	const auto& keys   = ginput.keys;
 
 	// keep used camera position locked until all keys are released
-	if (force || keys[Key::Down] || keys[Key::Left] || keys[Key::Right] || keys[Key::Up])
+	if (force || keys[Key::Down] || keys[Key::Left] || keys[Key::Right] || keys[Key::Up] || keys[Key::Backslash] || keys[Key::Quote])
 	{
 		if (const int flag = ArrowsFlag(); flag || force)
 		{
@@ -346,9 +363,9 @@ void App::MoveCursor(bool force)
 					const float fz  = cacheForward.z;
 
 					if (bx::abs(fx) > bx::abs(fz))
-						result.x = bx::floor(target->position.x + dir * SignNonZero(fx)) + 0.5f;
+						result.x = bx::floor(target->position.x * 2.0f + dir * SignNonZero(fx)) * 0.5f;
 					else
-						result.z = bx::floor(target->position.z + dir * SignNonZero(fz)) + 0.5f;
+						result.z = bx::floor(target->position.z * 2.0f + dir * SignNonZero(fz)) * 0.5f;
 				}
 				if (flag & (2 | 4))
 				{
@@ -357,9 +374,15 @@ void App::MoveCursor(bool force)
 					const float fz  = cacheRight.z;
 
 					if (bx::abs(fx) > bx::abs(fz))
-						result.x = bx::floor(target->position.x + dir * SignNonZero(fx)) + 0.5f;
+						result.x = bx::floor(target->position.x * 2.0f + dir * SignNonZero(fx)) * 0.5f;
 					else
-						result.z = bx::floor(target->position.z + dir * SignNonZero(fz)) + 0.5f;
+						result.z = bx::floor(target->position.z * 2.0f + dir * SignNonZero(fz)) * 0.5f;
+				}
+				if (flag & (16 | 32))
+				{
+					const float dir = (flag & 32) ? 1.0f : -1.0f;
+
+					result.y = bx::floor(target->position.y * 2.0f + dir) * 0.5f;
 				}
 
 				if (xsettings.smoothPos)
@@ -400,20 +423,45 @@ void App::MoveCursor(bool force)
 	}
 }
 
-void App::SelectObject(const sObject3d& obj)
+void App::SelectObject(const sObject3d& obj, bool countIndex)
 {
-	prevSelected = selectedObj;
-	selectedObj  = obj;
+	if (!obj)
+		camera->follow = CameraFollow_Cursor;
+	else
+	{
+		prevSelected = selectedObj;
+		selectedObj  = obj;
 
-	camera->follow |= CameraFollow_Active | CameraFollow_SelectedObj;
-	camera->follow &= ~CameraFollow_Cursor;
+		camera->follow |= CameraFollow_Active | CameraFollow_SelectedObj;
+		camera->follow &= ~CameraFollow_Cursor;
 
-	camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(obj->position));
-	camera->Zoom();
+		// find the parent's childId
+		if (countIndex)
+		{
+			if (auto* parent = obj->parent)
+			{
+				for (int id = -1; const auto& child : parent->children)
+				{
+					++id;
+					if (child == obj)
+					{
+						parent->childId = id;
+						break;
+					}
+				}
+			}
+		}
+	}
 
-	MoveCursor(true);
-	if (DEV_matrix) PrintMatrix(obj->matrixWorld, obj->name);
-	FocusScreen();
+	if (const sObject3d target = obj ? obj : cursor)
+	{
+		camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(target->position));
+		camera->Zoom();
+
+		MoveCursor(true);
+		if (DEV_matrix) PrintMatrix(target->matrixWorld, target->name);
+		FocusScreen();
+	}
 }
 
 void App::ThrowGeometry(int action, int geometryType, std::string_view textureName)

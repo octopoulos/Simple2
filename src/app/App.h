@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-08-21
+// @version 2025-08-23
 
 #pragma once
 
@@ -112,8 +112,9 @@ private:
 	bool                pauseNextFrame = false; ///< pause next frame
 	int                 renderFlags    = 0;     ///< render flags
 	int                 renderFrame    = 0;     ///< current rendered frame
-	bgfx::UniformHandle uLight         = {};    ///
-	bgfx::UniformHandle uTime          = {};    ///
+	bgfx::UniformHandle uCursorCol     = {};    ///< cursor color depending on elevation
+	bgfx::UniformHandle uLightDir      = {};    ///< light direction
+	bgfx::UniformHandle uTime          = {};    ///< time in seconds
 
 public:
 	/// Render everything except UI
@@ -152,7 +153,8 @@ public:
 	std::weak_ptr<Object3d> selectedObj = {};      ///< selected object for edit
 
 	/// Select the object to follow
-	void SelectObject(const sObject3d& obj);
+	/// @param countIndex: calculate the parent's childId
+	void SelectObject(const sObject3d& obj, bool countIndex = false);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// SETTINGS

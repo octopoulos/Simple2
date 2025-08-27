@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-08-21
+// @version 2025-08-23
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -49,7 +49,8 @@ void App::Destroy()
 	GetShaderManager().Destroy();
 	GetTextureManager().Destroy();
 
-	bgfx::destroy(uLight);
+	bgfx::destroy(uCursorCol);
+	bgfx::destroy(uLightDir);
 	bgfx::destroy(uTime);
 }
 
@@ -79,8 +80,9 @@ int App::Initialize()
 
 	// 6) uniforms
 	{
-		uLight = bgfx::createUniform("u_lightDir", bgfx::UniformType::Vec4);
-		uTime  = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
+		uCursorCol = bgfx::createUniform("u_cursorCol", bgfx::UniformType::Vec4);
+		uLightDir  = bgfx::createUniform("u_lightDir" , bgfx::UniformType::Vec4);
+		uTime      = bgfx::createUniform("u_time"     , bgfx::UniformType::Vec4);
 	}
 
 	// 7) extra inits
@@ -122,7 +124,7 @@ int App::InitializeScene()
 			cursor->material = std::make_shared<Material>("vs_cursor", "fs_cursor");
 
 			cursor->ScaleIrotPosition(
-				{ 1.0f, 1.02f, 1.0f },
+				{ 1.02f, 1.02f, 1.02f },
 				{ 0, 0, 0 },
 				{ 0.5f, 1.0f, 0.5f }
 			);
@@ -286,10 +288,14 @@ void App::Render()
 
 	// 1) uniforms
 	{
+		const auto  cursorCol    = bx::Vec3(0.7f, 0.6f, 0.0f);
+		const float cursorUni[4] = { cursorCol.x, cursorCol.y, cursorCol.z, 0.0f };
+		bgfx::setUniform(uCursorCol, cursorUni);
+
 		//const auto  lightDir    = bx::normalize(bx::Vec3(sinf(curTime), 1.0f, cosf(curTime)));
 		const auto  lightDir    = bx::normalize(bx::Vec3(0.5f, 1.0f, -0.5f));
 		const float lightUni[4] = { lightDir.x, lightDir.y, lightDir.z, 0.0f };
-		bgfx::setUniform(uLight, lightUni);
+		bgfx::setUniform(uLightDir, lightUni);
 
 		const float timeVec[4] = { curTime, 0.0f, 0.0f, 0.0f };
 		bgfx::setUniform(uTime, timeVec);

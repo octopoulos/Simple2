@@ -1,6 +1,6 @@
 // Material.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-23
 
 #include "stdafx.h"
 #include "materials/Material.h"
@@ -20,7 +20,7 @@ void Material::LoadProgram(std::string_view vsName, std::string_view fsName)
 	program      = GetShaderManager().LoadProgram(vsName, fsName);
 }
 
-int Material::Serialize(fmt::memory_buffer& outString, int bounds)
+int Material::Serialize(fmt::memory_buffer& outString, int depth, int bounds)
 {
 	if (bounds & 1) WRITE_CHAR('{');
 	WRITE_INIT();

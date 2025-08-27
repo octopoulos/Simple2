@@ -1,6 +1,6 @@
 // SceneWindow.cpp
 // @author octopoulos
-// @version 2025-08-21
+// @version 2025-08-23
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -51,10 +51,7 @@ public:
 	void DrawCells(const sObject3d& node)
 	{
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
-		{
-			app->SelectObject(node);
-			ui::Log("SceneWindow/DrawObject: {}", node->name);
-		}
+			app->SelectObject(node, true);
 
 		ImGui::TableNextColumn();
 		ImGui::PushID(node->name.c_str());
@@ -105,7 +102,9 @@ public:
 		// draw children nodes
 		if (const auto numChild = node->children.size())
 		{
-			if (!depth) treeFlag |= ImGuiTreeNodeFlags_DefaultOpen;
+			// open Scene and Map by default
+			if (!depth || (depth == 1 && (node->type & ObjectType_Map)))
+				treeFlag |= ImGuiTreeNodeFlags_DefaultOpen;
 
 			if (ImGui::TreeNodeEx(fmt::format("({}) {}", numChild, node->name).c_str(), treeFlag))
 			{

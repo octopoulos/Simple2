@@ -1,6 +1,6 @@
 // Material.h
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-23
 
 #pragma once
 
@@ -25,5 +25,5 @@ public:
 	void LoadProgram(std::string_view vsName, std::string_view fsName);
 
 	/// Serialize for JSON output
-	int Serialize(fmt::memory_buffer& outString, int bounds = 3);
+	int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3);
 };

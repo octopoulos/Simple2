@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-08-21
+// @version 2025-08-23
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -146,8 +146,11 @@ void Object3d::ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat&
 	UpdateLocalMatrix("ScaleQuaternionPosition");
 }
 
-int Object3d::Serialize(fmt::memory_buffer& outString, int bounds) const
+int Object3d::Serialize(fmt::memory_buffer& outString, int depth, int bounds) const
 {
+	// skip Scene.groups except Map
+	if (depth == 1 && (type & ObjectType_Group) && !(type & ObjectType_Map)) return -1;
+
 	if (bounds & 1) WRITE_CHAR('{');
 	WRITE_INIT();
 	if (irot[0] || irot[1] || irot[2]) WRITE_KEY_INT3(irot);
@@ -158,6 +161,8 @@ int Object3d::Serialize(fmt::memory_buffer& outString, int bounds) const
 	if (scale != glm::vec3(1.0f)) WRITE_KEY_VEC3(scale);
 	WRITE_KEY_STRING2("type", ObjectName(type));
 	if (!visible) WRITE_KEY_BOOL(visible);
+
+	// save children
 	if (children.size())
 	{
 		WRITE_KEY("children");
@@ -166,10 +171,12 @@ int Object3d::Serialize(fmt::memory_buffer& outString, int bounds) const
 		for (size_t i = 0; i < children.size(); ++i)
 		{
 			if (lastSaved) WRITE_CHAR(',');
-			lastSaved = (children[i]->Serialize(outString, 3) > -1);
+			lastSaved = (children[i]->Serialize(outString, depth + 1, 3) > -1);
 		}
+		if (outString[outString.size() - 1] == ',') outString.resize(outString.size() - 1);
 		WRITE_CHAR(']');
 	}
+
 	if (bounds & 2) WRITE_CHAR('}');
 	return keyId;
 }

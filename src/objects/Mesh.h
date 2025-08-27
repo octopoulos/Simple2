@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-08-21
+// @version 2025-08-23
 
 #pragma once
 
@@ -136,7 +136,7 @@ public:
 	virtual void Render(uint8_t viewId, int renderFlags) override;
 
 	/// Serialize for JSON output
-	virtual int Serialize(fmt::memory_buffer& outString, int bounds = 3) const override;
+	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3) const override;
 
 	/// Convert matrixTransform to bullet3:transform
 	void SetBodyTransform();

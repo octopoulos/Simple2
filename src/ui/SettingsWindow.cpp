@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-08-21
+// @version 2025-08-23
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -125,24 +125,24 @@ public:
 		{
 			if (auto object = app->selectedObj.lock())
 			{
-				AddInputText("", "Name", 256, 0, &object->name);
-				if (AddDragFloat("", "Position", glm::value_ptr(object->position), 3, 0.5f))
+				AddInputText(".name", "Name", 256, 0, &object->name);
+				if (AddDragFloat(".position", "Position", glm::value_ptr(object->position), 3, 0.5f))
 					object->UpdateLocalMatrix("Position");
 				if (xsettings.rotateMode == RotateMode_Quaternion)
 				{
-					if (AddDragFloat("", "Quaternion", glm::value_ptr(object->quaternion), 4))
+					if (AddDragFloat(".quaternion", "Quaternion", glm::value_ptr(object->quaternion), 4))
 						object->UpdateLocalMatrix("Quaternion");
 				}
 				else
 				{
-					if (AddDragFloat("", "Rotation", glm::value_ptr(object->rotation), 3))
+					if (AddDragFloat(".rotation", "Rotation", glm::value_ptr(object->rotation), 3))
 					{
 						object->quaternion = glm::quat(object->rotation);
 						object->UpdateLocalMatrix("Rotation");
 					}
 				}
 				AddCombo("rotateMode", "Mode");
-				if (AddDragFloat("", "Scale", glm::value_ptr(object->scale), 3))
+				if (AddDragFloat(".scale", "Scale", glm::value_ptr(object->scale), 3))
 				{
 					object->scaleMatrix = glm::scale(glm::mat4(1.0f), object->scale);
 					object->UpdateLocalMatrix("Scale");

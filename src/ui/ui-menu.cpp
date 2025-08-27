@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-21
+// @version 2025-08-23
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -389,24 +389,25 @@ void App::VarsUi()
 
 			// clang-format off
 			ui::ShowTable({
-				{ "BaseFolder"    , BaseFolder().string()                    },
-				{ "current_path"  , std::filesystem::current_path().string() },
-				{ "fileAction"    , std::to_string(fileAction)               },
-				{ "fileFolder"    , fileFolder                               },
-				{ "hidePopup"     , std::to_string(hidePopup)                },
-				{ "inputFrame"    , std::to_string(inputFrame)               },
-				{ "inputLag"      , std::to_string(inputLag)                 },
-				{ "isDebug"       , std::to_string(isDebug)                  },
-				{ "kitModels.size", std::to_string(kitModels.size())         },
-				{ "pauseNextFrame", std::to_string(pauseNextFrame)           },
-				{ "physicsFrame"  , std::to_string(physicsFrame)             },
-				{ "renderFrame"   , std::to_string(renderFrame)              },
-				{ "screenX"       , std::to_string(screenX)                  },
-				{ "screenY"       , std::to_string(screenY)                  },
-				{ "videoFrame"    , std::to_string(videoFrame)               },
-				{ "x.physPaused"  , std::to_string(xsettings.physPaused)     },
-				{ "x.settingTree" , std::to_string(xsettings.settingTree)    },
-				{ "x.varTree"     , std::to_string(xsettings.varTree)        },
+				{ "BaseFolder"     , BaseFolder().string()                    },
+				{ "current_path"   , std::filesystem::current_path().string() },
+				{ "fileAction"     , std::to_string(fileAction)               },
+				{ "fileFolder"     , fileFolder                               },
+				{ "hidePopup"      , std::to_string(hidePopup)                },
+				{ "inputFrame"     , std::to_string(inputFrame)               },
+				{ "inputLag"       , std::to_string(inputLag)                 },
+				{ "isDebug"        , std::to_string(isDebug)                  },
+				{ "kitModels.size" , std::to_string(kitModels.size())         },
+				{ "mapNode.childId", std::to_string(mapNode->childId)         },
+				{ "pauseNextFrame" , std::to_string(pauseNextFrame)           },
+				{ "physicsFrame"   , std::to_string(physicsFrame)             },
+				{ "renderFrame"    , std::to_string(renderFrame)              },
+				{ "screenX"        , std::to_string(screenX)                  },
+				{ "screenY"        , std::to_string(screenY)                  },
+				{ "videoFrame"     , std::to_string(videoFrame)               },
+				{ "x.physPaused"   , std::to_string(xsettings.physPaused)     },
+				{ "x.settingTree"  , std::to_string(xsettings.settingTree)    },
+				{ "x.varTree"      , std::to_string(xsettings.varTree)        },
 			});
 			// clang-format on
 		}

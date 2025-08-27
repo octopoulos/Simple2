@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-08-21
+// @version 2025-08-23
 
 #pragma once
 
@@ -35,6 +35,7 @@ enum RenderFlags_ : int
 class Object3d
 {
 public:
+	int                               childId     = 0;                          ///< selected sub-object
 	std::vector<sObject3d>            children    = {};                         ///< sub-objects
 	int                               id          = 0;                          ///< unique id
 	int                               irot[3]     = {};                         ///< number of 45 deg rotations
@@ -91,7 +92,7 @@ public:
 	void ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat& _quaternion, const glm::vec3& _position);
 
 	/// Serialize for JSON output
-	virtual int Serialize(fmt::memory_buffer& outString, int bounds = 3) const;
+	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3) const;
 
 	/// Show ImGui table with info
 	virtual void ShowTable();

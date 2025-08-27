@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-08-21
+// @version 2025-08-23
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -442,7 +442,7 @@ void Body::DestroyShape()
 	}
 }
 
-int Body::Serialize(fmt::memory_buffer& outString, int bounds) const
+int Body::Serialize(fmt::memory_buffer& outString, int depth, int bounds) const
 {
 	if (bounds & 1) WRITE_CHAR('{');
 	WRITE_INIT();
