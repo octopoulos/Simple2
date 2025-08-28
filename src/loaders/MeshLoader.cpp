@@ -1,12 +1,16 @@
 // MeshLoader.cpp
 // @author octopoulos
-// @version 2025-08-19
+// @version 2025-08-24
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
 //
 #include "core/ShaderManager.h"
 #include "textures/TextureManager.h"
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// MeshLoader
+/////////////
 
 sMesh MeshLoader::LoadModel(std::string_view name, std::string_view modelName, bool ramcopy)
 {
@@ -23,7 +27,7 @@ sMesh MeshLoader::LoadModel(std::string_view name, std::string_view modelName, b
 	}
 
 	mesh->load      = MeshLoad_Basic;
-	mesh->modelName = modelName;
+	mesh->modelName = NormalizeFilename(modelName);
 	return mesh;
 }
 
@@ -78,6 +82,31 @@ sMesh MeshLoader::LoadModelFull(std::string_view name, std::string_view modelNam
 	}
 
 	mesh->load      = MeshLoad_Full;
-	mesh->modelName = modelName;
+	mesh->modelName = NormalizeFilename(modelName);
 	return mesh;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FUNCTIONS
+////////////
+
+std::string NormalizeFilename(std::string_view filename)
+{
+	return ReplaceAll(filename, "\\", "/");
+}
+
+TEST_CASE("NormalizeFilename")
+{
+	// clang-format off
+	const std::vector<std::tuple<std::string, std::string>> vectors = {
+		{ ""               , ""               },
+		{ "kenney/car.bin" , "kenney/car.bin" },
+		{ "kenney\\car.bin", "kenney/car.bin" },
+	};
+	// clang-format on
+	for (int i = -1; const auto& [filename, answer] : vectors)
+	{
+		SUBCASE_FMT("{}_{}", ++i, filename)
+		CHECK(NormalizeFilename(filename) == answer);
+	}
 }

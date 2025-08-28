@@ -209,6 +209,7 @@ FetchContent_MakeAvailable(fmt)
 
 # find_package(bgfx CONFIG REQUIRED)
 find_package(Bullet REQUIRED)
+find_package(CLI11 CONFIG REQUIRED)
 find_package(doctest CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 #find_package(imgui CONFIG REQUIRED)
@@ -312,6 +313,7 @@ target_link_libraries(Simple PRIVATE
 	AI
 	# bgfx::bgfx bgfx::bimg bgfx::bimg_decode bgfx::bx
 	${BULLET_LIBRARIES}
+	CLI11::CLI11
 	doctest::doctest
 	fmt::fmt-header-only
 	#imgui::imgui

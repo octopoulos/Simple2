@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-08-23
+// @version 2025-08-24
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -500,10 +500,10 @@ TEST_CASE("GeometryShape")
 	const std::vector<std::tuple<int, bool, int, int>> vectors = {
 		{ GeometryType_Box         , true , 0, ShapeType_Box          },
 		{ GeometryType_Box         , false, 0, ShapeType_Box          },
-		{ GeometryType_Capsule     , true , 0, ShapeType_Box          },
-		{ GeometryType_Cone        , true , 0, ShapeType_Box          },
-		{ GeometryType_Cylinder    , true , 0, ShapeType_Box          },
-		{ GeometryType_Sphere      , true , 0, ShapeType_Box          },
+		{ GeometryType_Capsule     , true , 0, ShapeType_Capsule      },
+		{ GeometryType_Cone        , true , 0, ShapeType_Cone         },
+		{ GeometryType_Cylinder    , true , 0, ShapeType_Cylinder     },
+		{ GeometryType_Sphere      , true , 0, ShapeType_Sphere       },
 		{ GeometryType_Dodecahedron, true , 0, ShapeType_ConvexHull   },
 		{ GeometryType_Dodecahedron, true , 1, ShapeType_Sphere       },
 		{ GeometryType_Dodecahedron, true , 4, ShapeType_Sphere       },
@@ -512,7 +512,7 @@ TEST_CASE("GeometryShape")
 		{ GeometryType_Tetrahedron , true , 0, ShapeType_ConvexHull   },
 		{ GeometryType_Torus       , true , 0, ShapeType_Cylinder     },
 		{ GeometryType_Torus       , false, 0, ShapeType_TriangleMesh },
-		{ GeometryType_TorusKnot   , true , 0, ShapeType_Cylinder     },
+		{ GeometryType_TorusKnot   , true , 0, ShapeType_ConvexHull   },
 		{ GeometryType_TorusKnot   , false, 0, ShapeType_TriangleMesh },
 	};
 	// clang-format on

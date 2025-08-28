@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-08-23
+// @version 2025-08-24
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -242,11 +242,13 @@ bool App::OpenScene(const std::filesystem::path& filename)
 
 bool App::SaveScene(const std::filesystem::path& filename)
 {
+	std::filesystem::path output = filename.empty() ? xsettings.recentFiles[0] : filename;
+
 	fmt::memory_buffer outString;
 	scene->Serialize(outString, 0);
 	ui::Log("SaveScene: {}", OUTSTRING_VIEW);
-	WriteData(filename, OUTSTRING_VIEW);
-	AddRecent(filename);
+	WriteData(output, OUTSTRING_VIEW);
+	AddRecent(output);
 	return true;
 }
 

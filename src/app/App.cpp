@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-08-23
+// @version 2025-08-24
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -18,9 +18,13 @@
 #include "common/ffmpeg-pipe.h"
 #include "common/imgui/imgui.h"
 
+#include "AI/export.h" // AiTests
+
 #ifdef _WIN32
 #	include <windows.h>
 #endif
+
+#include <CLI/CLI.hpp>
 
 extern std::string VERSION;
 
@@ -471,9 +475,31 @@ public:
 	{
 	}
 
-	virtual void init(int32_t _argc, const char* const* _argv, uint32_t width, uint32_t height) override
+	virtual void init(int32_t argc, const char* const* argv, uint32_t width, uint32_t height) override
 	{
-		Args args(_argc, _argv);
+		Args args(argc, argv);
+
+		// 0) CLI
+		auto cliFunc = [&]() -> int
+		{
+			CLI_BEGIN("Simple");
+
+			// name, type, default, implicit, needApp, help
+			// clang-format off
+			CLI_OPTION(tests, int, 0, 1, 0, "Run tests");
+			// clang-format on
+
+			if (argc && argv) CLI11_PARSE(cli, argc, argv);
+			CLI_NEEDAPP();
+
+			if (tests)
+			{
+				const int res = AiTests(tests, argc, (char**)argv);
+				if (!(tests & 4) && (res || (tests & 2))) return res;
+			}
+			return 0;
+		};
+		if (const int result = cliFunc()) return;
 
 		// 1) bgfx
 		{

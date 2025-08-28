@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-08-21
+// @version 2025-08-24
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -25,6 +25,7 @@ void App::AddGeometry(uGeometry geometry)
 	object->CreateShapeBody(physics.get(), GeometryShape(geometry->type, false));
 
 	mapNode->AddChild(object);
+	AutoSave();
 }
 
 void App::AddObject(std::string_view modelName)
@@ -33,7 +34,7 @@ void App::AddObject(std::string_view modelName)
 	const auto& irot  = cursor->irot;
 
 	ui::Log("AddObject: {} @ {} {} {}", modelName, coord.x, coord.y, coord.z);
-	if (auto object = MeshLoader::LoadModelFull(fmt::format("{}:{}", mapNode->children.size(), modelName), modelName))
+	if (auto object = MeshLoader::LoadModelFull(fmt::format("{}:{}", mapNode->children.size(), NodeName(modelName)), modelName))
 	{
 		object->ScaleIrotPosition(
 		    { 1.0f, 1.0f, 1.0f },
@@ -43,10 +44,51 @@ void App::AddObject(std::string_view modelName)
 		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh);
 
 		mapNode->AddChild(object);
+		AutoSave();
 		SelectObject(object);
 	}
 
 	FocusScreen();
+}
+
+void App::AutoSave(const sObject3d& target)
+{
+	if (target)
+	{
+		// don't save if parent is not "Map"
+		const auto* parent = target->parent;
+		if (!parent || !(parent->type & ObjectType_Map)) return;
+	}
+	SaveScene();
+}
+
+std::string App::NodeName(std::string_view modelName)
+{
+	if (modelName.empty()) return "";
+
+	const auto path     = std::filesystem::path(NormalizeFilename(modelName));
+	const auto filename = path.filename().string();
+	const auto parent   = path.parent_path().string();
+
+	return parent.empty() ? filename : fmt::format("{} ({})", filename, parent);
+}
+
+TEST_CASE("NodeName")
+{
+	// clang-format off
+	const std::vector<std::tuple<std::string, std::string>> vectors = {
+		{ ""                    , ""                      },
+		{ "kenney/car.bin"      , "car.bin (kenney)"      },
+		{ "kenney/cars/car.bin" , "car.bin (kenney/cars)" },
+		{ "kenney\\car.bin"     , "car.bin (kenney)"      },
+		{ "kenney\\cars/car.bin", "car.bin (kenney/cars)" },
+	};
+	// clang-format on
+	for (int i = -1; const auto& [modelName, answer] : vectors)
+	{
+		SUBCASE_FMT("{}_{}", ++i, modelName)
+		CHECK(App::NodeName(modelName) == answer);
+	}
 }
 
 void App::RescanAssets()

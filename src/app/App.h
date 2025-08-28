@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-08-23
+// @version 2025-08-24
 
 #pragma once
 
@@ -86,6 +86,9 @@ private:
 	/// Insert a geometry into the map
 	void AddGeometry(uGeometry geometry);
 
+	/// Auto save scene after some events
+	void AutoSave(const sObject3d& target = nullptr);
+
 	/// Open a map file
 	bool OpenMap(const std::filesystem::path& filename);
 
@@ -100,6 +103,9 @@ public:
 
 	/// Insert an object into the map
 	void AddObject(std::string_view modelName);
+
+	/// Name that is optimized for the user (base first then parent)
+	static std::string NodeName(std::string_view modelName);
 
 	/// Rescan folders to update the assets
 	void RescanAssets();
@@ -146,7 +152,7 @@ private:
 	bool OpenScene(const std::filesystem::path& filename);
 
 	/// Save the scene to a file
-	bool SaveScene(const std::filesystem::path& filename);
+	bool SaveScene(const std::filesystem::path& filename = {});
 
 public:
 	sObject3d               scene       = nullptr; ///< scene container

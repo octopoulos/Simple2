@@ -1,10 +1,14 @@
 // MeshLoader.h
 // @author octopoulos
-// @version 2025-08-17
+// @version 2025-08-24
 
 #pragma once
 
 #include "objects/Mesh.h"
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// MeshLoader
+/////////////
 
 class MeshLoader
 {
@@ -18,3 +22,10 @@ public:
 	/// Loads mesh from file, creates Object3D with that mesh + add mesh shader + guess texture, and returns it
 	static sMesh LoadModelFull(std::string_view name, std::string_view modelName, std::string_view textureName = "");
 };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FUNCTIONS
+////////////
+
+/// Replace \ with /
+std::string NormalizeFilename(std::string_view filename);

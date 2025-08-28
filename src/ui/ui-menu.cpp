@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-23
+// @version 2025-08-24
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -248,8 +248,9 @@ void App::ShowMainMenu(float alpha)
 				ImGui::EndMenu();
 			}
 			ImGui::Separator();
-			if (ImGui::MenuItem("Save")) SaveScene(xsettings.recentFiles[0]);
+			if (ImGui::MenuItem("Save")) SaveScene();
 			if (ImGui::MenuItem("Save As...")) OpenFile(OpenAction_SaveScene);
+			ImGui::MenuItem("Auto Save", nullptr, &xsettings.autoSave);
 			ImGui::Separator();
 			if (ImGui::MenuItem("Rescan Assets")) RescanAssets();
 			ImGui::Separator();

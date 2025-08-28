@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-08-23
+// @version 2025-08-24
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -77,7 +77,10 @@ void App::DeleteSelected()
 		if (!(target->type & (ObjectType_Cursor | ObjectType_Map | ObjectType_Scene)))
 		{
 			if (auto* parent = target->parent)
+			{
 				parent->RemoveChild(target);
+				if (parent->type & ObjectType_Map) AutoSave();
+			}
 		}
 	}
 }
@@ -153,6 +156,9 @@ void App::FixedControls()
 					mesh->SetBodyTransform();
 					mesh->ActivatePhysics(false);
 				}
+
+				// save?
+				AutoSave(target);
 			}
 		}
 	}
@@ -401,6 +407,9 @@ void App::MoveCursor(bool force)
 					cursor->position2.y = 1.0f;
 					cursor->posTs       = target->posTs;
 					if (!xsettings.smoothPos) cursor->UpdateLocalMatrix("MoveCursor2");
+
+					// save?
+					AutoSave(target);
 				}
 
 				// deactivate physical body
