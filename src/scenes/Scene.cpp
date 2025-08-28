@@ -37,15 +37,43 @@ static void AddRecent(const std::filesystem::path& filename)
 	}
 }
 
+static void GetArrayFloat(simdjson::ondemand::object& doc, const char* key, float* out)
+{
+	simdjson::ondemand::array arr;
+	if (!doc[key].get_array().get(arr))
+	{
+		for (int i = -1; auto val : arr)
+		{
+			if (++i >= 3) break;
+			double value;
+			if (!val.get_double().get(value)) out[i] = TO_FLOAT(value);
+		}
+	}
+}
+
+static void GetArrayInt(simdjson::ondemand::object& doc, const char* key, std::array<int, 3>& out)
+{
+	simdjson::ondemand::array arr;
+	if (!doc[key].get_array().get(arr))
+	{
+		for (int i = -1; auto val : arr)
+		{
+			if (++i >= 3) break;
+			int64_t value;
+			if (!val.get_int64().get(value)) out[i] = TO_INT(value);
+		}
+	}
+}
+
 static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObject3d scene, void* physics)
 {
 	// 1) default values
-	std::array<int, 3> irot       = {};
-	std::string        name       = "";
-	glm::vec3          position   = glm::vec3(0.0f);
-	glm::vec3          scale      = glm::vec3(1.0f);
-	int                type       = ObjectType_Basic;
-	bool               visible    = true;
+	std::array<int, 3> irot     = {};
+	std::string        name     = "";
+	glm::vec3          position = glm::vec3(0.0f);
+	glm::vec3          scale    = glm::vec3(1.0f);
+	int                type     = ObjectType_Basic;
+	bool               visible  = true;
 
 	// temp vars
 	simdjson::ondemand::array  array      = {};
@@ -58,46 +86,12 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 	if (!doc["type"].get_string().get(tempString)) type = ObjectType(tempString);
 	if (!doc["visible"].get_bool().get(tempBool)) visible = tempBool;
 
-	// 3) irot
-	if (!doc["irot"].get_array().get(array))
-	{
-		for (int i = -1; auto val : array)
-		{
-			if (++i < 3)
-			{
-				int64_t value;
-				if (!val.get_int64().get(value)) irot[i] = TO_INT(value);
-			}
-		}
-	}
+	// 3) irot / position / scale
+	GetArrayInt(doc, "irot", irot);
+	GetArrayFloat(doc, "position", glm::value_ptr(position));
+	GetArrayFloat(doc, "scale", glm::value_ptr(scale));
 
-	// 4) position
-	if (!doc["position"].get_array().get(array))
-	{
-		for (int i = -1; auto val : array)
-		{
-			if (++i < 3)
-			{
-				double value;
-				if (!val.get_double().get(value)) position[i] = TO_FLOAT(value);
-			}
-		}
-	}
-
-	// 5) scale
-	if (!doc["scale"].get_array().get(array))
-	{
-		for (int i = -1; auto val : array)
-		{
-			if (++i < 3)
-			{
-				double value;
-				if (!val.get_double().get(value)) scale[i] = TO_FLOAT(value);
-			}
-		}
-	}
-
-	// 6) create object based on type
+	// 4) create object based on type
 	sObject3d exist      = nullptr;
 	sObject3d object     = nullptr;
 	bool      positioned = false;
@@ -106,6 +100,13 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 	{
 		exist = scene->GetObjectByName("Camera");
 		if (exist) object = exist;
+
+		auto camera = std::static_pointer_cast<Camera>(object);
+		GetArrayFloat(doc, "pos", &camera->pos.x);
+		GetArrayFloat(doc, "target", &camera->target.x);
+
+		std::memcpy(&camera->pos2.x, &camera->pos.x, sizeof(bx::Vec3));
+		std::memcpy(&camera->target2.x, &camera->target.x, sizeof(bx::Vec3));
 	}
 	else if (type & ObjectType_Cursor)
 	{
@@ -198,18 +199,18 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 	}
 	else object = std::make_shared<Object3d>(name, type);
 
-	// 7) set properties
+	// 5) set properties
 	if (object)
 	{
 		object->visible = visible;
 		if (!positioned) object->ScaleIrotPosition(scale, irot, position);
 	}
 
-	// 8) connect node
+	// 6) connect node
 	if (object && !exist)
 		parent->AddChild(object);
 
-	// 8) check children
+	// 7) check children
 	if (!doc["children"].get_array().get(array))
 	{
 		for (simdjson::ondemand::object child : array)

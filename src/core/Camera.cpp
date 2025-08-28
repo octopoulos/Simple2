@@ -1,10 +1,11 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-08-21
+// @version 2025-08-24
 
 #include "stdafx.h"
 #include "core/Camera.h"
 //
+#include "loaders/writer.h"
 #include "ui/ui.h"
 #include "ui/xsettings.h"
 
@@ -78,6 +79,18 @@ void Camera::RotateAroundAxis(const bx::Vec3& axis, float angle)
 	const auto rotated = bx::mul(forward, quat);
 
 	pos2 = bx::mad(rotated, -distance, target2);
+}
+
+int Camera::Serialize(fmt::memory_buffer& outString, int depth, int bounds) const
+{
+	int keyId = Object3d::Serialize(outString, depth, (bounds & 1) ? 1 : 0);
+	if (keyId < 0) return keyId;
+
+	WRITE_KEY_VEC3(pos);
+	WRITE_KEY_VEC3(target);
+
+	if (bounds & 2) WRITE_CHAR('}');
+	return keyId;
 }
 
 void Camera::ShowTable()

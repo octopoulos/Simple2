@@ -1,6 +1,6 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-08-21
+// @version 2025-08-24
 
 #pragma once
 
@@ -24,21 +24,21 @@ enum CameraFollows : int
 class Camera : public Object3d
 {
 private:
-	float    aspect    = 1.0f;                  /// aspect ratio (width / height)
-	float    farPlane  = 100.0f;                /// far clipping plane (perspective)
-	float    fovY      = 60.0f;                 /// vertical field of view
-	float    nearPlane = 0.1f;                  /// near clipping plane (perspective)
-	float    orbit[2]  = {};                    /// [azimuth, elevation]
-	bx::Vec3 pos       = { 0.0f, 0.0f, -3.0f }; ///< position: current
-	bx::Vec3 target    = bx::InitZero;          ///< target: current (look at)
+	float aspect    = 1.0f;           /// aspect ratio (width / height)
+	float farPlane  = 100.0f;         /// far clipping plane (perspective)
+	float fovY      = 60.0f;          /// vertical field of view
+	float nearPlane = 0.1f;           /// near clipping plane (perspective)
+	float orbit[2]  = { 0.0f, 0.0f }; /// [azimuth, elevation]
 
 public:
 	float    distance = 0.1f;                  ///< current distance to use between pos and target
 	int      follow   = CameraFollow_Cursor;   ///< CameraFollows
 	bx::Vec3 forward  = { 0.0f, 0.0f, 1.0f };  ///< forward dir (current)
 	bx::Vec3 forward2 = { 0.0f, 0.0f, 1.0f };  ///< forward dir (wanted)
+	bx::Vec3 pos      = { 0.0f, 0.0f, -3.0f }; ///< position: current
 	bx::Vec3 pos2     = { 0.0f, 0.0f, -3.0f }; ///< position: destination
 	bx::Vec3 right    = { 1.0f, 0.0f, 0.0f };  ///< right dir
+	bx::Vec3 target   = bx::InitZero;          ///< target: current (look at)
 	bx::Vec3 target2  = bx::InitZero;          ///< target: destination
 	bx::Vec3 up       = { 0.0f, 1.0f, 0.0f };  ///< up dir
 	bx::Vec3 worldUp  = { 0.0f, 1.0f, 0.0f };  ///< world up dir
@@ -68,6 +68,9 @@ public:
 
 	/// Rotate around given axis
 	void RotateAroundAxis(const bx::Vec3& axis, float angle);
+
+	/// Serialize for JSON output
+	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3) const override;
 
 	/// Enable orthographic projection
 	void SetOrthographic(const bx::Vec3& axis);
