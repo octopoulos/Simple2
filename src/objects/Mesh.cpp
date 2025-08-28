@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-08-23
+// @version 2025-08-24
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -443,7 +443,7 @@ void Mesh::SetBodyTransform()
 		motionState->setWorldTransform(transform);
 }
 
-void Mesh::ShowTable()
+void Mesh::ShowTable() const
 {
 	Object3d::ShowTable();
 	if (body) body->ShowTable();
@@ -511,8 +511,7 @@ void Mesh::SynchronizePhysics()
 {
 	if (type & ObjectType_Group)
 	{
-		for (auto& child : children)
-			child->SynchronizePhysics();
+		Object3d::SynchronizePhysics();
 	}
 	// physics?
 	else if (body && body->enabled && body->mass >= 0.0f)
@@ -524,6 +523,13 @@ void Mesh::SynchronizePhysics()
 		float matrix[16];
 		bTransform.getOpenGLMatrix(matrix);
 		matrixWorld = glm::make_mat4(matrix) * scaleMatrix;
+
+		// remove object if drops too low
+		const auto& pos = bTransform.getOrigin();
+		position        = glm::vec3(pos.x(), pos.y(), pos.z());
+		// const auto& rot = bTransform.getRotation();
+		// quaternion      = glm::quat(rot.w(), rot.x(), rot.y(), rot.z());
+		if (position.y < xsettings.bottom) dead = Dead_Remove;
 	}
 	// interpolation
 	else if (posTs > 0.0 || quatTs > 0.0)

@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-08-23
+// @version 2025-08-24
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -24,10 +24,11 @@ enum ShowSettingFlags : int
 	Show_NetMain           = 1 << 4,
 	Show_NetUser           = 1 << 5,
 	Show_Object            = 1 << 6,
-	Show_System            = 1 << 7, // main
-	Show_SystemPerformance = 1 << 8,
-	Show_SystemRender      = 1 << 9,
-	Show_SystemUI          = 1 << 10,
+	Show_Physics           = 1 << 7,
+	Show_Render            = 1 << 8,
+	Show_System            = 1 << 9, // main
+	Show_SystemPerformance = 1 << 10,
+	Show_SystemUI          = 1 << 12,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,7 +66,7 @@ public:
 		}
 
 		const int showTree = xsettings.settingTree;
-		int       tree     = showTree & ~(Show_App | Show_Capture | Show_Map | Show_Net | Show_Object | Show_System);
+		int       tree     = showTree & ~(Show_App | Show_Capture | Show_Map | Show_Net | Show_Object | Show_Physics | Show_Render | Show_System);
 
 		// APP
 		//////
@@ -151,6 +152,31 @@ public:
 			END_COLLAPSE();
 		}
 
+		// PHYSICS
+		//////////
+
+		BEGIN_COLLAPSE("Physics", Show_Physics, 3)
+		{
+			AddDragFloat("bottom", "Bottom");
+			AddCheckBox("physPaused", "", "Paused");
+			AddCheckBox("bulletDebug", "", "Show Body Shapes");
+			END_COLLAPSE();
+		}
+
+		// RENDER
+		/////////
+
+		BEGIN_COLLAPSE("Render", Show_Render, 6)
+		{
+			AddCheckBox("fixedView", "", "Fixed View");
+			AddCheckBox("gridDraw", "", "Grid");
+			AddSliderInt("gridSize", "Grid Size");
+			AddCheckBox("instancing", "", "Mesh Instancing");
+			AddSliderInt("projection", "Projection", nullptr);
+			AddSliderInt("renderMode", "Render Mode", nullptr);
+			END_COLLAPSE();
+		}
+
 		// SYSTEM
 		/////////
 
@@ -158,7 +184,7 @@ public:
 		if (ImGui::CollapsingHeader("System", SHOW_TREE(Show_System)))
 		{
 			tree |= Show_System;
-			tree &= ~(Show_SystemPerformance | Show_SystemRender | Show_SystemUI);
+			tree &= ~(Show_SystemPerformance | Show_SystemUI);
 
 			// performance
 			BEGIN_TREE("Performance", Show_SystemPerformance, 7)
@@ -170,17 +196,6 @@ public:
 				AddDragFloat("idleMs", "Idle ms");
 				AddDragFloat("idleTimeout", "Idle Timeout");
 				AddSliderInt("vsync", "VSync", nullptr);
-				END_TREE();
-			}
-
-			// render
-			BEGIN_TREE("Render", Show_SystemRender, 5)
-			{
-				AddCheckBox("fixedView", "", "Fixed View");
-				AddCheckBox("gridDraw", "", "Grid");
-				AddSliderInt("gridSize", "Grid Size");
-				AddSliderInt("projection", "Projection", nullptr);
-				AddSliderInt("renderMode", "Render Mode", nullptr);
 				END_TREE();
 			}
 

@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-08-23
+// @version 2025-08-24
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -34,16 +34,40 @@ static const MAP_INT_STR objectTypeNames = {
 void Object3d::AddChild(sObject3d child)
 {
 	type |= ObjectType_Group;
+	++childInc;
 
+	ids.emplace(childInc, child);
 	if (child->name.size())
 	{
 		const auto& [it, inserted] = names.try_emplace(child->name, child);
 		if (!inserted) ui::LogWarning("AddChild: {} already exists", child->name);
 	}
 
-	child->id     = TO_INT(children.size());
+	child->id     = childInc;
 	child->parent = this;
 	children.push_back(std::move(child));
+}
+
+void Object3d::ClearDeads()
+{
+	// 1) collect
+	std::vector<sObject3d> removes;
+	for (auto& child : children)
+	{
+		if (child->dead & Dead_Remove) removes.push_back(child);
+	}
+
+	// 2) remove
+	for (auto& remove : removes) RemoveChild(remove);
+}
+
+sObject3d Object3d::GetObjectById(int id) const
+{
+	if (const auto& it = ids.find(id); it != ids.end())
+	{
+		if (auto sp = it->second.lock()) return sp;
+	}
+	return nullptr;
 }
 
 sObject3d Object3d::GetObjectByName(std::string_view name) const
@@ -55,17 +79,27 @@ sObject3d Object3d::GetObjectByName(std::string_view name) const
 	return nullptr;
 }
 
-void Object3d::RemoveChild(const sObject3d& child)
+bool Object3d::RemoveChild(const sObject3d& child)
 {
-	if (child && child->name.size())
+	if (!child) return false;
+
+	// 1) ids
+	if (const auto& it = ids.find(child->id); it != ids.end())
+		ids.erase(it);
+
+	// 2) names
+	if (child->name.size())
 		if (const auto& it = names.find(child->name); it != names.end())
 			names.erase(it);
 
+	// 3) children
 	if (const auto& it = std::find(children.begin(), children.end(), child); it != children.end())
 	{
 		(*it)->parent = nullptr;
 		children.erase(it);
+		return true;
 	}
+	return false;
 }
 
 void Object3d::Render(uint8_t viewId, int renderFlags)
@@ -91,7 +125,7 @@ void Object3d::RotationFromIrot(bool instant)
 	}
 
 	rotation = glm::vec3(bx::toRad(TO_FLOAT(irot[0])), bx::toRad(TO_FLOAT(irot[1])), bx::toRad(TO_FLOAT(irot[2])));
-	if ((!instant || true) && xsettings.smoothQuat)
+	if (!instant && xsettings.smoothQuat)
 	{
 		quaternion1 = quaternion;
 		quaternion2 = glm::quat(rotation);
@@ -181,7 +215,7 @@ int Object3d::Serialize(fmt::memory_buffer& outString, int depth, int bounds) co
 	return keyId;
 }
 
-void Object3d::ShowTable()
+void Object3d::ShowTable() const
 {
 	// clang-format off
 	ui::ShowTable({
@@ -209,6 +243,8 @@ void Object3d::SynchronizePhysics()
 	{
 		for (auto& child : children)
 			child->SynchronizePhysics();
+
+		ClearDeads();
 	}
 }
 

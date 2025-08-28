@@ -89,8 +89,9 @@ struct XSettings
 	bool  smoothQuat; ///< smooth rotation
 
 	// [physics]
-	bool bulletDebug; ///< bullet debug draw
-	bool physPaused;  ///< paused physics
+	float bottom;      ///< remove object if drops below this
+	bool  bulletDebug; ///< bullet debug draw
+	bool  physPaused;  ///< paused physics
 
 	// [render]
 	float cameraAt[3];  ///< camera lookAt

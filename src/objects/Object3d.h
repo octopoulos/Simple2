@@ -1,8 +1,15 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-08-23
+// @version 2025-08-24
 
 #pragma once
+
+enum Deads_ : int
+{
+	Dead_Alive  = 0, ///< alive object
+	Dead_Dead   = 1, ///< dead object, not moving
+	Dead_Remove = 2, ///< object must be removed
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // OBJECT3D
@@ -36,8 +43,11 @@ class Object3d
 {
 public:
 	int                               childId     = 0;                          ///< selected sub-object
+	int                               childInc    = 0;                          ///< incremental id
 	std::vector<sObject3d>            children    = {};                         ///< sub-objects
+	int                               dead        = Dead_Alive;                 ///< dead status: Deads_
 	int                               id          = 0;                          ///< unique id
+	MAP<int, std::weak_ptr<Object3d>> ids         = {};                         ///< id'd children
 	int                               irot[3]     = {};                         ///< number of 45 deg rotations
 	glm::mat4                         matrix      = glm::mat4(1.0f);            ///< full local transform (S * R * T)
 	glm::mat4                         matrixWorld = glm::mat4(1.0f);            ///< parent->matrixWorld * matrix
@@ -69,11 +79,17 @@ public:
 	/// Add a child to the object
 	void AddChild(sObject3d child);
 
+	/// Remove dead children
+	void ClearDeads();
+
+	/// Find an direct child by id
+	sObject3d GetObjectById(int id) const;
+
 	/// Find an direct child by name
 	sObject3d GetObjectByName(std::string_view name) const;
 
 	/// Remove a child from the object
-	void RemoveChild(const sObject3d& child);
+	bool RemoveChild(const sObject3d& child);
 
 	/// Render the object
 	virtual void Render(uint8_t viewId, int renderFlags);
@@ -95,7 +111,7 @@ public:
 	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3) const;
 
 	/// Show ImGui table with info
-	virtual void ShowTable();
+	virtual void ShowTable() const;
 
 	/// Synchronize physics transform
 	virtual void SynchronizePhysics();

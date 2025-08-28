@@ -52,6 +52,7 @@ static std::vector<Config> configs = {
 	X_BOOL   (XSettings, map, 0, smoothQuat, true),
 
 	// [physics]
+	X_FLOAT  (XSettings, physics, 0, bottom     , -100.0f, -1000.0f, 0.0f),
 	X_BOOL   (XSettings, physics, 0, bulletDebug, false),
 	X_BOOL   (XSettings, physics, 0, physPaused , false),
 

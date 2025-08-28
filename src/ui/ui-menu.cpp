@@ -263,7 +263,7 @@ void App::ShowMainMenu(float alpha)
 		if (ImGui::BeginMenu("Physics"))
 		{
 			ImGui::MenuItem("Paused", nullptr, &xsettings.physPaused);
-			ImGui::MenuItem("Show Collision Volumes", nullptr, &xsettings.bulletDebug);
+			ImGui::MenuItem("Show Body Shapes", nullptr, &xsettings.bulletDebug);
 			ImGui::EndMenu();
 		}
 
@@ -355,6 +355,8 @@ void App::ShowPopup(int flag)
 
 void App::VarsUi()
 {
+	if (!xsettings.showVars) return;
+
 	if (ImGui::Begin("Vars", &xsettings.showVars))
 	{
 		const int showTree = xsettings.varTree;

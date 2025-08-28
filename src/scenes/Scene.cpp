@@ -258,15 +258,11 @@ bool App::SaveScene(const std::filesystem::path& filename)
 
 void Scene::Clear()
 {
-	// 1) collect
-	std::vector<sObject3d> removes;
 	for (auto& child : children)
 	{
 		if (!(child->type & (ObjectType_Camera | ObjectType_Cursor | ObjectType_Map)))
-			removes.push_back(child);
+			child->dead |= Dead_Remove;
 	}
 
-	// 2) remove
-	for (auto& remove : removes)
-		RemoveChild(remove);
+	ClearDeads();
 }

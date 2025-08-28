@@ -311,19 +311,21 @@ void App::Render()
 	camera->UpdateViewProjection(0, TO_FLOAT(screenX), TO_FLOAT(screenY));
 
 	// 3) physics
-	if (!xsettings.physPaused)
 	{
-		physics->StepSimulation(deltaTime);
-		++physicsFrame;
-
-		if (pauseNextFrame)
+		if (!xsettings.physPaused)
 		{
-			xsettings.physPaused = true;
-			pauseNextFrame       = false;
+			physics->StepSimulation(deltaTime);
+			++physicsFrame;
+
+			if (pauseNextFrame)
+			{
+				xsettings.physPaused = true;
+				pauseNextFrame       = false;
+			}
 		}
+
+		scene->SynchronizePhysics();
 	}
-	for (auto& child : scene->children)
-		child->SynchronizePhysics();
 
 	// 4) draw grid
 	if (xsettings.gridDraw)

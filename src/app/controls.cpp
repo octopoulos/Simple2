@@ -76,9 +76,8 @@ void App::DeleteSelected()
 	{
 		if (!(target->type & (ObjectType_Cursor | ObjectType_Map | ObjectType_Scene)))
 		{
-			if (auto* parent = target->parent)
+			if (auto* parent = target->parent; parent->RemoveChild(target))
 			{
-				parent->RemoveChild(target);
 				if (parent->type & ObjectType_Map) AutoSave();
 			}
 		}

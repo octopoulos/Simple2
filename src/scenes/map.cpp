@@ -11,21 +11,27 @@
 void App::AddGeometry(uGeometry geometry)
 {
 	const auto& coord = cursor->position;
+	const auto& irot  = cursor->irot;
 
-	auto object      = std::make_shared<Mesh>(fmt::format("{}:{}", mapNode->children.size(), GeometryName(geometry->type), GeometryShape(geometry->type, false)));
-	object->geometry = geometry;
-	object->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
-	object->LoadTextures("colors.png");
+	if (auto object = std::make_shared<Mesh>(fmt::format("{}:{}", mapNode->children.size(), GeometryName(geometry->type), GeometryShape(geometry->type, false))))
+	{
+		object->geometry = geometry;
+		object->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
+		object->LoadTextures("colors.png");
 
-	object->ScaleRotationPosition(
-	    { 1.0f, 1.0f, 1.0f },
-	    { 0.0f, 0.0f, 0.0f },
-	    { coord.x, coord.y, coord.z }
-	);
-	object->CreateShapeBody(physics.get(), GeometryShape(geometry->type, false));
+		object->ScaleRotationPosition(
+			{ 1.0f, 1.0f, 1.0f },
+			{ irot[0], irot[1], irot[2] },
+			{ coord.x, coord.y, coord.z }
+		);
+		object->CreateShapeBody(physics.get(), GeometryShape(geometry->type, false));
 
-	mapNode->AddChild(object);
-	AutoSave();
+		mapNode->AddChild(object);
+		AutoSave();
+		SelectObject(object);
+	}
+
+	FocusScreen();
 }
 
 void App::AddObject(std::string_view modelName)
