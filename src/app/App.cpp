@@ -288,17 +288,19 @@ void App::Render()
 
 	// 1) uniforms
 	{
-		const auto  cursorCol    = bx::Vec3(0.7f, 0.6f, 0.0f);
-		const float cursorUni[4] = { cursorCol.x, cursorCol.y, cursorCol.z, 0.0f };
-		bgfx::setUniform(uCursorCol, cursorUni);
+		bx::Vec3 cursorCol = { 0.7f, 0.6f, 0.0f };
+		if (cursor->position.y > 1.0f)
+			cursorCol = { 0.0f, 0.5f, 1.0f };
+		else if (cursor->position.y < 1.0f)
+			cursorCol = { 1.0f, 0.5f, 0.0f };
 
-		//const auto  lightDir    = bx::normalize(bx::Vec3(sinf(curTime), 1.0f, cosf(curTime)));
-		const auto  lightDir    = bx::normalize(bx::Vec3(0.5f, 1.0f, -0.5f));
-		const float lightUni[4] = { lightDir.x, lightDir.y, lightDir.z, 0.0f };
-		bgfx::setUniform(uLightDir, lightUni);
+		bgfx::setUniform(uCursorCol, (float[4]) { cursorCol.x, cursorCol.y, cursorCol.z, 0.0f });
 
-		const float timeVec[4] = { curTime, 0.0f, 0.0f, 0.0f };
-		bgfx::setUniform(uTime, timeVec);
+		//const auto lightDir = bx::normalize(bx::Vec3(sinf(curTime), 1.0f, cosf(curTime)));
+		const auto lightDir = bx::normalize(bx::Vec3(0.5f, 1.0f, -0.5f));
+		bgfx::setUniform(uLightDir, (float[4]) { lightDir.x, lightDir.y, lightDir.z, 0.0f });
+
+		bgfx::setUniform(uTime, (float[4]) { curTime, 0.0f, 0.0f, 0.0f });
 	}
 
 	// 2) camera view
