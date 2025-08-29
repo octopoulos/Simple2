@@ -78,7 +78,11 @@ void App::DeleteSelected()
 		{
 			if (auto* parent = target->parent; parent->RemoveChild(target))
 			{
-				if (parent->type & ObjectType_Map) AutoSave();
+				if (parent->type & ObjectType_Map)
+				{
+					AutoSave();
+					SelectObject(nullptr);
+				}
 			}
 		}
 	}
@@ -166,6 +170,7 @@ void App::FixedControls()
 		if (downs[Key::KeyH]) ShowPopup(Popup_AddGeometry);
 		if (downs[Key::KeyJ]) ShowPopup(Popup_AddMesh);
 		if (downs[Key::KeyM]) ShowPopup(Popup_AddMap);
+		if (downs[Key::KeyN]) {}
 
 		if (DOWN_OR_REPEAT(Key::KeyO))
 		{
@@ -195,7 +200,15 @@ void App::FixedControls()
 		}
 
 		if (downs[Key::Return]) SelectObject(nullptr);
-		if (downs[Key::Esc]) hidePopup |= 1;
+		if (downs[Key::Esc])
+		{
+			// object is being placed => cancel
+			if (camera->follow & CameraFollow_SelectedObj)
+			{
+				if (auto target = selectedObj.lock(); !target->placed) DeleteSelected();
+			}
+			hidePopup |= 1;
+		}
 		if (downs[Key::Tab]) showLearn = !showLearn;
 
 		if (const auto numChild = mapNode->children.size())
@@ -430,9 +443,11 @@ void App::MoveCursor(bool force)
 
 void App::SelectObject(const sObject3d& obj, bool countIndex)
 {
-	// 1) restore material
+	// 1) place + restore material
 	if (const auto& temp = selectedObj.lock())
 	{
+		temp->placed = true;
+
 		if (auto mesh = Mesh::SharedPtr(temp); mesh->material0)
 			mesh->material = mesh->material0;
 	}

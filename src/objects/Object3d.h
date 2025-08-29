@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-08-24
+// @version 2025-08-25
 
 #pragma once
 
@@ -54,6 +54,7 @@ public:
 	std::string                       name        = "";                         ///< object name (used to find in scene)
 	UMAP_STR<std::weak_ptr<Object3d>> names       = {};                         ///< named children
 	Object3d*                         parent      = nullptr;                    ///< parent object
+	bool                              placed      = false;                      ///< object has been placed on the map?
 	glm::vec3                         position    = glm::vec3(0.0f);            ///< position
 	glm::vec3                         position1   = glm::vec3(0.0f);            ///< position: origin
 	glm::vec3                         position2   = glm::vec3(0.0f);            ///< position: target
