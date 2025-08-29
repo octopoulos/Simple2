@@ -84,7 +84,7 @@ public:
 	std::vector<Group>        groups    = {};      ///< groups of vertices
 	bgfx::VertexLayout        layout    = {};      ///
 	int                       load      = 0;       ///< how the model was loaded (for open/save scene)
-	std::shared_ptr<Material> material  = nullptr; ///
+	sMaterial                 material  = nullptr; ///
 	std::string               modelName = "";      ///< model name (part of filename)
 	uint64_t                  state     = 0;       ///< if !=0: override default state
 
@@ -93,7 +93,7 @@ public:
 	{
 	}
 
-	Mesh(std::string_view name, std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material)
+	Mesh(std::string_view name, std::shared_ptr<Geometry> geometry, sMaterial material)
 	    : Object3d(name, ObjectType_Mesh)
 	    , geometry(std::move(geometry))
 	    , material(std::move(material))

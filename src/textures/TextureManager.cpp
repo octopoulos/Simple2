@@ -1,6 +1,6 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-07-27
+// @version 2025-08-25
 
 #include "stdafx.h"
 #include "textures/TextureManager.h"
@@ -10,8 +10,8 @@
 static std::mutex textureMutex;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FUNCTIONS
-////////////
+// HELPERS
+//////////
 
 static void ImageReleaseCb(void* _ptr, void* _userData)
 {
@@ -86,7 +86,7 @@ const bgfx::TextureInfo* TextureManager::GetTextureInfo(std::string_view name) c
 {
 	std::lock_guard<std::mutex> lock(textureMutex);
 
-	if (const auto& it = textures.find(std::string(name)); it != textures.end())
+	if (const auto& it = textures.find(name); it != textures.end())
 		return &it->second.info;
 	return nullptr;
 }
@@ -95,7 +95,7 @@ bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 {
 	std::lock_guard<std::mutex> lock(textureMutex);
 
-	if (const auto& it = textures.find(std::string(name)); it != textures.end())
+	if (const auto& it = textures.find(name); it != textures.end())
 		return it->second.handle;
 
 	std::string path;
@@ -115,6 +115,10 @@ bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 	textures.emplace(std::string(name), TextureData { texture, info });
 	return texture;
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FUNCTIONS
+////////////
 
 TextureManager& GetTextureManager()
 {

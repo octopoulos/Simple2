@@ -7,10 +7,10 @@
 //
 #include "common/config.h"
 #include "common/imgui/imgui.h"
-#include "core/ShaderManager.h"
 #include "core/common3d.h"
 #include "entry/input.h"
 #include "loaders/MeshLoader.h"
+#include "materials/MaterialManager.h"
 
 enum ThrowActions_ : int
 {
@@ -491,8 +491,7 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 	else if (auto mesh = std::make_shared<Mesh>(std::move(groupName), ObjectType_Group | ObjectType_Instance))
 	{
 		mesh->geometry = CreateAnyGeometry(geometryType);
-		mesh->material = std::make_shared<Material>("vs_model_texture_instance", "fs_model_texture_instance");
-		if (textureName.size()) mesh->material->LoadTextures(textureName);
+		mesh->material = GetMaterialManager().LoadMaterial(fmt::format("model-inst:{}", textureName), "vs_model_texture_instance", "fs_model_texture_instance", textureName);
 		scene->AddChild(mesh);
 
 		parent = mesh.get();
@@ -503,7 +502,7 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 	// 2) clone an instance
 	if (auto object = parent->CloneInstance(fmt::format("{}:{}", name, parent->children.size())))
 	{
-		object->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
+		object->material = GetMaterialManager().LoadMaterial(fmt::format("model:{}", textureName), "vs_model_texture", "fs_model_texture", textureName);
 
 		const auto  pos   = camera->pos2;
 		const float scale = std::clamp(NormalFloat(1.0f, 0.2f), 0.25f, 1.5f);
@@ -541,7 +540,6 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, std::strin
 	{
 		mesh->type |= ObjectType_Group | ObjectType_Instance;
 		mesh->material->LoadProgram("vs_model_texture_instance", "fs_model_texture_instance");
-		//if (textureName.size()) mesh->LoadTextures(textureName);
 		scene->AddChild(mesh);
 
 		parent = mesh.get();
@@ -552,7 +550,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, std::strin
 	// 2) clone an instance
 	if (auto object = parent->CloneInstance(fmt::format("{}:{}", name, parent->children.size())))
 	{
-		object->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
+		object->material = GetMaterialManager().LoadMaterial(fmt::format("model:{}", textureName), "vs_model_texture", "fs_model_texture", textureName);
 
 		bx::Vec3 pos = camera->pos2;
 		bx::Vec3 rot = bx::InitZero;

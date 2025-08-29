@@ -5,7 +5,7 @@
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
 //
-#include "core/ShaderManager.h"
+#include "materials/MaterialManager.h"
 #include "textures/TextureManager.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ sMesh MeshLoader::LoadModelFull(std::string_view name, std::string_view modelNam
 	if (!mesh) return nullptr;
 
 	// 2) create material
-	mesh->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
+	mesh->material = GetMaterialManager().LoadMaterial(modelName, "vs_model_texture", "fs_model_texture", textureName);
 	mesh->material->FindModelTextures(modelName, textureName);
 
 	// 3) done

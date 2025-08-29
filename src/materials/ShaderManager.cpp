@@ -1,9 +1,9 @@
 // ShaderManager.cpp
 // @author octopoulos
-// @version 2025-08-20
+// @version 2025-08-25
 
 #include "stdafx.h"
-#include "core/ShaderManager.h"
+#include "materials/ShaderManager.h"
 //
 #include "common/config.h"
 
@@ -26,8 +26,8 @@ static std::mutex programMutex;
 static std::mutex shaderMutex;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FUNCTIONS
-////////////
+// HELPERS
+//////////
 
 static bgfx::ShaderHandle LoadShader_(bx::FileReaderI* reader, std::string_view name)
 {
@@ -92,12 +92,11 @@ bgfx::ProgramHandle ShaderManager::GetProgram(std::string_view name) const
 
 bgfx::ProgramHandle ShaderManager::LoadProgram(std::string_view vsName, std::string_view fsName)
 {
-	std::lock_guard<std::mutex> lock(programMutex);
+	// 1) check cache
+	const std::string key = fmt::format("{}|{}", vsName, fsName);
+	if (const auto exist = GetProgram(key); bgfx::isValid(exist)) return exist;
 
-	std::string key = fmt::format("{}|{}", vsName, fsName);
-	if (const auto& it = programs.find(key); it != programs.end())
-		return it->second;
-
+	// 2) load shaders
 	bgfx::ShaderHandle vs = LoadShader(vsName);
 	bgfx::ShaderHandle fs = LoadShader(fsName);
 	if (!bgfx::isValid(vs) || !bgfx::isValid(fs))
@@ -106,6 +105,7 @@ bgfx::ProgramHandle ShaderManager::LoadProgram(std::string_view vsName, std::str
 		return BGFX_INVALID_HANDLE;
 	}
 
+	// 3) create program
 	bgfx::ProgramHandle program = bgfx::createProgram(vs, fs);
 	if (!bgfx::isValid(program))
 	{
@@ -113,6 +113,7 @@ bgfx::ProgramHandle ShaderManager::LoadProgram(std::string_view vsName, std::str
 		return BGFX_INVALID_HANDLE;
 	}
 
+	std::lock_guard<std::mutex> lock(programMutex);
 	programs.emplace(std::move(key), program);
 	return program;
 }
@@ -134,6 +135,10 @@ bgfx::ShaderHandle ShaderManager::LoadShader(std::string_view name)
 	shaders.emplace(std::string(name), shader);
 	return shader;
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FUNCTIONS
+////////////
 
 ShaderManager& GetShaderManager()
 {

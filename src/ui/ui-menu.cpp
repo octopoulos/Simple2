@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-24
+// @version 2025-08-25
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -8,6 +8,7 @@
 
 #include "common/imgui/imgui.h"
 #include "entry/input.h"
+#include "materials/MaterialManager.h"
 
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
 
@@ -27,8 +28,9 @@ enum ShowVarFlags : int
 {
 	Show_Camera      = 1 << 0,
 	Show_Cursor      = 1 << 1,
-	Show_SelectedObj = 1 << 2,
-	Show_Vars        = 1 << 3,
+	Show_Materials   = 1 << 2,
+	Show_SelectedObj = 1 << 3,
+	Show_Vars        = 1 << 4,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -360,7 +362,7 @@ void App::VarsUi()
 	if (ImGui::Begin("Vars", &xsettings.showVars))
 	{
 		const int showTree = xsettings.varTree;
-		int       tree     = showTree & ~(Show_Camera | Show_Cursor | Show_SelectedObj | Show_Vars);
+		int       tree     = showTree & ~(Show_Camera | Show_Cursor | Show_Materials | Show_SelectedObj | Show_Vars);
 
 		BEGIN_PADDING();
 
@@ -378,7 +380,14 @@ void App::VarsUi()
 			cursor->ShowTable();
 		}
 
-		// cursor
+		// materials
+		if (ImGui::CollapsingHeader("Materials", SHOW_TREE(Show_Materials)))
+		{
+			tree |= Show_Materials;
+			GetMaterialManager().ShowMaterials();
+		}
+
+		// selected object
 		if (ImGui::CollapsingHeader("Selected Object", SHOW_TREE(Show_SelectedObj)))
 		{
 			tree |= Show_SelectedObj;

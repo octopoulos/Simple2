@@ -1,6 +1,6 @@
 // TextureManager.h
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-08-25
 
 #pragma once
 
@@ -22,6 +22,7 @@ public:
 
 	~TextureManager() { Destroy(); }
 
+	/// Release all textures
 	void Destroy();
 
 	/// Get texture info by name

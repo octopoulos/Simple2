@@ -1,11 +1,11 @@
 // PhysicsWorld.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-08-25
 
 #include "stdafx.h"
 #include "physics/PhysicsWorld.h"
 //
-#include "core/ShaderManager.h"
+#include "materials/ShaderManager.h"
 #include "ui/xsettings.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

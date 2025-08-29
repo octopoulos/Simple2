@@ -5,8 +5,8 @@
 #include "stdafx.h"
 #include "materials/Material.h"
 //
-#include "core/ShaderManager.h"
 #include "loaders/writer.h"
+#include "materials/ShaderManager.h"
 #include "textures/TextureManager.h"
 
 Material::Material(std::string_view vsName, std::string_view fsName)
