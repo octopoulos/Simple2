@@ -670,7 +670,7 @@ void Context::mouseButtonCb(GLFWwindow* _window, int32_t _button, int32_t _actio
 void Context::windowSizeCb(GLFWwindow* _window, int32_t _width, int32_t _height)
 {
 	WindowHandle handle = s_ctx.findHandle(_window);
-	s_ctx.m_eventQueue.postSizeEvent(handle, _width, _height);
+	s_ctx.m_eventQueue.postSizeEvent(handle, _width * xsettings.dpr, _height * xsettings.dpr);
 }
 
 void Context::dropFileCb(GLFWwindow* _window, int32_t _count, const char** _filePaths)
