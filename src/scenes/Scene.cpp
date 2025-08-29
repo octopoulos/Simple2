@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-08-24
+// @version 2025-08-25
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -149,7 +149,27 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 			std::string fsName;
 			std::string vsName;
 			if (!obj["fsName"].get_string().get(fsName) && !obj["vsName"].get_string().get(vsName))
-				mesh->material = std::make_shared<Material>(vsName, fsName);
+			{
+				if (!mesh->material)
+					mesh->material = std::make_shared<Material>(vsName, fsName);
+
+				// textures
+				if (!obj["texNames"].get_array().get(array))
+				{
+					std::string colorName;
+					std::string normalName;
+					for (int i = -1; std::string_view texName : array)
+					{
+						++i;
+						switch (i)
+						{
+						case 0: colorName = texName; break;
+						case 1: normalName = texName; break;
+						}
+					}
+					mesh->material->LoadTextures(colorName, normalName);
+				}
+			}
 		}
 
 		// state
@@ -157,23 +177,6 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 			int64_t state;
 			if (!doc["state"].get_int64().get(state))
 				mesh->state = state;
-		}
-
-		// textures
-		if (!doc["texNames"].get_array().get(array))
-		{
-			std::string colorName;
-			std::string normalName;
-			for (int i = -1; std::string_view texName : array)
-			{
-				++i;
-				switch (i)
-				{
-				case 0: colorName = texName; break;
-				case 1: normalName = texName; break;
-				}
-			}
-			mesh->LoadTextures(colorName, normalName);
 		}
 
 		// body

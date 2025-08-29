@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-08-24
+// @version 2025-08-25
 
 #pragma once
 
@@ -76,24 +76,17 @@ struct MeshState
 
 using sMesh = std::shared_ptr<class Mesh>;
 
-// TODO: move textures to Material?
 class Mesh : public Object3d
 {
 public:
-	uBody                            body        = {};                  ///< one body for the whole mesh
-	std::shared_ptr<Geometry>        geometry    = nullptr;             ///
-	std::vector<Group>               groups      = {};                  ///< groups of vertices
-	bgfx::VertexLayout               layout      = {};                  ///
-	int                              load        = 0;                   ///< how the model was loaded (for open/save scene)
-	std::shared_ptr<Material>        material    = nullptr;             ///
-	std::string                      modelName   = "";                  ///< model name (part of filename)
-	uint64_t                         state       = 0;                   ///< if !=0: override default state
-	bgfx::UniformHandle              sTexColor   = BGFX_INVALID_HANDLE; ///< diffuse texture
-	bgfx::UniformHandle              sTexNormal  = BGFX_INVALID_HANDLE; ///
-	bgfx::TextureHandle              texColor    = BGFX_INVALID_HANDLE; ///
-	std::string                      texNames[4] = {};                  ///< texture names: 0=diffuse, 1=normal
-	bgfx::TextureHandle              texNormal   = BGFX_INVALID_HANDLE; ///
-	std::vector<bgfx::TextureHandle> textures    = {};                  ///< all found textures
+	uBody                     body      = {};      ///< one body for the whole mesh
+	std::shared_ptr<Geometry> geometry  = nullptr; ///
+	std::vector<Group>        groups    = {};      ///< groups of vertices
+	bgfx::VertexLayout        layout    = {};      ///
+	int                       load      = 0;       ///< how the model was loaded (for open/save scene)
+	std::shared_ptr<Material> material  = nullptr; ///
+	std::string               modelName = "";      ///< model name (part of filename)
+	uint64_t                  state     = 0;       ///< if !=0: override default state
 
 	Mesh(std::string_view name, int typeFlag = 0)
 	    : Object3d(name, ObjectType_Mesh | typeFlag)
@@ -101,7 +94,7 @@ public:
 	}
 
 	Mesh(std::string_view name, std::shared_ptr<Geometry> geometry, std::shared_ptr<Material> material)
-		: Object3d(name, ObjectType_Mesh)
+	    : Object3d(name, ObjectType_Mesh)
 	    , geometry(std::move(geometry))
 	    , material(std::move(material))
 	{
@@ -121,15 +114,9 @@ public:
 	/// Delete all groups including indices + vertices
 	void Destroy();
 
-	/// Initialize uniforms
-	void Initialize();
-
 	/// Load a mesh
 	/// @param ramcopy: populate indices and vertices in groups
 	void Load(bx::ReaderSeekerI* reader, bool ramcopy);
-
-	/// Load a color and normal texture if available
-	void LoadTextures(std::string_view colorName, std::string_view normalName = "");
 
 	/// Render the mesh, if geometry & material program exist, or if program is set
 	/// - if a group => render the children only

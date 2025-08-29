@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-08-24
+// @version 2025-08-25
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -492,7 +492,7 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 	{
 		mesh->geometry = CreateAnyGeometry(geometryType);
 		mesh->material = std::make_shared<Material>("vs_model_texture_instance", "fs_model_texture_instance");
-		if (textureName.size()) mesh->LoadTextures(textureName);
+		if (textureName.size()) mesh->material->LoadTextures(textureName);
 		scene->AddChild(mesh);
 
 		parent = mesh.get();

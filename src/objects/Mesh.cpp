@@ -1,12 +1,11 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-08-24
+// @version 2025-08-25
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
 //
 #include "loaders/writer.h"
-#include "textures/TextureManager.h"
 #include "ui/ui.h"
 #include "ui/xsettings.h"
 
@@ -67,16 +66,7 @@ void Mesh::Destroy()
 			if (group.m_indices) bx::free(allocator, group.m_indices);
 		}
 		groups.clear();
-
-		// TODO: check if something must be done with the texture?
-		// bgfx::destroy(sTexColor);
 	}
-}
-
-void Mesh::Initialize()
-{
-	sTexColor  = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
-	sTexNormal = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
 }
 
 void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
@@ -245,21 +235,6 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 	}
 }
 
-void Mesh::LoadTextures(std::string_view colorName, std::string_view normalName)
-{
-	if (colorName.size())
-	{
-		texColor    = GetTextureManager().LoadTexture(colorName);
-		texNames[0] = colorName;
-	}
-	if (normalName.size())
-	{
-		texNormal   = GetTextureManager().LoadTexture(normalName);
-		texNames[1] = normalName;
-	}
-	Initialize();
-}
-
 void Mesh::Render(uint8_t viewId, int renderFlags)
 {
 	if (!visible) return;
@@ -315,10 +290,7 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 						bgfx::setVertexBuffer(0, geometry->vbh);
 						bgfx::setIndexBuffer(geometry->ibh);
 						bgfx::setInstanceDataBuffer(&idb);
-
-						if (bgfx::isValid(texColor)) bgfx::setTexture(0, sTexColor, texColor);
-						if (bgfx::isValid(texNormal)) bgfx::setTexture(1, sTexNormal, texNormal);
-
+						material->Apply();
 						bgfx::setState(useState);
 						bgfx::submit(viewId, material->program);
 					}
@@ -329,10 +301,7 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 							bgfx::setIndexBuffer(group.m_ibh);
 							bgfx::setVertexBuffer(0, group.m_vbh);
 							bgfx::setInstanceDataBuffer(&idb);
-
-							if (bgfx::isValid(texColor)) bgfx::setTexture(0, sTexColor, texColor);
-							if (bgfx::isValid(texNormal)) bgfx::setTexture(1, sTexNormal, texNormal);
-
+							material->Apply();
 							bgfx::setState(useState);
 							bgfx::submit(0, material->program);
 							break;
@@ -355,10 +324,6 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 			bgfx::setVertexBuffer(0, geometry->vbh);
 			bgfx::setIndexBuffer(geometry->ibh);
 			material->Apply();
-
-			if (bgfx::isValid(texColor)) bgfx::setTexture(0, sTexColor, texColor);
-			if (bgfx::isValid(texNormal)) bgfx::setTexture(1, sTexNormal, texNormal);
-
 			bgfx::setState(useState);
 			bgfx::submit(viewId, material->program);
 		}
@@ -395,22 +360,7 @@ int Mesh::Serialize(fmt::memory_buffer& outString, int depth, int bounds) const
 	}
 	if (modelName.size()) WRITE_KEY_STRING(modelName);
 	if (state) WRITE_KEY_INT(state);
-	// textures
-	{
-		int texNum = 4;
-		while (texNum > 0 && texNames[texNum - 1].empty()) --texNum;
-		if (texNum > 0)
-		{
-			WRITE_KEY("texNames");
-			WRITE_CHAR('[');
-			for (int i = 0; i < texNum; ++i)
-			{
-				if (i > 0) WRITE_CHAR(',');
-				WRITE_JSON_STRING(texNames[i]);
-			}
-			WRITE_CHAR(']');
-		}
-	}
+
 	if (bounds & 2) WRITE_CHAR('}');
 	return keyId;
 }
@@ -467,10 +417,7 @@ void Mesh::Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, ui
 	{
 		bgfx::setIndexBuffer(group.m_ibh);
 		bgfx::setVertexBuffer(0, group.m_vbh);
-
-		if (bgfx::isValid(texColor)) bgfx::setTexture(0, sTexColor, texColor);
-		if (bgfx::isValid(texNormal)) bgfx::setTexture(1, sTexNormal, texNormal);
-
+		material->Apply();
 		bgfx::submit(id, program, 0, BGFX_DISCARD_INDEX_BUFFER | BGFX_DISCARD_VERTEX_STREAMS);
 	}
 
