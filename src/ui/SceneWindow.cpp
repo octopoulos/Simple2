@@ -1,6 +1,6 @@
 // SceneWindow.cpp
 // @author octopoulos
-// @version 2025-08-23
+// @version 2025-08-25
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -106,7 +106,7 @@ public:
 			if (!depth || (depth == 1 && (node->type & ObjectType_Map)))
 				treeFlag |= ImGuiTreeNodeFlags_DefaultOpen;
 
-			if (ImGui::TreeNodeEx(fmt::format("({}) {}", numChild, node->name).c_str(), treeFlag))
+			if (ImGui::TreeNodeEx(fmt::format("({}) {}##{}", numChild, node->name, node->name).c_str(), treeFlag))
 			{
 				DrawCells(node);
 				if (pushed == 2)

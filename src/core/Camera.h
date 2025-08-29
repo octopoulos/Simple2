@@ -1,6 +1,6 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-08-24
+// @version 2025-08-25
 
 #pragma once
 
@@ -20,6 +20,8 @@ enum CameraFollows : int
 	CameraFollow_Cursor      = 2, ///< follow the cursor
 	CameraFollow_SelectedObj = 4, ///< follow the selected object
 };
+
+using sCamera = std::shared_ptr<class Camera>;
 
 class Camera : public Object3d
 {
@@ -75,6 +77,12 @@ public:
 	/// Enable orthographic projection
 	void SetOrthographic(const bx::Vec3& axis);
 
+	/// Get an Object3d as a Camera
+	static sCamera SharedPtr(const sObject3d& object)
+	{
+		return (object && (object->type & ObjectType_Camera)) ? std::static_pointer_cast<Camera>(object) : nullptr;
+	}
+
 	/// Show ImGui table with info
 	void ShowTable();
 
@@ -87,5 +95,3 @@ public:
 	/// Adjust zoom + distance
 	void Zoom(float ratio = 1.0f);
 };
-
-using sCamera = std::shared_ptr<Camera>;

@@ -31,7 +31,7 @@ public:
 	void PrintMaterials();
 
 	/// Show materials in ImGui
-	void ShowMaterials();
+	void ShowTable();
 };
 
 MaterialManager& GetMaterialManager();

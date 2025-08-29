@@ -9,6 +9,7 @@
 #include "common/imgui/imgui.h"
 #include "entry/input.h"
 #include "materials/MaterialManager.h"
+#include "textures/TextureManager.h"
 
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
 
@@ -30,7 +31,8 @@ enum ShowVarFlags : int
 	Show_Cursor      = 1 << 1,
 	Show_Materials   = 1 << 2,
 	Show_SelectedObj = 1 << 3,
-	Show_Vars        = 1 << 4,
+	Show_Textures    = 1 << 4,
+	Show_Vars        = 1 << 5,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -220,7 +222,7 @@ void App::ShowMainMenu(float alpha)
 		// file
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("New")) std::static_pointer_cast<Scene>(scene)->Clear();
+			if (ImGui::MenuItem("New")) Scene::SharedPtr(scene)->Clear();
 			if (ImGui::MenuItem("Open...")) OpenFile(OpenAction_OpenScene);
 			ImGui::Separator();
 			if (ImGui::BeginMenu("Open Recent"))
@@ -362,7 +364,7 @@ void App::VarsUi()
 	if (ImGui::Begin("Vars", &xsettings.showVars))
 	{
 		const int showTree = xsettings.varTree;
-		int       tree     = showTree & ~(Show_Camera | Show_Cursor | Show_Materials | Show_SelectedObj | Show_Vars);
+		int       tree     = showTree & ~(Show_Camera | Show_Cursor | Show_Materials | Show_SelectedObj | Show_Textures | Show_Vars);
 
 		BEGIN_PADDING();
 
@@ -384,7 +386,7 @@ void App::VarsUi()
 		if (ImGui::CollapsingHeader("Materials", SHOW_TREE(Show_Materials)))
 		{
 			tree |= Show_Materials;
-			GetMaterialManager().ShowMaterials();
+			GetMaterialManager().ShowTable();
 		}
 
 		// selected object
@@ -392,6 +394,13 @@ void App::VarsUi()
 		{
 			tree |= Show_SelectedObj;
 			if (auto object = selectedObj.lock()) object->ShowTable();
+		}
+
+		// textures
+		if (ImGui::CollapsingHeader("Textures", SHOW_TREE(Show_Textures)))
+		{
+			tree |= Show_Textures;
+			GetTextureManager().ShowTable();
 		}
 
 		// vars

@@ -84,9 +84,9 @@ public:
 	std::vector<Group>        groups    = {};      ///< groups of vertices
 	bgfx::VertexLayout        layout    = {};      ///
 	int                       load      = 0;       ///< how the model was loaded (for open/save scene)
-	sMaterial                 material  = nullptr; ///
+	sMaterial                 material  = nullptr; ///< current material (might be "cursor")
+	sMaterial                 material0 = nullptr; ///< original material
 	std::string               modelName = "";      ///< model name (part of filename)
-	uint64_t                  state     = 0;       ///< if !=0: override default state
 
 	Mesh(std::string_view name, int typeFlag = 0)
 	    : Object3d(name, ObjectType_Mesh | typeFlag)
@@ -127,6 +127,12 @@ public:
 
 	/// Convert matrixTransform to bullet3:transform
 	void SetBodyTransform();
+
+	/// Get an Object3d as a Mesh
+	static sMesh SharedPtr(const sObject3d& object, int type = ObjectType_Mesh)
+	{
+		return (object && (object->type & type)) ? std::static_pointer_cast<Mesh>(object) : nullptr;
+	}
 
 	/// Show ImGui table with info
 	virtual void ShowTable() const override;

@@ -119,15 +119,15 @@ int App::InitializeScene()
 		{
 			cursor = std::make_shared<Mesh>("Cursor", ObjectType_Cursor);
 			scene->AddChild(cursor);
-			cursor->state = 0
+
+			cursor->geometry = CreateBoxGeometry(1.0f, 2.0f, 1.0f, 2, 2, 2);
+			cursor->material = GetMaterialManager().LoadMaterial("cursor", "vs_cursor", "fs_cursor");
+			cursor->material->state = 0
 				| BGFX_STATE_BLEND_ALPHA
 				| BGFX_STATE_DEPTH_TEST_LESS
 				| BGFX_STATE_WRITE_A
 				| BGFX_STATE_WRITE_RGB
 				| BGFX_STATE_WRITE_Z;
-
-			cursor->geometry = CreateBoxGeometry(1.0f, 2.0f, 1.0f, 2, 2, 2);
-			cursor->material = GetMaterialManager().LoadMaterial("cursor", "vs_cursor", "fs_cursor");
 
 			cursor->ScaleIrotPosition(
 				{ 1.02f, 1.02f, 1.02f },

@@ -239,11 +239,6 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 {
 	if (!visible) return;
 
-	//if (type & ObjectType_Instance) return;
-	//ui::Log("Render: {} {}", type, name);
-
-	const uint64_t useState = state ? state : defaultState;
-
 	if (type & ObjectType_Group)
 	{
 		if (const uint32_t numChild = TO_UINT32(children.size()))
@@ -291,7 +286,7 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 						bgfx::setIndexBuffer(geometry->ibh);
 						bgfx::setInstanceDataBuffer(&idb);
 						material->Apply();
-						bgfx::setState(useState);
+						bgfx::setState(material->state ? material->state : defaultState);
 						bgfx::submit(viewId, material->program);
 					}
 					else if (bgfx::isValid(material->program))
@@ -302,7 +297,7 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 							bgfx::setVertexBuffer(0, group.m_vbh);
 							bgfx::setInstanceDataBuffer(&idb);
 							material->Apply();
-							bgfx::setState(useState);
+							bgfx::setState(material->state ? material->state : defaultState);
 							bgfx::submit(0, material->program);
 							break;
 						}
@@ -324,12 +319,12 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 			bgfx::setVertexBuffer(0, geometry->vbh);
 			bgfx::setIndexBuffer(geometry->ibh);
 			material->Apply();
-			bgfx::setState(useState);
+			bgfx::setState(material->state ? material->state : defaultState);
 			bgfx::submit(viewId, material->program);
 		}
 		else if (bgfx::isValid(material->program))
 		{
-			Submit(viewId, material->program, glm::value_ptr(matrixWorld), useState);
+			Submit(viewId, material->program, glm::value_ptr(matrixWorld), material->state ? material->state : defaultState);
 		}
 	}
 }
@@ -353,13 +348,12 @@ int Mesh::Serialize(fmt::memory_buffer& outString, int depth, int bounds) const
 		geometry->Serialize(outString, depth);
 	}
 	if (load) WRITE_KEY_INT(load);
-	if (material)
+	if (const auto material1 = material0 ? material0 : material)
 	{
 		WRITE_KEY("material");
-		material->Serialize(outString, depth);
+		material1->Serialize(outString, depth);
 	}
 	if (modelName.size()) WRITE_KEY_STRING(modelName);
-	if (state) WRITE_KEY_INT(state);
 
 	if (bounds & 2) WRITE_CHAR('}');
 	return keyId;
@@ -400,7 +394,10 @@ void Mesh::ShowTable() const
 
 	// clang-format off
 	ui::ShowTable({
-		{ "state", std::to_string(state) },
+		{ "groups.size"   , std::to_string(groups.size())                    },
+		{ "load"          , std::to_string(load)                             },
+		{ "material.state", material ? std::to_string(material->state) : "?" },
+		{ "modelName"     , modelName                                        },
 	});
 	// clang-format on
 }

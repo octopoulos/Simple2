@@ -31,6 +31,9 @@ public:
 	/// Load or retrieve a texture by name
 	/// @returns valid texture handle or BGFX_INVALID_HANDLE.
 	bgfx::TextureHandle LoadTexture(std::string_view name);
+
+	/// Show textures in ImGui
+	void ShowTable();
 };
 
 TextureManager& GetTextureManager();

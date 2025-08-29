@@ -95,6 +95,7 @@ int Material::Serialize(fmt::memory_buffer& outString, int depth, int bounds)
 	WRITE_INIT();
 	WRITE_KEY_STRING(fsName);
 	WRITE_KEY_STRING(vsName);
+	if (state) WRITE_KEY_INT(state);
 
 	// textures
 	{

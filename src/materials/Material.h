@@ -12,6 +12,7 @@ public:
 	std::string              fsName      = "";                  ///< fragment shader
 	std::string              name        = "";                  ///< material name
 	bgfx::ProgramHandle      program     = BGFX_INVALID_HANDLE; ///< compiled program
+	uint64_t                 state       = 0;                   ///< if !=0: override default state
 	bgfx::UniformHandle      sTexColor   = BGFX_INVALID_HANDLE; ///< uniform: color texture
 	bgfx::UniformHandle      sTexNormal  = BGFX_INVALID_HANDLE; ///< uniform: normal texture
 	bgfx::TextureHandle      texColor    = BGFX_INVALID_HANDLE; ///< texture: color

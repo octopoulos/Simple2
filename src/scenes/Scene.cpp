@@ -101,12 +101,14 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 		exist = scene->GetObjectByName("Camera");
 		if (exist) object = exist;
 
-		auto camera = std::static_pointer_cast<Camera>(object);
-		GetArrayFloat(doc, "pos", &camera->pos.x);
-		GetArrayFloat(doc, "target", &camera->target.x);
+		if (auto camera = Camera::SharedPtr(object))
+		{
+			GetArrayFloat(doc, "pos", &camera->pos.x);
+			GetArrayFloat(doc, "target", &camera->target.x);
 
-		std::memcpy(&camera->pos2.x, &camera->pos.x, sizeof(bx::Vec3));
-		std::memcpy(&camera->target2.x, &camera->target.x, sizeof(bx::Vec3));
+			std::memcpy(&camera->pos2.x, &camera->pos.x, sizeof(bx::Vec3));
+			std::memcpy(&camera->target2.x, &camera->target.x, sizeof(bx::Vec3));
+		}
 	}
 	else if (type & ObjectType_Cursor)
 	{
@@ -129,7 +131,7 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 		}
 
 		if (!object) object = std::make_shared<Mesh>(name, type);
-		auto mesh = std::static_pointer_cast<Mesh>(object);
+		sMesh mesh = Mesh::SharedPtr(object);
 
 		// geometry
 		if (!doc["geometry"].get_object().get(obj))
@@ -153,6 +155,13 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 				if (!mesh->material)
 					mesh->material = std::make_shared<Material>(vsName, fsName);
 
+				// state
+				{
+					int64_t state;
+					if (!doc["state"].get_int64().get(state))
+						mesh->material->state = state;
+				}
+
 				// textures
 				if (!obj["texNames"].get_array().get(array))
 				{
@@ -170,13 +179,6 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 					mesh->material->LoadTextures(colorName, normalName);
 				}
 			}
-		}
-
-		// state
-		{
-			int64_t state;
-			if (!doc["state"].get_int64().get(state))
-				mesh->state = state;
 		}
 
 		// body
@@ -236,7 +238,7 @@ bool App::OpenScene(const std::filesystem::path& filename)
 	{
 		AddRecent(filename);
 		ui::Log("Parsing JSON object from file: {}", filename.string());
-		std::static_pointer_cast<Scene>(scene)->Clear();
+		Scene::SharedPtr(scene)->Clear();
 		ParseObject(obj, scene, scene, physics.get());
 		return true;
 	}

@@ -54,14 +54,23 @@ void MaterialManager::PrintMaterials()
 		ui::Log("{:2}: {:2} : {}", ++i, material.use_count(), name);
 }
 
-void MaterialManager::ShowMaterials()
+void MaterialManager::ShowTable()
 {
 	if (ImGui::BeginTable("2ways", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
 	{
 		const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
 
-		ImGui::TableSetupColumn("##Name" , ImGuiTableColumnFlags_WidthStretch);
-		ImGui::TableSetupColumn("##Value", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 3.0f);
+		ImGui::TableSetupColumn("Name" , ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn("Count", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 3.0f);
+		ImGui::TableHeadersRow();
+
+		// sort data?
+		if (ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs())
+			if (sortSpecs->SpecsDirty)
+			{
+				ui::Log("MaterialManager:Sort");
+				sortSpecs->SpecsDirty = false;
+			}
 
 		for (const auto& [name, value] : materials)
 		{

@@ -4,6 +4,8 @@
 
 #include "stdafx.h"
 #include "textures/TextureManager.h"
+//
+#include "common/imgui/imgui.h"
 
 #include <bimg/decode.h>
 
@@ -114,6 +116,37 @@ bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 
 	textures.emplace(std::string(name), TextureData { texture, info });
 	return texture;
+}
+
+void TextureManager::ShowTable()
+{
+	if (ImGui::BeginTable("2ways", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti))
+	{
+		const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
+
+		ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 8.0f);
+		ImGui::TableHeadersRow();
+
+		// sort data?
+		if (ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs())
+			if (sortSpecs->SpecsDirty)
+			{
+				ui::Log("TextureManager:Sort");
+				sortSpecs->SpecsDirty = false;
+			}
+
+		for (const auto& [name, value] : textures)
+		{
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			ImGui::TextUnformatted(name.c_str());
+			ImGui::TableNextColumn();
+			const auto& info = value.info;
+			ImGui::Text("%dx%d", info.width, info.height);
+		}
+		ImGui::EndTable();
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

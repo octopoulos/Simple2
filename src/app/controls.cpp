@@ -122,9 +122,8 @@ void App::FixedControls()
 			xsettings.physPaused = false;
 			for (const auto& object : scene->children)
 			{
-				if (object->type & ObjectType_HasBody)
+				if (auto mesh = Mesh::SharedPtr(object, ObjectType_HasBody))
 				{
-					const auto mesh = std::static_pointer_cast<Mesh>(object);
 					if (auto& body = mesh->body; !body->enabled)
 					{
 						mesh->SetBodyTransform();
@@ -149,9 +148,8 @@ void App::FixedControls()
 				target->UpdateLocalMatrix("FixedControls");
 
 				// deactivate physical body
-				if (target->type & ObjectType_HasBody)
+				if (auto mesh = Mesh::SharedPtr(target, ObjectType_HasBody))
 				{
-					auto mesh = std::static_pointer_cast<Mesh>(target);
 					mesh->SetBodyTransform();
 					mesh->ActivatePhysics(false);
 				}
@@ -412,9 +410,8 @@ void App::MoveCursor(bool force)
 				}
 
 				// deactivate physical body
-				if (target->type & ObjectType_HasBody)
+				if (auto mesh = Mesh::SharedPtr(target, ObjectType_HasBody))
 				{
-					auto mesh = std::static_pointer_cast<Mesh>(target);
 					mesh->SetBodyTransform();
 					mesh->ActivatePhysics(false);
 				}
@@ -433,8 +430,19 @@ void App::MoveCursor(bool force)
 
 void App::SelectObject(const sObject3d& obj, bool countIndex)
 {
+	// 1) restore material
+	if (const auto& temp = selectedObj.lock())
+	{
+		if (auto mesh = Mesh::SharedPtr(temp); mesh->material0)
+			mesh->material = mesh->material0;
+	}
+
+	// 2) new selection
 	if (!obj)
-		camera->follow = CameraFollow_Cursor;
+	{
+		camera->follow  = CameraFollow_Cursor;
+		cursor->visible = true;
+	}
 	else
 	{
 		prevSelected = selectedObj;
@@ -442,6 +450,13 @@ void App::SelectObject(const sObject3d& obj, bool countIndex)
 
 		camera->follow |= CameraFollow_Active | CameraFollow_SelectedObj;
 		camera->follow &= ~CameraFollow_Cursor;
+
+		if (auto mesh = Mesh::SharedPtr(obj))
+		{
+			mesh->material0 = mesh->material;
+			mesh->material  = GetMaterialManager().GetMaterial("cursor");
+			cursor->visible = false;
+		}
 
 		// find the parent's childId
 		if (countIndex)
@@ -461,6 +476,7 @@ void App::SelectObject(const sObject3d& obj, bool countIndex)
 		}
 	}
 
+	// 3) camera on target
 	if (const sObject3d target = obj ? obj : cursor)
 	{
 		camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(target->position));
@@ -481,9 +497,8 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 	const auto name      = fmt::format("geom-{}", geometryType);
 	auto       groupName = fmt::format("{}-group", name);
 
-	Mesh* parent    = nullptr;
-	auto  parentObj = std::static_pointer_cast<Scene>(scene)->GetObjectByName(groupName);
-	if (parentObj)
+	Mesh* parent = nullptr;
+	if (auto parentObj = Scene::SharedPtr(scene)->GetObjectByName(groupName))
 	{
 		if (parentObj->type & ObjectType_Mesh)
 			parent = static_cast<Mesh*>(parentObj.get());
@@ -530,8 +545,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, std::strin
 	auto groupName = fmt::format("{}-group", name);
 
 	Mesh* parent = nullptr;
-	auto  parentObj = std::static_pointer_cast<Scene>(scene)->GetObjectByName(groupName);
-	if (parentObj)
+	if (auto parentObj = Scene::SharedPtr(scene)->GetObjectByName(groupName))
 	{
 		if (parentObj->type & ObjectType_Mesh)
 			parent = static_cast<Mesh*>(parentObj.get());
