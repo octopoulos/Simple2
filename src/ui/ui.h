@@ -1,6 +1,6 @@
 // ui.h
 // @author octopoulos
-// @version 2025-08-21
+// @version 2025-08-26
 
 #pragma once
 
@@ -28,9 +28,6 @@ enum WindowTypes_
 // COMMON
 /////////
 
-#define CHECK_DRAW() \
-	if (!isOpen || (hidden & 1)) return
-
 #define SHOW_TREE(flag) ((showTree & flag) ? ImGuiTreeNodeFlags_DefaultOpen : 0)
 
 class CommonWindow
@@ -42,47 +39,61 @@ public:
 	int         hidden = 0;               ///< automatic flag, 2=cannot be hidden
 	bool        isOpen = false;           ///< manual flag, the user opened/closed the window
 	std::string name   = "";              ///< Controls, Log, Scene, Settings, Theme
+	ImVec2      pos    = {};              ///< current position
+	ImVec2      size   = {};              ///< current size
 	int         type   = WindowType_None; ///< WindowTypes_
 
 	virtual ~CommonWindow() {}
+
+	/// Attempt an ImGui::Begin
+	/// - also get pos + size
+	bool BeginDraw(int flags = 0);
+
 	virtual void Draw() {}
 };
 
 CommonWindow& GetCommonWindow();
 
 /// Add a combo with label left/right + special Blender support
-bool AddCheckBox(const std::string& name, const char* labelLeft, const char* labelRight);
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
+bool AddCheckBox(int mode, const std::string& name, const char* labelLeft, const char* labelRight);
 
 /// Add a combo with label left/right + special Blender support
-bool AddCombo(const std::string& name, const char* label);
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
+bool AddCombo(int mode, const std::string& name, const char* label);
 
 /// Add a combo with label left/right + special Blender support
-bool AddCombo(const std::string& name, const char* label, const char* texts[], const VEC_INT values);
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
+bool AddCombo(int mode, const std::string& name, const char* label, const char* texts[], const VEC_INT values);
 
 /// Add a drag float with label left/right
-bool AddDragFloat(const std::string& name, const char* text, float* dataPtr = nullptr, int count = 1, float speed = 0.0005f, const char* format = "%.3f");
+/// @param mode: 0: slider, &1: drag, &2: new line, &4: popup, &8: empty label, &16: no label + span all width
+bool AddDragFloat(int mode, const std::string& name, const char* text, float* dataPtr = nullptr, int count = 1, float speed = 0.0005f, const char* format = "%.3f");
 
 /// Add a drag int with label left/right
-bool AddDragInt(const std::string& name, const char* text, float* dataPtr = nullptr, int count = 1, float speed = 1.0f, const char* format = "%d");
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
+bool AddDragInt(int mode, const std::string& name, const char* text, float* dataPtr = nullptr, int count = 1, float speed = 1.0f, const char* format = "%d");
 
 /// Add an input text input with label left/right + special Blender support
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
 /// @param pstring: if used, then overrides config
-void AddInputText(const std::string& name, const char* label, size_t size = 256, int flags = 0, std::string* pstring = nullptr);
+void AddInputText(int mode, const std::string& name, const char* label, size_t size = 256, int flags = 0, std::string* pstring = nullptr);
 
 /// Add a slider bool with label left/right
-bool AddSliderBool(const std::string& name, const char* text, const char* format = "%d", bool vertical = false, const ImVec2& size = { 30, 120 });
-
-/// Add a slider float with label left/right
-bool AddSliderFloat(const std::string& name, const char* text, const char* format = "%.3f");
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
+bool AddSliderBool(int mode, const std::string& name, const char* text, const char* format = "%d", bool vertical = false, const ImVec2& size = { 30, 120 });
 
 /// Create an horizontal or vertical slider, with label left/right
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
 /// @param format: nullptr => slider enum, to use instead of AddCombo
-bool AddSliderInt(const std::string& name, const char* text, const char* format = "%d", bool vertical = false, const ImVec2& size = { 30, 120 }, bool isBool = false);
+bool AddSliderInt(int mode, const std::string& name, const char* text, const char* format = "%d", bool vertical = false, const ImVec2& size = { 30, 120 }, bool isBool = false);
 
 /// Create an horizontal or vertical slider, with label left/right
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
 /// @param format: nullptr => slider enum, to use instead of AddCombo
-bool AddSliderInt(const std::string& name, const char* text, int* value, int count, int min, int max, const char* format = "%d");
+bool AddSliderInt(int mode, const std::string& name, const char* text, int* value, int count, int min, int max, const char* format = "%d");
 
+/// Add vertical space
 void AddSpace(float height = -1.0f);
 
 /// Right click => reset to default

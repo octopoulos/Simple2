@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-08-24
+// @version 2025-08-25
 
 #pragma once
 
@@ -18,7 +18,8 @@ enum Popups_ : int
 	Popup_AddMap      = 1 << 2,
 	Popup_AddMesh     = 1 << 3,
 	Popup_Delete      = 1 << 4,
-	Popup_Any         = Popup_Add | Popup_AddGeometry | Popup_AddMap | Popup_AddMesh | Popup_Delete,
+	Popup_Transform   = 1 << 5,
+	Popup_Any         = Popup_Add | Popup_AddGeometry | Popup_AddMap | Popup_AddMesh | Popup_Delete | Popup_Transform,
 };
 
 class App
@@ -179,6 +180,7 @@ protected:
 
 private:
 	UMAP_INT_STR actionFolders = {};    ///< open image & save screenshot in different folders
+	int          currentPopup  = 0;     ///< current popup being displayed
 	int          fileAction    = 0;     ///< action to take in OpenedFile
 	std::string  fileFolder    = {};    ///< folder after OpenFile
 	int          hidePopup     = 0;     ///< close specific ImGui popups
@@ -219,6 +221,9 @@ public:
 	/// Show all custom UI elements
 	/// @returns 0: no UI drawn, &1: something was drawn, &2: no video
 	int MainUi();
+
+	/// Show transforms in ImGui
+	void ShowTransform(bool isPopup);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// WINDOW

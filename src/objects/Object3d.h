@@ -111,8 +111,11 @@ public:
 	/// Serialize for JSON output
 	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3) const;
 
-	/// Show ImGui table with info
+	/// Show info table in ImGui
 	virtual void ShowTable() const;
+
+	/// Show transforms in ImGui
+	void ShowTransform(bool isPopup);
 
 	/// Synchronize physics transform
 	virtual void SynchronizePhysics();

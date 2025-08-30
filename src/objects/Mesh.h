@@ -134,7 +134,7 @@ public:
 		return (object && (object->type & type)) ? std::static_pointer_cast<Mesh>(object) : nullptr;
 	}
 
-	/// Show ImGui table with info
+	/// Show info table in ImGui
 	virtual void ShowTable() const override;
 
 	/// Submit for render pass

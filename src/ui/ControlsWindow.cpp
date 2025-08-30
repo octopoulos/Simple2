@@ -1,6 +1,6 @@
 // ControlsWindow.cpp
 // @author octopoulos
-// @version 2025-08-06
+// @version 2025-08-26
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -77,7 +77,7 @@ public:
 
 	void Draw()
 	{
-		CHECK_DRAW();
+		if (!isOpen || (hidden & 1)) return;
 		if (!drawn)
 		{
 			//texId = LoadTexture(controls_data, controls_size, "controls");

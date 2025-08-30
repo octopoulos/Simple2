@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-08-24
+// @version 2025-08-26
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -235,6 +235,36 @@ void Object3d::ShowTable() const
 		{ "visible"   , std::to_string(visible)                                                                     },
 	});
 	// clang-format on
+}
+
+void Object3d::ShowTransform(bool isPopup)
+{
+	int mode = 3;
+	if (isPopup) mode |= 4;
+
+	ui::AddInputText(mode | (isPopup ? 16 : 0), ".name", "Name", 256, 0, &name);
+
+	if (ui::AddDragFloat(mode, ".position", "Position", glm::value_ptr(position), 3, 0.5f))
+		UpdateLocalMatrix("Position");
+	if (xsettings.rotateMode == RotateMode_Quaternion)
+	{
+		if (ui::AddDragFloat(mode, ".quaternion", "Quaternion", glm::value_ptr(quaternion), 4))
+			UpdateLocalMatrix("Quaternion");
+	}
+	else
+	{
+		if (ui::AddDragFloat(mode, ".rotation", "Rotation", glm::value_ptr(rotation), 3))
+		{
+			quaternion = glm::quat(rotation);
+			UpdateLocalMatrix("Rotation");
+		}
+	}
+	ui::AddCombo(mode | (isPopup ? 16 : 0), "rotateMode", "Mode");
+	if (ui::AddDragFloat(mode, ".scale", "Scale", glm::value_ptr(scale), 3))
+	{
+		scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+		UpdateLocalMatrix("Scale");
+	}
 }
 
 void Object3d::SynchronizePhysics()

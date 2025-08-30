@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-08-24
+// @version 2025-08-26
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -55,12 +55,9 @@ public:
 			init = 1;
 		}
 
-		CHECK_DRAW();
 		BEGIN_PADDING();
-
-		if (!ImGui::Begin("Settings", &isOpen))
+		if (!BeginDraw())
 		{
-			ImGui::End();
 			END_PADDING();
 			return;
 		}
@@ -71,11 +68,9 @@ public:
 		// APP
 		//////
 
-		// ui::AddSpace();
 		BEGIN_COLLAPSE("App", Show_App, 3)
 		{
-			//AddInputText("appId", "AppId", 256, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
-			AddSliderInt("gameId", "Game Id", nullptr);
+			AddSliderInt(0, "gameId", "Game Id", nullptr);
 			if (ImGui::Button("Load Defaults")) LoadGameSettings(xsettings.gameId, "", "-def");
 			ImGui::SameLine();
 			if (ImGui::Button("Save Defaults")) SaveGameSettings("", true, "-def");
@@ -85,12 +80,11 @@ public:
 		// CAPTURE
 		//////////
 
-		// ui::AddSpace();
 		BEGIN_COLLAPSE("Capture", Show_Capture, 3)
 		{
-			AddInputText("captureDir", "Directory");
-			AddCheckBox("captureVideo", "Video", "Enable Video");
-			AddCheckBox("nvidiaEnc", "", "Use nVidia Encoding");
+			AddInputText(0, "captureDir", "Directory");
+			AddCheckBox(0, "captureVideo", "Video", "Enable Video");
+			AddCheckBox(0, "nvidiaEnc", "", "Use nVidia Encoding");
 			END_COLLAPSE();
 		}
 
@@ -99,10 +93,10 @@ public:
 
 		BEGIN_COLLAPSE("Map", Show_Map, 5)
 		{
-			AddSliderInt("angleInc", "Angle Increment");
-			AddSliderFloat("iconSize", "Icon Size", "%.0f");
-			AddCheckBox("smoothPos", "Smooth",  "Translation");
-			AddCheckBox("smoothQuat", "",  "Rotation");
+			AddSliderInt(0, "angleInc", "Angle Increment");
+			AddDragFloat(0, "iconSize", "Icon Size", nullptr, 0, 1.0f, "%.0f");
+			AddCheckBox(0, "smoothPos", "Smooth",  "Translation");
+			AddCheckBox(0, "smoothQuat", "",  "Rotation");
 			if (ImGui::Button("Rescan Assets")) app->RescanAssets();
 			END_COLLAPSE();
 		}
@@ -112,9 +106,9 @@ public:
 
 		BEGIN_COLLAPSE("Net", Show_Net, 4)
 		{
-			AddInputText("userHost", "Host");
-			AddInputText("userEmail", "Email");
-			AddInputText("userPw", "Password", 256, ImGuiInputTextFlags_Password);
+			AddInputText(0, "userHost", "Host");
+			AddInputText(0, "userEmail", "Email");
+			AddInputText(0, "userPw", "Password", 256, ImGuiInputTextFlags_Password);
 			if (ImGui::Button("Clear Logs")) ClearLog(-1);
 			END_COLLAPSE();
 		}
@@ -124,31 +118,7 @@ public:
 
 		BEGIN_COLLAPSE("Object", Show_Object, 11 + (xsettings.rotateMode == RotateMode_Quaternion) * 1)
 		{
-			if (auto object = app->selectedObj.lock())
-			{
-				AddInputText(".name", "Name", 256, 0, &object->name);
-				if (AddDragFloat(".position", "Position", glm::value_ptr(object->position), 3, 0.5f))
-					object->UpdateLocalMatrix("Position");
-				if (xsettings.rotateMode == RotateMode_Quaternion)
-				{
-					if (AddDragFloat(".quaternion", "Quaternion", glm::value_ptr(object->quaternion), 4))
-						object->UpdateLocalMatrix("Quaternion");
-				}
-				else
-				{
-					if (AddDragFloat(".rotation", "Rotation", glm::value_ptr(object->rotation), 3))
-					{
-						object->quaternion = glm::quat(object->rotation);
-						object->UpdateLocalMatrix("Rotation");
-					}
-				}
-				AddCombo("rotateMode", "Mode");
-				if (AddDragFloat(".scale", "Scale", glm::value_ptr(object->scale), 3))
-				{
-					object->scaleMatrix = glm::scale(glm::mat4(1.0f), object->scale);
-					object->UpdateLocalMatrix("Scale");
-				}
-			}
+			app->ShowTransform(false);
 			END_COLLAPSE();
 		}
 
@@ -157,9 +127,9 @@ public:
 
 		BEGIN_COLLAPSE("Physics", Show_Physics, 3)
 		{
-			AddDragFloat("bottom", "Bottom");
-			AddCheckBox("physPaused", "", "Paused");
-			AddCheckBox("bulletDebug", "", "Show Body Shapes");
+			AddDragFloat(1, "bottom", "Bottom");
+			AddCheckBox(0, "physPaused", "", "Paused");
+			AddCheckBox(0, "bulletDebug", "", "Show Body Shapes");
 			END_COLLAPSE();
 		}
 
@@ -168,19 +138,18 @@ public:
 
 		BEGIN_COLLAPSE("Render", Show_Render, 6)
 		{
-			AddCheckBox("fixedView", "", "Fixed View");
-			AddCheckBox("gridDraw", "", "Grid");
-			AddSliderInt("gridSize", "Grid Size");
-			AddCheckBox("instancing", "", "Mesh Instancing");
-			AddSliderInt("projection", "Projection", nullptr);
-			AddSliderInt("renderMode", "Render Mode", nullptr);
+			AddCheckBox(0, "fixedView", "", "Fixed View");
+			AddCheckBox(0, "gridDraw", "", "Grid");
+			AddSliderInt(0, "gridSize", "Grid Size");
+			AddCheckBox(0, "instancing", "", "Mesh Instancing");
+			AddSliderInt(0, "projection", "Projection", nullptr);
+			AddSliderInt(0, "renderMode", "Render Mode", nullptr);
 			END_COLLAPSE();
 		}
 
 		// SYSTEM
 		/////////
 
-		// ui::AddSpace();
 		if (ImGui::CollapsingHeader("System", SHOW_TREE(Show_System)))
 		{
 			tree |= Show_System;
@@ -189,13 +158,13 @@ public:
 			// performance
 			BEGIN_TREE("Performance", Show_SystemPerformance, 7)
 			{
-				AddSliderBool("benchmark", "Benchmark");
-				AddSliderInt("drawEvery", "Draw Every");
-				AddSliderInt("ioFrameUs", "I/O us");
-				AddDragFloat("activeMs", "Active ms");
-				AddDragFloat("idleMs", "Idle ms");
-				AddDragFloat("idleTimeout", "Idle Timeout");
-				AddSliderInt("vsync", "VSync", nullptr);
+				AddSliderBool(0, "benchmark", "Benchmark");
+				AddSliderInt(0, "drawEvery", "Draw Every");
+				AddSliderInt(0, "ioFrameUs", "I/O us");
+				AddDragFloat(1, "activeMs", "Active ms");
+				AddDragFloat(1, "idleMs", "Idle ms");
+				AddDragFloat(1, "idleTimeout", "Idle Timeout");
+				AddSliderInt(0, "vsync", "VSync", nullptr);
 				END_TREE();
 			}
 
@@ -207,17 +176,17 @@ public:
 
 			BEGIN_TREE("UI", Show_SystemUI, 10 + (applyChange ? 1 : 0))
 			{
-				AddCombo("aspectRatio", "Aspect Ratio");
-				AddSliderInt("dpr", "DPR");
-				if (AddDragFloat("fontScale", "Font Scale", nullptr, 1, 0.001f, "%.3f"))
+				AddCombo(0, "aspectRatio", "Aspect Ratio");
+				AddSliderInt(0, "dpr", "DPR");
+				if (AddDragFloat(1, "fontScale", "Font Scale", nullptr, 1, 0.001f, "%.3f"))
 					ImGui::GetStyle().FontScaleMain = xsettings.fontScale;
-				AddSliderInt("fullScreen", "Full Screen", nullptr);
-				AddSliderInt("settingPad", "Setting Pad");
-				if (AddCombo("theme", "Theme")) UpdateTheme();
-				AddDragFloat("uiScale", "UI Scale");
-				AddDragInt("windowPos", "Window Pos");
-				AddDragInt("windowSize", "Window Size");
-				AddCheckBox("maximized", "", "Maximized");
+				AddSliderInt(0, "fullScreen", "Full Screen", nullptr);
+				AddSliderInt(0, "settingPad", "Setting Pad");
+				if (AddCombo(0, "theme", "Theme")) UpdateTheme();
+				AddDragFloat(1, "uiScale", "UI Scale");
+				AddDragInt(1, "windowPos", "Window Pos");
+				AddDragInt(1, "windowSize", "Window Size");
+				AddCheckBox(0, "maximized", "", "Maximized");
 
 				if (applyChange)
 				{

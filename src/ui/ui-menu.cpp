@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-26
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -122,75 +122,120 @@ void App::OpenedFile(int action, const std::filesystem::path& path)
 
 void App::PopupsUi()
 {
-	static int currentPopup;
+	static int customBg = 0;
+
+	// 1) new popup activation?
 	if (showPopup & Popup_Any)
 	{
 		ImGui::OpenPopup("popup_Any");
 		currentPopup = showPopup;
+		customBg     = 0;
 		showPopup &= ~Popup_Any;
 
-		int offX = 0.0f;
-		int offY = 0.0f;
+		bool isAbs = false;
+		int  offX  = 0.0f;
+		int  offY  = 0.0f;
+		int  sizeX = 0.0f;
 		if (currentPopup & Popup_Delete)
 		{
 			offX = 322.0f;
 			offY = 118.0f;
 		}
+		else if (currentPopup & Popup_Transform)
+		{
+			if (const auto& window = ui::GetSceneWindow(); window.isOpen)
+			{
+				isAbs = true;
+				sizeX = 420.0f;
+				offX  = window.pos.x - sizeX - 4.0f;
+				offY  = window.pos.y;
+			}
+			customBg = 1;
+		}
 
-		const ImVec2 mousePos = ImGui::GetMousePos();
-		const ImVec2 popupPos = ImVec2(bx::max(mousePos.x - offX, 0.0f), bx::max(mousePos.y - offY, 0.0f));
-		ImGui::SetNextWindowPos(popupPos);
+		if (isAbs)
+		{
+			if (offX || offY) ImGui::SetNextWindowPos(ImVec2(offX, offY));
+		}
+		else
+		{
+			const ImVec2 mousePos = ImGui::GetMousePos();
+			const ImVec2 popupPos = ImVec2(bx::max(mousePos.x - offX, 0.0f), bx::max(mousePos.y - offY, 0.0f));
+			ImGui::SetNextWindowPos(popupPos);
+		}
+
+		if (sizeX > 0.0f) ImGui::SetNextWindowSize(ImVec2(sizeX, 0.0f));
 	}
+
+	// 2) show popup
+	// blender style popup background
+	if (customBg) ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.240f, 0.240f, 0.240f, 1.00f));
+	const int pushedBg = customBg;
+
 	if (ImGui::BeginPopup("popup_Any"))
 	{
-		if (currentPopup & Popup_AddGeometry)
+		if (currentPopup)
 		{
-			ImGui::Text("Add geometry");
-			ImGui::Separator();
-			for (int type = GeometryType_None + 1; type < GeometryType_Count; ++type)
+			if (currentPopup & Popup_AddGeometry)
 			{
-				if (ImGui::MenuItem(GeometryName(type).c_str()))
+				ImGui::Text("Add geometry");
+				ImGui::Separator();
+				for (int type = GeometryType_None + 1; type < GeometryType_Count; ++type)
 				{
-					ui::Log("Add geometry: {} {}", type, GeometryName(type));
-					auto geometry = CreateAnyGeometry(type);
-					AddGeometry(std::move(geometry));
+					if (ImGui::MenuItem(GeometryName(type).c_str()))
+					{
+						ui::Log("Add geometry: {} {}", type, GeometryName(type));
+						auto geometry = CreateAnyGeometry(type);
+						AddGeometry(std::move(geometry));
+					}
 				}
 			}
-		}
-		else if (currentPopup & Popup_AddMap)
-		{
-			ImGui::Text("Add map tile");
-			ImGui::Separator();
-		}
-		else if (currentPopup & Popup_AddMesh)
-		{
-			ImGui::Text("Add mesh");
-			ImGui::Separator();
-		}
-		else if (currentPopup & Popup_Delete)
-		{
-			if (auto target = selectedObj.lock())
+			else if (currentPopup & Popup_AddMap)
 			{
-				ImGui::Text("Delete selected object?");
-				ImGui::Text("(%s)", target->name.c_str());
-				ImGui::Dummy(ImVec2(0.0f, 8.0f));
-				if (ImGui::Button("Cancel", ImVec2(160.0f, 0.0f))) hidePopup |= Popup_Delete;
-				ImGui::SameLine();
-				ImGui::PushStyleColor(ImGuiCol_Button        , ImVec4(0.278f, 0.447f, 0.702f, 1.00f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonHovered , ImVec4(0.384f, 0.545f, 0.792f, 1.00f));
-				if (ImGui::Button("Delete", ImVec2(160.0f, 0.0f))) DeleteSelected();
-				ImGui::PopStyleColor(2);
+				ImGui::Text("Add map tile");
+				ImGui::Separator();
 			}
-			else hidePopup |= Popup_Delete;
+			else if (currentPopup & Popup_AddMesh)
+			{
+				ImGui::Text("Add mesh");
+				ImGui::Separator();
+			}
+			else if (currentPopup & Popup_Delete)
+			{
+				if (auto target = selectedObj.lock())
+				{
+					ImGui::Text("Delete selected object?");
+					ImGui::Text("(%s)", target->name.c_str());
+					ImGui::Dummy(ImVec2(0.0f, 8.0f));
+					if (ImGui::Button("Cancel", ImVec2(160.0f, 0.0f))) hidePopup |= Popup_Delete;
+					ImGui::SameLine();
+					ImGui::PushStyleColor(ImGuiCol_Button       , ImVec4(0.278f, 0.447f, 0.702f, 1.00f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.384f, 0.545f, 0.792f, 1.00f));
+					if (ImGui::Button("Delete", ImVec2(160.0f, 0.0f))) DeleteSelected();
+					ImGui::PopStyleColor(2);
+				}
+				else hidePopup |= Popup_Delete;
+			}
+			else if (currentPopup & Popup_Transform)
+			{
+				ImGui::Text("Transform");
+				ShowTransform(true);
+			}
 		}
 
+		// close popup
 		if (hidePopup & Popup_Any)
 		{
 			ImGui::CloseCurrentPopup();
 			hidePopup &= ~Popup_Any;
+			currentPopup = 0;
+			customBg     = 0;
 		}
 		ImGui::EndPopup();
 	}
+	else currentPopup = 0;
+
+	if (pushedBg) ImGui::PopStyleColor();
 }
 
 void App::ShowMainMenu(float alpha)
@@ -354,7 +399,14 @@ void App::ShowMainMenu(float alpha)
 
 void App::ShowPopup(int flag)
 {
+	if (currentPopup & flag) hidePopup |= flag;
 	showPopup ^= flag;
+}
+
+void App::ShowTransform(bool isPopup)
+{
+	if (auto target = (camera->follow & CameraFollow_Cursor) ? cursor : selectedObj.lock())
+		target->ShowTransform(isPopup);
 }
 
 void App::VarsUi()
@@ -408,27 +460,36 @@ void App::VarsUi()
 		{
 			tree |= Show_Vars;
 
+			const ImGuiIO& io = ImGui::GetIO();
+
 			// clang-format off
 			ui::ShowTable({
-				{ "BaseFolder"     , BaseFolder().string()                    },
-				{ "current_path"   , std::filesystem::current_path().string() },
-				{ "fileAction"     , std::to_string(fileAction)               },
-				{ "fileFolder"     , fileFolder                               },
-				{ "hidePopup"      , std::to_string(hidePopup)                },
-				{ "inputFrame"     , std::to_string(inputFrame)               },
-				{ "inputLag"       , std::to_string(inputLag)                 },
-				{ "isDebug"        , std::to_string(isDebug)                  },
-				{ "kitModels.size" , std::to_string(kitModels.size())         },
-				{ "mapNode.childId", std::to_string(mapNode->childId)         },
-				{ "pauseNextFrame" , std::to_string(pauseNextFrame)           },
-				{ "physicsFrame"   , std::to_string(physicsFrame)             },
-				{ "renderFrame"    , std::to_string(renderFrame)              },
-				{ "screenX"        , std::to_string(screenX)                  },
-				{ "screenY"        , std::to_string(screenY)                  },
-				{ "videoFrame"     , std::to_string(videoFrame)               },
-				{ "x.physPaused"   , std::to_string(xsettings.physPaused)     },
-				{ "x.settingTree"  , std::to_string(xsettings.settingTree)    },
-				{ "x.varTree"      , std::to_string(xsettings.varTree)        },
+				{ "BaseFolder"            , BaseFolder().string()                    },
+				{ "current_path"          , std::filesystem::current_path().string() },
+				{ "currentPopup"          , std::to_string(currentPopup)             },
+				{ "fileAction"            , std::to_string(fileAction)               },
+				{ "fileFolder"            , fileFolder                               },
+				{ "hidePopup"             , std::to_string(hidePopup)                },
+				{ "inputFrame"            , std::to_string(inputFrame)               },
+				{ "inputLag"              , std::to_string(inputLag)                 },
+				{ "io.WantCaptureMouse"   , BoolString(io.WantCaptureMouse)          },
+				{ "io.WantCaptureKeyboard", BoolString(io.WantCaptureKeyboard)       },
+				{ "io.WantTextInput"      , BoolString(io.WantTextInput)             },
+				{ "IsAnyItemFocused"      , BoolString(ImGui::IsAnyItemFocused())    },
+				{ "isDebug"               , std::to_string(isDebug)                  },
+				{ "kitModels.size"        , std::to_string(kitModels.size())         },
+				{ "mapNode.childId"       , std::to_string(mapNode->childId)         },
+				{ "MouseOverArea"         , BoolString(ImGui::MouseOverArea())       },
+				{ "pauseNextFrame"        , BoolString(pauseNextFrame)               },
+				{ "physicsFrame"          , std::to_string(physicsFrame)             },
+				{ "renderFrame"           , std::to_string(renderFrame)              },
+				{ "screenX"               , std::to_string(screenX)                  },
+				{ "screenY"               , std::to_string(screenY)                  },
+				{ "showPopup"             , std::to_string(showPopup)                },
+				{ "videoFrame"            , std::to_string(videoFrame)               },
+				{ "x.physPaused"          , std::to_string(xsettings.physPaused)     },
+				{ "x.settingTree"         , std::to_string(xsettings.settingTree)    },
+				{ "x.varTree"             , std::to_string(xsettings.varTree)        },
 			});
 			// clang-format on
 		}

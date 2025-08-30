@@ -1,6 +1,6 @@
 // learn.cpp
 // @author octopoulos
-// @version 2025-08-02
+// @version 2025-08-26
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -16,8 +16,8 @@ void App::LearnUi()
 	const float sy = std::clamp(viewportSize.y * 0.8f, 300.0f, 800.0f);
 
 	const ImVec2 pos = ImVec2((viewportSize.x - sx) * 0.5f, (viewportSize.y - sy) * 0.5f);
-	ImGui::SetNextWindowPos(pos, ImGuiCond_Always);
-	ImGui::SetNextWindowSize(ImVec2(sx, sy), ImGuiCond_Always);
+	ImGui::SetNextWindowPos(pos);
+	ImGui::SetNextWindowSize(ImVec2(sx, sy));
 
 	if (ImGui::Begin("Learning", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
 	{

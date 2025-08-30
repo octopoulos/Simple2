@@ -83,7 +83,7 @@ public:
 		return (object && (object->type & ObjectType_Camera)) ? std::static_pointer_cast<Camera>(object) : nullptr;
 	}
 
-	/// Show ImGui table with info
+	/// Show info table in ImGui
 	void ShowTable();
 
 	/// Update smoothed camera state

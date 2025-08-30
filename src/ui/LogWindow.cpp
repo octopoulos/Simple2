@@ -1,6 +1,6 @@
 // LogWindow.cpp
 // @author octopoulos
-// @version 2025-08-06
+// @version 2025-08-25
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -87,12 +87,7 @@ public:
 
 	void Draw()
 	{
-		CHECK_DRAW();
-		if (!ImGui::Begin(name.c_str(), &isOpen, ImGuiWindowFlags_NoScrollbar))
-		{
-			ImGui::End();
-			return;
-		}
+		if (!BeginDraw(ImGuiWindowFlags_NoScrollbar)) return;
 
 		const auto numTab = colorNames.size();
 		if (numTab > 1)

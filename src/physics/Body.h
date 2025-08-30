@@ -1,6 +1,6 @@
 // Body.h
 // @author octopoulos
-// @version 2025-08-23
+// @version 2025-08-25
 
 #pragma once
 
@@ -72,7 +72,7 @@ public:
 	/// Serialize for JSON output
 	int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3) const;
 
-	/// Show ImGui table with info
+	/// Show info table in ImGui
 	void ShowTable();
 };
 

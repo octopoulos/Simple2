@@ -22,12 +22,11 @@ public:
 
 	void Draw()
 	{
-		CHECK_DRAW();
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-		if (!ImGui::Begin("Scene", &isOpen))
+		if (!BeginDraw())
 		{
-			ImGui::End();
+			ImGui::PopStyleVar();
 			return;
 		}
 

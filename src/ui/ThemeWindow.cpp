@@ -1,6 +1,6 @@
 // ThemeWindow.cpp
 // @author octopoulos
-// @version 2025-08-10
+// @version 2025-08-25
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -29,12 +29,7 @@ public:
 
 	void Draw()
 	{
-		CHECK_DRAW();
-		if (!ImGui::Begin("Theme Editor", &isOpen))
-		{
-			ImGui::End();
-			return;
-		}
+		if (!BeginDraw()) return;
 
 		ImGui::Button("Import Custom");
 		ImGui::SameLine();
@@ -198,7 +193,7 @@ ImFont* FindFont(const std::string& name)
 
 void UpdateFonts()
 {
-	auto& io = ImGui::GetIO();
+	ImGuiIO& io = ImGui::GetIO();
 	io.Fonts->Clear();
 
 	const std::vector<std::tuple<const char*, void*, uint32_t, int>> fonts = {
@@ -312,7 +307,7 @@ static void SetThemeBlender(ImGuiStyle& style)
 
 	if (const std::filesystem::path interFont = "runtime/fonts/inter.ttf"; IsFile(interFont))
 	{
-		auto& io = ImGui::GetIO();
+		ImGuiIO& io    = ImGui::GetIO();
 		io.FontDefault = io.Fonts->AddFontFromFileTTF(interFont.string().c_str());
 	}
 }

@@ -1,6 +1,6 @@
 // ui-common.cpp
 // @author octopoulos
-// @version 2025-08-23
+// @version 2025-08-26
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -14,8 +14,22 @@ namespace ui
 // HELPERS
 //////////
 
-static void LabelLeft(const char* label, int components, float forceLeft = -1.0f)
+/// Label on the left
+/// @param mode: &4: popup mode, &8: empty label but aligned, &16: skip
+static void LabelLeft(int mode, const char* label, int components, float widthRatio = 0.4f, float forceLeft = -1.0f)
 {
+	if (mode & 16)
+	{
+		forceLeft  = 0.0f;
+		label      = "";
+		widthRatio = 0.0f;
+	}
+	else
+	{
+		if (mode & 8) label = "";
+		if (mode & 4) widthRatio = 0.1f;
+	}
+
 	float valueWidth = 0.0f;
 	if (!xsettings.labelLeft && forceLeft < 0.0f)
 		valueWidth = ImGui::CalcItemWidth();
@@ -23,16 +37,16 @@ static void LabelLeft(const char* label, int components, float forceLeft = -1.0f
 	{
 		ImGui::AlignTextToFramePadding();
 
-		const float spacingX = (forceLeft >= 0.0f) ? forceLeft : 6.0f; //ImGui::GetStyle().ItemInnerSpacing.x;
+		const float spacingX = (forceLeft >= 0.0f) ? forceLeft : 6.0f;
 		const float width    = ImGui::GetContentRegionAvail().x;
-		valueWidth           = width * 0.6f - spacingX;
+		valueWidth           = width * (1.0f - widthRatio) - spacingX;
 
-		if (auto labelEnd = ImGui::FindRenderedTextEnd(label))//; label != labelEnd)
+		if (auto labelEnd = ImGui::FindRenderedTextEnd(label))
 		{
 			const float posX = ImGui::GetCursorPosX();
 			const auto  size = ImGui::CalcTextSize(label);
 
-			ImGui::SetCursorPosX(posX + width * 0.4f - size.x - spacingX);
+			ImGui::SetCursorPosX(posX + width * widthRatio - size.x - spacingX);
 			ImGui::TextEx(label, labelEnd);
 			ImGui::SameLine(0.0f, spacingX * 2);
 		}
@@ -105,12 +119,12 @@ static int InputTextCallback(ImGuiInputTextCallbackData* data)
 
 #define LABEL_ID(label) fmt::format("##{}", label).c_str()
 
-bool AddCheckBox(const std::string& name, const char* labelLeft, const char* labelRight)
+bool AddCheckBox(int mode, const std::string& name, const char* labelLeft, const char* labelRight)
 {
 	bool result = false;
 	if (auto config = ConfigFind(name, "AddCheckBox"))
 	{
-		LabelLeft(labelLeft, 1, 6.0f);
+		LabelLeft(mode, labelLeft, 1);
 
 		result = ImGui::Checkbox(LABEL_ID(name), (bool*)config->ptr);
 		result |= ItemEvent(name);
@@ -120,12 +134,12 @@ bool AddCheckBox(const std::string& name, const char* labelLeft, const char* lab
 	return result;
 }
 
-bool AddCombo(const std::string& name, const char* label)
+bool AddCombo(int mode, const std::string& name, const char* label)
 {
 	bool result = false;
 	if (auto config = ConfigFind(name, "AddCombo"))
 	{
-		LabelLeft(label, 1);
+		LabelLeft(mode, label, 1);
 		const int pushed = PushBlender(1);
 
 		result = ImGui::Combo(LABEL_ID(label), (int*)config->ptr, config->names, config->count);
@@ -137,7 +151,7 @@ bool AddCombo(const std::string& name, const char* label)
 	return result;
 }
 
-bool AddCombo(const std::string& name, const char* label, const char* texts[], const VEC_INT values)
+bool AddCombo(int mode, const std::string& name, const char* label, const char* texts[], const VEC_INT values)
 {
 	bool result = false;
 	if (auto config = ConfigFind(name, "AddCombo"))
@@ -145,7 +159,7 @@ bool AddCombo(const std::string& name, const char* label, const char* texts[], c
 		auto it    = std::find(values.begin(), values.end(), *(int*)config->ptr);
 		int  index = (it != values.end()) ? TO_INT(std::distance(values.begin(), it)) : 0;
 
-		LabelLeft(label, 1);
+		LabelLeft(mode, label, 1);
 		const int pushed = PushBlender(1);
 
 		if (ImGui::Combo(LABEL_ID(label), &index, texts, TO_INT(values.size())))
@@ -162,23 +176,33 @@ bool AddCombo(const std::string& name, const char* label, const char* texts[], c
 }
 
 /// Same as DraggScalarN but can be reset with right click
-/// @param mode: 0: slider, &1: drag, &2: vertical
+/// @param mode: 0: slider, &1: drag, &2: vertical (new line), &4: popup (label above)
 static bool AddDragScalarN(int mode, const std::string& name, const char* label, ImGuiDataType data_type, size_t type_size, void* p_data, int components, float v_speed, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags = 0)
 {
 	const bool  isHori       = !(mode & 2);
+	const bool  isPopup      = (mode & 4);
 	const float spacingX     = ImGui::GetStyle().ItemInnerSpacing.x;
-	const char* subLabels    = "XYZW";
+	const char* subLabels[]  = { "X", "Y", "Z", "W" };
 	bool        valueChanged = false;
 
 	ImGui::BeginGroup();
 	ImGui::PushID(label);
 
 	components = std::max(components, 1);
-	if (isHori) LabelLeft(label, components);
+	if (isPopup)
+	{
+		AddSpace(-0.1f);
+		ImGui::Text("%s:", label);
+	}
+	else if (isHori)
+		LabelLeft(mode, label, components);
 
 	for (int i = 0; i < components; ++i)
 	{
-		if (!isHori) LabelLeft(fmt::format("{}{}{}", !i ? label : "", !i ? " " : "", subLabels[i]).c_str(), 1);
+		if (isPopup)
+			LabelLeft(mode, subLabels[i], 1, 0.1f);
+		else if (!isHori)
+			LabelLeft(mode, fmt::format("{}{}{}", !i ? label : "", !i ? " " : "", subLabels[i]).c_str(), 1);
 
 		ImGui::PushID(i);
 		if (isHori && i > 0)
@@ -206,29 +230,29 @@ static bool AddDragScalarN(int mode, const std::string& name, const char* label,
 	return valueChanged;
 }
 
-bool AddDragFloat(const std::string& name, const char* text, float* dataPtr, int count, float speed, const char* format)
+bool AddDragFloat(int mode, const std::string& name, const char* text, float* dataPtr, int count, float speed, const char* format)
 {
 	bool result = false;
 	if (dataPtr)
-		result = AddDragScalarN(3, name, text, ImGuiDataType_Float, sizeof(float), dataPtr, count, speed, nullptr, nullptr, format);
+		result = AddDragScalarN(mode, name, text, ImGuiDataType_Float, sizeof(float), dataPtr, count, speed, nullptr, nullptr, format);
 	else if (auto config = ConfigFind(name, "AddDragFloat"))
-		result = AddDragScalarN(1, name, text, ImGuiDataType_Float, sizeof(float), (float*)config->ptr, config->count, speed, &config->minFloat, &config->maxFloat, format);
+		result = AddDragScalarN(mode, name, text, ImGuiDataType_Float, sizeof(float), (float*)config->ptr, config->count, speed, &config->minFloat, &config->maxFloat, format);
 	return result;
 }
 
-bool AddDragInt(const std::string& name, const char* text, float* dataPtr, int count, float speed, const char* format)
+bool AddDragInt(int mode, const std::string& name, const char* text, float* dataPtr, int count, float speed, const char* format)
 {
 	bool result = false;
 	if (dataPtr)
-		result = AddDragScalarN(1, name, text, ImGuiDataType_Float, sizeof(float), dataPtr, count, speed, nullptr, nullptr, format);
+		result = AddDragScalarN(mode, name, text, ImGuiDataType_Float, sizeof(float), dataPtr, count, speed, nullptr, nullptr, format);
 	else if (auto config = ConfigFind(name, "AddDragInt"))
-		result = AddDragScalarN(1, name, text, ImGuiDataType_S32, sizeof(int32_t), (int*)config->ptr, config->count, speed, &config->minInt, &config->maxFloat, format);
+		result = AddDragScalarN(mode, name, text, ImGuiDataType_S32, sizeof(int32_t), (int*)config->ptr, config->count, speed, &config->minInt, &config->maxFloat, format);
 	return result;
 }
 
-void AddInputText(const std::string& name, const char* label, size_t size, int flags, std::string* pstring)
+void AddInputText(int mode, const std::string& name, const char* label, size_t size, int flags, std::string* pstring)
 {
-	LabelLeft(label, 1);
+	LabelLeft(mode, label, 1);
 	const int pushed = PushBlender(2);
 
 	if (pstring)
@@ -243,20 +267,12 @@ void AddInputText(const std::string& name, const char* label, size_t size, int f
 	LabelRight(label);
 }
 
-bool AddSliderBool(const std::string& name, const char* text, const char* format, bool vertical, const ImVec2& size)
+bool AddSliderBool(int mode, const std::string& name, const char* text, const char* format, bool vertical, const ImVec2& size)
 {
-	return AddSliderInt(name, text, format, vertical, size, true);
+	return AddSliderInt(mode, name, text, format, vertical, size, true);
 }
 
-bool AddSliderFloat(const std::string& name, const char* text, const char* format)
-{
-	bool result = false;
-	if (auto config = ConfigFind(name, "AddSliderFloat"))
-		result = AddDragScalarN(0, name, text, ImGuiDataType_Float, sizeof(float), (float*)config->ptr, config->count, 1.0f, &config->minFloat, &config->maxFloat, format);
-	return result;
-}
-
-bool AddSliderInt(const std::string& name, const char* text, const char* format, bool vertical, const ImVec2& size, bool isBool)
+bool AddSliderInt(int mode, const std::string& name, const char* text, const char* format, bool vertical, const ImVec2& size, bool isBool)
 {
 	bool result = false;
 	if (auto config = ConfigFind(name, "AddSliderInt"))
@@ -278,15 +294,15 @@ bool AddSliderInt(const std::string& name, const char* text, const char* format,
 	return result;
 }
 
-bool AddSliderInt(const std::string& name, const char* text, int* value, int count, int min, int max, const char* format)
+bool AddSliderInt(int mode, const std::string& name, const char* text, int* value, int count, int min, int max, const char* format)
 {
-	return AddDragScalarN(0, name, text, ImGuiDataType_S32, sizeof(int32_t), value, count, 1.0f, &min, &max, format);
+	return AddDragScalarN(mode, name, text, ImGuiDataType_S32, sizeof(int32_t), value, count, 1.0f, &min, &max, format);
 }
 
 void AddSpace(float height)
 {
 	if (height < 0) height = -height * ImGui::GetStyle().WindowPadding.y;
-	ImGui::Dummy(ImVec2(0, height * xsettings.uiScale));
+	ImGui::Dummy(ImVec2(0.0f, height * xsettings.uiScale));
 }
 
 bool ItemEvent(const std::string& name, int index)
@@ -322,6 +338,24 @@ void ShowTable(const std::vector<std::tuple<std::string, std::string>>& stats)
 		}
 		ImGui::EndTable();
 	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CommonWindow
+///////////////
+
+bool CommonWindow::BeginDraw(int flags)
+{
+	if (!isOpen || (hidden & 1)) return false;
+
+	if (!ImGui::Begin(name.c_str(), &isOpen, flags))
+	{
+		ImGui::End();
+		return false;
+	}
+	pos  = ImGui::GetWindowPos();
+	size = ImGui::GetWindowSize();
+	return true;
 }
 
 static CommonWindow commonWindow;

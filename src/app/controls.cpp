@@ -100,13 +100,13 @@ void App::FixedControls()
 			if (ginput.keyDowns[id]) ui::Log("Controls: {} {:3} {:5} {}", ginput.keyTimes[id], id, ginput.keys[id], getName((Key::Enum)id));
 	}
 
-	const auto& downs    = ginput.keyDowns;
-	const auto& keys     = ginput.keys;
-	const int   modifier = ginput.IsModifier();
+	const auto&    downs    = ginput.keyDowns;
+	const ImGuiIO& io       = ImGui::GetIO();
+	const auto&    keys     = ginput.keys;
+	const int      modifier = ginput.IsModifier();
 
-	// ignore inputs when using the GUI?
-	const bool guiFocused = ImGui::IsAnyItemFocused() || ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow);
-	if (guiFocused) //ImGui::MouseOverArea()
+	// ignore inputs when focused on a text input
+	if (io.WantTextInput)
 	{
 	}
 	// 1) alt
@@ -170,7 +170,7 @@ void App::FixedControls()
 		if (downs[Key::KeyH]) ShowPopup(Popup_AddGeometry);
 		if (downs[Key::KeyJ]) ShowPopup(Popup_AddMesh);
 		if (downs[Key::KeyM]) ShowPopup(Popup_AddMap);
-		if (downs[Key::KeyN]) {}
+		if (downs[Key::KeyN]) ShowPopup(Popup_Transform);
 
 		if (DOWN_OR_REPEAT(Key::KeyO))
 		{
@@ -207,7 +207,7 @@ void App::FixedControls()
 			{
 				if (auto target = selectedObj.lock(); !target->placed) DeleteSelected();
 			}
-			hidePopup |= 1;
+			hidePopup |= Popup_Any;
 		}
 		if (downs[Key::Tab]) showLearn = !showLearn;
 
@@ -272,11 +272,12 @@ void App::FluidControls()
 	auto& ginput = GetGlobalInput();
 	ginput.MouseDeltas();
 
-	const int modifier = ginput.IsModifier();
+	const ImGuiIO& io       = ImGui::GetIO();
+	const int      modifier = ginput.IsModifier();
 
 	// camera
 	{
-		if (!ImGui::MouseOverArea())
+		if (!io.WantCaptureMouse)
 		{
 			if ((ginput.buttons[1] || ginput.buttons[2]) || ginput.mouseLock)
 				camera->Orbit(ginput.mouseRels2[0], ginput.mouseRels2[1]);
@@ -295,7 +296,7 @@ void App::FluidControls()
 	}
 
 	// ignore inputs when using the GUI?
-	if (!ImGui::MouseOverArea())
+	if (!io.WantCaptureMouse)
 	{
 		// mouse clicks
 		if (ginput.buttonDowns[3]) ShowPopup(Popup_Add);
