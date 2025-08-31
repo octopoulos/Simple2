@@ -1,6 +1,6 @@
 // fs_mesh
 
-$input v_pos, v_view, v_normal, v_color0
+$input v_position, v_view, v_normal, v_color0
 
 #include <bgfx_shader.sh>
 
@@ -37,9 +37,9 @@ void main()
 	float fres    = fresnel(bln.x, 0.2, 5.0);
 
 	float index = (
-        (sin(v_pos.x * 3.0 + u_time.x) * 0.3 + 0.7)
-	  + (cos(v_pos.y * 3.0 + u_time.x) * 0.4 + 0.6)
-	  + (cos(v_pos.z * 3.0 + u_time.x) * 0.2 + 0.8)
+        (sin(v_position.x * 3.0 + u_time.x) * 0.3 + 0.7)
+	  + (cos(v_position.y * 3.0 + u_time.x) * 0.4 + 0.6)
+	  + (cos(v_position.z * 3.0 + u_time.x) * 0.2 + 0.8)
     ) * M_PI;
 
 	vec3 color = vec3(

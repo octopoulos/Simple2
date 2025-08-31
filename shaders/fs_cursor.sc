@@ -1,6 +1,6 @@
 // fs_cursor.sc
 
-$input v_pos, v_normal
+$input v_position, v_normal
 
 #include <bgfx_shader.sh>
 
@@ -11,7 +11,7 @@ uniform vec4 u_time;
 void main()
 {
     float freq   = 5.0;
-    float offset = v_pos.y * 4.0;
+    float offset = v_position.y * 4.0;
     float t      = u_time.x * freq + offset;
 
     // triangle waveform for a sharper pulse (smoother than abs(sin()))
