@@ -1,6 +1,6 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-27
 
 #include "stdafx.h"
 #include "textures/TextureManager.h"
@@ -78,8 +78,10 @@ static bimg::ImageContainer* ImageLoad_(const bx::FilePath& _filePath, bgfx::Tex
 
 void TextureManager::Destroy()
 {
+	DESTROY_GUARD();
+
 	for (const auto& [name, texture] : textures)
-		bgfx::destroy(texture.handle);
+		BGFX_DESTROY(texture.handle);
 
 	textures.clear();
 }

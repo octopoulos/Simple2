@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-08-26
+// @version 2025-08-27
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -56,12 +56,12 @@ void App::Destroy()
 	GetTextureManager().Destroy();
 
 	// destroy uniforms
-	bgfx::destroy(uCursorCol);
-	bgfx::destroy(uLightDir);
-	bgfx::destroy(uTime);
+	BGFX_DESTROY(uCursorCol);
+	BGFX_DESTROY(uLightDir);
+	BGFX_DESTROY(uTime);
 }
 
-int App::Initialize()
+int App::Initialize(std::shared_ptr<App>& app)
 {
 	// 1) app directory
 	ui::Log("App::Initialize");
@@ -72,7 +72,7 @@ int App::Initialize()
 		InitializeImGui();
 		ImGui::LoadIniSettingsFromDisk(imguiPath.string().c_str());
 
-		ui::ListWindows(this);
+		ui::ListWindows(app);
 		ui::UpdateTheme();
 	}
 
@@ -294,32 +294,24 @@ void App::Render()
 	// 1) uniforms
 	{
 		const bool isCursor = camera->follow & CameraFollow_Cursor;
-		if (auto target = isCursor ? cursor : selectedObj.lock())
+		if (auto target = isCursor ? cursor : selectWeak.lock())
 		{
 			const float y0 = isCursor ? 1.0f : 0.0f;
 
-			bx::Vec3 cursorCol = { 0.7f, 0.6f, 0.0f };
+			glm::vec3 cursorCol = { 0.7f, 0.6f, 0.0f };
 			if (target->position.y > y0)
 				cursorCol = { 0.0f, 0.5f, 1.0f };
 			else if (target->position.y < y0)
 				cursorCol = { 1.0f, 0.5f, 0.0f };
 
-			{
-				float f4[4] = { cursorCol.x, cursorCol.y, cursorCol.z, 0.0f };
-				bgfx::setUniform(uCursorCol, f4);
-			}
+			bgfx::setUniform(uCursorCol, VALUE_VEC4(cursorCol, 0.0f));
 		}
 
-		//const auto lightDir = bx::normalize(bx::Vec3(sinf(curTime), 1.0f, cosf(curTime)));
-		const auto lightDir = bx::normalize(bx::Vec3(0.5f, 1.0f, -0.5f));
-		{
-			float f4[4] = { lightDir.x, lightDir.y, lightDir.z, 0.0f };
-			bgfx::setUniform(uLightDir, f4);
-		}
-		{
-			float f4[4] = { curTime, 0.0f, 0.0f, 0.0f };
-			bgfx::setUniform(uTime, f4);
-		}
+		//const auto lightDir = glm::normalize(glm::vec3(sinf(curTime), 1.0f, cosf(curTime)));
+		const auto lightDir = glm::normalize(glm::vec3(0.5f, 1.0f, -0.5f));
+		bgfx::setUniform(uLightDir, VALUE_VEC4(lightDir, 0.0f));
+
+		bgfx::setUniform(uTime, VALUE_VEC4(curTime, 0.0f, 0.0f, 0.0f));
 	}
 
 	// 2) camera view
@@ -477,7 +469,7 @@ struct BgfxCallback : public bgfx::CallbackI
 class EntryApp : public entry::AppI
 {
 private:
-	std::unique_ptr<App> app      = nullptr; ///< main application
+	std::shared_ptr<App> app      = nullptr; ///< main application
 	BgfxCallback         callback = {};      ///< for video capture + screenshot
 	uint32_t             debug    = 0;       ///
 	uint32_t             fheight  = 800;     ///< framebuffer height
@@ -560,8 +552,8 @@ public:
 
 		// 3) app
 		{
-			app = std::make_unique<App>();
-			app->Initialize();
+			app = std::make_shared<App>();
+			app->Initialize(app);
 			app->entryReset = &reset;
 		}
 	}

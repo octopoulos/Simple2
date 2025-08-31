@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-26
+// @version 2025-08-27
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -202,7 +202,7 @@ void App::PopupsUi()
 			}
 			else if (currentPopup & Popup_Delete)
 			{
-				if (auto target = selectedObj.lock())
+				if (auto target = selectWeak.lock())
 				{
 					ImGui::Text("Delete selected object?");
 					ImGui::Text("(%s)", target->name.c_str());
@@ -405,7 +405,7 @@ void App::ShowPopup(int flag)
 
 void App::ShowTransform(bool isPopup)
 {
-	if (auto target = (camera->follow & CameraFollow_Cursor) ? cursor : selectedObj.lock())
+	if (auto target = (camera->follow & CameraFollow_Cursor) ? cursor : selectWeak.lock())
 		target->ShowTransform(isPopup);
 }
 
@@ -445,7 +445,7 @@ void App::VarsUi()
 		if (ImGui::CollapsingHeader("Selected Object", SHOW_TREE(Show_SelectedObj)))
 		{
 			tree |= Show_SelectedObj;
-			if (auto object = selectedObj.lock()) object->ShowTable();
+			if (auto object = selectWeak.lock()) object->ShowTable();
 		}
 
 		// textures

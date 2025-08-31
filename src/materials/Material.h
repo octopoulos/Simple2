@@ -6,6 +6,8 @@
 
 using sMaterial = std::shared_ptr<class Material>;
 
+#define VALUE_VEC4(...) glm::value_ptr(glm::vec4(__VA_ARGS__))
+
 enum AlphaModes_ : int
 {
 	AlphaMode_Opaque = 0,

@@ -1,6 +1,6 @@
 // ui.h
 // @author octopoulos
-// @version 2025-08-26
+// @version 2025-08-27
 
 #pragma once
 
@@ -33,15 +33,15 @@ enum WindowTypes_
 class CommonWindow
 {
 public:
-	float       alpha  = 1.0f;            ///< window opacity
-	App*        app    = nullptr;         ///< pointer to App, to display App properties
-	int         drawn  = 0;               ///< used for initial setup
-	int         hidden = 0;               ///< automatic flag, 2=cannot be hidden
-	bool        isOpen = false;           ///< manual flag, the user opened/closed the window
-	std::string name   = "";              ///< Controls, Log, Scene, Settings, Theme
-	ImVec2      pos    = {};              ///< current position
-	ImVec2      size   = {};              ///< current size
-	int         type   = WindowType_None; ///< WindowTypes_
+	float              alpha   = 1.0f;            ///< window opacity
+	std::weak_ptr<App> appWeak = {};              ///< pointer to App, to display App properties
+	int                drawn   = 0;               ///< used for initial setup
+	int                hidden  = 0;               ///< automatic flag, 2=cannot be hidden
+	bool               isOpen  = false;           ///< manual flag, the user opened/closed the window
+	std::string        name    = "";              ///< Controls, Log, Scene, Settings, Theme
+	ImVec2             pos     = {};              ///< current position
+	ImVec2             size    = {};              ///< current size
+	int                type    = WindowType_None; ///< WindowTypes_
 
 	virtual ~CommonWindow() {}
 
@@ -101,9 +101,6 @@ bool ItemEvent(const std::string& name, int index = -1);
 
 /// Show a 2 column Stats table
 void ShowTable(const std::vector<std::tuple<std::string, std::string>>& stats);
-
-//uint32_t LoadTexture(const std::filesystem::path& path, std::string name);
-//uint32_t LoadTexture(const uint8_t* data, uint32_t size, std::string name);
 
 /// Utility class:
 /// - indent
@@ -282,7 +279,7 @@ bool AddMenu(const char* text, const char* shortcut, CommonWindow& window);
 void DrawWindows();
 
 /// Create a list of the windows
-void ListWindows(App* app);
+void ListWindows(std::shared_ptr<App> &app);
 
 /// Save windows open states
 void SaveWindows();

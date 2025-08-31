@@ -1,6 +1,6 @@
 // TextureManager.h
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-27
 
 #pragma once
 
@@ -15,7 +15,8 @@ struct TextureData
 class TextureManager
 {
 private:
-	UMAP_STR<TextureData> textures = {}; /// cached textures
+	bool                  destroyed = false; ///< Destroy already called?
+	UMAP_STR<TextureData> textures  = {};    ///< cached textures
 
 public:
 	TextureManager() = default;

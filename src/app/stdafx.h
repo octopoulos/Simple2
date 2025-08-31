@@ -1,6 +1,6 @@
 // stdafx.h
 // @author octopoulos
-// @version 2025-08-20
+// @version 2025-08-27
 
 #pragma once
 
@@ -42,4 +42,16 @@ using namespace std::literals;
 inline btVector3    BxToBullet (const bx::Vec3& vec )  { return btVector3(vec.x, vec.y, vec.z); }
 inline btVector3    GlmToBullet(const glm::vec3& vec)  { return btVector3(vec.x, vec.y, vec.z); }
 inline btQuaternion GlmToBullet(const glm::quat& quat) { return btQuaternion(quat.x, quat.y, quat.z, quat.w); }
+
 // clang-format on
+
+#define BGFX_DESTROY(x)                         \
+	do                                          \
+	{                                           \
+		if (bgfx::isValid(x)) bgfx::destroy(x); \
+	}                                           \
+	while (0)
+
+#define DESTROY_GUARD()    \
+	if (destroyed) return; \
+	destroyed = true

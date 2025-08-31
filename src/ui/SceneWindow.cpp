@@ -1,6 +1,6 @@
 // SceneWindow.cpp
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-27
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -38,7 +38,8 @@ public:
 			ImGui::TableSetupColumn("##Vis" , ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 5.0f);
 			ImGui::TableSetupColumn("##Type", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 3.0f);
 
-			DrawObject(app->scene, 0);
+			if (auto app = appWeak.lock())
+				DrawObject(app->scene, 0);
 
 			ImGui::EndTable();
 		}
@@ -50,7 +51,10 @@ public:
 	void DrawCells(const sObject3d& node)
 	{
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
-			app->SelectObject(node, true);
+		{
+			if (auto app = appWeak.lock())
+				app->SelectObject(node, true);
+		}
 
 		ImGui::TableNextColumn();
 		ImGui::PushID(node->name.c_str());
@@ -76,7 +80,9 @@ public:
 		ImGui::TableNextRow();
 
 		// blue background
-		const bool selected = (node == app->selectedObj.lock());
+		bool selected = false;
+		if (auto app = appWeak.lock())
+			selected = (node == app->selectWeak.lock());
 		if (selected)
 		{
 			const ImU32 color = ImGui::GetColorU32(ImVec4(0.2f, 0.3f, 0.5f, 1.0f));

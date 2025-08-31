@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-08-26
+// @version 2025-08-27
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -97,7 +97,11 @@ public:
 			AddDragFloat(0, "iconSize", "Icon Size", nullptr, 0, 1.0f, "%.0f");
 			AddCheckBox(0, "smoothPos", "Smooth",  "Translation");
 			AddCheckBox(0, "smoothQuat", "",  "Rotation");
-			if (ImGui::Button("Rescan Assets")) app->RescanAssets();
+			if (ImGui::Button("Rescan Assets"))
+			{
+				if (auto app = appWeak.lock())
+					app->RescanAssets();
+			}
 			END_COLLAPSE();
 		}
 
@@ -118,7 +122,8 @@ public:
 
 		BEGIN_COLLAPSE("Object", Show_Object, 11 + (xsettings.rotateMode == RotateMode_Quaternion) * 1)
 		{
-			app->ShowTransform(false);
+			if (auto app = appWeak.lock())
+				app->ShowTransform(false);
 			END_COLLAPSE();
 		}
 

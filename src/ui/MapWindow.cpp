@@ -1,6 +1,6 @@
 // MapWindow.cpp
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-27
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -23,6 +23,9 @@ public:
 
 	void Draw()
 	{
+		auto app = appWeak.lock();
+		if (!app) return;
+
 		if (!BeginDraw()) return;
 
 		const auto  style        = ImGui::GetStyle();

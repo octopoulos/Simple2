@@ -71,24 +71,23 @@ static bgfx::ProgramHandle LoadProgram_(std::string_view vsName, std::string_vie
 
 void ShaderManager::Destroy()
 {
+	DESTROY_GUARD();
+
 	// uniforms
-	if (bgfx::isValid(uBaseColor))
-	{
-		bgfx::destroy(uBaseColor);
-		bgfx::destroy(uEmissive);
-		bgfx::destroy(uMaterialFlags);
-		bgfx::destroy(uMetallicRoughness);
-		bgfx::destroy(uOcclusion);
-	}
+	BGFX_DESTROY(uBaseColor);
+	BGFX_DESTROY(uEmissive);
+	BGFX_DESTROY(uMaterialFlags);
+	BGFX_DESTROY(uMetallicRoughness);
+	BGFX_DESTROY(uOcclusion);
 
 	// programs
 	for (auto& [name, program] : programs)
-		if (bgfx::isValid(program)) bgfx::destroy(program);
+		BGFX_DESTROY(program);
 	programs.clear();
 
 	// shaders
 	for (auto& [name, shader] : shaders)
-		if (bgfx::isValid(shader)) bgfx::destroy(shader);
+		BGFX_DESTROY(shader);
 	shaders.clear();
 }
 

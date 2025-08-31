@@ -1,6 +1,6 @@
 // Geometry.h
 // @author octopoulos
-// @version 2025-08-23
+// @version 2025-08-27
 
 #pragma once
 
@@ -65,8 +65,8 @@ public:
 
 	~Geometry()
 	{
-		if (bgfx::isValid(ibh)) bgfx::destroy(ibh);
-		if (bgfx::isValid(vbh)) bgfx::destroy(vbh);
+		BGFX_DESTROY(ibh);
+		BGFX_DESTROY(vbh);
 	}
 
 	/// Serialize for JSON output

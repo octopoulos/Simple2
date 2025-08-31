@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-27
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -72,7 +72,7 @@ void App::Controls()
 
 void App::DeleteSelected()
 {
-	if (auto target = selectedObj.lock())
+	if (auto target = selectWeak.lock())
 	{
 		if (!(target->type & (ObjectType_Cursor | ObjectType_Map | ObjectType_Scene)))
 		{
@@ -143,7 +143,7 @@ void App::FixedControls()
 		// rotate object
 		if (const int flag = ArrowsFlag())
 		{
-			if (auto target = (camera->follow & CameraFollow_Cursor) ? cursor : selectedObj.lock())
+			if (auto target = (camera->follow & CameraFollow_Cursor) ? cursor : selectWeak.lock())
 			{
 				const int angleInc = xsettings.angleInc;
 				if (flag & (1 | 8)) target->irot[0] += (flag & 1) ? -angleInc : angleInc;
@@ -186,12 +186,12 @@ void App::FixedControls()
 		if (downs[Key::Key3]) ThrowGeometry(ThrowAction_Throw, GeometryType_None, "colors.png");
 		if (downs[Key::Key0])
 		{
-			if (const auto& temp = prevSelected.lock())
+			if (const auto& temp = prevSelWeak.lock())
 			{
-				prevSelected = selectedObj;
-				selectedObj  = temp;
+				prevSelWeak = selectWeak;
+				selectWeak  = temp;
 
-				if (auto target = selectedObj.lock())
+				if (auto target = selectWeak.lock())
 				{
 					camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(target->position));
 					camera->Zoom();
@@ -205,7 +205,7 @@ void App::FixedControls()
 			// object is being placed => cancel
 			if (camera->follow & CameraFollow_SelectedObj)
 			{
-				if (auto target = selectedObj.lock(); !target->placed) DeleteSelected();
+				if (auto target = selectWeak.lock(); !target->placed) DeleteSelected();
 			}
 			hidePopup |= Popup_Any;
 		}
@@ -359,7 +359,7 @@ void App::MoveCursor(bool force)
 		if (const int flag = ArrowsFlag(); flag || force)
 		{
 			const bool isCursor = camera->follow & CameraFollow_Cursor;
-			if (auto target = isCursor ? cursor : selectedObj.lock())
+			if (auto target = isCursor ? cursor : selectWeak.lock())
 			{
 				if (target->posTs > 0.0)
 				{
@@ -407,7 +407,7 @@ void App::MoveCursor(bool force)
 				else
 					target->UpdateLocalMatrix("MoveCursor");
 
-				// move cursor at the same time as the selectedObj?
+				// move cursor at the same time as the selectWeak?
 				if (!isCursor)
 				{
 					cursor->position    = target->position;
@@ -445,7 +445,7 @@ void App::MoveCursor(bool force)
 void App::SelectObject(const sObject3d& obj, bool countIndex)
 {
 	// 1) place + restore material
-	if (const auto& temp = selectedObj.lock())
+	if (const auto& temp = selectWeak.lock())
 	{
 		temp->placed = true;
 
@@ -461,8 +461,8 @@ void App::SelectObject(const sObject3d& obj, bool countIndex)
 	}
 	else
 	{
-		prevSelected = selectedObj;
-		selectedObj  = obj;
+		prevSelWeak = selectWeak;
+		selectWeak  = obj;
 
 		camera->follow |= CameraFollow_Active | CameraFollow_SelectedObj;
 		camera->follow &= ~CameraFollow_Cursor;

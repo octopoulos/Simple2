@@ -1,6 +1,6 @@
 // MaterialManager.cpp
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-27
 
 #include "stdafx.h"
 #include "materials/MaterialManager.h"
@@ -15,6 +15,7 @@ static std::mutex materialMutex;
 
 void MaterialManager::Destroy()
 {
+	DESTROY_GUARD();
 	materials.clear();
 }
 

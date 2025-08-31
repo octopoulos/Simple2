@@ -7,8 +7,9 @@
 class ShaderManager
 {
 private:
-	UMAP_STR<bgfx::ProgramHandle> programs = {}; ///< cached programs
-	UMAP_STR<bgfx::ShaderHandle>  shaders  = {}; ///< cached shaders
+	bool                          destroyed = false; ///< Destroy already called?
+	UMAP_STR<bgfx::ProgramHandle> programs  = {};    ///< cached programs
+	UMAP_STR<bgfx::ShaderHandle>  shaders   = {};    ///< cached shaders
 
 public:
 	bgfx::UniformHandle uBaseColor         = BGFX_INVALID_HANDLE; ///< base color factor

@@ -1,6 +1,6 @@
 // MaterialManager.h
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-27
 
 #pragma once
 
@@ -9,7 +9,8 @@
 class MaterialManager
 {
 private:
-	UMAP_STR<sMaterial> materials = {}; /// cached materials
+	bool                destroyed = false; ///< Destroy already called?
+	UMAP_STR<sMaterial> materials = {};    ///< cached materials
 
 public:
 	MaterialManager() = default;

@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-27
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -59,8 +59,8 @@ void Mesh::Destroy()
 		bx::AllocatorI* allocator = entry::getAllocator();
 		for (const auto& group : groups)
 		{
-			bgfx::destroy(group.m_vbh);
-			if (bgfx::isValid(group.m_ibh)) bgfx::destroy(group.m_ibh);
+			BGFX_DESTROY(group.m_ibh);
+			BGFX_DESTROY(group.m_vbh);
 
 			if (group.m_vertices) bx::free(allocator, group.m_vertices);
 			if (group.m_indices) bx::free(allocator, group.m_indices);

@@ -30,11 +30,11 @@ void Material::Apply() const
 	// set PBR uniforms
 	const ShaderManager& shaderManager = GetShaderManager();
 	// clang-format off
-	bgfx::setUniform(shaderManager.uBaseColor        , glm::value_ptr(baseColorFactor));
-	bgfx::setUniform(shaderManager.uEmissive         , glm::value_ptr(glm::vec4(emissiveFactor, 1.0f)));
-	bgfx::setUniform(shaderManager.uMaterialFlags    , glm::value_ptr(glm::vec4(unlit ? 1.0f : 0.0f, static_cast<float>(alphaMode), alphaCutoff, 0.0f)));
-	bgfx::setUniform(shaderManager.uMetallicRoughness, glm::value_ptr(glm::vec4(metallicFactor, roughnessFactor, 0.0f, 0.0f)));
-	bgfx::setUniform(shaderManager.uOcclusion        , glm::value_ptr(glm::vec4(occlusionStrength, 0.0f, 0.0f, 0.0f)));
+	bgfx::setUniform(shaderManager.uBaseColor        , VALUE_VEC4(baseColorFactor));
+	bgfx::setUniform(shaderManager.uEmissive         , VALUE_VEC4(emissiveFactor, 1.0f));
+	bgfx::setUniform(shaderManager.uMaterialFlags    , VALUE_VEC4(unlit ? 1.0f : 0.0f, TO_FLOAT(alphaMode), alphaCutoff, 0.0f));
+	bgfx::setUniform(shaderManager.uMetallicRoughness, VALUE_VEC4(metallicFactor, roughnessFactor, 0.0f, 0.0f));
+	bgfx::setUniform(shaderManager.uOcclusion        , VALUE_VEC4(occlusionStrength, 0.0f, 0.0f, 0.0f));
 	// clang-format on
 }
 
