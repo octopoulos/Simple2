@@ -1,6 +1,6 @@
 // Material.cpp
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-27
 
 #include "stdafx.h"
 #include "materials/Material.h"
@@ -17,8 +17,25 @@ Material::Material(std::string_view vsName, std::string_view fsName)
 void Material::Apply() const
 {
 	assert(bgfx::isValid(program));
-	if (bgfx::isValid(texColor)) bgfx::setTexture(0, sTexColor, texColor);
-	if (bgfx::isValid(texNormal)) bgfx::setTexture(1, sTexNormal, texNormal);
+
+	// set textures
+	// clang-format off
+	if (bgfx::isValid(texColor))             bgfx::setTexture(0, sTexColor            , texColor);
+	if (bgfx::isValid(texNormal))            bgfx::setTexture(1, sTexNormal           , texNormal);
+	if (bgfx::isValid(texMetallicRoughness)) bgfx::setTexture(2, sTexMetallicRoughness, texMetallicRoughness);
+	if (bgfx::isValid(texEmissive))          bgfx::setTexture(3, sTexEmissive         , texEmissive);
+	if (bgfx::isValid(texOcclusion))         bgfx::setTexture(4, sTexOcclusion        , texOcclusion);
+	// clang-format on
+
+	// set PBR uniforms
+	const ShaderManager& shaderManager = GetShaderManager();
+	// clang-format off
+	bgfx::setUniform(shaderManager.uBaseColor        , glm::value_ptr(baseColorFactor));
+	bgfx::setUniform(shaderManager.uEmissive         , glm::value_ptr(glm::vec4(emissiveFactor, 1.0f)));
+	bgfx::setUniform(shaderManager.uMaterialFlags    , glm::value_ptr(glm::vec4(unlit ? 1.0f : 0.0f, static_cast<float>(alphaMode), alphaCutoff, 0.0f)));
+	bgfx::setUniform(shaderManager.uMetallicRoughness, glm::value_ptr(glm::vec4(metallicFactor, roughnessFactor, 0.0f, 0.0f)));
+	bgfx::setUniform(shaderManager.uOcclusion        , glm::value_ptr(glm::vec4(occlusionStrength, 0.0f, 0.0f, 0.0f)));
+	// clang-format on
 }
 
 void Material::FindModelTextures(std::string_view modelName, std::string_view textureName)
@@ -71,8 +88,10 @@ void Material::LoadProgram(std::string_view vsName, std::string_view fsName)
 	program      = GetShaderManager().LoadProgram(vsName, fsName);
 
 	// create uniforms
-	sTexColor  = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+	// clang-format off
+	sTexColor  = bgfx::createUniform("s_texColor" , bgfx::UniformType::Sampler);
 	sTexNormal = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
+	// clang-format on
 }
 
 void Material::LoadTextures(std::string_view colorName, std::string_view normalName)
@@ -93,11 +112,28 @@ int Material::Serialize(fmt::memory_buffer& outString, int depth, int bounds)
 {
 	if (bounds & 1) WRITE_CHAR('{');
 	WRITE_INIT();
+
+	// 1) shaders + program
 	WRITE_KEY_STRING(fsName);
 	WRITE_KEY_STRING(vsName);
 	if (state) WRITE_KEY_INT(state);
 
-	// textures
+	// 2) modes
+	if (alphaMode)
+	{
+		if (alphaMode == AlphaMode_Mask) WRITE_KEY_FLOAT(alphaCutoff);
+		WRITE_KEY_INT(alphaMode);
+	}
+	if (doubleSided) WRITE_KEY_BOOL(doubleSided);
+	if (unlit) WRITE_KEY_BOOL(unlit);
+
+	// 3) PBR
+	WRITE_KEY_VEC4(baseColorFactor);
+	WRITE_KEY_VEC3(emissiveFactor);
+	WRITE_KEY_FLOAT(metallicFactor);
+	WRITE_KEY_FLOAT(roughnessFactor);
+
+	// 4) textures
 	{
 		int texNum = 4;
 		while (texNum > 0 && texNames[texNum - 1].empty()) --texNum;

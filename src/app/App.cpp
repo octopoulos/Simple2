@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-26
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -55,6 +55,7 @@ void App::Destroy()
 	GetShaderManager().Destroy();
 	GetTextureManager().Destroy();
 
+	// destroy uniforms
 	bgfx::destroy(uCursorCol);
 	bgfx::destroy(uLightDir);
 	bgfx::destroy(uTime);
@@ -74,6 +75,8 @@ int App::Initialize()
 		ui::ListWindows(this);
 		ui::UpdateTheme();
 	}
+
+	GetShaderManager().InitializeUniforms();
 
 	// 3) scan models
 	ScanModels("runtime/models", "runtime/models-prev");
@@ -290,13 +293,19 @@ void App::Render()
 
 	// 1) uniforms
 	{
-		bx::Vec3 cursorCol = { 0.7f, 0.6f, 0.0f };
-		if (cursor->position.y > 1.0f)
-			cursorCol = { 0.0f, 0.5f, 1.0f };
-		else if (cursor->position.y < 1.0f)
-			cursorCol = { 1.0f, 0.5f, 0.0f };
+		const bool isCursor = camera->follow & CameraFollow_Cursor;
+		if (auto target = isCursor ? cursor : selectedObj.lock())
+		{
+			const float y0 = isCursor ? 1.0f : 0.0f;
 
-		bgfx::setUniform(uCursorCol, (float[4]) { cursorCol.x, cursorCol.y, cursorCol.z, 0.0f });
+			bx::Vec3 cursorCol = { 0.7f, 0.6f, 0.0f };
+			if (target->position.y > y0)
+				cursorCol = { 0.0f, 0.5f, 1.0f };
+			else if (target->position.y < y0)
+				cursorCol = { 1.0f, 0.5f, 0.0f };
+
+			bgfx::setUniform(uCursorCol, (float[4]) { cursorCol.x, cursorCol.y, cursorCol.z, 0.0f });
+		}
 
 		//const auto lightDir = bx::normalize(bx::Vec3(sinf(curTime), 1.0f, cosf(curTime)));
 		const auto lightDir = bx::normalize(bx::Vec3(0.5f, 1.0f, -0.5f));

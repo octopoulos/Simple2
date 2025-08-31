@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-27
 
 #pragma once
 
@@ -20,14 +20,14 @@ enum MeshLoads_ : int
 
 struct Primitive
 {
-	uint32_t m_startIndex;  ///
-	uint32_t m_numIndices;  ///
-	uint32_t m_startVertex; ///
-	uint32_t m_numVertices; ///
+	uint32_t m_startIndex  = 0; ///
+	uint32_t m_numIndices  = 0; ///
+	uint32_t m_startVertex = 0; ///
+	uint32_t m_numVertices = 0; ///
 
-	bx::Sphere m_sphere; ///
-	bx::Aabb   m_aabb;   ///
-	bx::Obb    m_obb;    ///
+	bx::Aabb   m_aabb   = {}; ///
+	bx::Obb    m_obb    = {}; ///
+	bx::Sphere m_sphere = {}; ///
 };
 
 struct Group
@@ -45,16 +45,17 @@ struct Group
 		m_prims.clear();
 	}
 
-	bx::Aabb                 m_aabb;        ///
-	bgfx::IndexBufferHandle  m_ibh;         ///
-	uint16_t*                m_indices;     ///
-	uint32_t                 m_numIndices;  ///
-	uint16_t                 m_numVertices; ///
-	bx::Obb                  m_obb;         ///
-	std::vector<Primitive>   m_prims;       ///
-	bx::Sphere               m_sphere;      ///
-	bgfx::VertexBufferHandle m_vbh;         ///
-	uint8_t*                 m_vertices;    ///
+	bx::Aabb                 m_aabb        = {};                  ///
+	bgfx::IndexBufferHandle  m_ibh         = BGFX_INVALID_HANDLE; ///
+	uint16_t*                m_indices     = nullptr;             ///
+	uint32_t                 m_numIndices  = 0;                   ///
+	uint16_t                 m_numVertices = 0;                   ///
+	bx::Obb                  m_obb         = {};                  ///
+	std::vector<Primitive>   m_prims       = {};                  ///
+	bx::Sphere               m_sphere      = {};                  ///
+	bgfx::VertexBufferHandle m_vbh         = BGFX_INVALID_HANDLE; ///
+	uint8_t*                 m_vertices    = nullptr;             ///
+	sMaterial                material      = nullptr;             ///
 };
 
 struct MeshState

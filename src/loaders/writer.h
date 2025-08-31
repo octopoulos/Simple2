@@ -1,6 +1,6 @@
 // writer.h
 // @author octopoulos
-// @version 2025-08-16
+// @version 2025-08-27
 
 #pragma once
 
@@ -114,6 +114,22 @@
 		WRITE_JSON_FLOAT(name.y); \
 		WRITE_CHAR(',');          \
 		WRITE_JSON_FLOAT(name.z); \
+		WRITE_CHAR(']');          \
+	}                             \
+	while (0)
+
+#define WRITE_KEY_VEC4(name)      \
+	do                            \
+	{                             \
+		WRITE_KEY(#name);         \
+		WRITE_CHAR('[');          \
+		WRITE_JSON_FLOAT(name.x); \
+		WRITE_CHAR(',');          \
+		WRITE_JSON_FLOAT(name.y); \
+		WRITE_CHAR(',');          \
+		WRITE_JSON_FLOAT(name.z); \
+		WRITE_CHAR(',');          \
+		WRITE_JSON_FLOAT(name.w); \
 		WRITE_CHAR(']');          \
 	}                             \
 	while (0)

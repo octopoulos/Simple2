@@ -1,6 +1,6 @@
 // ShaderManager.cpp
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-27
 
 #include "stdafx.h"
 #include "materials/ShaderManager.h"
@@ -71,10 +71,22 @@ static bgfx::ProgramHandle LoadProgram_(std::string_view vsName, std::string_vie
 
 void ShaderManager::Destroy()
 {
+	// uniforms
+	if (bgfx::isValid(uBaseColor))
+	{
+		bgfx::destroy(uBaseColor);
+		bgfx::destroy(uEmissive);
+		bgfx::destroy(uMaterialFlags);
+		bgfx::destroy(uMetallicRoughness);
+		bgfx::destroy(uOcclusion);
+	}
+
+	// programs
 	for (auto& [name, program] : programs)
 		if (bgfx::isValid(program)) bgfx::destroy(program);
 	programs.clear();
 
+	// shaders
 	for (auto& [name, shader] : shaders)
 		if (bgfx::isValid(shader)) bgfx::destroy(shader);
 	shaders.clear();
@@ -88,6 +100,21 @@ bgfx::ProgramHandle ShaderManager::GetProgram(std::string_view name) const
 		return it->second;
 	else
 		return BGFX_INVALID_HANDLE;
+}
+
+void ShaderManager::InitializeUniforms()
+{
+	if (!bgfx::isValid(uBaseColor))
+	{
+		// clang-format off
+		uBaseColor         = bgfx::createUniform("u_baseColorFactor"  , bgfx::UniformType::Vec4);
+		uEmissive          = bgfx::createUniform("u_emissiveFactor"   , bgfx::UniformType::Vec4);
+		uMaterialFlags     = bgfx::createUniform("u_materialFlags"    , bgfx::UniformType::Vec4);
+		uMetallicRoughness = bgfx::createUniform("u_metallicRoughness", bgfx::UniformType::Vec4);
+		uOcclusion         = bgfx::createUniform("u_occlusionStrength", bgfx::UniformType::Vec4);
+		// clang-format on
+	}
+	else ui::LogError("InitializeUniforms: Already called");
 }
 
 bgfx::ProgramHandle ShaderManager::LoadProgram(std::string_view vsName, std::string_view fsName)

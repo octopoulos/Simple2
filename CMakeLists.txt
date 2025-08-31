@@ -211,6 +211,7 @@ FetchContent_MakeAvailable(fmt)
 find_package(Bullet REQUIRED)
 find_package(CLI11 CONFIG REQUIRED)
 find_package(doctest CONFIG REQUIRED)
+find_package(fastgltf CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 #find_package(imgui CONFIG REQUIRED)
 find_package(meshoptimizer CONFIG REQUIRED)
@@ -315,6 +316,7 @@ target_link_libraries(Simple PRIVATE
 	${BULLET_LIBRARIES}
 	CLI11::CLI11
 	doctest::doctest
+	fastgltf::fastgltf
 	fmt::fmt-header-only
 	#imgui::imgui
 	meshoptimizer::meshoptimizer

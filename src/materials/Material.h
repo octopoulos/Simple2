@@ -1,25 +1,51 @@
 // Material.h
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-27
 
 #pragma once
 
 using sMaterial = std::shared_ptr<class Material>;
 
+enum AlphaModes_ : int
+{
+	AlphaMode_Opaque = 0,
+	AlphaMode_Mask   = 1,
+	AlphaMode_Blend  = 2,
+};
+
 class Material
 {
 public:
-	std::string              fsName      = "";                  ///< fragment shader
-	std::string              name        = "";                  ///< material name
-	bgfx::ProgramHandle      program     = BGFX_INVALID_HANDLE; ///< compiled program
-	uint64_t                 state       = 0;                   ///< if !=0: override default state
-	bgfx::UniformHandle      sTexColor   = BGFX_INVALID_HANDLE; ///< uniform: color texture
-	bgfx::UniformHandle      sTexNormal  = BGFX_INVALID_HANDLE; ///< uniform: normal texture
-	bgfx::TextureHandle      texColor    = BGFX_INVALID_HANDLE; ///< texture: color
-	std::string              texNames[4] = {};                  ///< texture names: 0=diffuse, 1=normal
-	bgfx::TextureHandle      texNormal   = BGFX_INVALID_HANDLE; ///< texture: normal
-	VEC<bgfx::TextureHandle> textures    = {};                  ///< all found textures
-	std::string              vsName      = "";                  ///< vertex shader
+	// shaders + program
+	std::string              fsName                = "";                  ///< fragment shader
+	std::string              name                  = "";                  ///< material name
+	bgfx::ProgramHandle      program               = BGFX_INVALID_HANDLE; ///< compiled program
+	std::string              vsName                = "";                  ///< vertex shader
+	uint64_t                 state                 = 0;                   ///< if !=0: override default state
+	// modes
+	float                    alphaCutoff           = 0.5f;             ///< alpha cutoff for Mask mode
+	int                      alphaMode             = AlphaMode_Opaque; ///< transparency mode
+	bool                     doubleSided           = false;            ///< disable back-face culling
+	float                    occlusionStrength     = 1.0f;             ///<
+	bool                     unlit                 = false;            ///< unlit material (KHR_materials_unlit)
+	// PBR
+	glm::vec4                baseColorFactor       = glm::vec4(1.0f); ///< PBR base color factor
+	glm::vec3                emissiveFactor        = glm::vec3(0.0f); ///< emissive color factor
+	float                    metallicFactor        = 1.0f;            ///< PBR metallic factor
+	float                    roughnessFactor       = 1.0f;            ///< PBR roughness factor
+	// textures
+	bgfx::UniformHandle      sTexColor             = BGFX_INVALID_HANDLE; ///< uniform: color texture
+	bgfx::UniformHandle      sTexEmissive          = BGFX_INVALID_HANDLE; ///
+	bgfx::UniformHandle      sTexMetallicRoughness = BGFX_INVALID_HANDLE; ///
+	bgfx::UniformHandle      sTexNormal            = BGFX_INVALID_HANDLE; ///< uniform: normal texture
+	bgfx::UniformHandle      sTexOcclusion         = BGFX_INVALID_HANDLE; ///
+	bgfx::TextureHandle      texColor              = BGFX_INVALID_HANDLE; ///< texture: color
+	bgfx::TextureHandle      texEmissive           = BGFX_INVALID_HANDLE; ///< texture: emissive
+	bgfx::TextureHandle      texMetallicRoughness  = BGFX_INVALID_HANDLE; ///< texture: emissive
+	std::string              texNames[4]           = {};                  ///< texture names: 0=diffuse, 1=normal
+	bgfx::TextureHandle      texNormal             = BGFX_INVALID_HANDLE; ///< texture: normal
+	bgfx::TextureHandle      texOcclusion          = BGFX_INVALID_HANDLE; ///< texture: occlusion
+	VEC<bgfx::TextureHandle> textures              = {};                  ///< all found textures
 
 	Material() = default;
 
@@ -39,4 +65,12 @@ public:
 
 	/// Serialize for JSON output
 	int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3);
+
+	/// Set PBR properties
+	void SetPbrProperties(const glm::vec4& baseColor, float metallic, float roughness)
+	{
+		baseColorFactor = baseColor;
+		metallicFactor  = metallic;
+		roughnessFactor = roughness;
+	}
 };
