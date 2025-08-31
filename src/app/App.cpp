@@ -304,14 +304,22 @@ void App::Render()
 			else if (target->position.y < y0)
 				cursorCol = { 1.0f, 0.5f, 0.0f };
 
-			bgfx::setUniform(uCursorCol, (float[4]) { cursorCol.x, cursorCol.y, cursorCol.z, 0.0f });
+			{
+				float f4[4] = { cursorCol.x, cursorCol.y, cursorCol.z, 0.0f };
+				bgfx::setUniform(uCursorCol, f4);
+			}
 		}
 
 		//const auto lightDir = bx::normalize(bx::Vec3(sinf(curTime), 1.0f, cosf(curTime)));
 		const auto lightDir = bx::normalize(bx::Vec3(0.5f, 1.0f, -0.5f));
-		bgfx::setUniform(uLightDir, (float[4]) { lightDir.x, lightDir.y, lightDir.z, 0.0f });
-
-		bgfx::setUniform(uTime, (float[4]) { curTime, 0.0f, 0.0f, 0.0f });
+		{
+			float f4[4] = { lightDir.x, lightDir.y, lightDir.z, 0.0f };
+			bgfx::setUniform(uLightDir, f4);
+		}
+		{
+			float f4[4] = { curTime, 0.0f, 0.0f, 0.0f };
+			bgfx::setUniform(uTime, f4);
+		}
 	}
 
 	// 2) camera view
