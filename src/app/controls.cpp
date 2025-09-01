@@ -42,6 +42,7 @@ int App::ArrowsFlag()
 		| DOWN_OR_REPEAT(Key::Up   )     * 8
 		| DOWN_OR_REPEAT(Key::Quote)     * 16  // y-down
 		| DOWN_OR_REPEAT(Key::Backslash) * 32; // y-up
+		| DOWN_OR_REPEAT(Key::Semicolon) * 32  // y-up
 	// clang-format on
 
 	return flag;
@@ -179,6 +180,7 @@ void App::FixedControls()
 			pauseNextFrame       = true;
 		}
 		if (downs[Key::KeyP]) xsettings.physPaused = !xsettings.physPaused;
+		if (downs[Key::KeyT]) showTest = !showTest;
 		if (downs[Key::KeyX]) ShowPopup(Popup_Delete);
 
 		if (downs[Key::Key1]) ThrowMesh(ThrowAction_Throw, "donut3", ShapeType_Cylinder, "donut_base.png");

@@ -7,6 +7,8 @@
 //
 #include "ui/ui.h" // ImGui::
 
+#define IM_CLAMP(V, MN, MX)     ((V) < (MN) ? (MN) : (V) > (MX) ? (MX) : (V))
+
 void App::LearnUi()
 {
 	if (!showLearn) return;
@@ -66,6 +68,52 @@ void App::LearnUi()
 
 		ImGui::SameLine();
 		ImGui::Button("I know", ImVec2(buttonWidth, 0));
+
+        {
+            // Using shortcut. You can use PushStyleColor()/PopStyleColor() for more flexibility.
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Pink");
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Yellow");
+            ImGui::TextDisabled("Disabled");
+            ImGui::SameLine();// HelpMarker("The TextDisabled color is stored in ImGuiStyle.");
+        }
+
+		// if (ImGui::TreeNode("Progress Bars"))
+		{
+			// Animate a simple progress bar
+			static float progress = 0.0f, progress_dir = 1.0f;
+			progress += progress_dir * 0.4f * ImGui::GetIO().DeltaTime;
+			if (progress >= +1.1f) { progress = +1.1f; progress_dir *= -1.0f; }
+			if (progress <= -0.1f) { progress = -0.1f; progress_dir *= -1.0f; }
+
+			// Typically we would use ImVec2(-1.0f,0.0f) or ImVec2(-FLT_MIN,0.0f) to use all available width,
+			// or ImVec2(width,0.0f) for a specified width. ImVec2(0.0f,0.0f) uses ItemWidth.
+			ImGui::ProgressBar(progress, ImVec2(0.0f, 0.0f));
+			ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+			ImGui::Text("Progress Bar");
+
+			float progress_saturated = IM_CLAMP(progress, 0.0f, 1.0f);
+			char buf[32];
+			sprintf(buf, "%d/%d", (int)(progress_saturated * 1753), 1753);
+			ImGui::ProgressBar(progress, ImVec2(0.f, 0.f), buf);
+
+			// Pass an animated negative value, e.g. -1.0f * (float)ImGui::GetTime() is the recommended value.
+			// Adjust the factor if you want to adjust the animation speed.
+			ImGui::ProgressBar(-1.0f * (float)ImGui::GetTime(), ImVec2(0.0f, 0.0f), "Searching..");
+			ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+			ImGui::Text("Indeterminate");
+
+			// ImGui::TreePop();
+		}
+	}
+	ImGui::End();
+}
+
+void App::TestUi()
+{
+	if (!showTest) return;
+
+	if (ImGui::Begin("TestUi"))
+	{
 	}
 	ImGui::End();
 }

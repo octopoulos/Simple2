@@ -73,8 +73,10 @@ public:
 
 private:
 	bool showLearn = false; ///< show the learning window
+	bool showTest  = false; ///< show the test window
 
 	void LearnUi();
+	void TestUi();
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// MAP

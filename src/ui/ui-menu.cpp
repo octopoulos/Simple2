@@ -77,6 +77,7 @@ int App::MainUi()
 	}
 
 	LearnUi();
+	TestUi();
 
 #ifdef WITH_FX
 	if (showFxTest) FxTestBed();
@@ -486,7 +487,9 @@ void App::VarsUi()
 				{ "renderFrame"           , std::to_string(renderFrame)              },
 				{ "screenX"               , std::to_string(screenX)                  },
 				{ "screenY"               , std::to_string(screenY)                  },
+				{ "showLearn"             , BoolString(showLearn)                    },
 				{ "showPopup"             , std::to_string(showPopup)                },
+				{ "showTest"              , BoolString(showTest)                     },
 				{ "videoFrame"            , std::to_string(videoFrame)               },
 				{ "x.physPaused"          , std::to_string(xsettings.physPaused)     },
 				{ "x.settingTree"         , std::to_string(xsettings.settingTree)    },
