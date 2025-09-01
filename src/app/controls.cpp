@@ -41,8 +41,8 @@ int App::ArrowsFlag()
 		| DOWN_OR_REPEAT(Key::Right)     * 4
 		| DOWN_OR_REPEAT(Key::Up   )     * 8
 		| DOWN_OR_REPEAT(Key::Quote)     * 16  // y-down
-		| DOWN_OR_REPEAT(Key::Backslash) * 32; // y-up
-		| DOWN_OR_REPEAT(Key::Semicolon) * 32  // y-up
+		| DOWN_OR_REPEAT(Key::Backslash) * 32  // y-up
+		| DOWN_OR_REPEAT(Key::Semicolon) * 32; // y-up
 	// clang-format on
 
 	return flag;
