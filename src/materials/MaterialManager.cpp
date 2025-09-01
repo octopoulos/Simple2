@@ -5,7 +5,7 @@
 #include "stdafx.h"
 #include "materials/MaterialManager.h"
 //
-#include "common/imgui/imgui.h"
+#include "common/imgui/imgui.h" // ImGui::
 
 static std::mutex materialMutex;
 

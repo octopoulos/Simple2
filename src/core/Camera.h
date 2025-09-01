@@ -1,6 +1,6 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-27
 
 #pragma once
 
@@ -26,11 +26,11 @@ using sCamera = std::shared_ptr<class Camera>;
 class Camera : public Object3d
 {
 private:
-	float aspect    = 1.0f;           /// aspect ratio (width / height)
-	float farPlane  = 100.0f;         /// far clipping plane (perspective)
-	float fovY      = 60.0f;          /// vertical field of view
-	float nearPlane = 0.1f;           /// near clipping plane (perspective)
-	float orbit[2]  = { 0.0f, 0.0f }; /// [azimuth, elevation]
+	float aspect    = 1.0f;           ///< aspect ratio (width / height)
+	float farPlane  = 100.0f;         ///< far clipping plane (perspective)
+	float fovY      = 60.0f;          ///< vertical field of view
+	float nearPlane = 0.1f;           ///< near clipping plane (perspective)
+	float orbit[2]  = { 0.0f, 0.0f }; ///< [azimuth, elevation]
 
 public:
 	float    distance = 0.1f;                  ///< current distance to use between pos and target

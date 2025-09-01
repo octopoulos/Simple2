@@ -5,9 +5,8 @@
 #include "stdafx.h"
 #include "ui/ui.h"
 //
-#include "app/App.h"
-#include "textures/TextureManager.h"
-#include "ui/xsettings.h"
+#include "app/App.h"                 // App
+#include "textures/TextureManager.h" // GetTextureManager
 
 namespace ui
 {

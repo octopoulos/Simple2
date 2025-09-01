@@ -3,9 +3,9 @@
 // @version 2025-08-27
 
 #include "stdafx.h"
-#include "ui.h"
+#include "ui/ui.h"
 //
-#include "ui/xsettings.h"
+#include "ui/xsettings.h" // xsettings
 
 namespace ui
 {

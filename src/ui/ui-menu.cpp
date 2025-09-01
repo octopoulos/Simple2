@@ -5,11 +5,12 @@
 #include "stdafx.h"
 #include "app/App.h"
 #include "ui/ui.h"
-
-#include "common/imgui/imgui.h"
-#include "entry/input.h"
-#include "materials/MaterialManager.h"
-#include "textures/TextureManager.h"
+//
+#include "common/imgui/imgui.h"        // ImGui::
+#include "entry/input.h"               // GetGlobalInput
+#include "materials/MaterialManager.h" // GetMaterialManager
+#include "scenes/Scene.h"              // Scene
+#include "textures/TextureManager.h"   // GetTextureManager
 
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
 

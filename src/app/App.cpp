@@ -7,17 +7,18 @@
 #include "stdafx.h"
 #include "app/App.h"
 //
-#include "entry/input.h"
-#include "loaders/MeshLoader.h"
-#include "materials/MaterialManager.h"
-#include "materials/ShaderManager.h"
-#include "textures/TextureManager.h"
-#include "ui/ui.h"
-
-#include "common/bgfx_utils.h"
-#include "common/debugdraw/debugdraw.h"
-#include "common/ffmpeg-pipe.h"
-#include "common/imgui/imgui.h"
+#include "entry/input.h"               // GetGlobalInput
+#include "loaders/MeshLoader.h"        // MeshLoader::
+#include "materials/MaterialManager.h" // GetMaterialManager
+#include "materials/ShaderManager.h"   // GetShaderManager
+#include "scenes/Scene.h"              // Scene
+#include "textures/TextureManager.h"   // GetTextureManager
+#include "ui/ui.h"                     // ui::
+//
+#include "common/bgfx_utils.h"          // Args
+#include "common/debugdraw/debugdraw.h" // DebugDrawEncoder
+#include "common/ffmpeg-pipe.h"         // FfmpegPipe
+#include "common/imgui/imgui.h"         // ImGui::
 
 #include "AI/export.h" // AiTests
 

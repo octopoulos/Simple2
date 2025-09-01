@@ -5,9 +5,9 @@
 #include "stdafx.h"
 #include "objects/Mesh.h"
 //
-#include "loaders/writer.h"
-#include "ui/ui.h"
-#include "ui/xsettings.h"
+#include "loaders/writer.h" // WRITE_KEY_xxx
+#include "ui/ui.h"          // ui::
+#include "ui/xsettings.h"   // xsettings
 
 #include <meshoptimizer.h>
 

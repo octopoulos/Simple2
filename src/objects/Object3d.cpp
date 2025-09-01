@@ -1,15 +1,15 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-08-26
+// @version 2025-08-27
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
 //
-#include "common/config.h"
-#include "core/common3d.h"
-#include "loaders/writer.h"
-#include "ui/ui.h"
-#include "ui/xsettings.h"
+#include "common/config.h"  // DEV_matrix, DEV_rotate
+#include "core/common3d.h"  // PrintMatrix
+#include "loaders/writer.h" // WRITE_INIT, WRITE_KEY_xxx
+#include "ui/ui.h"          // ui::
+#include "ui/xsettings.h"   // xsettings
 
 // clang-format off
 static const MAP_INT_STR objectTypeNames = {

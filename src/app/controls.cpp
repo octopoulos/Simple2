@@ -5,12 +5,13 @@
 #include "stdafx.h"
 #include "app/App.h"
 //
-#include "common/config.h"
-#include "common/imgui/imgui.h"
-#include "core/common3d.h"
-#include "entry/input.h"
-#include "loaders/MeshLoader.h"
-#include "materials/MaterialManager.h"
+#include "common/config.h"             // DEV_controls
+#include "common/imgui/imgui.h"        // ImGui::
+#include "core/common3d.h"             // PrintMatrix
+#include "entry/input.h"               // GetGlobalInput
+#include "loaders/MeshLoader.h"        // MeshLoader::
+#include "materials/MaterialManager.h" // GetMaterialManager
+#include "scenes/Scene.h"              // Scene
 
 enum ThrowActions_ : int
 {
@@ -299,6 +300,7 @@ void App::FluidControls()
 	if (!io.WantCaptureMouse)
 	{
 		// mouse clicks
+		if (ginput.buttonDowns[1]) PickObject(ginput.mouseAbs[0], ginput.mouseAbs[1]);
 		if (ginput.buttonDowns[3]) ShowPopup(Popup_Add);
 
 		// holding key down
@@ -439,68 +441,6 @@ void App::MoveCursor(bool force)
 	{
 		cacheForward = camera->forward;
 		cacheRight   = camera->right;
-	}
-}
-
-void App::SelectObject(const sObject3d& obj, bool countIndex)
-{
-	// 1) place + restore material
-	if (const auto& temp = selectWeak.lock())
-	{
-		temp->placed = true;
-
-		if (auto mesh = Mesh::SharedPtr(temp); mesh->material0)
-			mesh->material = mesh->material0;
-	}
-
-	// 2) new selection
-	if (!obj)
-	{
-		camera->follow  = CameraFollow_Cursor;
-		cursor->visible = true;
-	}
-	else
-	{
-		prevSelWeak = selectWeak;
-		selectWeak  = obj;
-
-		camera->follow |= CameraFollow_Active | CameraFollow_SelectedObj;
-		camera->follow &= ~CameraFollow_Cursor;
-
-		if (auto mesh = Mesh::SharedPtr(obj))
-		{
-			mesh->material0 = mesh->material;
-			mesh->material  = GetMaterialManager().GetMaterial("cursor");
-			cursor->visible = false;
-		}
-
-		// find the parent's childId
-		if (countIndex)
-		{
-			if (auto* parent = obj->parent)
-			{
-				for (int id = -1; const auto& child : parent->children)
-				{
-					++id;
-					if (child == obj)
-					{
-						parent->childId = id;
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	// 3) camera on target
-	if (const sObject3d target = obj ? obj : cursor)
-	{
-		camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(target->position));
-		camera->Zoom();
-
-		MoveCursor(true);
-		if (DEV_matrix) PrintMatrix(target->matrixWorld, target->name);
-		FocusScreen();
 	}
 }
 

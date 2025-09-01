@@ -5,9 +5,9 @@
 #include "stdafx.h"
 #include "materials/Material.h"
 //
-#include "loaders/writer.h"
-#include "materials/ShaderManager.h"
-#include "textures/TextureManager.h"
+#include "loaders/writer.h"          // WRITE_INIT, WRITE_KEY_xxx
+#include "materials/ShaderManager.h" // GetShaderManager
+#include "textures/TextureManager.h" // GetTextureManager
 
 Material::Material(std::string_view vsName, std::string_view fsName)
 {

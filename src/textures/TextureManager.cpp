@@ -5,7 +5,7 @@
 #include "stdafx.h"
 #include "textures/TextureManager.h"
 //
-#include "common/imgui/imgui.h"
+#include "common/imgui/imgui.h" // ImGui::
 
 #include <bimg/decode.h>
 

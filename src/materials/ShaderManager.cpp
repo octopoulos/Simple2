@@ -5,7 +5,7 @@
 #include "stdafx.h"
 #include "materials/ShaderManager.h"
 //
-#include "common/config.h"
+#include "common/config.h" // DEV_shader
 
 // clang-format off
 static UMAP_INT_STR RENDER_SHADERS = {

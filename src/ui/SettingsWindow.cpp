@@ -5,7 +5,7 @@
 #include "stdafx.h"
 #include "ui/ui.h"
 //
-#include "app/App.h"
+#include "app/App.h" // App
 
 namespace ui
 {

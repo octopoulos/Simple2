@@ -1,15 +1,15 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-27
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
 #include "app/App.h"
 //
-#include "core/Camera.h"
-#include "loaders/MeshLoader.h"
-#include "objects/Mesh.h"
-#include "ui/xsettings.h"
+#include "common/config.h"             // DEV_matrix
+#include "core/common3d.h"             // PrintMatrix
+#include "loaders/MeshLoader.h"        // MeshLoader::
+#include "materials/MaterialManager.h" // GetMaterialManager
 
 #include <simdjson.h>
 
@@ -271,4 +271,71 @@ void Scene::Clear()
 	}
 
 	ClearDeads();
+}
+
+void App::PickObject(int mouseX, int mouseY)
+{
+	ui::Log("PickObject: {} {}", mouseX, mouseY);
+}
+
+void App::SelectObject(const sObject3d& obj, bool countIndex)
+{
+	// 1) place + restore material
+	if (const auto& temp = selectWeak.lock())
+	{
+		temp->placed = true;
+
+		if (auto mesh = Mesh::SharedPtr(temp); mesh->material0)
+			mesh->material = mesh->material0;
+	}
+
+	// 2) new selection
+	if (!obj)
+	{
+		camera->follow  = CameraFollow_Cursor;
+		cursor->visible = true;
+	}
+	else
+	{
+		prevSelWeak = selectWeak;
+		selectWeak  = obj;
+
+		camera->follow |= CameraFollow_Active | CameraFollow_SelectedObj;
+		camera->follow &= ~CameraFollow_Cursor;
+
+		if (auto mesh = Mesh::SharedPtr(obj))
+		{
+			mesh->material0 = mesh->material;
+			mesh->material  = GetMaterialManager().GetMaterial("cursor");
+			cursor->visible = false;
+		}
+
+		// find the parent's childId
+		if (countIndex)
+		{
+			if (auto* parent = obj->parent)
+			{
+				for (int id = -1; const auto& child : parent->children)
+				{
+					++id;
+					if (child == obj)
+					{
+						parent->childId = id;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	// 3) camera on target
+	if (const sObject3d target = obj ? obj : cursor)
+	{
+		camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(target->position));
+		camera->Zoom();
+
+		MoveCursor(true);
+		if (DEV_matrix) PrintMatrix(target->matrixWorld, target->name);
+		FocusScreen();
+	}
 }

@@ -1,11 +1,11 @@
 // Geometry.cpp
 // @author octopoulos
-// @version 2025-08-23
+// @version 2025-08-27
 
 #include "stdafx.h"
 #include "geometries/Geometry.h"
 //
-#include "loaders/writer.h"
+#include "loaders/writer.h" // WRITE_INIT, WRITE_KEY_xxx
 
 // clang-format off
 static const UMAP_INT_STR geometryTypeNames = {

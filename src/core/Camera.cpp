@@ -1,13 +1,13 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-08-24
+// @version 2025-08-27
 
 #include "stdafx.h"
 #include "core/Camera.h"
 //
-#include "loaders/writer.h"
-#include "ui/ui.h"
-#include "ui/xsettings.h"
+#include "loaders/writer.h" // WRITE_CHAR, WRITE_KEY_VEC3
+#include "ui/ui.h"          // ui::
+#include "ui/xsettings.h"   // xsettings
 
 constexpr float orthoZoomMax = 20.0f;
 constexpr float orthoZoomMin = 0.0002f;

@@ -4,11 +4,10 @@
 
 #pragma once
 
-#include "core/Camera.h"
-#include "objects/Mesh.h"
-#include "scenes/Scene.h"
-#include "physics/PhysicsWorld.h"
-#include "ui/xsettings.h"
+#include "core/Camera.h"          // sCamera
+#include "objects/Mesh.h"         // sMesh
+#include "physics/PhysicsWorld.h" // PhysicsWorld
+#include "ui/xsettings.h"         // xsettings
 
 enum Popups_ : int
 {
@@ -151,6 +150,9 @@ private:
 
 	/// Open a scene file + replace the scene
 	bool OpenScene(const std::filesystem::path& filename);
+
+	/// Pick an object with the mouse
+	void PickObject(int mouseX, int mouseY);
 
 	/// Save the scene to a file
 	bool SaveScene(const std::filesystem::path& filename = {});

@@ -1,12 +1,12 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-27
 
 #include "stdafx.h"
 #include "app/App.h"
 //
-#include "common/config.h"
-#include "loaders/MeshLoader.h"
+#include "common/config.h"      // DEV_models
+#include "loaders/MeshLoader.h" // MeshLoader::
 
 void App::AddGeometry(uGeometry geometry)
 {

@@ -1,13 +1,13 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-08-24
+// @version 2025-08-27
 
 #include "stdafx.h"
 #include "physics/Body.h"
 //
-#include "loaders/writer.h"
-#include "objects/Mesh.h"
-#include "ui/ui.h"
+#include "loaders/writer.h" // WRITE_INIT, WRITE_KEY_xxx
+#include "objects/Mesh.h"   // Group, Mesh
+#include "ui/ui.h"          // ui::
 
 #include <BulletCollision/CollisionShapes/btBox2dShape.h>
 #include <BulletCollision/CollisionShapes/btConvex2dShape.h>

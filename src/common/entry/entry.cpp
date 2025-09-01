@@ -1,4 +1,4 @@
-// @version 2025-08-20
+// @version 2025-08-27
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -10,8 +10,8 @@
 #include <bx/sort.h>
 #include <bgfx/bgfx.h>
 
-#include "common/config.h"
-#include "ui/xsettings.h"
+#include "common/config.h" // DEV_char
+#include "ui/xsettings.h"  // xsettings
 
 #include <time.h>
 
