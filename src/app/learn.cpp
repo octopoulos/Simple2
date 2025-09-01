@@ -108,12 +108,114 @@ void App::LearnUi()
 	ImGui::End();
 }
 
+#define V2 ImVec2
+
+void FX2(ImDrawList* d, V2 a, V2 b, V2 sz, ImVec4 mouse, float t)
+{
+    for (int n = 0; n < (1.0f + sinf(t * 5.7f)) * 40.0f; n++)
+    {
+        d->AddCircle(
+            V2(a.x + sz.x * 0.5f, a.y + sz.y * 0.5f),
+            sz.y * (0.01f + n * 0.03f),
+            IM_COL32(255, 140 - n * 4, n * 3, 255)
+        );
+    }
+}
+
+#define wh(a) ImColor(1.f,1.f,1.f,a)
+void FX(ImDrawList* d, ImVec2 a, ImVec2 b, ImVec2 sz, ImVec4 mouse, float t)
+{
+    static float fl;
+    if ((rand() % 500) == 0) fl = t;
+    if ((t-fl) > 0)
+    {
+        auto ft = 0.25f;
+        d->AddRectFilled(a, b, wh((ft - (t - fl)) / ft));
+    }
+
+    for (int i = 0; i < 2000; ++i) {
+        unsigned h = ImGui::GetID(d+i + int(t/4));
+        auto f = fmodf(t + fmodf(h / 777.f, 99), 99);
+        auto tx = h % (int)sz.x;
+        auto ty = h % (int)sz.y;
+        if (f < 1) {
+            auto py = ty - 1000 * (1 - f);
+            d->AddLine({ a.x + tx, a.y + py }, { a.x + tx, a.y + bx::min(py + 10,ty) }, (ImU32)-1);
+        }
+        else if (f < 1.2f)
+            d->AddCircle({ a.x + tx, a.y + ty }, (f - 1) * 10 + h % 5, wh(1-(f-1)*5.f));
+    }
+}
+
 void App::TestUi()
 {
 	if (!showTest) return;
 
-	if (ImGui::Begin("TestUi"))
+	if (ImGui::Begin("TestUi", nullptr,
+		ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_MenuBar |
+		ImGuiWindowFlags_NoDocking))
 	{
+		ImVec2 windowPos  = ImGui::GetCursorScreenPos();
+		ImVec2 windowSize = ImGui::GetContentRegionAvail();
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+		// --- BACKGROUND RECT ---
+		const float size = bx::min(windowSize.x * 0.4f, windowSize.y * 0.8f);
+
+		ImVec2 bgSize(size, size);
+		ImVec2 bgPos(
+			windowPos.x + (windowSize.x - bgSize.x) * 0.5f,
+			windowPos.y + 20.0f
+		);
+		ImVec2 bgEnd = bgPos + bgSize;
+
+		// draw background
+		drawList->AddRectFilled(bgPos, bgEnd, IM_COL32(10, 12, 20, 255), 10.0f);
+		drawList->AddRect(bgPos, bgEnd, IM_COL32(255, 255, 255, 255), 10.0f, 0, 2.0f);
+
+		// --- FX inside clipped region ---
+		drawList->PushClipRect(bgPos, bgEnd, true);
+
+		ImVec4 mouse;
+		ImGuiIO& io = ImGui::GetIO();
+		mouse.x = (io.MousePos.x - bgPos.x) / bgSize.x;
+		mouse.y = (io.MousePos.y - bgPos.y) / bgSize.y;
+		mouse.z = io.MouseDownDuration[0];
+		mouse.w = io.MouseDownDuration[1];
+
+		FX(drawList, bgPos, bgEnd, bgSize, mouse, (float)ImGui::GetTime());
+
+		drawList->PopClipRect();
+
+		// move cursor below background for text/buttons
+		ImGui::Dummy(ImVec2(0, bgSize.y + 30));
+
+		// --- TEXT ---
+		const char* label = "Do you recognize this?";
+		ImVec2 textSize = ImGui::CalcTextSize(label);
+		float textX = (windowSize.x - textSize.x) * 0.5f;
+		ImGui::SetCursorPosX(textX);
+		ImGui::TextUnformatted(label);
+
+		ImGui::Dummy(ImVec2(0, 10)); // spacing
+
+		// --- BUTTONS ---
+		ImVec2 buttonSize(120, 0);
+		float spacing = 20.0f;
+		float totalWidth = buttonSize.x * 2 + spacing;
+		float startX = (windowSize.x - totalWidth) * 0.5f;
+
+		ImGui::SetCursorPosX(startX);
+		if (ImGui::Button("I don't know", buttonSize))
+		{
+			// handle
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("I know", buttonSize))
+		{
+			// handle
+		}
 	}
 	ImGui::End();
 }
