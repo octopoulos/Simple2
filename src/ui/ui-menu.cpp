@@ -364,7 +364,6 @@ void App::ShowMainMenu(float alpha)
 			ImGui::Separator();
 			ImGui::MenuItem("ImGui Demo", nullptr, &showImGuiDemo);
 			ui::AddMenu("Theme Editor", nullptr, ui::GetThemeWindow());
-			ImGui::MenuItem("FX Test", nullptr, &showFxTest);
 			// clang-format on
 
 			ImGui::EndMenu();

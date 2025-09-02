@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-28
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -18,7 +18,7 @@
 #include "common/bgfx_utils.h"          // Args
 #include "common/debugdraw/debugdraw.h" // DebugDrawEncoder
 #include "common/ffmpeg-pipe.h"         // FfmpegPipe
-#include "common/imgui/imgui.h"         // ImGui::
+#include "common/imgui/imgui.h"         // imguiCreate, imguiDestroy
 
 #include "AI/export.h" // AiTests
 

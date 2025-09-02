@@ -1,11 +1,11 @@
 // MaterialManager.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-28
 
 #include "stdafx.h"
 #include "materials/MaterialManager.h"
 //
-#include "common/imgui/imgui.h" // ImGui::
+#include "imgui.h" // ImGui::
 
 static std::mutex materialMutex;
 

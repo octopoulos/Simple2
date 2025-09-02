@@ -1,11 +1,11 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-28
 
 #include "stdafx.h"
 #include "textures/TextureManager.h"
 //
-#include "common/imgui/imgui.h" // ImGui::
+#include "imgui.h" // ImGui::
 
 #include <bimg/decode.h>
 
