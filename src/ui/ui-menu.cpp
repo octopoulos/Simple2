@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-28
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -13,10 +13,6 @@
 #include "textures/TextureManager.h"   // GetTextureManager
 
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
-
-#ifdef WITH_FX
-void FxTestBed();
-#endif // WITH_FX
 
 enum OpenActions_ : int
 {
@@ -78,11 +74,6 @@ int App::MainUi()
 
 	LearnUi();
 	TestUi();
-
-#ifdef WITH_FX
-	if (showFxTest) FxTestBed();
-#endif // WITH_FX
-
 	PopupsUi();
 
 	return drawnFlag;

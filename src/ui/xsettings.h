@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-08-24
+// @version 2025-08-28
 
 #pragma once
 
@@ -125,6 +125,7 @@ struct XSettings
 	int   settingPad;     ///< override windows padding for CommonWindow
 	int   settingTree;    ///< which setting tree nodes are open in the panel
 	bool  showVars;       ///< show variables (VarsUi)
+	int   testId;         ///< TestUI FX function
 	int   textButton;     ///< show text under the button
 	int   theme;          ///< Blender, Dark, Light
 	float uiScale;        ///< general scale

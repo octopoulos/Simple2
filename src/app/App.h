@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-28
 
 #pragma once
 
@@ -188,7 +188,6 @@ private:
 	int          fileAction    = 0;     ///< action to take in OpenedFile
 	std::string  fileFolder    = {};    ///< folder after OpenFile
 	int          hidePopup     = 0;     ///< close specific ImGui popups
-	bool         showFxTest    = false; ///< show FxTestBed
 	bool         showImGuiDemo = false; ///< show ImGui demo window
 	int          showPopup     = 0;     ///< show specific ImGui popups
 	int          videoFrame    = 0;     ///< how many video frames have been captured so far
