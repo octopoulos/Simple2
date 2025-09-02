@@ -1,6 +1,6 @@
 // ControlsWindow.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-28
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -28,7 +28,7 @@ int DrawControlButton(uint32_t texId, const ImVec4& color, std::string name, con
 	};
 	// clang-format on
 
-	const auto   scale = std::clamp(uiScale, 1.0f, 2.0f);
+	const auto   scale = bx::clamp(uiScale, 1.0f, 2.0f);
 	const ImVec2 buttonDims(32.0f * scale, 32.0f * scale);
 	const ImVec2 childDims(64.0f * scale, 64.0f * scale);
 	const ImVec2 offset(16.0f * scale, 4.0f * scale);

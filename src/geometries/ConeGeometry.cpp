@@ -1,6 +1,6 @@
 // ConeGeometry.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-28
 //
 // based on THREE.js ConeGeometry implementation
 
@@ -13,8 +13,8 @@ uGeometry CreateConeGeometry(float radius, float height, int radialSegments, int
 
 	// 1) configuration
 	const float halfHeight = height * 0.5f;
-	const int   radial     = std::max(3, radialSegments);
-	const int   segmentsH  = std::max(1, heightSegments);
+	const int   radial     = bx::max(3, radialSegments);
+	const int   segmentsH  = bx::max(1, heightSegments);
 
 	std::vector<PosNormalUV> vertices;
 	std::vector<uint16_t>    indices;

@@ -1,6 +1,6 @@
 // CylinderGeometry.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-28
 //
 // based on THREE.js CylinderGeometry implementation
 
@@ -12,8 +12,8 @@ uGeometry CreateCylinderGeometry(float radiusTop, float radiusBottom, float heig
 	std::string args = fmt::format("{} {} {} {} {} {} {} {}", radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength);
 
 	// 1) parameters
-	const int   radial     = std::max(3, radialSegments);
-	const int   segmentsH  = std::max(1, heightSegments);
+	const int   radial     = bx::max(3, radialSegments);
+	const int   segmentsH  = bx::max(1, heightSegments);
 	const float halfHeight = height * 0.5f;
 
 	std::vector<PosNormalUV> vertices;
@@ -178,7 +178,7 @@ uGeometry CreateCylinderGeometry(float radiusTop, float radiusBottom, float heig
 	const bgfx::IndexBufferHandle  ibh  = bgfx::createIndexBuffer(imem);
 
 	// 7) bounds: dims = [radius, height]
-	const float     maxRadius = std::max(radiusTop, radiusBottom);
+	const float     maxRadius = bx::max(radiusTop, radiusBottom);
 	const btVector3 aabb      = { maxRadius, halfHeight, maxRadius };
 	const btVector3 dims      = { maxRadius, height, 0.0f };
 	const float     boundR    = std::sqrt(maxRadius * maxRadius + (height * 0.5f) * (height * 0.5f));

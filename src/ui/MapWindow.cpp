@@ -1,6 +1,6 @@
 // MapWindow.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-28
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -31,8 +31,8 @@ public:
 		const auto& wsize        = ImGui::GetWindowSize() - style.WindowPadding;
 		const float imagePadding = style.FramePadding.x * 2;
 		const float imageSize    = xsettings.iconSize;
-		const float spacing      = std::clamp(xsettings.iconSize / 16.0f, 2.0f, 8.0f);
-		const int   itemsPerRow  = std::max(1, int((wsize.x - style.ScrollbarSize) / (imageSize + imagePadding + spacing)));
+		const float spacing      = bx::clamp(xsettings.iconSize / 16.0f, 2.0f, 8.0f);
+		const int   itemsPerRow  = bx::max(1, int((wsize.x - style.ScrollbarSize) / (imageSize + imagePadding + spacing)));
 
 		ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 0.0f);
 		for (const auto& [kit, models] : app->kitModels)

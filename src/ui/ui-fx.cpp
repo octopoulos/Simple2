@@ -28,16 +28,20 @@ void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec
 	};
 
 	// persistent state
-	static bool   needInit = true;
-	static ImVec2 lastSize = ImVec2(0.0f, 0.0f);
-	static float  cx = 0.0f, cy = 0.0f; // ball center (px)
-	static float  vx = 0.0f, vy = 0.0f; // ball velocity (px/sec)
-	static float  lastTime   = 0.0f;
+	static Block  blocks[60] = {};
 	static float  ballRadius = 3.0f;
-	static float  blockW = 0.0f, blockH = 0.0f;
-	static float  paddleW = 40.0f, paddleH = 5.0f;
-	static Block  blocks[60];
-	static Block  paddle;
+	static float  blockH     = 0.0f;
+	static float  blockW     = 0.0f;
+	static float  cx         = 0.0f;
+	static float  cy         = 0.0f; // ball center (px)
+	static ImVec2 lastSize   = ImVec2(0.0f, 0.0f);
+	static float  lastTime   = 0.0f;
+	static bool   needInit   = true;
+	static Block  paddle     = {};
+	static float  paddleH    = 5.0f;
+	static float  paddleW    = 40.0f;
+	static float  vx         = 0.0f;
+	static float  vy         = 0.0f; // ball velocity (px/sec)
 
 	// reset when user requests (mouse.w == 0) or when size changes
 	if (!mouse.w) needInit = true;
@@ -53,17 +57,17 @@ void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec
 		blockW  = size.x / static_cast<float>(cols); // 10 columns
 		blockH  = size.y / 12.0f;                    // original used H/12 for block height
 		paddleW = size.x * (40.0f / 320.0f);         // scale 40px => proportion of width
-		paddleH = std::max(4.0f, size.y * 0.03f);    // small height scaled by size
+		paddleH = bx::max(4.0f, size.y * 0.03f);     // small height scaled by size
 
-		ballRadius = std::max(2.0f, size.x * 0.01f);
+		ballRadius = bx::max(2.0f, size.x * 0.01f);
 
 		// ball start near bottom like original (a.y + H - 8)
 		cx = topLeft.x + size.x * 0.5f;
 		cy = topLeft.y + size.y * (1.0f - 8.0f / 180.0f);
 
 		// velocities in px/sec (scaled to canvas size)
-		const float vx_base = -120.0f; // px/sec on 320 width baseline
-		const float vy_base = -180.0f; // px/sec on 180 height baseline
+		const float vx_base = -60.0f; // px/sec on 320 width baseline
+		const float vy_base = -90.0f; // px/sec on 180 height baseline
 		const float sx      = size.x / 320.0f;
 		const float sy      = size.y / 180.0f;
 		vx                  = vx_base * sx;
@@ -95,7 +99,7 @@ void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec
 
 	// paddle follows mouse.x (mouse.x is expected normalized 0..1 within the region)
 	paddle.min.x = topLeft.x + mouse.x * size.x - paddleW * 0.5f;
-	paddle.min.x = std::clamp(paddle.min.x, topLeft.x, bottomRight.x - paddleW);
+	paddle.min.x = bx::clamp(paddle.min.x, topLeft.x, bottomRight.x - paddleW);
 	paddle.min.y = bottomRight.y - paddleH;
 	paddle.max.x = paddle.min.x + paddleW;
 	paddle.max.y = bottomRight.y;
@@ -114,22 +118,26 @@ void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec
 		const float or_ = b.max.x - cx;
 		const float ot  = cy - b.min.y;
 		const float ob  = b.max.y - cy;
-		const float ox  = std::min(ol, or_);
-		const float oy  = std::min(ot, ob);
+		const float ox  = bx::min(ol, or_);
+		const float oy  = bx::min(ot, ob);
 
 		// decide axis of collision by smallest overlap
 		if (ox < oy)
 		{
 			vx = -vx;
 			// push ball slightly outside to avoid sticking
-			if (ol < or_) cx = b.min.x - ballRadius;
-			else cx = b.max.x + ballRadius;
+			if (ol < or_)
+				cx = b.min.x - ballRadius;
+			else
+				cx = b.max.x + ballRadius;
 		}
 		else
 		{
 			vy = -vy;
-			if (ot < ob) cy = b.min.y - ballRadius;
-			else cy = b.max.y + ballRadius;
+			if (ot < ob)
+				cy = b.min.y - ballRadius;
+			else
+				cy = b.max.y + ballRadius;
 		}
 	}
 
@@ -181,7 +189,103 @@ void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec
 		needInit = true;
 }
 
-void Fx_Boxes(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 /*mouse*/, float time)
+void Fx_Boids(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
+{
+	struct Boid
+	{
+		ImVec2 pos;
+		ImVec2 speed;
+		ImVec2 accel;
+		int    leader;
+	};
+
+	static Boid boids[50];
+	static bool initialized = false;
+
+	auto Length = [](ImVec2 v) {
+		return sqrtf(v.x * v.x + v.y * v.y);
+	};
+	auto Normalize = [&](ImVec2 v) {
+		float l = Length(v);
+		return l > 0 ? ImVec2 { v.x / l, v.y / l } : ImVec2 { 0, 0 };
+	};
+	auto Limit = [&](ImVec2 v, float max) {
+		float l = Length(v);
+		return l > max ? ImVec2 { v.x / l * max, v.y / l * max } : v;
+	};
+	auto Rotate = [](ImVec2 v, float angle) {
+		return ImVec2 { v.x * bx::cos(angle) - v.y * bx::sin(angle), v.x * bx::sin(angle) + v.y * bx::cos(angle) };
+	};
+
+	if (!initialized)
+	{
+		for (int i = 0; i < 50; ++i)
+		{
+			boids[i].pos = ImVec2{
+				topLeft.x + TO_FLOAT(rand() % TO_INT(bottomRight.x - topLeft.x)),
+				topLeft.y + TO_FLOAT(rand() % TO_INT(bottomRight.y - topLeft.y))
+			};
+			float angle     = TO_FLOAT(rand() % 360);
+			boids[i].speed  = ImVec2 { bx::cos(angle), bx::sin(angle) };
+			boids[i].leader = (i % 20 == 0);
+		}
+		initialized = true;
+	}
+
+	for (int i = 0; i < 50; ++i)
+	{
+		Boid&  b = boids[i];
+		ImVec2 align { 0, 0 }, cohesion { 0, 0 }, separation { 0, 0 }, avoidLeader { 0, 0 };
+		int    countAlign = 0, countCohesion = 0, countSeparation = 0, countAvoid = 0;
+		int    radius = b.leader ? 60 : 20;
+
+		for (int j = 0; j < 50; ++j)
+		{
+			Boid&  o = boids[j];
+			ImVec2 diff { o.pos.x - b.pos.x, o.pos.y - b.pos.y };
+			float  dist = Length(diff);
+			if (dist > 0 && dist < radius)
+			{
+				align = ImVec2 { align.x + o.speed.x, align.y + o.speed.y };
+				++countAlign;
+				cohesion = ImVec2 { cohesion.x + o.pos.x, cohesion.y + o.pos.y };
+				++countCohesion;
+			}
+			if (dist > 0 && dist < 10)
+			{
+				separation = ImVec2 { separation.x + (b.pos.x - o.pos.x) / dist / dist, separation.y + (b.pos.y - o.pos.y) / dist / dist };
+				++countSeparation;
+			}
+			if (!b.leader && o.leader)
+			{
+				if (dist > 0 && Length(ImVec2 { b.pos.x + b.speed.x - o.pos.x, b.pos.y + b.speed.y - o.pos.y }) < 40)
+				{
+					avoidLeader = ImVec2 { avoidLeader.x + (b.pos.x - o.pos.x) / dist * 3, avoidLeader.y + (b.pos.y - o.pos.y) / dist * 3 };
+					++countAvoid;
+				}
+			}
+		}
+
+		if (countAlign) align = Normalize(ImVec2 { align.x / countAlign, align.y / countAlign }) * 2.0f - b.speed;
+		if (countCohesion) cohesion = Normalize(ImVec2 { cohesion.x / countCohesion - b.pos.x, cohesion.y / countCohesion - b.pos.y }) * 2.0f - b.speed;
+		if (countSeparation) separation = Normalize(ImVec2 { separation.x / countSeparation * 2.0f, separation.y / countSeparation * 2.0f });
+		if (countAvoid) avoidLeader = Normalize(ImVec2 { avoidLeader.x / countAvoid, avoidLeader.y / countAvoid }) - b.speed;
+
+		b.accel = ImVec2 { separation.x + align.x + cohesion.x + avoidLeader.x, separation.y + align.y + cohesion.y + avoidLeader.y };
+		b.speed = Limit(ImVec2 { b.speed.x + b.accel.x, b.speed.y + b.accel.y }, 2.0f);
+		b.pos   = ImVec2 { b.pos.x + b.speed.x, b.pos.y + b.speed.y };
+
+		if (b.pos.x < topLeft.x - 2) b.pos.x = bottomRight.x + 2;
+		if (b.pos.y < topLeft.y - 2) b.pos.y = bottomRight.y + 2;
+		if (b.pos.x > bottomRight.x + 2) b.pos.x = topLeft.x - 2;
+		if (b.pos.y > bottomRight.y + 2) b.pos.y = topLeft.y - 2;
+
+		float angle = atan2f(b.speed.x, -b.speed.y);
+		drawList->AddLine(b.pos + Rotate(ImVec2 { 0, -4 }, angle), b.pos + Rotate(ImVec2 { 2, 4 }, angle), b.leader ? 0xff0000ff : ~0);
+	}
+}
+
+void Fx_Boxes(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
 	struct Box
 	{
@@ -276,25 +380,21 @@ void Fx_Circles(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2
 
 void Fx_Eyes(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
-	struct EllipseHelper
-	{
-		static void Draw(ImDrawList* drawList, ImVec2 center, float rx, float ry, ImU32 color)
+	auto DrawEllipse = [](ImDrawList* drawList, ImVec2 center, float rx, float ry, ImU32 color) {
+		drawList->PathClear();
+		for (int step = 0; step < 36; ++step)
 		{
-			drawList->PathClear();
-			for (int step = 0; step < 36; ++step)
-			{
-				float angle = IM_PI / 18.0f * step;
-				drawList->PathLineTo(ImVec2(center.x + sinf(angle) * rx, center.y + cosf(angle) * ry));
-			}
-			drawList->PathFillConvex(color);
+			float angle = IM_PI / 18.0f * step;
+			drawList->PathLineTo(ImVec2(center.x + sinf(angle) * rx, center.y + cosf(angle) * ry));
 		}
+		drawList->PathFillConvex(color);
 	};
 
 	// mouse in local coordinates
 	ImVec2 mousePos(topLeft.x + mouse.x * size.x, topLeft.y + mouse.y * size.y);
 
 	const float virtualX = 320.0f;
-	const float virtualY = 180.0f;
+	const float virtualY = 320.0f;
 
 	ImVec2 scale(size.x / virtualX, size.y / virtualY);
 
@@ -315,12 +415,12 @@ void Fx_Eyes(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 si
 	for (int ei = 0; ei < 2; ++ei)
 	{
 		// outer sclera (black) and inner (white)
-		EllipseHelper::Draw(drawList, eyes[ei], 40.0f * scale.x, 70.0f * scale.y, IM_COL32(0, 0, 0, 255));
-		EllipseHelper::Draw(drawList, eyes[ei], 35.0f * scale.x, 65.0f * scale.y, IM_COL32(255, 255, 255, 255));
+		DrawEllipse(drawList, eyes[ei], 40.0f * scale.x, 70.0f * scale.y, IM_COL32(0, 0, 0, 255));
+		DrawEllipse(drawList, eyes[ei], 35.0f * scale.x, 65.0f * scale.y, IM_COL32(255, 255, 255, 255));
 
 		// vector to mouse
 		ImVec2 vecMouse(mousePos.x - eyes[ei].x, mousePos.y - eyes[ei].y);
-		float  distMouse = sqrtf(vecMouse.x * vecMouse.x + vecMouse.y * vecMouse.y);
+		float  distMouse = bx::sqrt(vecMouse.x * vecMouse.x + vecMouse.y * vecMouse.y);
 		if (distMouse > 1e-5f)
 		{
 			vecMouse.x /= distMouse;
@@ -333,11 +433,11 @@ void Fx_Eyes(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 si
 		    eyes[ei].y + vecMouse.y * distMouse * scale.y);
 
 		// Draw pupil
-		EllipseHelper::Draw(drawList, pupilPos, 10.0f * scale.x, 10.0f * scale.y, IM_COL32(0, 0, 0, 255));
+		DrawEllipse(drawList, pupilPos, 10.0f * scale.x, 10.0f * scale.y, IM_COL32(0, 0, 0, 255));
 	}
 }
 
-void Fx_Fire(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4, float time)
+void Fx_Fire(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
 	// virtual canvas
 	const int virtualX = 160;
@@ -345,11 +445,11 @@ void Fx_Fire(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 si
 
 	// fire palette
 	static const int fireColors[666] = {
-		0xFFFFFF, 0xC7EFEF, 0x9FDFDF, 0x6FCFCF, 0x37B7B7, 0x2FB7B7, 0x2FAFB7, 0x2FAFBF,
-		0x27A7BF, 0x27A7BF, 0x1F9FBF, 0x1F9FBF, 0x1F97C7, 0x178FC7, 0x1787C7, 0x1787CF,
-		0xF7FCF, 0xF77CF, 0xF6FCF, 0xF67D7, 0x75FD7, 0x75FD7, 0x757DF, 0x757DF,
-		0x74FDF, 0x747C7, 0x747BF, 0x73FAF, 0x72F9F, 0x7278F, 0x71F77, 0x71F67,
-		0x71757, 0x70F47, 0x70F2F, 0x7071F, 0x70707
+		0xffffff, 0xc7efef, 0x9fdfdf, 0x6fcfcf, 0x37b7b7, 0x2fb7b7, 0x2fafb7, 0x2fafbf,
+		0x27a7bf, 0x27a7bf, 0x1f9fbf, 0x1f9fbf, 0x1f97c7, 0x178fc7, 0x1787c7, 0x1787cf,
+		0xf7fcf, 0xf77cf, 0xf6fcf, 0xf67d7, 0x75fd7, 0x75fd7, 0x757df, 0x757df,
+		0x74fdf, 0x747c7, 0x747bf, 0x73faf, 0x72f9f, 0x7278f, 0x71f77, 0x71f67,
+		0x71757, 0x70f47, 0x70f2f, 0x7071f, 0x70707
 	};
 
 	// fire buffer
@@ -388,7 +488,11 @@ void Fx_Fire(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 si
 	}
 }
 
-void Fx_Loading(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4, float time)
+void Fx_Landscape(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
+{
+}
+
+void Fx_Loading(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
 	static float lastTriggerTime = 0.0f;
 
@@ -398,8 +502,8 @@ void Fx_Loading(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2
 
 	// compute color at current phase
 	auto makeColor = [](float x) {
-		const int r = TO_INT((std::sin(x) + 1.0f) * 255.0f / 2.0f);
-		const int g = TO_INT((std::cos(x) + 1.0f) * 255.0f / 2.0f);
+		const int r = TO_INT((bx::sin(x) + 1.0f) * 255.0f / 2.0f);
+		const int g = TO_INT((bx::cos(x) + 1.0f) * 255.0f / 2.0f);
 		const int b = 99;
 		const int a = 255;
 		return IM_COL32(r, g, b, a);
@@ -419,7 +523,7 @@ void Fx_Loading(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2
 
 		// each row starts animation slightly offset in time
 		const float rowDelay = (i / 7.0f) * 0.2f;
-		const float elapsed  = std::max(time - lastTriggerTime - rowDelay, 0.0f);
+		const float elapsed  = bx::max(time - lastTriggerTime - rowDelay, 0.0f);
 
 		if (time - lastTriggerTime < rowDelay + 1.0f)
 		{
@@ -429,7 +533,7 @@ void Fx_Loading(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2
 				progress = 8.0f * elapsed * elapsed * elapsed * elapsed;
 			// ease-out quart
 			else
-				progress = bx::min(1.0f - std::pow(-2.0f * elapsed + 2.0f, 4.0f) / 2.0f, 1.0f);
+				progress = bx::min(1.0f - bx::pow(-2.0f * elapsed + 2.0f, 4.0f) / 2.0f, 1.0f);
 
 			barRightX = topLeft.x + progress * size.x;
 		}
@@ -440,52 +544,74 @@ void Fx_Loading(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2
 	}
 }
 
-void Fx_Mosaic(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
+void Fx_Mandelbrot(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
-	auto frc = [](float x) {
-		return x - floorf(x);
-	};
-	auto hash = [](int x) {
-		srand(x);
-		return ImLerp(rand() / 32767.0f, rand() / 32767.0f, 0.5f);
-	};
-	auto noise = [&](float x) {
-		return ImLerp(hash((int)x), hash((int)x + 1), frc(x));
-	};
+	constexpr int    maxRects   = 64000;
+	constexpr size_t maxIter    = 32;
+	static float     scale      = 0.01f;
+	static ImVec2    shift      = { -2.12f, -0.9f };
+	constexpr float  zoomFactor = 0.97f;
 
-	// normalize to a 160×90 "grid", regardless of size
-	const int cols = 160;
-	const int rows = 90;
-	for (int gx = 0; gx < cols; ++gx)
+	const float  aspect   = size.x / size.y;
+	const int    virtualY = TO_INT(std::sqrt(maxRects / aspect));
+	const int    virtualX = TO_INT(virtualY * aspect);
+	const ImVec2 scaleXy(size.x / virtualX, size.y / virtualY);
+
+	// mouse-based zoom
+	if ((mouse.x >= 0.f && mouse.x <= 1.f && mouse.y >= 0.f && mouse.y <= 1.f) && (mouse.z > 0.f || mouse.w > 0.f))
 	{
-		for (int gy = 0; gy < rows; ++gy)
+		const float zf = (mouse.z > 0.f) ? zoomFactor : 1.f / zoomFactor;
+		shift.x -= mouse.x * virtualX * scale * (zf - 1.f);
+		shift.y -= mouse.y * virtualY * scale * (zf - 1.f);
+		scale *= zf;
+	}
+
+	// allocate a virtual pixel buffer
+	static std::vector<uint8_t> buffer;
+	if (buffer.size() != virtualX * virtualY) buffer.resize(virtualX * virtualY);
+
+	// compute Mandelbrot using separate real/imag floats
+	#pragma omp parallel for schedule(dynamic)
+	for (int iy = 0; iy < virtualY; ++iy)
+	{
+		const double ci = shift.y + iy / (virtualY - 1.f) * (virtualY * scale);
+		for (int ix = 0; ix < virtualX; ++ix)
 		{
-			float rx = gx - cols / 2.0f;
-			float ry = gy - rows / 2.0f;
+			const double cr   = shift.x + ix / (virtualX - 1.f) * (virtualX * scale);
+			double       zi   = 0.0;
+			double       zr   = 0.0;
+			size_t       iter = 0;
 
-			float an = atan2f(rx, ry);
-			if (an < 0.0f)
-				an += IM_PI * 2.0f;
+			while (iter < maxIter && zr * zr + zi * zi < 4.0)
+			{
+				double zr2 = zr * zr - zi * zi + cr;
+				double zi2 = 2.0 * zr * zi + ci;
+				zr         = zr2;
+				zi         = zi2;
+				++iter;
+			}
 
-			float len = (rx * rx + ry * ry + 0.1f) + time * 4.0f;
-			float n0  = noise(an);
-			float n1  = noise(len);
-			float al  = n0 + n1;
+			buffer[iy * virtualX + ix] = (iter < maxIter) ? TO_UINT8(std::log(TO_FLOAT(iter)) / std::log(TO_FLOAT(maxIter - 1)) * 255.f) : 0;
+		}
+	}
 
-			// map grid cell to pixel position in given size
-			float px = topLeft.x + (gx / float(cols)) * size.x * 2.0f;
-			float py = topLeft.y + (gy / float(rows)) * size.y * 2.0f;
-
-			drawList->AddRectFilled(
-			    ImVec2(px, py),
-			    ImVec2(px + 2, py + 2),
-			    ImColor(1.0f, 1.0f, 1.0f, al)
-			);
+	// draw the scaled-up rectangles
+	for (int iy = 0; iy < virtualY; ++iy)
+	{
+		for (int ix = 0; ix < virtualX; ++ix)
+		{
+			if (const uint8_t v = buffer[iy * virtualX + ix])
+			{
+				const ImU32  col     = IM_COL32(v, 255 - v, 255, 255);
+				const ImVec2 pixelTl = { topLeft.x + ix * scaleXy.x, topLeft.y + iy * scaleXy.y };
+				const ImVec2 pixelBr = { pixelTl.x + scaleXy.x, pixelTl.y + scaleXy.y };
+				drawList->AddRectFilled(pixelTl, pixelBr, col);
+			}
 		}
 	}
 }
 
-void Fx_RaceTrack(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4, float time)
+void Fx_RaceTrack(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
 	// virtual race track parameters
 	static float trackOffset = 0.0f;
@@ -602,7 +728,7 @@ void Fx_RainDrops(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVe
 	}
 }
 
-void Fx_Tunnel(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4, float time)
+void Fx_Tunnel(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
 	// helper: convert from tunnel virtual coordinates to screen coordinates
 	auto Project = [&](ImVec2 pos, float depth, const ImVec2& rectSize, const ImVec2& offset) -> ImVec2 {
@@ -662,16 +788,18 @@ void Fx_Tunnel(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 
 
 // clang-format off
 static std::vector<std::pair<std::string, FxFunc>> fxFunctions = {
-	{ "Arkanoid" , Fx_Arkanoid  },
-	{ "Boxes"    , Fx_Boxes     },
-	{ "Circles"  , Fx_Circles   },
-	{ "Eyes"     , Fx_Eyes      },
-	{ "Fire"     , Fx_Fire      },
-	{ "Loading"  , Fx_Loading   },
-	{ "Mosaic"   , Fx_Mosaic    },
-	{ "RaceTrack", Fx_RaceTrack },
-	{ "RainDrops", Fx_RainDrops },
-	{ "Tunnel"   , Fx_Tunnel    },
+	{ "Arkanoid"  , Fx_Arkanoid   },
+	{ "Boids"     , Fx_Boids      },
+	{ "Boxes"     , Fx_Boxes      },
+	{ "Circles"   , Fx_Circles    },
+	{ "Eyes"      , Fx_Eyes       },
+	{ "Fire"      , Fx_Fire       },
+	{ "Landscape" , Fx_Landscape  },
+	{ "Loading"   , Fx_Loading    },
+	{ "Mandelbrot", Fx_Mandelbrot },
+	{ "RaceTrack" , Fx_RaceTrack  },
+	{ "RainDrops" , Fx_RainDrops  },
+	{ "Tunnel"    , Fx_Tunnel     },
 };
 // clang-format on
 

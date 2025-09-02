@@ -1,6 +1,6 @@
 // TorusGeometry.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-28
 //
 // based on THREE.js TorusGeometry implementation
 
@@ -11,8 +11,8 @@ uGeometry CreateTorusGeometry(float radius, float tube, int radialSegments, int 
 {
 	std::string args = fmt::format("{} {} {} {} {}", radius, tube, radialSegments, tubularSegments, arc);
 
-	const int   radial  = std::max(3, radialSegments);
-	const int   tubular = std::max(3, tubularSegments);
+	const int   radial  = bx::max(3, radialSegments);
+	const int   tubular = bx::max(3, tubularSegments);
 	const float torusR  = radius;
 	const float tubeR   = tube;
 

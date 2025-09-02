@@ -479,7 +479,7 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 		object->material = GetMaterialManager().LoadMaterial(fmt::format("model:{}", textureName), "vs_model_texture", "fs_model_texture", textureName);
 
 		const auto  pos   = camera->pos2;
-		const float scale = std::clamp(NormalFloat(1.0f, 0.2f), 0.25f, 1.5f);
+		const float scale = bx::clamp(NormalFloat(1.0f, 0.2f), 0.25f, 1.5f);
 
 		object->ScaleIrotPosition(
 		    { scale, scale, scale },
@@ -536,7 +536,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, std::strin
 				const auto& child = parent->children.back();
 				const auto& cpos  = child->matrixWorld[3];
 				ui::Log(" - {}: {} {} {}", child->name, cpos[0], cpos[1], cpos[2]);
-				pos.y = std::max(pos.x, cpos[1] + 0.5f);
+				pos.y = bx::max(pos.x, cpos[1] + 0.5f);
 			}
 			else pos.y = 10.0f;
 

@@ -164,8 +164,8 @@ void LoadGameSettings(int gameId, std::string baseName, std::string_view suffix)
 	if (gameId >= 0 && gameId < NUM_GAMES)
 		xsettings.gameId = gameId;
 
-	xsettings.windowSize[0] = (std::max(32, xsettings.windowSize[0]) + 7) & ~15;
-	xsettings.windowSize[1] = (std::max(32, xsettings.windowSize[1]) + 3) & ~7;
+	xsettings.windowSize[0] = (bx::max(32, xsettings.windowSize[0]) + 7) & ~15;
+	xsettings.windowSize[1] = (bx::max(32, xsettings.windowSize[1]) + 3) & ~7;
 }
 
 int SaveGameSettings(std::string baseName, bool saveGame, std::string_view suffix, const USET_STR& sections)

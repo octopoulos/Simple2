@@ -1,6 +1,6 @@
 // CapsuleGeometry.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-28
 //
 // based on THREE.js CapsuleGeometry implementation
 
@@ -12,10 +12,10 @@ uGeometry CreateCapsuleGeometry(float radius, float height, int capSegments, int
 	std::string args = fmt::format("{} {} {} {} {}", radius, height, capSegments, radialSegments, heightSegments);
 
 	// 1) configuration
-	const float h         = std::max(0.0f, height);
-	const int   caps      = std::max(1, capSegments);
-	const int   radial    = std::max(3, radialSegments);
-	const int   segmentsH = std::max(1, heightSegments);
+	const float h         = bx::max(0.0f, height);
+	const int   caps      = bx::max(1, capSegments);
+	const int   radial    = bx::max(3, radialSegments);
+	const int   segmentsH = bx::max(1, heightSegments);
 
 	const float halfHeight       = h * 0.5f;
 	const float capArcLength     = bx::kPiHalf * radius;
@@ -67,7 +67,7 @@ uGeometry CreateCapsuleGeometry(float radius, float height, int capSegments, int
 			arcLength        = capArcLength + cylinderLength + t * capArcLength;
 		}
 
-		const float v       = std::clamp(arcLength / totalArcLength, 0.0f, 1.0f);
+		const float v       = bx::clamp(arcLength / totalArcLength, 0.0f, 1.0f);
 		float       uOffset = 0.0f;
 
 		if (iy == 0)

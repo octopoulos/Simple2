@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-28
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -31,7 +31,7 @@ static void AddRecent(const std::filesystem::path& filename)
 
 	if (id > 0)
 	{
-		for (int i = std::min(5, id); i > 0; --i)
+		for (int i = bx::min(5, id); i > 0; --i)
 			strcpy(files[i], files[i - 1]);
 		strcpy(files[0], temp);
 	}

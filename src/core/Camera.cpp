@@ -1,6 +1,6 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-28
 
 #include "stdafx.h"
 #include "core/Camera.h"
@@ -159,7 +159,7 @@ void Camera::UpdateViewProjection(uint8_t viewId, float fscreenX, float fscreenY
 void Camera::Zoom(float ratio)
 {
 	// 1) update xsettings
-	xsettings.orthoZoom = std::clamp(xsettings.orthoZoom * ratio, orthoZoomMin, orthoZoomMax);
+	xsettings.orthoZoom = bx::clamp(xsettings.orthoZoom * ratio, orthoZoomMin, orthoZoomMax);
 	xsettings.distance  = xsettings.orthoZoom * xsettings.windowSize[1] / bx::tan(glm::radians(fovY) * 0.5f);
 
 	// 2) update pos2

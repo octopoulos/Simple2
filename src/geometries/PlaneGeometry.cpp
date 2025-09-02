@@ -1,6 +1,6 @@
 // PlaneGeometry.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-08-28
 //
 // based on THREE.js PlaneGeometry implementation
 
@@ -12,8 +12,8 @@ uGeometry CreatePlaneGeometry(float width, float height, int widthSegments, int 
 	std::string args = fmt::format("{} {} {} {}", width, height, widthSegments, heightSegments);
 
 	// 1) config
-	widthSegments  = std::max(1, widthSegments);
-	heightSegments = std::max(1, heightSegments);
+	widthSegments  = bx::max(1, widthSegments);
+	heightSegments = bx::max(1, heightSegments);
 
 	const float halfWidth  = width * 0.5f;
 	const float halfHeight = height * 0.5f;
@@ -87,7 +87,7 @@ uGeometry CreatePlaneGeometry(float width, float height, int widthSegments, int 
 
 	// 6) bounds: dims = [radius, height]
 	const btVector3 aabb   = { halfWidth, 0.01f, halfHeight };
-	const float     radius = (std::sqrt(halfWidth * halfWidth + halfHeight * halfHeight) + std::max(halfWidth, halfHeight)) * 0.5f;
+	const float     radius = (std::sqrt(halfWidth * halfWidth + halfHeight * halfHeight) + bx::max(halfWidth, halfHeight)) * 0.5f;
 	const btVector3 dims   = { radius, 0.01f, 0.0f };
 
 	return std::make_shared<Geometry>(GeometryType_Plane, std::move(args), vbh, ibh, aabb, dims, radius);

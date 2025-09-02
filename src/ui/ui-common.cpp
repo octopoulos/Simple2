@@ -1,6 +1,6 @@
 // ui-common.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-28
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -188,7 +188,7 @@ static bool AddDragScalarN(int mode, const std::string& name, const char* label,
 	ImGui::BeginGroup();
 	ImGui::PushID(label);
 
-	components = std::max(components, 1);
+	components = bx::max(components, 1);
 	if (isPopup)
 	{
 		AddSpace(-0.1f);
