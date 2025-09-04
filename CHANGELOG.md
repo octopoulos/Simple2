@@ -1,5 +1,80 @@
 
+**2025-09-02**
+- Extra Fx functions
+- GetFxFunctions
+- Rename learn.cpp to ui-fx.cpp
+
+**2025-09-01**
+- TestUi: examples
+- ArrowsFlag bug
+- TestUi
+- Reorganized includes
+
+**2025-08-31**
+- Fix restart crash by using std::weak_ptr<App>
+- Change (float[4]) for MSVC
+- Shader updates
+- PBR material + shader uniforms
+
+**2025-08-30**
+- BeginDraw + ShowTransform (N shortcut)
+
+**2025-08-29**
+- Esc during initial placement => cancel
+- selectedObj gets cursor material
+- MaterialManager.cpp + .h => reuse materials
+- Move textures from Mesh => Material
+- Resize bug with GLFW
+
+**2025-08-28**
+- Export/import camera pos + lookAt in scene.json
+- ClearDeads + GetObjectById + remove objects falling too low
+- AutoSave + NodeName + NormalizeFilename + run tests
+- Change cursor color depending on elevation
+
+**2025-08-27**
+- Move cursor up/down + Enter to go cursor mode + open Map node
+
+**2025-08-25**
+- Modify object properties
+- BEGIN_PADDING + ShowTable + VarsUi
+
+**2025-08-24**
+- config.h => DEV_controls, DEV_matrix, ...
+- FocusScreen + state save/load + skip Cursor export
+- New Scene + Grid options
+
+**2025-08-23**
+- CreateAnyGeometry + OpenScene v2 + GeometryType, ObjectType, ShapeType
+- AutoLoad + OpenScene v1
+
+**2025-08-22**
+- MoveCursor + SaveScene
+- PopupsUi + DeleteSelected
+
+**2025-08-20**
+- Smooth translation + rotation
+- angleInc + RotationFromIrot
+- Move and rotate selected object
+
+**2025-08-14**
+- Retina support with: GLFW + OSX + SDL2 + SDL3
+
+**2025-08-12**
+- AddCheckBox + BEGIN_COLLAPSE
+
+**2025-08-11**
+- Remember which windows are open/closed
+
+**2025-08-10**
+- SceneTree: highlight colors when selecting an object
+
 **2025-08-09**
+- Remove Object3d pointers v1
+- Save camera eye + at
+- '0' decimals are trimmed in the json export
+- Material remembers shader names
+- Serialize for Body, Geometry, Material, Mesh, Object3d
 - Show/hide nodes in Scene graph
 
 **2025-08-08**

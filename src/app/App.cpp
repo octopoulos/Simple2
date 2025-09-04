@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-08-28
+// @version 2025-08-29
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -21,6 +21,8 @@
 #include "common/imgui/imgui.h"         // imguiCreate, imguiDestroy
 
 #include "AI/export.h" // AiTests
+
+#include <bimg/bimg.h>
 
 #ifdef _WIN32
 #	include <windows.h>

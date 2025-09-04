@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-30
 
 #pragma once
 
@@ -20,14 +20,13 @@ enum MeshLoads_ : int
 
 struct Primitive
 {
-	uint32_t m_startIndex  = 0; ///
-	uint32_t m_numIndices  = 0; ///
-	uint32_t m_startVertex = 0; ///
-	uint32_t m_numVertices = 0; ///
-
-	bx::Aabb   m_aabb   = {}; ///
-	bx::Obb    m_obb    = {}; ///
-	bx::Sphere m_sphere = {}; ///
+	uint32_t   startIndex  = 0;  ///
+	uint32_t   numIndices  = 0;  ///
+	uint32_t   startVertex = 0;  ///
+	uint32_t   numVertices = 0;  ///
+	bx::Aabb   aabb        = {}; ///
+	bx::Obb    obb         = {}; ///
+	bx::Sphere sphere      = {}; ///
 };
 
 struct Group
@@ -36,43 +35,43 @@ struct Group
 
 	void Reset()
 	{
-		m_ibh.idx     = bgfx::kInvalidHandle;
-		m_indices     = nullptr;
-		m_numIndices  = 0;
-		m_numVertices = 0;
-		m_vbh.idx     = bgfx::kInvalidHandle;
-		m_vertices    = nullptr;
-		m_prims.clear();
+		ibh.idx     = bgfx::kInvalidHandle;
+		indices     = nullptr;
+		numIndices  = 0;
+		numVertices = 0;
+		vbh.idx     = bgfx::kInvalidHandle;
+		vertices    = nullptr;
+		prims.clear();
 	}
 
-	bx::Aabb                 m_aabb        = {};                  ///
-	bgfx::IndexBufferHandle  m_ibh         = BGFX_INVALID_HANDLE; ///
-	uint16_t*                m_indices     = nullptr;             ///
-	uint32_t                 m_numIndices  = 0;                   ///
-	uint16_t                 m_numVertices = 0;                   ///
-	bx::Obb                  m_obb         = {};                  ///
-	std::vector<Primitive>   m_prims       = {};                  ///
-	bx::Sphere               m_sphere      = {};                  ///
-	bgfx::VertexBufferHandle m_vbh         = BGFX_INVALID_HANDLE; ///
-	uint8_t*                 m_vertices    = nullptr;             ///
-	sMaterial                material      = nullptr;             ///
+	bx::Aabb                 aabb        = {};                  ///
+	bgfx::IndexBufferHandle  ibh         = BGFX_INVALID_HANDLE; ///
+	uint32_t*                indices     = nullptr;             ///
+	uint32_t                 numIndices  = 0;                   ///
+	uint32_t                 numVertices = 0;                   ///
+	bx::Obb                  obb         = {};                  ///
+	std::vector<Primitive>   prims       = {};                  ///
+	bx::Sphere               sphere      = {};                  ///
+	bgfx::VertexBufferHandle vbh         = BGFX_INVALID_HANDLE; ///
+	uint8_t*                 vertices    = nullptr;             ///
+	sMaterial                material    = nullptr;             ///
 };
 
 struct MeshState
 {
 	struct Texture
 	{
-		uint32_t            m_flags;   ///
-		bgfx::UniformHandle m_sampler; ///
-		uint8_t             m_stage;   ///
-		bgfx::TextureHandle m_texture; ///
+		uint32_t            flags;   ///
+		bgfx::UniformHandle sampler; ///
+		uint8_t             stage;   ///
+		bgfx::TextureHandle texture; ///
 	};
 
-	bgfx::ProgramHandle m_program;     ///
-	uint8_t             m_numTextures; ///
-	uint64_t            m_state;       ///
-	Texture             m_textures[4]; ///
-	uint16_t            m_viewId;      ///
+	bgfx::ProgramHandle program;     ///
+	uint8_t             numTextures; ///
+	uint64_t            state;       ///
+	Texture             textures[4]; ///
+	uint16_t            viewId;      ///
 };
 
 using sMesh = std::shared_ptr<class Mesh>;
@@ -146,7 +145,7 @@ public:
 
 	/// Synchronize physics transform
 	/// - if a group => update the children only
-	virtual void SynchronizePhysics() override;
+	virtual int SynchronizePhysics() override;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

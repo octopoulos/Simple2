@@ -1,6 +1,6 @@
 // ShaderManager.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-29
 
 #include "stdafx.h"
 #include "materials/ShaderManager.h"
@@ -34,10 +34,11 @@ static bgfx::ShaderHandle LoadShader_(bx::FileReaderI* reader, std::string_view 
 	std::filesystem::path path = "runtime/shaders";
 
 	const auto shaderName = FindDefault(RENDER_SHADERS, bgfx::getRendererType(), "");
-	if (shaderName.empty()) BX_ASSERT(false, "You should not be here!");
+	if (shaderName.empty()) return BGFX_INVALID_HANDLE;
 
 	path /= shaderName;
 	path /= fmt::format("{}.bin", name);
+	if (!IsFile(path)) return BGFX_INVALID_HANDLE;
 
 	bgfx::ShaderHandle handle = bgfx::createShader(BgfxLoadMemory(reader, path.string().c_str()));
 	bgfx::setName(handle, name.data(), name.size());
@@ -54,10 +55,15 @@ static bgfx::ShaderHandle LoadShader_(std::string_view name)
 static bgfx::ProgramHandle LoadProgram_(bx::FileReaderI* reader, std::string_view vsName, std::string_view fsName)
 {
 	bgfx::ShaderHandle vsh = LoadShader_(reader, vsName);
-	bgfx::ShaderHandle fsh = BGFX_INVALID_HANDLE;
-	if (fsName.size()) fsh = LoadShader_(reader, fsName);
+	if (!bgfx::isValid(vsh)) vsh = LoadShader_(reader, "vs_cube");
 
-	return bgfx::createProgram(vsh, fsh, true /* destroy shaders when program is destroyed */);
+	bgfx::ShaderHandle fsh = BGFX_INVALID_HANDLE;
+	if (fsName.size())
+	{
+		fsh = LoadShader_(reader, fsName);
+		if (!bgfx::isValid(fsh)) vsh = LoadShader_(reader, "fs_cube");
+	}
+	return bgfx::createProgram(vsh, fsh, true);
 }
 
 static bgfx::ProgramHandle LoadProgram_(std::string_view vsName, std::string_view fsName)

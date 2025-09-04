@@ -1,6 +1,6 @@
 // loader.h
 // @author octopoulos
-// @version 2025-07-05
+// @version 2025-08-30
 
 #pragma once
 
@@ -9,3 +9,5 @@ void*               BgfxLoad(const bx::FilePath& _filePath, uint32_t* _size = nu
 const bgfx::Memory* BgfxLoadMemory(bx::FileReaderI* _reader, const bx::FilePath& _filePath);
 void*               BgfxLoadMemory(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const bx::FilePath& _filePath, uint32_t* _size);
 void                BgfxUnload(void* _ptr);
+
+std::string NormalizeFilename(std::string_view filename);

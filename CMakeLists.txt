@@ -215,6 +215,7 @@ find_package(fastgltf CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 #find_package(imgui CONFIG REQUIRED)
 find_package(meshoptimizer CONFIG REQUIRED)
+find_package(unofficial-openfbx CONFIG REQUIRED)
 #find_package(RapidObj CONFIG REQUIRED)
 find_package(simdjson CONFIG REQUIRED)
 
@@ -320,6 +321,7 @@ target_link_libraries(Simple PRIVATE
 	fmt::fmt-header-only
 	#imgui::imgui
 	meshoptimizer::meshoptimizer
+	unoffical::openfbx::openfbx
 	#rapidobj::rapidobj
 	simdjson::simdjson
 )

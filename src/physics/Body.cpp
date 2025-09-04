@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-29
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -50,8 +50,8 @@ static const UMAP_INT_STR shapeTypeNames = {
 static std::pair<btVector3, btVector3> ComputeAabbRadiusHeight(const Group& group, const btVector3& scale, int type)
 {
 	const auto  half    = scale * 0.5f;
-	const auto& halfMax = BxToBullet(group.m_aabb.max) * half;
-	const auto& halfMin = BxToBullet(group.m_aabb.min) * half;
+	const auto& halfMax = BxToBullet(group.aabb.max) * half;
+	const auto& halfMin = BxToBullet(group.aabb.min) * half;
 	const auto  dims    = halfMax - halfMin;
 
 	float       height = dims.y();
@@ -80,8 +80,8 @@ static std::pair<btVector3, btVector3> ComputeAabbRadiusHeight(const Group& grou
 static std::pair<btVector3, btVector3> ComputeAabbVectorDims(const Group& group, const btVector3& scale)
 {
 	const auto  half = scale * 0.5f;
-	const auto& max  = BxToBullet(group.m_aabb.max) * half;
-	const auto& min  = BxToBullet(group.m_aabb.min) * half;
+	const auto& max  = BxToBullet(group.aabb.max) * half;
+	const auto& min  = BxToBullet(group.aabb.min) * half;
 	return {
 		max - min,
 		max + min
@@ -123,7 +123,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 	// 1) compound rules:
 	// - if multiple groups or center is not (0, 0, 0) => use a compound
 	const int  numGroup = mesh ? TO_INT(mesh->groups.size()) : 0;
-	const auto center   = (numGroup == 1) ? mesh->groups[0].m_sphere.center : bx::Vec3(0.0f);
+	const auto center   = (numGroup == 1) ? mesh->groups[0].sphere.center : bx::Vec3(0.0f);
 	const auto geometry = mesh ? mesh->geometry : nullptr;
 	const bool noOffset = shapesNoOffsets.contains(type);
 	const bool centered = noOffset ? true : std::fabsf(center.x) < 0.001f && std::fabsf(center.y) < 0.001f && std::fabsf(center.z) < 0.001f;
@@ -182,7 +182,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 				if (compound)
 				{
 					btTransform transform;
-					transform.setFromOpenGLMatrix(group.m_obb.mtx);
+					transform.setFromOpenGLMatrix(group.obb.mtx);
 					compound->addChildShape(transform, shape);
 				}
 			}
@@ -237,10 +237,10 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 			auto hull = new btConvexHullShape();
 			for (const auto& group : mesh->groups)
 			{
-				const float*   data   = reinterpret_cast<const float*>(group.m_vertices);
+				const float*   data   = reinterpret_cast<const float*>(group.vertices);
 				const uint16_t stride = mesh->layout.getStride();
 
-				for (uint32_t i = 0; i < group.m_numVertices; ++i)
+				for (uint32_t i = 0; i < group.numVertices; ++i)
 				{
 					const float* v = data + i * (stride / sizeof(float));
 					hull->addPoint(btVector3(v[0], v[1], v[2]));
@@ -270,8 +270,8 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 
 			for (const auto& group : mesh->groups)
 			{
-				const float* data = reinterpret_cast<const float*>(group.m_vertices);
-				for (uint32_t i = 0; i < group.m_numVertices; ++i)
+				const float* data = reinterpret_cast<const float*>(group.vertices);
+				for (uint32_t i = 0; i < group.numVertices; ++i)
 				{
 					const float* v = data + i * (stride / sizeof(float));
 					hull->addPoint(btVector3(v[0], v[1], v[2]) * scale);
@@ -321,10 +321,10 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 		{
 			for (const auto& group : mesh->groups)
 			{
-				shape = new btSphereShape(group.m_sphere.radius * mesh->scale.x);
+				shape = new btSphereShape(group.sphere.radius * mesh->scale.x);
 				if (compound)
 				{
-					const auto goffset = btTransform(btQuaternion::getIdentity(), BxToBullet(group.m_sphere.center));
+					const auto goffset = btTransform(btQuaternion::getIdentity(), BxToBullet(group.sphere.center));
 					compound->addChildShape(goffset, shape);
 				}
 			}
@@ -370,18 +370,18 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 
 			for (const auto& group : mesh->groups)
 			{
-				if (!group.m_indices || !group.m_vertices)
+				if (!group.indices || !group.vertices)
 				{
 					ui::LogError("CreateShape/ShapeType_TriangleMesh: Use ramcopy=true");
 					break;
 				}
 
-				const float* data = reinterpret_cast<const float*>(group.m_vertices);
-				for (uint32_t i = 0; i + 2 < group.m_numIndices; i += 3)
+				const float* data = reinterpret_cast<const float*>(group.vertices);
+				for (uint32_t i = 0; i + 2 < group.numIndices; i += 3)
 				{
-					const uint16_t i0 = group.m_indices[i + 0];
-					const uint16_t i1 = group.m_indices[i + 1];
-					const uint16_t i2 = group.m_indices[i + 2];
+					const uint16_t i0 = group.indices[i + 0];
+					const uint16_t i1 = group.indices[i + 1];
+					const uint16_t i2 = group.indices[i + 2];
 
 					const float* v0 = data + i0 * (stride / sizeof(float));
 					const float* v1 = data + i1 * (stride / sizeof(float));

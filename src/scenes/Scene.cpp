@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-08-28
+// @version 2025-08-30
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -65,7 +65,7 @@ static void GetArrayInt(simdjson::ondemand::object& doc, const char* key, std::a
 	}
 }
 
-static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObject3d scene, void* physics)
+static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObject3d scene, void* physics, int depth)
 {
 	// 1) default values
 	std::array<int, 3> irot     = {};
@@ -196,6 +196,7 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 			positioned = true;
 			mesh->CreateShapeBody((PhysicsWorld*)physics, shapeType, TO_FLOAT(mass));
 		}
+		ui::Log(" -->4 type={}/{} {}", type, object->type, name);
 	}
 	else if (type & ObjectType_Scene)
 	{
@@ -212,6 +213,7 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 	}
 
 	// 6) connect node
+	if (DEV_scene) ui::Log("ParseObject: {} {}/{} {}", depth, type, object->type, object->name);
 	if (object && !exist)
 		parent->AddChild(object);
 
@@ -219,7 +221,7 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 	if (!doc["children"].get_array().get(array))
 	{
 		for (simdjson::ondemand::object child : array)
-			ParseObject(child, object ? object : parent, scene, physics);
+			ParseObject(child, object ? object : parent, scene, physics, depth + 1);
 	}
 }
 
@@ -239,7 +241,7 @@ bool App::OpenScene(const std::filesystem::path& filename)
 		AddRecent(filename);
 		ui::Log("Parsing JSON object from file: {}", filename.string());
 		Scene::SharedPtr(scene)->Clear();
-		ParseObject(obj, scene, scene, physics.get());
+		ParseObject(obj, scene, scene, physics.get(), 0);
 		return true;
 	}
 
@@ -266,11 +268,15 @@ void Scene::Clear()
 {
 	for (auto& child : children)
 	{
-		if (!(child->type & (ObjectType_Camera | ObjectType_Cursor | ObjectType_Map)))
+		// empty the map but don't delete the Map itself
+		if (child->type & ObjectType_Map)
+			child->ClearDeads(true);
+		// delete everything except Camera/Cursor
+		else if (!(child->type & (ObjectType_Camera | ObjectType_Cursor)))
 			child->dead |= Dead_Remove;
 	}
 
-	ClearDeads();
+	ClearDeads(false);
 }
 
 void App::PickObject(int mouseX, int mouseY)

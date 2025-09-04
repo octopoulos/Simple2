@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-29
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -48,7 +48,7 @@ void Object3d::AddChild(sObject3d child)
 	children.push_back(std::move(child));
 }
 
-void Object3d::ClearDeads()
+void Object3d::ClearDeads(bool force)
 {
 	// 1) collect
 	std::vector<sObject3d> removes;
@@ -58,6 +58,7 @@ void Object3d::ClearDeads()
 	}
 
 	// 2) remove
+	ui::Log("ClearDeads: removes={} ({})", removes.size(), name);
 	for (auto& remove : removes) RemoveChild(remove);
 }
 
@@ -232,6 +233,7 @@ void Object3d::ShowTable() const
 		{ "rotation"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", rotation.x, rotation.y, rotation.z)                     },
 		{ "scale"     , fmt::format("{:.2f}:{:.2f}:{:.2f}", scale.x, scale.y, scale.z)                              },
 		{ "type"      , std::to_string(type)                                                                        },
+		{ "type:name" , ObjectName(type)                                                                            },
 		{ "visible"   , std::to_string(visible)                                                                     },
 	});
 	// clang-format on
@@ -267,15 +269,22 @@ void Object3d::ShowTransform(bool isPopup)
 	}
 }
 
-void Object3d::SynchronizePhysics()
+int Object3d::SynchronizePhysics()
 {
 	if (type & ObjectType_Group)
 	{
+		int changes = 0;
 		for (auto& child : children)
-			child->SynchronizePhysics();
+			changes += child->SynchronizePhysics();
 
-		ClearDeads();
+		if (changes)
+		{
+			ui::Log("SynchronizePhysics: changes={}", changes);
+			ClearDeads(false);
+		}
 	}
+
+	return 0;
 }
 
 void Object3d::UpdateLocalMatrix(std::string_view origin)

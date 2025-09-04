@@ -1,10 +1,8 @@
 // TextureManager.h
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-29
 
 #pragma once
-
-#include <bimg/bimg.h>
 
 struct TextureData
 {
@@ -22,6 +20,10 @@ public:
 	TextureManager() = default;
 
 	~TextureManager() { Destroy(); }
+
+	/// Add a texture from raw data
+	/// @returns valid texture handle or BGFX_INVALID_HANDLE.
+	bgfx::TextureHandle AddTexture(std::string_view name, const void* data, uint32_t size);
 
 	/// Release all textures
 	void Destroy();

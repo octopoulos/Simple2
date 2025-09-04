@@ -1,6 +1,6 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-08-28
+// @version 2025-08-30
 
 #include "stdafx.h"
 #include "textures/TextureManager.h"
@@ -76,6 +76,55 @@ static bimg::ImageContainer* ImageLoad_(const bx::FilePath& _filePath, bgfx::Tex
 // MAIN
 ///////
 
+bgfx::TextureHandle TextureManager::AddTexture(std::string_view name, const void* data, uint32_t size)
+{
+	std::lock_guard<std::mutex> lock(textureMutex);
+
+	// check cache
+	if (const auto& it = textures.find(name); it != textures.end())
+		return it->second.handle;
+
+	// parse image data
+	bimg::ImageContainer imageContainer;
+	bx::Error            err;
+	if (!bimg::imageParse(imageContainer, data, size, &err))
+	{
+		ui::LogError("Failed to parse texture data for {}: {}", name, err.getMessage().getCPtr());
+		return BGFX_INVALID_HANDLE;
+	}
+
+	// create texture
+	bgfx::TextureInfo info;
+	bgfx::calcTextureSize(info, imageContainer.m_width, imageContainer.m_height, imageContainer.m_depth, imageContainer.m_cubeMap, 1 < imageContainer.m_numMips, imageContainer.m_numLayers, bgfx::TextureFormat::Enum(imageContainer.m_format));
+
+	const bgfx::Memory* mem = bgfx::makeRef(imageContainer.m_data, imageContainer.m_size, ImageReleaseCb, &imageContainer);
+	bgfx::TextureHandle handle;
+
+	const uint16_t depth16  = TO_UINT16(imageContainer.m_depth);
+	const auto     format   = bgfx::TextureFormat::Enum(imageContainer.m_format);
+	const bool     hasMips  = (imageContainer.m_numMips > 1);
+	const uint16_t height16 = TO_UINT16(imageContainer.m_height);
+	const uint16_t width16  = TO_UINT16(imageContainer.m_width);
+
+	if (imageContainer.m_cubeMap)
+		handle = bgfx::createTextureCube(width16, hasMips, imageContainer.m_numLayers, format, 0, mem);
+	else if (depth16 > 1)
+		handle = bgfx::createTexture3D(width16, height16, depth16, hasMips, format, 0, mem);
+	else if (bgfx::isTextureValid(0, false, imageContainer.m_numLayers, format, 0))
+		handle = bgfx::createTexture2D(width16, height16, hasMips, imageContainer.m_numLayers, format, 0, mem);
+
+	if (!bgfx::isValid(handle))
+	{
+		ui::LogError("Failed to create texture for {}", name);
+		bimg::imageFree(&imageContainer);
+		return BGFX_INVALID_HANDLE;
+	}
+
+	bgfx::setName(handle, name.data(), static_cast<int>(name.size()));
+	textures.emplace(std::string(name), TextureData { handle, info });
+	return handle;
+}
+
 void TextureManager::Destroy()
 {
 	DESTROY_GUARD();
@@ -99,24 +148,62 @@ bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 {
 	std::lock_guard<std::mutex> lock(textureMutex);
 
-	if (const auto& it = textures.find(name); it != textures.end())
+	// 1) check for cached texture
+	const auto clean = NormalizeFilename(name);
+	if (const auto& it = textures.find(clean); it != textures.end())
 		return it->second.handle;
 
-	std::string path;
-	if (!IsFile(name))// && name.find('/') == std::string_view::npos)
-		path = fmt::format("runtime/textures/{}", name);
-	else
-		path = std::string(name);
+	// 2) find the texture by filename
+	// + check a few directories
+	std::filesystem::path path;
+	int                   step = 0;
 
+	auto TryPath = [&](const std::filesystem::path& cand) -> bool
+	{
+		ui::Log("LoadTexture/{}: Trying {}", ++step, cand.string());
+		if (IsFile(cand))
+		{
+			path = cand;
+			return true;
+		};
+		return false;
+	};
+
+	if (TryPath(clean))
+	{
+	}
+	else
+	{
+		std::filesystem::path cleanPath  = clean;
+		std::filesystem::path textureDir = "runtime/textures";
+
+		if (TryPath(textureDir / clean))
+		{
+		}
+		else if (cleanPath.has_relative_path() && TryPath(textureDir / cleanPath.parent_path().filename() / cleanPath.filename()))
+		{
+		}
+		else if (TryPath(textureDir / cleanPath.filename()))
+		{
+		}
+		else
+		{
+			ui::LogError("LoadTexture: Cannot find: {}", clean);
+			return BGFX_INVALID_HANDLE;
+		}
+	}
+
+	// 3) create the BGFX texture
 	bgfx::TextureInfo   info    = {};
-	bgfx::TextureHandle texture = LoadTexture_(bx::FilePath(path.c_str()), 0, 0, &info);
+	bgfx::TextureHandle texture = LoadTexture_(bx::FilePath(path.string().c_str()), 0, 0, &info);
 	if (!bgfx::isValid(texture))
 	{
-		ui::LogError("Failed to load texture: {}", name);
+		ui::LogError("LoadTexture: Cannot load: {}", clean);
 		return BGFX_INVALID_HANDLE;
 	}
 
-	textures.emplace(std::string(name), TextureData { texture, info });
+	// 4) cache the texture
+	textures.emplace(clean, TextureData { texture, info });
 	return texture;
 }
 

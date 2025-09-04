@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-30
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -59,11 +59,11 @@ void Mesh::Destroy()
 		bx::AllocatorI* allocator = entry::getAllocator();
 		for (const auto& group : groups)
 		{
-			BGFX_DESTROY(group.m_ibh);
-			BGFX_DESTROY(group.m_vbh);
+			BGFX_DESTROY(group.ibh);
+			BGFX_DESTROY(group.vbh);
 
-			if (group.m_vertices) bx::free(allocator, group.m_vertices);
-			if (group.m_indices) bx::free(allocator, group.m_indices);
+			if (group.vertices) bx::free(allocator, group.vertices);
+			if (group.indices) bx::free(allocator, group.indices);
 		}
 		groups.clear();
 	}
@@ -89,44 +89,44 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 		case kChunkVertexBuffer:
 		{
 			// clang-format off
-			read(reader, group.m_sphere, &err);
-			read(reader, group.m_aabb  , &err);
-			read(reader, group.m_obb   , &err);
+			read(reader, group.sphere, &err);
+			read(reader, group.aabb  , &err);
+			read(reader, group.obb   , &err);
 			// clang-format on
 
 			read(reader, layout, &err);
 
 			const uint16_t stride = layout.getStride();
 
-			read(reader, group.m_numVertices, &err);
-			const bgfx::Memory* mem = bgfx::alloc(group.m_numVertices * stride);
+			read(reader, group.numVertices, &err);
+			const bgfx::Memory* mem = bgfx::alloc(group.numVertices * stride);
 			read(reader, mem->data, mem->size, &err);
 
 			if (ramcopy)
 			{
-				group.m_vertices = (uint8_t*)bx::alloc(allocator, group.m_numVertices * stride);
-				bx::memCopy(group.m_vertices, mem->data, mem->size);
+				group.vertices = (uint8_t*)bx::alloc(allocator, group.numVertices * stride);
+				bx::memCopy(group.vertices, mem->data, mem->size);
 			}
 
-			group.m_vbh = bgfx::createVertexBuffer(mem, layout);
+			group.vbh = bgfx::createVertexBuffer(mem, layout);
 		}
 		break;
 
 		case kChunkVertexBufferCompressed:
 		{
 			// clang-format off
-			read(reader, group.m_sphere, &err);
-			read(reader, group.m_aabb  , &err);
-			read(reader, group.m_obb   , &err);
+			read(reader, group.sphere, &err);
+			read(reader, group.aabb  , &err);
+			read(reader, group.obb   , &err);
 			// clang-format on
 
 			read(reader, layout, &err);
 
 			const uint16_t stride = layout.getStride();
 
-			read(reader, group.m_numVertices, &err);
+			read(reader, group.numVertices, &err);
 
-			const bgfx::Memory* mem = bgfx::alloc(group.m_numVertices * stride);
+			const bgfx::Memory* mem = bgfx::alloc(group.numVertices * stride);
 
 			uint32_t compressedSize;
 			bx::read(reader, compressedSize, &err);
@@ -134,40 +134,40 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 			void* compressedVertices = bx::alloc(allocator, compressedSize);
 			bx::read(reader, compressedVertices, compressedSize, &err);
 
-			meshopt_decodeVertexBuffer(mem->data, group.m_numVertices, stride, (uint8_t*)compressedVertices, compressedSize);
+			meshopt_decodeVertexBuffer(mem->data, group.numVertices, stride, (uint8_t*)compressedVertices, compressedSize);
 
 			bx::free(allocator, compressedVertices);
 
 			if (ramcopy)
 			{
-				group.m_vertices = (uint8_t*)bx::alloc(allocator, group.m_numVertices * stride);
-				bx::memCopy(group.m_vertices, mem->data, mem->size);
+				group.vertices = (uint8_t*)bx::alloc(allocator, group.numVertices * stride);
+				bx::memCopy(group.vertices, mem->data, mem->size);
 			}
-			group.m_vbh = bgfx::createVertexBuffer(mem, layout);
+			group.vbh = bgfx::createVertexBuffer(mem, layout);
 		}
 		break;
 
 		case kChunkIndexBuffer:
 		{
-			read(reader, group.m_numIndices, &err);
+			read(reader, group.numIndices, &err);
 
-			const bgfx::Memory* mem = bgfx::alloc(group.m_numIndices * 2);
+			const bgfx::Memory* mem = bgfx::alloc(group.numIndices * 2);
 			read(reader, mem->data, mem->size, &err);
 
 			if (ramcopy)
 			{
-				group.m_indices = (uint16_t*)bx::alloc(allocator, group.m_numIndices * 2);
-				bx::memCopy(group.m_indices, mem->data, mem->size);
+				group.indices = (uint32_t*)bx::alloc(allocator, group.numIndices * 2);
+				bx::memCopy(group.indices, mem->data, mem->size);
 			}
-			group.m_ibh = bgfx::createIndexBuffer(mem);
+			group.ibh = bgfx::createIndexBuffer(mem);
 		}
 		break;
 
 		case kChunkIndexBufferCompressed:
 		{
-			bx::read(reader, group.m_numIndices, &err);
+			bx::read(reader, group.numIndices, &err);
 
-			const bgfx::Memory* mem = bgfx::alloc(group.m_numIndices * 2);
+			const bgfx::Memory* mem = bgfx::alloc(group.numIndices * 2);
 
 			uint32_t compressedSize;
 			bx::read(reader, compressedSize, &err);
@@ -176,16 +176,16 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 
 			bx::read(reader, compressedIndices, compressedSize, &err);
 
-			meshopt_decodeIndexBuffer(mem->data, group.m_numIndices, 2, (uint8_t*)compressedIndices, compressedSize);
+			meshopt_decodeIndexBuffer(mem->data, group.numIndices, 2, (uint8_t*)compressedIndices, compressedSize);
 
 			bx::free(allocator, compressedIndices);
 
 			if (ramcopy)
 			{
-				group.m_indices = (uint16_t*)bx::alloc(allocator, group.m_numIndices * 2);
-				bx::memCopy(group.m_indices, mem->data, mem->size);
+				group.indices = (uint32_t*)bx::alloc(allocator, group.numIndices * 2);
+				bx::memCopy(group.indices, mem->data, mem->size);
 			}
-			group.m_ibh = bgfx::createIndexBuffer(mem);
+			group.ibh = bgfx::createIndexBuffer(mem);
 		}
 		break;
 
@@ -211,16 +211,16 @@ void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
 
 				Primitive prim;
 				// clang-format off
-				read(reader, prim.m_startIndex , &err);
-				read(reader, prim.m_numIndices , &err);
-				read(reader, prim.m_startVertex, &err);
-				read(reader, prim.m_numVertices, &err);
-				read(reader, prim.m_sphere     , &err);
-				read(reader, prim.m_aabb       , &err);
-				read(reader, prim.m_obb        , &err);
+				read(reader, prim.startIndex , &err);
+				read(reader, prim.numIndices , &err);
+				read(reader, prim.startVertex, &err);
+				read(reader, prim.numVertices, &err);
+				read(reader, prim.sphere     , &err);
+				read(reader, prim.aabb       , &err);
+				read(reader, prim.obb        , &err);
 				// clang-format on
 
-				group.m_prims.push_back(prim);
+				group.prims.push_back(prim);
 			}
 
 			groups.push_back(group);
@@ -293,8 +293,8 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 					{
 						for (const auto& group : groups)
 						{
-							bgfx::setIndexBuffer(group.m_ibh);
-							bgfx::setVertexBuffer(0, group.m_vbh);
+							bgfx::setIndexBuffer(group.ibh);
+							bgfx::setVertexBuffer(0, group.vbh);
 							bgfx::setInstanceDataBuffer(&idb);
 							material->Apply();
 							bgfx::setState(material->state ? material->state : defaultState);
@@ -412,8 +412,8 @@ void Mesh::Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, ui
 
 	for (const auto& group : groups)
 	{
-		bgfx::setIndexBuffer(group.m_ibh);
-		bgfx::setVertexBuffer(0, group.m_vbh);
+		bgfx::setIndexBuffer(group.ibh);
+		bgfx::setVertexBuffer(0, group.vbh);
 		material->Apply();
 		bgfx::submit(id, program, 0, BGFX_DISCARD_INDEX_BUFFER | BGFX_DISCARD_VERTEX_STREAMS);
 	}
@@ -430,19 +430,19 @@ void Mesh::Submit(const MeshState* const* _state, uint8_t numPasses, const float
 		bgfx::setTransform(cached, numMatrices);
 
 		const MeshState& state = *_state[pass];
-		bgfx::setState(state.m_state);
+		bgfx::setState(state.state);
 
-		for (uint8_t tex = 0; tex < state.m_numTextures; ++tex)
+		for (uint8_t tex = 0; tex < state.numTextures; ++tex)
 		{
-			const MeshState::Texture& texture = state.m_textures[tex];
-			bgfx::setTexture(texture.m_stage, texture.m_sampler, texture.m_texture, texture.m_flags);
+			const MeshState::Texture& texture = state.textures[tex];
+			bgfx::setTexture(texture.stage, texture.sampler, texture.texture, texture.flags);
 		}
 
 		for (const auto& group : groups)
 		{
-			bgfx::setIndexBuffer(group.m_ibh);
-			bgfx::setVertexBuffer(0, group.m_vbh);
-			bgfx::submit(state.m_viewId, state.m_program, 0, BGFX_DISCARD_INDEX_BUFFER | BGFX_DISCARD_VERTEX_STREAMS);
+			bgfx::setIndexBuffer(group.ibh);
+			bgfx::setVertexBuffer(0, group.vbh);
+			bgfx::submit(state.viewId, state.program, 0, BGFX_DISCARD_INDEX_BUFFER | BGFX_DISCARD_VERTEX_STREAMS);
 		}
 
 		bgfx::discard(0 | BGFX_DISCARD_BINDINGS | BGFX_DISCARD_STATE | BGFX_DISCARD_TRANSFORM);
@@ -451,8 +451,10 @@ void Mesh::Submit(const MeshState* const* _state, uint8_t numPasses, const float
 	bgfx::discard();
 }
 
-void Mesh::SynchronizePhysics()
+int Mesh::SynchronizePhysics()
 {
+	int change = 0;
+
 	if (type & ObjectType_Group)
 	{
 		Object3d::SynchronizePhysics();
@@ -473,7 +475,11 @@ void Mesh::SynchronizePhysics()
 		position        = glm::vec3(pos.x(), pos.y(), pos.z());
 		// const auto& rot = bTransform.getRotation();
 		// quaternion      = glm::quat(rot.w(), rot.x(), rot.y(), rot.z());
-		if (position.y < xsettings.bottom) dead = Dead_Remove;
+		if (position.y < xsettings.bottom)
+		{
+			dead   = Dead_Remove;
+			change = 1;
+		}
 	}
 	// interpolation
 	else if (posTs > 0.0 || quatTs > 0.0)
@@ -503,6 +509,8 @@ void Mesh::SynchronizePhysics()
 		}
 		UpdateLocalMatrix("SynchronizePhysics");
 	}
+
+	return change;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

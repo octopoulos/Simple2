@@ -1,6 +1,6 @@
 // loader.cpp
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-08-30
 
 #include "stdafx.h"
 #include "loaders/loader.h"
@@ -63,4 +63,25 @@ void* BgfxLoadMemory(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const
 void BgfxUnload(void* _ptr)
 {
 	bx::free(entry::getAllocator(), _ptr);
+}
+
+std::string NormalizeFilename(std::string_view filename)
+{
+	return ReplaceAll(filename, "\\", "/");
+}
+
+TEST_CASE("NormalizeFilename")
+{
+	// clang-format off
+	const std::vector<std::tuple<std::string, std::string>> vectors = {
+		{ ""               , ""               },
+		{ "kenney/car.bin" , "kenney/car.bin" },
+		{ "kenney\\car.bin", "kenney/car.bin" },
+	};
+	// clang-format on
+	for (int i = -1; const auto& [filename, answer] : vectors)
+	{
+		SUBCASE_FMT("{}_{}", ++i, filename)
+		CHECK(NormalizeFilename(filename) == answer);
+	}
 }

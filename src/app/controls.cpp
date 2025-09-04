@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-08-28
+// @version 2025-08-29
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -424,8 +424,8 @@ void App::MoveCursor(bool force)
 					cursor->posTs       = target->posTs;
 					if (!xsettings.smoothPos) cursor->UpdateLocalMatrix("MoveCursor2");
 
-					// save?
-					AutoSave(target);
+					// save if moved
+					if (flag) AutoSave(target);
 				}
 
 				// deactivate physical body

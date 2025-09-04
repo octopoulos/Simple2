@@ -1,6 +1,6 @@
 // MeshLoader.h
 // @author octopoulos
-// @version 2025-08-24
+// @version 2025-08-30
 
 #pragma once
 
@@ -27,5 +27,8 @@ public:
 // FUNCTIONS
 ////////////
 
-/// Replace \ with /
-std::string NormalizeFilename(std::string_view filename);
+/// Load an FBX file
+sMesh LoadFbx(const std::filesystem::path& path);
+
+/// Load a GLB/GLTF file
+sMesh LoadGltf(const std::filesystem::path& path);

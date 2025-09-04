@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-08-29
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -204,6 +204,13 @@ void App::ScanModels(const std::filesystem::path& folder, const std::filesystem:
 	MAP_STR_INT&                       models     = kitModels[relative];
 	std::vector<std::filesystem::path> subFolders = {};
 
+	auto GoodExtension = [](const std::filesystem::path& path) {
+		static USET_STR goodExtensions = { ".bin", ".fbx", ".glb", ".gltf" };
+
+		if (!path.has_extension()) return false;
+		return goodExtensions.contains(path.extension().string());
+	};
+
 	// 1) check all files in the folder
 	{
 		int numFile = 0;
@@ -223,7 +230,7 @@ void App::ScanModels(const std::filesystem::path& folder, const std::filesystem:
 			{
 				if (filename == ".DS_Store")
 					std::filesystem::remove(path);
-				else if (path.has_extension() && path.extension() == ".bin")
+				else if (GoodExtension(path))
 				{
 					const auto stem     = filename.stem().string();
 					const auto preview  = folderPrev / (stem + ".png");
@@ -246,7 +253,7 @@ void App::ScanModels(const std::filesystem::path& folder, const std::filesystem:
 	}
 
 	// 3) summary
-	if (depth == 0 && DEV_models) [[unlikely]]
+	if (DEV_models && depth == 0) [[unlikely]]
 	{
 		for (const auto& [kit, models] : kitModels)
 		{

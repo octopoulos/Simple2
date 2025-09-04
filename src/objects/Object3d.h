@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-08-29
 
 #pragma once
 
@@ -81,7 +81,7 @@ public:
 	void AddChild(sObject3d child);
 
 	/// Remove dead children
-	void ClearDeads();
+	void ClearDeads(bool force);
 
 	/// Find an direct child by id
 	sObject3d GetObjectById(int id) const;
@@ -118,7 +118,7 @@ public:
 	void ShowTransform(bool isPopup);
 
 	/// Synchronize physics transform
-	virtual void SynchronizePhysics();
+	virtual int SynchronizePhysics();
 
 	/// Update local matrix from scale * quaternion * position
 	void UpdateLocalMatrix(std::string_view origin = "");
