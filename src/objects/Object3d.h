@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-08-29
+// @version 2025-09-01
 
 #pragma once
 
@@ -83,6 +83,9 @@ public:
 	/// Remove dead children
 	void ClearDeads(bool force);
 
+	/// Convert matrix to position, rotation/quaternion, scale + irot
+	void DecomposeMatrix();
+
 	/// Find an direct child by id
 	sObject3d GetObjectById(int id) const;
 
@@ -109,7 +112,7 @@ public:
 	void ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat& _quaternion, const glm::vec3& _position);
 
 	/// Serialize for JSON output
-	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3) const;
+	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3, bool addChildren = true) const;
 
 	/// Show info table in ImGui
 	virtual void ShowTable() const;

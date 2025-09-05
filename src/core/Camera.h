@@ -1,6 +1,6 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-09-01
 
 #pragma once
 
@@ -72,7 +72,7 @@ public:
 	void RotateAroundAxis(const bx::Vec3& axis, float angle);
 
 	/// Serialize for JSON output
-	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3) const override;
+	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3, bool addChildren = true) const override;
 
 	/// Enable orthographic projection
 	void SetOrthographic(const bx::Vec3& axis);

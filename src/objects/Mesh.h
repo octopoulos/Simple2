@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-08-30
+// @version 2025-09-01
 
 #pragma once
 
@@ -79,14 +79,14 @@ using sMesh = std::shared_ptr<class Mesh>;
 class Mesh : public Object3d
 {
 public:
-	uBody                     body      = {};      ///< one body for the whole mesh
-	std::shared_ptr<Geometry> geometry  = nullptr; ///
-	std::vector<Group>        groups    = {};      ///< groups of vertices
-	bgfx::VertexLayout        layout    = {};      ///
-	int                       load      = 0;       ///< how the model was loaded (for open/save scene)
-	sMaterial                 material  = nullptr; ///< current material (might be "cursor")
-	sMaterial                 material0 = nullptr; ///< original material
-	std::string               modelName = "";      ///< model name (part of filename)
+	uBody                     body      = {};            ///< one body for the whole mesh
+	std::shared_ptr<Geometry> geometry  = nullptr;       ///
+	std::vector<Group>        groups    = {};            ///< groups of vertices
+	bgfx::VertexLayout        layout    = {};            ///
+	int                       load      = MeshLoad_None; ///< how the model was loaded (for open/save scene)
+	sMaterial                 material  = nullptr;       ///< current material (might be "cursor")
+	sMaterial                 material0 = nullptr;       ///< original material
+	std::string               modelName = "";            ///< model name (part of filename)
 
 	Mesh(std::string_view name, int typeFlag = 0)
 	    : Object3d(name, ObjectType_Mesh | typeFlag)
@@ -123,7 +123,7 @@ public:
 	virtual void Render(uint8_t viewId, int renderFlags) override;
 
 	/// Serialize for JSON output
-	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3) const override;
+	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3, bool addChildren = true) const override;
 
 	/// Convert matrixTransform to bullet3:transform
 	void SetBodyTransform();

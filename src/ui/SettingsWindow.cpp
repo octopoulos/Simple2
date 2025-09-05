@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-09-01
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -141,12 +141,13 @@ public:
 		// RENDER
 		/////////
 
-		BEGIN_COLLAPSE("Render", Show_Render, 6)
+		BEGIN_COLLAPSE("Render", Show_Render, 9)
 		{
 			AddCheckBox(0, "fixedView", "", "Fixed View");
 			AddCheckBox(0, "gridDraw", "", "Grid");
 			AddSliderInt(0, "gridSize", "Grid Size");
 			AddCheckBox(0, "instancing", "", "Mesh Instancing");
+			AddDragFloat(2, "lightDir", "Light Direction");
 			AddSliderInt(0, "projection", "Projection", nullptr);
 			AddSliderInt(0, "renderMode", "Render Mode", nullptr);
 			END_COLLAPSE();

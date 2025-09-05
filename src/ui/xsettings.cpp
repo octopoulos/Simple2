@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-08-28
+// @version 2025-09-01
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -64,6 +64,7 @@ static std::vector<Config> configs = {
 	X_BOOL   (XSettings, render, 0, gridDraw  , true),
 	X_INT    (XSettings, render, 0, gridSize  , 50, 1, 500),
 	X_BOOL   (XSettings, render, 0, instancing, true),
+	X_FLOATS (XSettings, render, 0, lightDir  , "0.556|-0.508|0.185", -1.0f, 1.0f, 3),
 	X_FLOAT  (XSettings, render, 0, orthoZoom , 1.0f, 0.001f, 10.0f),
 	X_ENUM   (XSettings, render, 0, projection, Projection_Perspective, sProjections),
 	X_ENUM   (XSettings, render, 0, renderMode, RenderMode_Screen, sRenderModes),

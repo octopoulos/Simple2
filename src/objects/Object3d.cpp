@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-08-29
+// @version 2025-09-01
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -60,6 +60,39 @@ void Object3d::ClearDeads(bool force)
 	// 2) remove
 	ui::Log("ClearDeads: removes={} ({})", removes.size(), name);
 	for (auto& remove : removes) RemoveChild(remove);
+}
+
+void Object3d::DecomposeMatrix()
+{
+	// extract position (translation)
+	position = glm::vec3(matrix[3]);
+
+	// extract scale from basis vectors
+	scale.x = glm::length(glm::vec3(matrix[0]));
+	scale.y = glm::length(glm::vec3(matrix[1]));
+	scale.z = glm::length(glm::vec3(matrix[2]));
+
+	// avoid division by zero
+	if (scale.x == 0.0f) scale.x = 1.0f;
+	if (scale.y == 0.0f) scale.y = 1.0f;
+	if (scale.z == 0.0f) scale.z = 1.0f;
+
+	// extract rotation matrix by removing scale
+	glm::mat3 rotationMatrix(
+	    glm::vec3(matrix[0]) / scale.x,
+	    glm::vec3(matrix[1]) / scale.y,
+	    glm::vec3(matrix[2]) / scale.z);
+
+	// convert to quaternion
+	quaternion = glm::normalize(glm::quat_cast(rotationMatrix));
+
+	// convert to euler angles (radians)
+	rotation = glm::eulerAngles(quaternion);
+
+	// convert to irot (degrees)
+	irot[0] = TO_INT(bx::toDeg(rotation.x));
+	irot[1] = TO_INT(bx::toDeg(rotation.y));
+	irot[2] = TO_INT(bx::toDeg(rotation.z));
 }
 
 sObject3d Object3d::GetObjectById(int id) const
@@ -181,7 +214,7 @@ void Object3d::ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat&
 	UpdateLocalMatrix("ScaleQuaternionPosition");
 }
 
-int Object3d::Serialize(fmt::memory_buffer& outString, int depth, int bounds) const
+int Object3d::Serialize(fmt::memory_buffer& outString, int depth, int bounds, bool addChildren) const
 {
 	// skip Scene.groups except Map
 	if (depth == 1 && (type & ObjectType_Group) && !(type & ObjectType_Map)) return -1;
@@ -189,16 +222,14 @@ int Object3d::Serialize(fmt::memory_buffer& outString, int depth, int bounds) co
 	if (bounds & 1) WRITE_CHAR('{');
 	WRITE_INIT();
 	if (irot[0] || irot[1] || irot[2]) WRITE_KEY_INT3(irot);
-	// if (!(type & ObjectType_HasBody) && matrix != glm::mat4(1.0f)) WRITE_KEY_MATRIX(matrix);
-	// if (matrixWorld != glm::mat4(1.0f)) WRITE_KEY_MATRIX(matrixWorld);
 	WRITE_KEY_STRING(name);
 	WRITE_KEY_VEC3(position);
 	if (scale != glm::vec3(1.0f)) WRITE_KEY_VEC3(scale);
 	WRITE_KEY_STRING2("type", ObjectName(type));
 	if (!visible) WRITE_KEY_BOOL(visible);
 
-	// save children
-	if (children.size())
+	// save children, except if it's a loaded model
+	if (addChildren && children.size())
 	{
 		WRITE_KEY("children");
 		WRITE_CHAR('[');

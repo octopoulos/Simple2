@@ -1,6 +1,6 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-08-28
+// @version 2025-09-01
 
 #include "stdafx.h"
 #include "core/Camera.h"
@@ -81,9 +81,9 @@ void Camera::RotateAroundAxis(const bx::Vec3& axis, float angle)
 	pos2 = bx::mad(rotated, -distance, target2);
 }
 
-int Camera::Serialize(fmt::memory_buffer& outString, int depth, int bounds) const
+int Camera::Serialize(fmt::memory_buffer& outString, int depth, int bounds, bool addChildren) const
 {
-	int keyId = Object3d::Serialize(outString, depth, (bounds & 1) ? 1 : 0);
+	int keyId = Object3d::Serialize(outString, depth, (bounds & 1) ? 1 : 0, addChildren);
 	if (keyId < 0) return keyId;
 
 	WRITE_KEY_VEC3(pos);

@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-08-30
+// @version 2025-09-01
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -329,12 +329,12 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 	}
 }
 
-int Mesh::Serialize(fmt::memory_buffer& outString, int depth, int bounds) const
+int Mesh::Serialize(fmt::memory_buffer& outString, int depth, int bounds, bool addChildren) const
 {
 	// skip some objects
 	if (type & (ObjectType_Cursor)) return -1;
 
-	int keyId = Object3d::Serialize(outString, depth, (bounds & 1) ? 1 : 0);
+	int keyId = Object3d::Serialize(outString, depth, (bounds & 1) ? 1 : 0, addChildren && load == MeshLoad_None);
 	if (keyId < 0) return keyId;
 
 	if (body)
@@ -347,11 +347,14 @@ int Mesh::Serialize(fmt::memory_buffer& outString, int depth, int bounds) const
 		WRITE_KEY("geometry");
 		geometry->Serialize(outString, depth);
 	}
-	if (load) WRITE_KEY_INT(load);
-	if (const auto material1 = material0 ? material0 : material)
+	if (load != MeshLoad_None) WRITE_KEY_INT(load);
+	if (load != MeshLoad_Full)
 	{
-		WRITE_KEY("material");
-		material1->Serialize(outString, depth);
+		if (const auto material1 = material0 ? material0 : material)
+		{
+			WRITE_KEY("material");
+			material1->Serialize(outString, depth);
+		}
 	}
 	if (modelName.size()) WRITE_KEY_STRING(modelName);
 

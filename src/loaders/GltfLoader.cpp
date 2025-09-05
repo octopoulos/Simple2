@@ -1,6 +1,6 @@
 // GltfLoader.cpp
 // @author octopoulos
-// @version 2025-08-30
+// @version 2025-09-01
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -204,7 +204,7 @@ sMesh LoadGltf(const std::filesystem::path& path)
 	ui::Log("LoadGltf: {}", path.string());
 
 	// initialize sMesh
-	sMesh mesh = std::make_shared<Mesh>(path.filename().string(), MeshLoad_Full);
+	sMesh mesh = std::make_shared<Mesh>(path.filename().string(), 0);
 
 	// build vertex layout (pos/norm/uv0 at least)
 	bgfx::VertexLayout layout;
