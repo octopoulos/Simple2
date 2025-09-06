@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-09-01
+// @version 2025-09-02
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -164,7 +164,7 @@ int App::InitializeScene()
 			{
 				auto cubeMesh      = std::make_shared<Mesh>("Earth");
 				cubeMesh->geometry = CreateIcosahedronGeometry(3.0f, 8);
-				cubeMesh->material = GetMaterialManager().LoadMaterial("earth", "vs_model_texture_normal", "fs_model_texture_normal", "earth_day_4096.jpg", "earth_normal_2048.jpg");
+				cubeMesh->material = GetMaterialManager().LoadMaterial("earth", "vs_model_texture_normal", "fs_model_texture_normal", { "earth_day_4096.jpg", "earth_normal_2048.jpg" });
 
 				cubeMesh->ScaleIrotPosition(
 					{ 1.0f, 1.0f, 1.0f },
@@ -180,7 +180,7 @@ int App::InitializeScene()
 			{
 				auto cubeMesh      = std::make_shared<Mesh>("floor");
 				cubeMesh->geometry = CreateBoxGeometry(40.0f, 2.0f, 40.0f, 4, 1, 4);
-				cubeMesh->material = GetMaterialManager().LoadMaterial("floor", "vs_model_texture", "fs_model_texture", "FloorsCheckerboard_S_Diffuse.jpg", "FloorsCheckerboard_S_Normal.jpg");
+				cubeMesh->material = GetMaterialManager().LoadMaterial("floor", "vs_model_texture", "fs_model_texture", { "FloorsCheckerboard_S_Diffuse.jpg", "FloorsCheckerboard_S_Normal.jpg" });
 
 				cubeMesh->ScaleIrotPosition(
 					{ 1.0f, 1.0f, 1.0f },
@@ -200,7 +200,7 @@ int App::InitializeScene()
 				{
 					auto cubeMesh      = std::make_shared<Mesh>(fmt::format("wall-{}", 1 + i));
 					cubeMesh->geometry = CreateBoxGeometry(39.0f, 6.0f, 1.0f, 4, 1, 4);
-					cubeMesh->material = GetMaterialManager().LoadMaterial("brick", "vs_model_texture", "fs_model_texture", "brick_diffuse.jpg");
+					cubeMesh->material = GetMaterialManager().LoadMaterial("brick", "vs_model_texture", "fs_model_texture", { "brick_diffuse.jpg" });
 
 					cubeMesh->ScaleIrotPosition(
 						{ 1.0f, 1.0f, 1.0f },
@@ -215,7 +215,7 @@ int App::InitializeScene()
 				{
 					auto cubeMesh      = std::make_shared<Mesh>(fmt::format("wall-{}", 3 + i));
 					cubeMesh->geometry = CreateBoxGeometry(1.0f, 6.0f, 39.0f, 4, 1, 4);
-					cubeMesh->material = GetMaterialManager().LoadMaterial("wood", "vs_model_texture", "fs_model_texture", "hardwood2_diffuse.jpg");
+					cubeMesh->material = GetMaterialManager().LoadMaterial("wood", "vs_model_texture", "fs_model_texture", { "hardwood2_diffuse.jpg" });
 
 					cubeMesh->ScaleIrotPosition(
 						{ 1.0f, 1.0f, 1.0f },

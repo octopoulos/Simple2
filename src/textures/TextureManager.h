@@ -1,14 +1,32 @@
 // TextureManager.h
 // @author octopoulos
-// @version 2025-08-29
+// @version 2025-09-02
 
 #pragma once
 
+enum TextureTypes_ : int
+{
+	TextureType_Diffuse    = 0,
+	TextureType_Normal     = 1,
+	TextureType_Specular   = 2,
+	TextureType_Shininess  = 3,
+	TextureType_Ambient    = 4,
+	TextureType_Emissive   = 5,
+	TextureType_Reflection = 6,
+	TextureType_Count      = 7,
+};
+
 struct TextureData
 {
+	int                 type   = 0;  ///< TextureTypes_
+	std::string         name   = ""; ///< texture name
 	bgfx::TextureHandle handle = {}; ///< bgfx handle
 	bgfx::TextureInfo   info   = {}; ///< info (dimensions etc)
 };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TextureManager
+/////////////////
 
 class TextureManager
 {
@@ -23,7 +41,7 @@ public:
 
 	/// Add a texture from raw data
 	/// @returns valid texture handle or BGFX_INVALID_HANDLE.
-	bgfx::TextureHandle AddTexture(std::string_view name, const void* data, uint32_t size);
+	bgfx::TextureHandle AddRawTexture(std::string_view name, const void* data, uint32_t size);
 
 	/// Release all textures
 	void Destroy();
@@ -39,4 +57,14 @@ public:
 	void ShowTable();
 };
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FUNCTIONS
+////////////
+
 TextureManager& GetTextureManager();
+
+/// Convert texture type: int to string
+std::string TextureName(int type);
+
+/// Convert texture type: string to int
+int TextureType(std::string_view name);

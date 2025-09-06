@@ -1,6 +1,6 @@
 // FbxLoader.cpp
 // @author octopoulos
-// @version 2025-09-01
+// @version 2025-09-02
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -17,144 +17,68 @@
 /// Create material from FBX
 static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Material* fbxMaterial, const std::filesystem::path& fbxPath)
 {
-	std::string colorName;
-	std::string emissiveName;
-	std::string normalName;
-
-	std::string materialName = "DefaultMaterial";
-	std::string vsName       = "vs_model_color"; // default to color-based lit shader
-	std::string fsName       = "fs_model_color";
-	sMaterial   material     = nullptr;
-	int         numTexture   = 0;
+	std::string      vsName       = "vs_model_color"; // default to color-based lit shader
+	std::string      fsName       = "fs_model_color";
+	sMaterial        material     = nullptr;
+	std::string      materialName = "DefaultMaterial";
+	int              numTexture   = 0;
+	VEC<TextureData> textures     = {};
 
 	if (fbxMaterial)
 	{
 		materialName = fbxMaterial->name[0] ? std::string(fbxMaterial->name) : fmt::format("Material_{}", fbxMaterial->id);
 
-		// diffuse (base color) texture
-		if (const ofbx::Texture* diffuseTexture = fbxMaterial->getTexture(ofbx::Texture::DIFFUSE))
+		// process textures
+		for (int type = 0; type < TextureType_Count; ++type)
 		{
-			vsName                  = "vs_model_texture_normal";
-			fsName                  = "fs_model_texture_normal";
-			ofbx::DataView filename = diffuseTexture->getFileName();
-			char           texturePath[256];
-			filename.toString(texturePath);
-			ui::Log("TEX: diffuse={}", texturePath);
-			if (texturePath[0])
+			if (const ofbx::Texture* texture = fbxMaterial->getTexture(ofbx::Texture::TextureType(type)))
 			{
-				colorName           = std::filesystem::path(texturePath).filename().string();
-				const auto fullPath = fbxPath.parent_path() / colorName;
-				const auto handle   = GetTextureManager().LoadTexture(fullPath.string());
-				if (bgfx::isValid(handle))
-					++numTexture;
-				else
-				{
-					colorName.clear();
-					ui::LogError("CreateMaterialFromFbx: Diffuse file: {}", fullPath.string());
-				}
-			}
+				const auto typeName = TextureName(type);
 
-			// check for embedded texture data
-			if (colorName.empty())
-			{
-				ofbx::DataView embeddedData = diffuseTexture->getEmbeddedData();
-				if (embeddedData.begin && embeddedData.end)
+				if (type == ofbx::Texture::DIFFUSE)
 				{
-					colorName         = fmt::format("embedded_{}_baseColor", fbxMaterial->id);
-					const auto handle = GetTextureManager().AddTexture(colorName, embeddedData.begin, TO_UINT32(embeddedData.end - embeddedData.begin));
-					if (bgfx::isValid(handle))
-						++numTexture;
+					vsName = "vs_model_texture_normal";
+					fsName = "fs_model_texture_normal";
+				}
+
+				ofbx::DataView filename = texture->getFileName();
+				char           texturePath[256];
+				filename.toString(texturePath);
+				ui::Log("TEX: {}={} for {}", typeName, texturePath, materialName);
+
+				TextureData texData = { type, "" };
+				if (texturePath[0])
+				{
+					texData.name        = std::filesystem::path(texturePath).filename().string();
+					const auto fullPath = fbxPath.parent_path() / texData.name;
+					texData.handle      = GetTextureManager().LoadTexture(fullPath.string());
+					if (bgfx::isValid(texData.handle))
+						ui::Log("CreateMaterialFromFbx: loaded {} texture {} for {}", typeName, texData.name, materialName);
 					else
+						ui::LogError("CreateMaterialFromFbx: failed {} file: {} for {}", typeName, fullPath.string(), materialName);
+					textures.push_back(texData);
+				}
+
+				// check for embedded texture data
+				if (texData.name.empty())
+				{
+					ofbx::DataView embeddedData = texture->getEmbeddedData();
+					if (embeddedData.begin && embeddedData.end)
 					{
-						colorName.clear();
-						ui::LogError("CreateMaterialFromFbx: Embedded diffuse for {}", materialName);
-					}
-				}
-			}
-		}
-
-		// normal texture
-		if (const ofbx::Texture* normalTexture = fbxMaterial->getTexture(ofbx::Texture::NORMAL))
-		{
-			ofbx::DataView filename = normalTexture->getFileName();
-			char           texturePath[256];
-			filename.toString(texturePath);
-			ui::Log("TEX: normal={}", texturePath);
-			if (texturePath[0])
-			{
-				normalName          = std::filesystem::path(texturePath).filename().string();
-				const auto fullPath = fbxPath.parent_path() / normalName;
-				const auto handle   = GetTextureManager().LoadTexture(fullPath.string());
-				if (bgfx::isValid(handle))
-					++numTexture;
-				else
-				{
-					normalName.clear();
-					ui::LogError("CreateMaterialFromFbx: Normal file: {}", fullPath.string());
-				}
-			}
-
-			// check for embedded normal texture
-			if (normalName.empty())
-			{
-				ofbx::DataView embeddedData = normalTexture->getEmbeddedData();
-				if (embeddedData.begin && embeddedData.end)
-				{
-					normalName        = fmt::format("embedded_{}_normal", fbxMaterial->id);
-					const auto handle = GetTextureManager().AddTexture(normalName, embeddedData.begin, TO_UINT32(embeddedData.end - embeddedData.begin));
-					if (bgfx::isValid(handle))
-						++numTexture;
-					else
-					{
-						normalName.clear();
-						ui::LogError("CreateMaterialFromFbx: Embedded normal for {}", materialName);
-					}
-				}
-			}
-		}
-
-		// emissive texture
-		if (const ofbx::Texture* emissiveTexture = fbxMaterial->getTexture(ofbx::Texture::EMISSIVE))
-		{
-			ofbx::DataView filename = emissiveTexture->getFileName();
-			char           texturePath[256];
-			filename.toString(texturePath);
-			ui::Log("TEX: emissive={}", texturePath);
-			if (texturePath[0])
-			{
-				emissiveName        = std::filesystem::path(texturePath).filename().string();
-				const auto fullPath = fbxPath.parent_path() / emissiveName;
-				const auto handle   = GetTextureManager().LoadTexture(fullPath.string());
-				if (bgfx::isValid(handle))
-					++numTexture;
-				else
-				{
-					emissiveName.clear();
-					ui::LogError("CreateMaterialFromFbx: Emissive file: {}", fullPath.string());
-				}
-			}
-
-			// check for embedded emissive texture
-			if (emissiveName.empty())
-			{
-				ofbx::DataView embeddedData = emissiveTexture->getEmbeddedData();
-				if (embeddedData.begin && embeddedData.end)
-				{
-					emissiveName      = fmt::format("embedded_{}_emissive", fbxMaterial->id);
-					const auto handle = GetTextureManager().AddTexture(emissiveName, embeddedData.begin, TO_UINT32(embeddedData.end - embeddedData.begin));
-					if (bgfx::isValid(handle))
-						++numTexture;
-					else
-					{
-						emissiveName.clear();
-						ui::LogError("CreateMaterialFromFbx: Embedded emissive for {}", materialName);
+						texData.name   = fmt::format("embedded_{}_{}", fbxMaterial->id, typeName);
+						texData.handle = GetTextureManager().AddRawTexture(texData.name, embeddedData.begin, TO_UINT32(embeddedData.end - embeddedData.begin));
+						if (bgfx::isValid(texData.handle))
+							ui::Log("CreateMaterialFromFbx: loaded embedded {} texture {} for {}", typeName, texData.name, materialName);
+						else
+							ui::LogError("CreateMaterialFromFbx: failed embedded {} for {}", typeName, materialName);
+						textures.push_back(texData);
 					}
 				}
 			}
 		}
 
 		// load material with texture names
-		material = GetMaterialManager().LoadMaterial(materialName, vsName, fsName, colorName, normalName);
+		material = GetMaterialManager().LoadMaterial(materialName, vsName, fsName, {}, textures);
 
 		// PBR-like properties
 		ofbx::Color diffuse   = fbxMaterial->getDiffuseColor();
@@ -181,7 +105,11 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 		if (!material->doubleSided) state |= BGFX_STATE_CULL_CCW;
 		material->state = state;
 	}
-	else material = GetMaterialManager().LoadMaterial(materialName, "vs_model_color", "fs_model_color");
+	else
+	{
+		material = GetMaterialManager().LoadMaterial(materialName, "vs_model_color", "fs_model_color");
+		material->SetPbrProperties(glm::vec4(0.8f, 0.8f, 0.8f, 1.0f), 0.0f, 1.0f);
+	}
 
 	return material;
 }

@@ -1,6 +1,6 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-08-30
+// @version 2025-09-02
 
 #include "stdafx.h"
 #include "textures/TextureManager.h"
@@ -8,6 +8,19 @@
 #include "imgui.h" // ImGui::
 
 #include <bimg/decode.h>
+
+// clang-format off
+static const UMAP_INT_STR textureTypeNames = {
+	{ TextureType_Ambient   , "Ambient"    },
+	{ TextureType_Count     , ""           },
+	{ TextureType_Diffuse   , "Diffuse"    },
+	{ TextureType_Emissive  , "Emissive"   },
+	{ TextureType_Normal    , "Normal"     },
+	{ TextureType_Reflection, "Reflection" },
+	{ TextureType_Shininess , "Shininess"  },
+	{ TextureType_Specular  , "Specular"   },
+};
+// clang-format on
 
 static std::mutex textureMutex;
 
@@ -73,10 +86,10 @@ static bimg::ImageContainer* ImageLoad_(const bx::FilePath& _filePath, bgfx::Tex
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// MAIN
-///////
+// TextureManager
+/////////////////
 
-bgfx::TextureHandle TextureManager::AddTexture(std::string_view name, const void* data, uint32_t size)
+bgfx::TextureHandle TextureManager::AddRawTexture(std::string_view name, const void* data, uint32_t size)
 {
 	std::lock_guard<std::mutex> lock(textureMutex);
 
@@ -89,7 +102,7 @@ bgfx::TextureHandle TextureManager::AddTexture(std::string_view name, const void
 	bx::Error            err;
 	if (!bimg::imageParse(imageContainer, data, size, &err))
 	{
-		ui::LogError("Failed to parse texture data for {}: {}", name, err.getMessage().getCPtr());
+		ui::LogError("AddRawTexture: Cannot parse {}: {}", name, err.getMessage().getCPtr());
 		return BGFX_INVALID_HANDLE;
 	}
 
@@ -115,13 +128,13 @@ bgfx::TextureHandle TextureManager::AddTexture(std::string_view name, const void
 
 	if (!bgfx::isValid(handle))
 	{
-		ui::LogError("Failed to create texture for {}", name);
+		ui::LogError("AddRawTexture: Cannot create {}", name);
 		bimg::imageFree(&imageContainer);
 		return BGFX_INVALID_HANDLE;
 	}
 
 	bgfx::setName(handle, name.data(), static_cast<int>(name.size()));
-	textures.emplace(std::string(name), TextureData { handle, info });
+	textures.emplace(std::string(name), TextureData { 0, std::string(name), handle, info });
 	return handle;
 }
 
@@ -203,7 +216,7 @@ bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 	}
 
 	// 4) cache the texture
-	textures.emplace(clean, TextureData { texture, info });
+	textures.emplace(clean, TextureData { 0, std::string(clean), texture, info });
 	return texture;
 }
 
@@ -246,4 +259,21 @@ TextureManager& GetTextureManager()
 {
 	static TextureManager textureManager;
 	return textureManager;
+}
+
+std::string TextureName(int type)
+{
+	return FindDefault(textureTypeNames, type, "???");
+}
+
+int TextureType(std::string_view name)
+{
+	static UMAP_STR_INT textureNameTypes;
+	if (textureNameTypes.empty())
+	{
+		for (const auto& [type, name] : textureTypeNames)
+			textureNameTypes[name] = type;
+	}
+
+	return FindDefault(textureNameTypes, name, TextureType_Count);
 }

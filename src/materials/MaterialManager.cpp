@@ -1,6 +1,6 @@
 // MaterialManager.cpp
 // @author octopoulos
-// @version 2025-08-28
+// @version 2025-09-01
 
 #include "stdafx.h"
 #include "materials/MaterialManager.h"
@@ -28,7 +28,7 @@ sMaterial MaterialManager::GetMaterial(std::string_view name) const
 	return nullptr;
 }
 
-sMaterial MaterialManager::LoadMaterial(std::string_view name, std::string_view vsName, std::string_view fsName, std::string_view colorName, std::string_view normalName)
+sMaterial MaterialManager::LoadMaterial(std::string_view name, std::string_view vsName, std::string_view fsName, const VEC_STR& texNames, const VEC<TextureData>& texDatas)
 {
 	// 1) check cache
 	if (const auto exist = GetMaterial(name)) return exist;
@@ -38,7 +38,8 @@ sMaterial MaterialManager::LoadMaterial(std::string_view name, std::string_view 
 	if (!material) return nullptr;
 
 	// 3) add texture
-	if (colorName.size()) material->LoadTextures(colorName, normalName);
+	if (texNames.size()) material->LoadTextures(texNames);
+	if (texDatas.size()) {}
 
 	std::lock_guard<std::mutex> lock(materialMutex);
 	materials.emplace(name, material);

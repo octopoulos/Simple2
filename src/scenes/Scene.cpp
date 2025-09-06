@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-08-30
+// @version 2025-09-02
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -165,18 +165,11 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 				// textures
 				if (!obj["texNames"].get_array().get(array))
 				{
-					std::string colorName;
-					std::string normalName;
+					VEC_STR texFiles;
 					for (int i = -1; std::string_view texName : array)
-					{
-						++i;
-						switch (i)
-						{
-						case 0: colorName = texName; break;
-						case 1: normalName = texName; break;
-						}
-					}
-					mesh->material->LoadTextures(colorName, normalName);
+						texFiles.push_back(std::string(texName));
+
+					mesh->material->LoadTextures(texFiles);
 				}
 			}
 		}
@@ -291,7 +284,7 @@ void App::SelectObject(const sObject3d& obj, bool countIndex)
 	{
 		temp->placed = true;
 
-		if (auto mesh = Mesh::SharedPtr(temp); mesh->material0)
+		if (auto mesh = Mesh::SharedPtr(temp); mesh && mesh->material0)
 			mesh->material = mesh->material0;
 	}
 

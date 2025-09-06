@@ -1,6 +1,6 @@
 // GltfLoader.cpp
 // @author octopoulos
-// @version 2025-09-01
+// @version 2025-09-02
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -16,7 +16,7 @@
 // HELPERS
 //////////
 
-// Save embedded image data to a temporary file and return its path
+/// Save embedded image data to a temporary file and return its path
 static std::string SaveEmbeddedImage(const fastgltf::sources::Vector& data, const std::string& name, const std::filesystem::path& gltfPath)
 {
 	if (!data.bytes.empty())
@@ -36,7 +36,7 @@ static std::string SaveEmbeddedImage(const fastgltf::sources::Vector& data, cons
 	return "";
 }
 
-// Handle image data variant
+/// Handle image data variant
 static std::string ProcessImageData(const fastgltf::DataSource& data, const std::string& name, const std::filesystem::path& gltfPath)
 {
 	ui::Log("ProcessImageData: {} {}", name, gltfPath);
@@ -57,19 +57,16 @@ static std::string ProcessImageData(const fastgltf::DataSource& data, const std:
 	    data);
 }
 
-// Create an sMaterial from a fastgltf::Material using MaterialManager and TextureManager
+/// Create an sMaterial from a fastgltf::Material using MaterialManager and TextureManager
 static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optional<std::size_t> materialId, const std::filesystem::path& gltfPath)
 {
-	std::string materialName = "DefaultMaterial";
-	std::string colorTextureName;
-	std::string emissiveTextureName;
-	std::string normalTextureName;
-
 	// default shaders
-	std::string fsName     = "fs_model_texture_normal";
-	std::string vsName     = "vs_model_texture_normal";
-	sMaterial   material   = nullptr;
-	int         numTexture = 0;
+	std::string      fsName       = "fs_model_texture_normal";
+	std::string      vsName       = "vs_model_texture_normal";
+	sMaterial        material     = nullptr;
+	std::string      materialName = "DefaultMaterial";
+	int              numTexture   = 0;
+	VEC_STR          texNames     = {};
 
 	if (materialId.has_value() && materialId.value() < asset.materials.size())
 	{
@@ -89,9 +86,9 @@ static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optio
 			const auto& texture = asset.textures[mat.pbrData.baseColorTexture->textureIndex];
 			if (texture.imageIndex.has_value() && texture.imageIndex.value() < asset.images.size())
 			{
-				const auto& image = asset.images[texture.imageIndex.value()];
-				colorTextureName  = ProcessImageData(image.data, fmt::format("embedded_{}_baseColor", materialId.value()), gltfPath);
-				++numTexture;
+				const auto& image   = asset.images[texture.imageIndex.value()];
+				const auto  texName = ProcessImageData(image.data, fmt::format("embedded_{}_baseColor", materialId.value()), gltfPath);
+				if (texName.size()) texNames.push_back(texName);
 			}
 		}
 
@@ -101,9 +98,9 @@ static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optio
 			const auto& texture = asset.textures[mat.normalTexture->textureIndex];
 			if (texture.imageIndex.has_value() && texture.imageIndex.value() < asset.images.size())
 			{
-				const auto& image = asset.images[texture.imageIndex.value()];
-				normalTextureName = ProcessImageData(image.data, fmt::format("embedded_{}_normal", materialId.value()), gltfPath);
-				++numTexture;
+				const auto& image   = asset.images[texture.imageIndex.value()];
+				const auto  texName = ProcessImageData(image.data, fmt::format("embedded_{}_normal", materialId.value()), gltfPath);
+				if (texName.size()) texNames.push_back(texName);
 			}
 		}
 
@@ -114,8 +111,8 @@ static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optio
 			if (texture.imageIndex.has_value() && texture.imageIndex.value() < asset.images.size())
 			{
 				const auto& image   = asset.images[texture.imageIndex.value()];
-				emissiveTextureName = ProcessImageData(image.data, fmt::format("embedded_{}_emissive", materialId.value()), gltfPath);
-				++numTexture;
+				const auto  texName = ProcessImageData(image.data, fmt::format("embedded_{}_emissive", materialId.value()), gltfPath);
+				if (texName.size()) texNames.push_back(texName);
 			}
 		}
 
@@ -126,7 +123,7 @@ static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optio
 			vsName = "vs_cube";
 		}
 
-		material        = GetMaterialManager().LoadMaterial(materialName, vsName, fsName, colorTextureName, normalTextureName);
+		material        = GetMaterialManager().LoadMaterial(materialName, vsName, fsName, texNames);
 		const auto& pbr = mat.pbrData;
 
 		// modes

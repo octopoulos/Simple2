@@ -1,6 +1,6 @@
 // MeshLoader.cpp
 // @author octopoulos
-// @version 2025-08-30
+// @version 2025-09-02
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -60,7 +60,7 @@ sMesh MeshLoader::LoadModelFull(std::string_view name, std::string_view modelNam
 	// 2) create material
 	if (!mesh->material)
 	{
-		mesh->material = GetMaterialManager().LoadMaterial(modelName, "vs_model_texture", "fs_model_texture", textureName);
+		mesh->material = GetMaterialManager().LoadMaterial(modelName, "vs_model_texture", "fs_model_texture", { std::string(textureName) });
 		mesh->material->FindModelTextures(modelName, textureName);
 	}
 

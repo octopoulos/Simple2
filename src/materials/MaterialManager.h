@@ -1,10 +1,11 @@
 // MaterialManager.h
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-09-01
 
 #pragma once
 
 #include "materials/Material.h"
+#include "textures/TextureManager.h"
 
 class MaterialManager
 {
@@ -26,7 +27,7 @@ public:
 
 	/// Load or retrieve a material
 	/// - caches internally
-	sMaterial LoadMaterial(std::string_view name, std::string_view vsName, std::string_view fsName, std::string_view colorName = "", std::string_view normalName = "");
+	sMaterial LoadMaterial(std::string_view name, std::string_view vsName, std::string_view fsName, const VEC_STR& texNames = {}, const VEC<TextureData>& texDatas = {});
 
 	/// Print all materials
 	void PrintMaterials();

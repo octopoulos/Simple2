@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-08-29
+// @version 2025-09-01
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -17,7 +17,7 @@ void App::AddGeometry(uGeometry geometry)
 	{
 		object->geometry = geometry;
 		object->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
-		object->material->LoadTextures("colors.png");
+		object->material->LoadTextures({ "colors.png" });
 
 		object->ScaleRotationPosition(
 			{ 1.0f, 1.0f, 1.0f },

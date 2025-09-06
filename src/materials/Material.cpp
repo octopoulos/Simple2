@@ -1,6 +1,6 @@
 // Material.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-09-02
 
 #include "stdafx.h"
 #include "materials/Material.h"
@@ -94,17 +94,16 @@ void Material::LoadProgram(std::string_view vsName, std::string_view fsName)
 	// clang-format on
 }
 
-void Material::LoadTextures(std::string_view colorName, std::string_view normalName)
+void Material::LoadTextures(const VEC_STR& texFiles)
 {
-	if (colorName.size())
+	for (int i = -1; const auto& texFile : texFiles)
 	{
-		texColor    = GetTextureManager().LoadTexture(colorName);
-		texNames[0] = colorName;
-	}
-	if (normalName.size())
-	{
-		texNormal   = GetTextureManager().LoadTexture(normalName);
-		texNames[1] = normalName;
+		++i;
+		if (texFile.size())
+		{
+			const auto tex = GetTextureManager().LoadTexture(texFile);
+			texNames[i] = texFile;
+		}
 	}
 }
 
