@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-08-29
+// @version 2025-09-03
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -152,7 +152,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Box: Invalid dims / mesh");
+		else ui::LogError("CreateShape/ShapeType_Box: Invalid dims / mesh: {} {} {} {} {}", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
 		break;
 	case ShapeType_Box2d:
 		if (dims.x() > 0.0f && dims.y() > 0.0f && dims.z() > 0.0f)
@@ -171,7 +171,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Box2d: Invalid dims / mesh");
+		else ui::LogError("CreateShape/ShapeType_Box2d: Invalid dims / mesh: {} {} {} {} {}", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
 		break;
 	case ShapeType_BoxObb:
 		if (numGroup > 0)
@@ -208,7 +208,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Capsule: Invalid dims / mesh");
+		else ui::LogError("CreateShape/ShapeType_Capsule: Invalid dims / mesh: {} {} {} {} {}", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
 		break;
 	case ShapeType_Cone:
 		if (dims.x() > 0.0f && dims.y() > 0.0f)
@@ -229,7 +229,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Cone: Invalid dims / mesh");
+		else ui::LogError("CreateShape/ShapeType_Cone: Invalid dims / mesh: {} {} {} {} {}", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
 		break;
 	case ShapeType_Convex2d:
 		if (numGroup > 0)
@@ -302,7 +302,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Cylinder: Invalid dims / mesh");
+		else ui::LogError("CreateShape/ShapeType_Cylinder: Invalid dims / mesh: {} {} {} {} {}", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
 		break;
 	case ShapeType_Plane:
 		if (dims.x() != 0.0f || dims.y() != 0.0f || dims.z() != 0.0f)
@@ -329,7 +329,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Sphere: Invalid dims / mesh");
+		else ui::LogError("CreateShape/ShapeType_Sphere: Invalid dims / mesh: {} {} {} {} {}", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
 		break;
 	case ShapeType_Terrain:
 		shape = new btHeightfieldTerrainShape(1, 1, (const float*)nullptr, 0.0f, 0.0f, 1, false);

@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-08-30
+// @version 2025-09-03
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -199,6 +199,7 @@ void App::PopupsUi()
 			{
 				ImGui::Text("Add mesh");
 				ImGui::Separator();
+				if (ImGui::MenuItem("Rubik Cube")) AddObject(":RubikCube");
 			}
 			else if (currentPopup & Popup_Delete)
 			{

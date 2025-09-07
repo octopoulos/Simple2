@@ -1,6 +1,6 @@
 // GltfLoader.cpp
 // @author octopoulos
-// @version 2025-09-02
+// @version 2025-09-03
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -178,7 +178,7 @@ sMesh LoadGltf(const std::filesystem::path& path)
 {
 	fastgltf::Parser parser;
 
-	// load GLTF data buffer
+	// 1) load GLTF data buffer
 	auto result = fastgltf::GltfDataBuffer::FromPath(path);
 	if (result.error() != fastgltf::Error::None)
 	{
@@ -189,7 +189,7 @@ sMesh LoadGltf(const std::filesystem::path& path)
 	auto& data = result.get();
 	ui::Log("data.totalSize={}", data.totalSize());
 
-	// parse the GLTF asset
+	// 2) parse the GLTF asset
 	auto gasset = parser.loadGltf(data, path.parent_path(), fastgltf::Options::LoadExternalBuffers | fastgltf::Options::DontRequireValidAssetMember);
 	if (const auto error = gasset.error(); error != fastgltf::Error::None)
 	{
@@ -200,23 +200,22 @@ sMesh LoadGltf(const std::filesystem::path& path)
 	fastgltf::Asset& asset = gasset.get();
 	ui::Log("LoadGltf: {}", path.string());
 
-	// initialize sMesh
+	// 3) initialize sMesh
 	sMesh mesh = std::make_shared<Mesh>(path.filename().string(), 0);
 
-	// build vertex layout (pos/norm/uv0 at least)
-	bgfx::VertexLayout layout;
+	// 4) vertex layout
 	// clang-format off
+	bgfx::VertexLayout layout;
 	layout.begin()
-	    .add(bgfx::Attrib::Position , 3, bgfx::AttribType::Float)
-	    .add(bgfx::Attrib::Normal   , 3, bgfx::AttribType::Float, true)
-	    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Position , 3, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Normal   , 3, bgfx::AttribType::Float, true)
+		.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 		.add(bgfx::Attrib::Color0   , 4, bgfx::AttribType::Float)
-	    .end();
+		.end();
 	// clang-format on
-
 	mesh->layout = layout;
 
-	// temporary vertex struct
+	// 5) temporary vertex struct
 	struct Vertex
 	{
 		glm::vec3 position = { 0.0f, 0.0f, 0.0f };
@@ -229,7 +228,7 @@ sMesh LoadGltf(const std::filesystem::path& path)
 	for (const auto& buffer : asset.buffers)
 		ui::Log("Buffer: {:7} {}", buffer.byteLength, buffer.name);
 
-	// iterate meshes
+	// 6) iterate meshes
 	for (const auto& gltfMesh : asset.meshes)
 	{
 		ui::Log("Mesh: {}", gltfMesh.name);
@@ -361,7 +360,7 @@ sMesh LoadGltf(const std::filesystem::path& path)
 		}
 	}
 
-	// set a default material for the mesh (optional, for fallback)
+	// 7) set a default material for the mesh (optional, for fallback)
 	mesh->material  = CreateMaterialFromGltf(asset, std::nullopt, path);
 	mesh->material0 = mesh->material;
 

@@ -1,12 +1,13 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-09-01
+// @version 2025-09-03
 
 #include "stdafx.h"
 #include "app/App.h"
 //
 #include "common/config.h"      // DEV_models
 #include "loaders/MeshLoader.h" // MeshLoader::
+#include "objects/RubikCube.h"  // RubikCube
 
 void App::AddGeometry(uGeometry geometry)
 {
@@ -40,7 +41,15 @@ void App::AddObject(std::string_view modelName)
 	const auto& irot  = cursor->irot;
 
 	ui::Log("AddObject: {} @ {} {} {}", modelName, coord.x, coord.y, coord.z);
-	if (auto object = MeshLoader::LoadModelFull(fmt::format("{}:{}", mapNode->children.size(), NodeName(modelName)), modelName))
+	sMesh object = nullptr;
+	if (modelName.front() == ':')
+	{
+		if (modelName == ":RubikCube")
+			object = std::make_shared<RubikCube>("Rubik", 3);
+	}
+	else object = MeshLoader::LoadModelFull(fmt::format("{}:{}", mapNode->children.size(), NodeName(modelName)), modelName);
+
+	if (object)
 	{
 		object->ScaleIrotPosition(
 		    { 1.0f, 1.0f, 1.0f },

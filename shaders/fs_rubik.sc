@@ -1,4 +1,4 @@
-// fs_model_color.sc
+// fs_rubik.sc
 
 $input v_normal, v_color0
 
@@ -11,7 +11,7 @@ void main()
 	// Use vertex normal for lighting
 	vec3 finalNormal = normalize(v_normal);
 
-	float ambient = 0.25;
+	float ambient = 0.5; // higher ambient for vibrant colors
 	float diffuse = max(0.0, dot(finalNormal, normalize(u_lightDir.xyz)));
 	float lambert = mix(ambient, 1.0, diffuse);
 

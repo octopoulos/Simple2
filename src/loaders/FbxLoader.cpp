@@ -1,6 +1,6 @@
 // FbxLoader.cpp
 // @author octopoulos
-// @version 2025-09-02
+// @version 2025-09-03
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -138,21 +138,22 @@ static sMesh CreateNodeMesh(const ofbx::Object* node)
 /// Process FBX node recursively
 static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, const std::filesystem::path& fbxPath)
 {
+	// 1) create mesh
 	sMesh      mesh     = CreateNodeMesh(fbxMesh);
 	const auto nodeName = mesh->name;
 
 	ui::Log("ProcessMesh: {}", nodeName);
 
-	// process geometry
+	// 2) process geometry
 	const ofbx::GeometryData&  geom      = fbxMesh->getGeometryData();
 	const ofbx::Vec3Attributes positions = geom.getPositions();
 	const ofbx::Vec3Attributes normals   = geom.getNormals();
 	const ofbx::Vec2Attributes uvs       = geom.getUVs();
 	const ofbx::Vec4Attributes colors    = geom.getColors();
 
-	// build vertex layout
-	bgfx::VertexLayout layout;
+	// 3) vertex layout
 	// clang-format off
+	bgfx::VertexLayout layout;
 	layout.begin()
 		.add(bgfx::Attrib::Position , 3, bgfx::AttribType::Float)
 		.add(bgfx::Attrib::Normal   , 3, bgfx::AttribType::Float, true)
@@ -162,7 +163,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 	// clang-format on
 	mesh->layout = layout;
 
-	// vertex struct
+	// 4) vertex struct
 	struct Vertex
 	{
 		glm::vec3 position;
@@ -179,7 +180,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 		}
 	};
 
-	// process partitions (materials)
+	// 5) process partitions (materials)
 	for (int partitionId = 0; partitionId < geom.getPartitionCount(); ++partitionId)
 	{
 		Group       group;
@@ -287,7 +288,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 		mesh->groups.push_back(std::move(group));
 	}
 
-	// set default material for the mesh
+	// 6) set default material for the mesh
 	mesh->material  = CreateMaterialFromFbx(scene, nullptr, fbxPath);
 	mesh->material0 = mesh->material;
 

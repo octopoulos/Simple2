@@ -37,16 +37,16 @@ void main()
 	float fres    = fresnel(bln.x, 0.2, 5.0);
 
 	float index = (
-        (sin(v_position.x * 3.0 + u_time.x) * 0.3 + 0.7)
-	  + (cos(v_position.y * 3.0 + u_time.x) * 0.4 + 0.6)
-	  + (cos(v_position.z * 3.0 + u_time.x) * 0.2 + 0.8)
-    ) * M_PI;
+		  (sin(v_position.x * 3.0 + u_time.x) * 0.3 + 0.7)
+		+ (cos(v_position.y * 3.0 + u_time.x) * 0.4 + 0.6)
+		+ (cos(v_position.z * 3.0 + u_time.x) * 0.2 + 0.8)
+	) * M_PI;
 
 	vec3 color = vec3(
-        sin(index * 8.0) * 0.4 + 0.6
-      , sin(index * 4.0) * 0.4 + 0.6
-      , sin(index * 2.0) * 0.4 + 0.6
-    ) * v_color0.xyz;
+		sin(index * 8.0) * 0.4 + 0.6,
+		sin(index * 4.0) * 0.4 + 0.6,
+		sin(index * 2.0) * 0.4 + 0.6
+	) * v_color0.xyz;
 
 	gl_FragColor.xyz = pow(vec3(0.07, 0.06, 0.08) + color * lc.y + fres*pow(lc.z, 128.0), vec3_splat(1.0 / 2.2) );
 	gl_FragColor.w = 1.0;

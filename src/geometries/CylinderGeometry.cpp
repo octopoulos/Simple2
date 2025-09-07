@@ -1,6 +1,6 @@
 // CylinderGeometry.cpp
 // @author octopoulos
-// @version 2025-08-28
+// @version 2025-09-03
 //
 // based on THREE.js CylinderGeometry implementation
 
@@ -16,8 +16,8 @@ uGeometry CreateCylinderGeometry(float radiusTop, float radiusBottom, float heig
 	const int   segmentsH  = bx::max(1, heightSegments);
 	const float halfHeight = height * 0.5f;
 
-	std::vector<PosNormalUV> vertices;
-	std::vector<uint16_t>    indices;
+	std::vector<PosNormalUvColor> vertices;
+	std::vector<uint16_t>         indices;
 
 	std::vector<std::vector<uint16_t>> indexArray;
 	indexArray.reserve(segmentsH + 1);
@@ -54,6 +54,7 @@ uGeometry CreateCylinderGeometry(float radiusTop, float radiusBottom, float heig
 				px, py, pz,
 				normal.x, normal.y, normal.z,
 				u, 1.0f - v,
+				0.8f, 0.8f, 0.8f, 1.0f,
 			});
 			// clang-format on
 
@@ -165,14 +166,15 @@ uGeometry CreateCylinderGeometry(float radiusTop, float radiusBottom, float heig
 	// clang-format off
 	bgfx::VertexLayout layout;
 	layout.begin()
-	    .add(bgfx::Attrib::Position , 3, bgfx::AttribType::Float)
-	    .add(bgfx::Attrib::Normal   , 3, bgfx::AttribType::Float)
-	    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
-	    .end();
+		.add(bgfx::Attrib::Position , 3, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Normal   , 3, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Color0   , 4, bgfx::AttribType::Float)
+		.end();
 	// clang-format on
 
 	// 6) buffers
-	const bgfx::Memory*            vmem = bgfx::copy(vertices.data(), sizeof(PosNormalUV) * vertices.size());
+	const bgfx::Memory*            vmem = bgfx::copy(vertices.data(), sizeof(PosNormalUvColor) * vertices.size());
 	const bgfx::Memory*            imem = bgfx::copy(indices.data(), sizeof(uint16_t) * indices.size());
 	const bgfx::VertexBufferHandle vbh  = bgfx::createVertexBuffer(vmem, layout);
 	const bgfx::IndexBufferHandle  ibh  = bgfx::createIndexBuffer(imem);

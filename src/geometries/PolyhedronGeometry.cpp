@@ -1,6 +1,6 @@
 // PolyhedronGeometry.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-09-03
 //
 // based on THREE.js PolyhedronGeometry implementation
 
@@ -161,7 +161,7 @@ uGeometry CreatePolyhedronGeometry(int type, std::string&& args, const float* ve
 	generateUVs();
 
 	// 2) vertices
-	std::vector<PosNormalUV> finalVertices;
+	std::vector<PosNormalUvColor> finalVertices;
 	for (size_t i = 0; i < vertexBuffer.size(); ++i)
 	{
 		const auto& v    = vertexBuffer[i];
@@ -171,7 +171,8 @@ uGeometry CreatePolyhedronGeometry(int type, std::string&& args, const float* ve
         finalVertices.push_back({
             v.x, v.y, v.z,
             norm.x, norm.y, norm.z,
-            uvBuffer[i * 2], uvBuffer[i * 2 + 1]
+            uvBuffer[i * 2], uvBuffer[i * 2 + 1],
+			0.8f, 0.8f, 0.8f, 1.0f,
         });
 		// clang-format on
 	}
@@ -183,16 +184,17 @@ uGeometry CreatePolyhedronGeometry(int type, std::string&& args, const float* ve
 
 	// 4) vertex layout
 	// clang-format off
-    bgfx::VertexLayout layout;
-    layout.begin()
-        .add(bgfx::Attrib::Position , 3, bgfx::AttribType::Float)
-        .add(bgfx::Attrib::Normal   , 3, bgfx::AttribType::Float)
-        .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
-        .end();
+	bgfx::VertexLayout layout;
+	layout.begin()
+		.add(bgfx::Attrib::Position , 3, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Normal   , 3, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Color0   , 4, bgfx::AttribType::Float)
+		.end();
 	// clang-format on
 
 	// 5) buffers
-	const bgfx::Memory*            vmem = bgfx::copy(finalVertices.data(), sizeof(PosNormalUV) * finalVertices.size());
+	const bgfx::Memory*            vmem = bgfx::copy(finalVertices.data(), sizeof(PosNormalUvColor) * finalVertices.size());
 	const bgfx::Memory*            imem = bgfx::copy(finalIndices.data(), sizeof(uint16_t) * finalIndices.size());
 	const bgfx::VertexBufferHandle vbh  = bgfx::createVertexBuffer(vmem, layout);
 	const bgfx::IndexBufferHandle  ibh  = bgfx::createIndexBuffer(imem);

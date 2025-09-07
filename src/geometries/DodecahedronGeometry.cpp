@@ -1,6 +1,6 @@
 // DodecahedronGeometry.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-09-03
 //
 // based on THREE.js DodecahedronGeometry implementation
 

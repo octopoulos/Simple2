@@ -1,6 +1,6 @@
 // PlaneGeometry.cpp
 // @author octopoulos
-// @version 2025-08-28
+// @version 2025-09-03
 //
 // based on THREE.js PlaneGeometry implementation
 
@@ -26,8 +26,8 @@ uGeometry CreatePlaneGeometry(float width, float height, int widthSegments, int 
 	const float segWidth  = width / float(gridX);
 	const float segHeight = height / float(gridY);
 
-	std::vector<PosNormalUV> vertices;
-	std::vector<uint16_t>    indices;
+	std::vector<PosNormalUvColor> vertices;
+	std::vector<uint16_t>         indices;
 
 	// 2) vertices
 	for (int iy = 0; iy < gridY1; ++iy)
@@ -43,6 +43,7 @@ uGeometry CreatePlaneGeometry(float width, float height, int widthSegments, int 
 				x, 0.0f, y,
 				0.0f, 1.0f, 0.0f,
 				float(ix) / float(gridX), 1.0f - float(iy) / float(gridY),
+				0.8f, 0.8f, 0.8f, 1.0f,
 			});
 			// clang-format on
 		}
@@ -68,18 +69,19 @@ uGeometry CreatePlaneGeometry(float width, float height, int widthSegments, int 
 		}
 	}
 
-	// 4) layout
+	// 4) vertex layout
 	// clang-format off
 	bgfx::VertexLayout layout;
 	layout.begin()
-	    .add(bgfx::Attrib::Position , 3, bgfx::AttribType::Float)
-	    .add(bgfx::Attrib::Normal   , 3, bgfx::AttribType::Float)
-	    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
-	    .end();
+		.add(bgfx::Attrib::Position , 3, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Normal   , 3, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Color0   , 4, bgfx::AttribType::Float)
+		.end();
 	// clang-format on
 
 	// 5) buffers
-	const bgfx::Memory* vmem = bgfx::copy(vertices.data(), sizeof(PosNormalUV) * vertices.size());
+	const bgfx::Memory* vmem = bgfx::copy(vertices.data(), sizeof(PosNormalUvColor) * vertices.size());
 	const bgfx::Memory* imem = bgfx::copy(indices.data(), sizeof(uint16_t) * indices.size());
 
 	const bgfx::VertexBufferHandle vbh = bgfx::createVertexBuffer(vmem, layout);

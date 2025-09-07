@@ -1,6 +1,6 @@
 // TorusKnotGeometry.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-09-03
 //
 // based on THREE.js TorusKnotGeometry implementation
 
@@ -15,8 +15,8 @@ uGeometry CreateTorusKnotGeometry(float radius, float tube, int tubularSegments,
 	tubularSegments = glm::max(3, tubularSegments);
 	radialSegments  = glm::max(3, radialSegments);
 
-	std::vector<PosNormalUV> vertices;
-	std::vector<uint16_t>    indices;
+	std::vector<PosNormalUvColor> vertices;
+	std::vector<uint16_t>         indices;
 
 	vertices.reserve((tubularSegments + 1) * (radialSegments + 1));
 	indices.reserve(tubularSegments * radialSegments * 6);
@@ -62,6 +62,7 @@ uGeometry CreateTorusKnotGeometry(float radius, float tube, int tubularSegments,
 				pos.x, pos.y, pos.z,
 				normal.x, normal.y, normal.z,
 				uCoord, vCoord,
+				0.8f, 0.8f, 0.8f, 1.0f,
 			});
 			// clang-format on
 		}
@@ -90,14 +91,15 @@ uGeometry CreateTorusKnotGeometry(float radius, float tube, int tubularSegments,
 	// clang-format off
 	bgfx::VertexLayout layout;
 	layout.begin()
-	    .add(bgfx::Attrib::Position , 3, bgfx::AttribType::Float)
-	    .add(bgfx::Attrib::Normal   , 3, bgfx::AttribType::Float)
-	    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
-	    .end();
+		.add(bgfx::Attrib::Position , 3, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Normal   , 3, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Color0   , 4, bgfx::AttribType::Float)
+		.end();
 	// clang-format on
 
 	// 5) buffers
-	const bgfx::Memory*      vmem = bgfx::copy(vertices.data(), sizeof(PosNormalUV) * vertices.size());
+	const bgfx::Memory*      vmem = bgfx::copy(vertices.data(), sizeof(PosNormalUvColor) * vertices.size());
 	const bgfx::Memory*      imem = bgfx::copy(indices.data(), sizeof(uint16_t) * indices.size());
 	bgfx::VertexBufferHandle vbh  = bgfx::createVertexBuffer(vmem, layout);
 	bgfx::IndexBufferHandle  ibh  = bgfx::createIndexBuffer(imem);

@@ -1,6 +1,6 @@
 // TorusGeometry.cpp
 // @author octopoulos
-// @version 2025-08-28
+// @version 2025-09-03
 //
 // based on THREE.js TorusGeometry implementation
 
@@ -16,8 +16,8 @@ uGeometry CreateTorusGeometry(float radius, float tube, int radialSegments, int 
 	const float torusR  = radius;
 	const float tubeR   = tube;
 
-	std::vector<PosNormalUV> vertices;
-	std::vector<uint16_t>    indices;
+	std::vector<PosNormalUvColor> vertices;
+	std::vector<uint16_t>         indices;
 
 	// 1) vertex generation
 	for (int j = 0; j <= radial; ++j)
@@ -57,7 +57,8 @@ uGeometry CreateTorusGeometry(float radius, float tube, int radialSegments, int 
 			vertices.push_back({
 				pos.x, pos.y, pos.z,
 				normal.x, normal.y, normal.z,
-				u, v
+				u, v,
+				0.8f, 0.8f, 0.8f, 1.0f,
 			});
 			// clang-format on
 		}
@@ -90,11 +91,12 @@ uGeometry CreateTorusGeometry(float radius, float tube, int radialSegments, int 
 		.add(bgfx::Attrib::Position , 3, bgfx::AttribType::Float)
 		.add(bgfx::Attrib::Normal   , 3, bgfx::AttribType::Float)
 		.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Color0   , 4, bgfx::AttribType::Float)
 		.end();
 	// clang-format on
 
 	// 4) buffers
-	const bgfx::Memory*            vmem = bgfx::copy(vertices.data(), sizeof(PosNormalUV) * vertices.size());
+	const bgfx::Memory*            vmem = bgfx::copy(vertices.data(), sizeof(PosNormalUvColor) * vertices.size());
 	const bgfx::Memory*            imem = bgfx::copy(indices.data(), sizeof(uint16_t) * indices.size());
 	const bgfx::VertexBufferHandle vbh  = bgfx::createVertexBuffer(vmem, layout);
 	const bgfx::IndexBufferHandle  ibh  = bgfx::createIndexBuffer(imem);
