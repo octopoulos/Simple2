@@ -1,6 +1,6 @@
 // Material.cpp
 // @author octopoulos
-// @version 2025-09-02
+// @version 2025-09-04
 
 #include "stdafx.h"
 #include "materials/Material.h"
@@ -11,6 +11,7 @@
 
 Material::Material(std::string_view vsName, std::string_view fsName)
 {
+	Initialize();
 	LoadProgram(vsName, fsName);
 }
 
@@ -20,11 +21,11 @@ void Material::Apply() const
 
 	// set textures
 	// clang-format off
-	if (bgfx::isValid(texColor))             bgfx::setTexture(0, sTexColor            , texColor);
-	if (bgfx::isValid(texNormal))            bgfx::setTexture(1, sTexNormal           , texNormal);
-	if (bgfx::isValid(texMetallicRoughness)) bgfx::setTexture(2, sTexMetallicRoughness, texMetallicRoughness);
-	if (bgfx::isValid(texEmissive))          bgfx::setTexture(3, sTexEmissive         , texEmissive);
-	if (bgfx::isValid(texOcclusion))         bgfx::setTexture(4, sTexOcclusion        , texOcclusion);
+	if (bgfx::isValid(textures[0])) bgfx::setTexture(0, sTexColor            , textures[0]);
+	if (bgfx::isValid(textures[1])) bgfx::setTexture(1, sTexNormal           , textures[1]);
+	if (bgfx::isValid(textures[2])) bgfx::setTexture(2, sTexMetallicRoughness, textures[2]);
+	if (bgfx::isValid(textures[3])) bgfx::setTexture(3, sTexEmissive         , textures[3]);
+	if (bgfx::isValid(textures[4])) bgfx::setTexture(4, sTexOcclusion        , textures[4]);
 	// clang-format on
 
 	// set PBR uniforms
@@ -38,14 +39,11 @@ void Material::Apply() const
 	// clang-format on
 }
 
-void Material::FindModelTextures(std::string_view modelName, std::string_view textureName)
+void Material::FindModelTextures(std::string_view modelName, const VEC_STR& texFiles)
 {
-	// 1) texture is specified
-	if (textureName.size())
-	{
-		const auto& texture = GetTextureManager().LoadTexture(textureName);
-		if (bgfx::isValid(texture)) textures.push_back(texture);
-	}
+	// 1) textures are specified
+	if (texFiles.size())
+		LoadTextures(texFiles);
 	// 2) scan directory to find textures
 	else
 	{
@@ -54,31 +52,47 @@ void Material::FindModelTextures(std::string_view modelName, std::string_view te
 
 		if (!parent.empty() && IsDirectory(texturePath))
 		{
-			VEC_STR texNames;
+			VEC_STR texFiles;
 			for (const auto& dirEntry : std::filesystem::directory_iterator { texturePath })
 			{
 				const auto& path     = dirEntry.path();
 				const auto  filename = path.filename();
-				const auto  texName  = fmt::format("{}/{}", parent.string(), filename.string());
-				texNames.push_back(texName);
+				const auto  texFile  = fmt::format("{}/{}", parent.string(), filename.string());
+				texFiles.push_back(texFile);
 			}
 
 			// load all texture variations
-			if (const int size = TO_INT(texNames.size()))
+			if (texFiles.size())
 			{
-				for (int id = -1; const auto& texName : texNames)
+				for (int id = -1; const auto& texFile : texFiles)
 				{
-					const auto& texture = GetTextureManager().LoadTexture(texName);
-					if (bgfx::isValid(texture)) textures.push_back(texture);
-					ui::Log("=> {} {} {}", id, texName, bgfx::isValid(texture));
+					++id;
+					const auto& texture = GetTextureManager().LoadTexture(texFile);
+					if (bgfx::isValid(texture))
+					{
+						texNames[id] = texFile;
+						textures[id] = texture;
+					}
+					ui::Log("=> {} {} {}", id, texFile, bgfx::isValid(texture));
 				}
 			}
 		}
 	}
+}
 
-	// 3) assign current texture
-	if (textures.size()) texColor = textures[0];
+void Material::Initialize()
+{
+	for (int i = 0; i < 8; ++i)
+		textures[i] = BGFX_INVALID_HANDLE;
 
+	// create uniforms
+	// clang-format off
+	sTexColor             = bgfx::createUniform("s_texColor" , bgfx::UniformType::Sampler);
+	sTexNormal            = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
+	sTexMetallicRoughness = bgfx::createUniform("s_texColor" , bgfx::UniformType::Sampler);
+	sTexEmissive          = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
+	sTexOcclusion         = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
+	// clang-format on
 }
 
 void Material::LoadProgram(std::string_view vsName, std::string_view fsName)
@@ -86,12 +100,6 @@ void Material::LoadProgram(std::string_view vsName, std::string_view fsName)
 	this->fsName = fsName;
 	this->vsName = vsName;
 	program      = GetShaderManager().LoadProgram(vsName, fsName);
-
-	// create uniforms
-	// clang-format off
-	sTexColor  = bgfx::createUniform("s_texColor" , bgfx::UniformType::Sampler);
-	sTexNormal = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
-	// clang-format on
 }
 
 void Material::LoadTextures(const VEC_STR& texFiles)
@@ -101,8 +109,8 @@ void Material::LoadTextures(const VEC_STR& texFiles)
 		++i;
 		if (texFile.size())
 		{
-			const auto tex = GetTextureManager().LoadTexture(texFile);
 			texNames[i] = texFile;
+			textures[i] = GetTextureManager().LoadTexture(texFile);
 		}
 	}
 }

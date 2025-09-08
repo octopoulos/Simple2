@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-08-28
+// @version 2025-09-04
 
 #pragma once
 
@@ -58,10 +58,10 @@ private:
 
 	/// Throw a geometry
 	/// @param geometryType: GeometryType_None for random
-	void ThrowGeometry(int action, int geometryType = GeometryType_None, std::string_view textureName = "");
+	void ThrowGeometry(int action, int geometryType = GeometryType_None, const VEC_STR& texFiles = {});
 
 	/// Throw a mesh instance
-	void ThrowMesh(int action, std::string_view name, int shapeType, std::string_view textureName = "");
+	void ThrowMesh(int action, std::string_view name, int shapeType, const VEC_STR& texFiles = {});
 
 public:
 	/// Controls function executed every frame, and run before Render

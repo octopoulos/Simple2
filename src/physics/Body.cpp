@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-09-03
+// @version 2025-09-04
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -95,6 +95,11 @@ static std::pair<btVector3, btVector3> ComputeAabbVectorDims(const Group& group,
 void Body::CreateBody(float _mass, const btVector3& pos, const btQuaternion& quat)
 {
 	DestroyBody();
+	if (!shape)
+	{
+		ui::LogError("CreateBody: Shape is required");
+		return;
+	}
 
 	mass = _mass;
 	if (mass > 0.0f)

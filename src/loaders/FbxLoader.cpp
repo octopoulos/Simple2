@@ -1,6 +1,6 @@
 // FbxLoader.cpp
 // @author octopoulos
-// @version 2025-09-03
+// @version 2025-09-04
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -299,7 +299,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 // MAIN
 ///////
 
-sMesh LoadFbx(const std::filesystem::path& path)
+sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy)
 {
 	if (!std::filesystem::exists(path))
 	{

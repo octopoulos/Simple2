@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-09-02
+// @version 2025-09-04
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -184,10 +184,10 @@ void App::FixedControls()
 		if (downs[Key::KeyT]) showTest = !showTest;
 		if (downs[Key::KeyX]) ShowPopup(Popup_Delete);
 
-		if (downs[Key::Key1]) ThrowMesh(ThrowAction_Throw, "donut3", ShapeType_Cylinder, "donut_base.png");
+		if (downs[Key::Key1]) ThrowMesh(ThrowAction_Throw, "donut3", ShapeType_Cylinder, { "donut_base.png" });
 		// TODO: Shape_Capsule doesn't work
 		if (downs[Key::Key2]) ThrowMesh(ThrowAction_Throw, "kenney_car-kit/taxi", ShapeType_Box);
-		if (downs[Key::Key3]) ThrowGeometry(ThrowAction_Throw, GeometryType_None, "colors.png");
+		if (downs[Key::Key3]) ThrowGeometry(ThrowAction_Throw, GeometryType_None, { "colors.png" });
 		if (downs[Key::Key0])
 		{
 			if (const auto& temp = prevSelWeak.lock())
@@ -317,7 +317,7 @@ void App::FluidControls()
 				const int64_t  nowUs = NowUs();
 				if (nowUs > prevUs + 15 * 1000)
 				{
-					ThrowMesh(ThrowAction_Spiral, "donut3", ShapeType_Cylinder, "donut_base.png");
+					ThrowMesh(ThrowAction_Spiral, "donut3", ShapeType_Cylinder, { "donut_base.png" });
 					prevUs = nowUs;
 				}
 			}
@@ -447,7 +447,7 @@ void App::MoveCursor(bool force)
 	}
 }
 
-void App::ThrowGeometry(int action, int geometryType, std::string_view textureName)
+void App::ThrowGeometry(int action, int geometryType, const VEC_STR& texFiles)
 {
 	if (geometryType == GeometryType_None)
 		geometryType = MerseneInt32(GeometryType_Box, GeometryType_Count - 1);
@@ -465,7 +465,7 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 	else if (auto mesh = std::make_shared<Mesh>(std::move(groupName), ObjectType_Group | ObjectType_Instance))
 	{
 		mesh->geometry = CreateAnyGeometry(geometryType);
-		mesh->material = GetMaterialManager().LoadMaterial(fmt::format("model-inst:{}", textureName), "vs_model_texture_instance", "fs_model_texture_instance", { std::string(textureName) });
+		mesh->material = GetMaterialManager().LoadMaterial(fmt::format("model-inst:{}", ArrayJoin(texFiles, '-')), "vs_model_texture_instance", "fs_model_texture_instance", texFiles);
 		scene->AddChild(mesh);
 
 		parent = mesh.get();
@@ -476,7 +476,7 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 	// 2) clone an instance
 	if (auto object = parent->CloneInstance(fmt::format("{}:{}", name, parent->children.size())))
 	{
-		object->material = GetMaterialManager().LoadMaterial(fmt::format("model:{}", textureName), "vs_model_texture", "fs_model_texture", { std::string(textureName) });
+		object->material = GetMaterialManager().LoadMaterial(fmt::format("model:{}", ArrayJoin(texFiles, '-')), "vs_model_texture", "fs_model_texture", texFiles);
 
 		const auto  pos   = camera->pos2;
 		const float scale = bx::clamp(NormalFloat(1.0f, 0.2f), 0.25f, 1.5f);
@@ -498,7 +498,7 @@ void App::ThrowGeometry(int action, int geometryType, std::string_view textureNa
 	}
 }
 
-void App::ThrowMesh(int action, std::string_view name, int shapeType, std::string_view textureName)
+void App::ThrowMesh(int action, std::string_view name, int shapeType, const VEC_STR& texFiles)
 {
 	// 1) get/create the parent
 	auto groupName = fmt::format("{}-group", name);
@@ -509,7 +509,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, std::strin
 		if (parentObj->type & ObjectType_Mesh)
 			parent = static_cast<Mesh*>(parentObj.get());
 	}
-	else if (auto mesh = MeshLoader::LoadModelFull(groupName, name, textureName))
+	else if (auto mesh = MeshLoader::LoadModelFull(groupName, name, texFiles))
 	{
 		mesh->type |= ObjectType_Group | ObjectType_Instance;
 		mesh->material->LoadProgram("vs_model_texture_instance", "fs_model_texture_instance");
@@ -523,7 +523,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, std::strin
 	// 2) clone an instance
 	if (auto object = parent->CloneInstance(fmt::format("{}:{}", name, parent->children.size())))
 	{
-		object->material = GetMaterialManager().LoadMaterial(fmt::format("model:{}", textureName), "vs_model_texture", "fs_model_texture", { std::string(textureName) });
+		object->material = GetMaterialManager().LoadMaterial(fmt::format("model:{}", ArrayJoin(texFiles, '-')), "vs_model_texture", "fs_model_texture", texFiles);
 
 		bx::Vec3 pos = camera->pos2;
 		bx::Vec3 rot = bx::InitZero;

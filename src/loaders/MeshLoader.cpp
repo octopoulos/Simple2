@@ -1,12 +1,26 @@
 // MeshLoader.cpp
 // @author octopoulos
-// @version 2025-09-02
+// @version 2025-09-04
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
 //
 #include "materials/MaterialManager.h" // GetMaterialManager
 #include "textures/TextureManager.h"   // GetTextureManager
+
+enum MeshFormats_ : int
+{
+	MeshFormat_Bgfx = 1,
+	MeshFormat_Fbx  = 2,
+	MeshFormat_Gltf = 3,
+};
+
+static const UMAP_STR_INT extFormats = {
+	{ "bin" , MeshFormat_Bgfx },
+	{ "fbx" , MeshFormat_Fbx  },
+	{ "glb" , MeshFormat_Gltf },
+	{ "gltf", MeshFormat_Gltf },
+};
 
 static const VEC_STR priorityExts = { "glb", "gltf", "fbx", "bin" };
 
@@ -18,22 +32,20 @@ sMesh MeshLoader::LoadModel(std::string_view name, std::string_view modelName, b
 
 	sMesh mesh;
 
-	for (const auto ext : priorityExts)
+	for (const auto& ext : priorityExts)
 	{
 		const auto path = modelDir / fmt::format("{}.{}", modelName, ext);
 		if (IsFile(path))
 		{
-			// bgfx format
-			if (ext == "bin")
+			const int format = FindDefault(extFormats, ext, 0);
+			// clang-format off
+			switch (format)
 			{
-				bx::FilePath filePath(path.string().c_str());
-				mesh = MeshLoad(name, filePath, ramcopy);
+			case MeshFormat_Bgfx: mesh = LoadBgfx(path, ramcopy); break;
+			case MeshFormat_Fbx : mesh = LoadFbx (path, ramcopy); break;
+			case MeshFormat_Gltf: mesh = LoadGltf(path, ramcopy); break;
 			}
-			// fbx
-			else if (ext == "fbx")
-				mesh = LoadFbx(path);
-			// gltf
-			else mesh = LoadGltf(path);
+			// clang-format on
 
 			if (mesh) break;
 		}
@@ -51,17 +63,18 @@ sMesh MeshLoader::LoadModel(std::string_view name, std::string_view modelName, b
 	return mesh;
 }
 
-sMesh MeshLoader::LoadModelFull(std::string_view name, std::string_view modelName, std::string_view textureName)
+sMesh MeshLoader::LoadModelFull(std::string_view name, std::string_view modelName, const VEC_STR& texFiles)
 {
 	// 1) load model
 	auto mesh = LoadModel(name, modelName, true);
 	if (!mesh) return nullptr;
+	ui::Log("LoadModelFull: {} {} groups={}", name, modelName, mesh->groups.size());
 
 	// 2) create material
 	if (!mesh->material)
 	{
-		mesh->material = GetMaterialManager().LoadMaterial(modelName, "vs_model_texture", "fs_model_texture", { std::string(textureName) });
-		mesh->material->FindModelTextures(modelName, textureName);
+		mesh->material = GetMaterialManager().LoadMaterial(modelName, "vs_model_texture", "fs_model_texture");
+		mesh->material->FindModelTextures(modelName, texFiles);
 	}
 
 	// 3) done

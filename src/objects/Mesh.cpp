@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-09-01
+// @version 2025-09-04
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -8,8 +8,6 @@
 #include "loaders/writer.h" // WRITE_KEY_xxx
 #include "ui/ui.h"          // ui::
 #include "ui/xsettings.h"   // xsettings
-
-#include <meshoptimizer.h>
 
 constexpr uint64_t defaultState = 0
     //| BGFX_STATE_CULL_CCW
@@ -19,16 +17,14 @@ constexpr uint64_t defaultState = 0
     | BGFX_STATE_WRITE_RGB
     | BGFX_STATE_WRITE_Z;
 
-namespace bgfx
-{
-	int32_t read(bx::ReaderI* reader, bgfx::VertexLayout& layout, bx::Error* err);
-}
-
 void Mesh::ActivatePhysics(bool activate)
 {
 	body->enabled = activate;
-	body->body->setActivationState(activate ? ACTIVE_TAG : DISABLE_SIMULATION);
-	body->body->activate(activate);
+	if (auto& sbody = body->body)
+	{
+		sbody->setActivationState(activate ? ACTIVE_TAG : DISABLE_SIMULATION);
+		sbody->activate(activate);
+	}
 }
 
 sMesh Mesh::CloneInstance(std::string_view cloneName)
@@ -66,172 +62,6 @@ void Mesh::Destroy()
 			if (group.indices) bx::free(allocator, group.indices);
 		}
 		groups.clear();
-	}
-}
-
-void Mesh::Load(bx::ReaderSeekerI* reader, bool ramcopy)
-{
-	constexpr uint32_t kChunkVertexBuffer           = BX_MAKEFOURCC('V', 'B', ' ', 0x1);
-	constexpr uint32_t kChunkVertexBufferCompressed = BX_MAKEFOURCC('V', 'B', 'C', 0x0);
-	constexpr uint32_t kChunkIndexBuffer            = BX_MAKEFOURCC('I', 'B', ' ', 0x0);
-	constexpr uint32_t kChunkIndexBufferCompressed  = BX_MAKEFOURCC('I', 'B', 'C', 0x1);
-	constexpr uint32_t kChunkPrimitive              = BX_MAKEFOURCC('P', 'R', 'I', 0x0);
-
-	bx::AllocatorI* allocator = entry::getAllocator();
-
-	uint32_t  chunk;
-	bx::Error err;
-	Group     group;
-	while (bx::read(reader, chunk, &err) == 4 && err.isOk())
-	{
-		switch (chunk)
-		{
-		case kChunkVertexBuffer:
-		{
-			// clang-format off
-			read(reader, group.sphere, &err);
-			read(reader, group.aabb  , &err);
-			read(reader, group.obb   , &err);
-			// clang-format on
-
-			read(reader, layout, &err);
-
-			const uint16_t stride = layout.getStride();
-
-			read(reader, group.numVertices, &err);
-			const bgfx::Memory* mem = bgfx::alloc(group.numVertices * stride);
-			read(reader, mem->data, mem->size, &err);
-
-			if (ramcopy)
-			{
-				group.vertices = (uint8_t*)bx::alloc(allocator, group.numVertices * stride);
-				bx::memCopy(group.vertices, mem->data, mem->size);
-			}
-
-			group.vbh = bgfx::createVertexBuffer(mem, layout);
-		}
-		break;
-
-		case kChunkVertexBufferCompressed:
-		{
-			// clang-format off
-			read(reader, group.sphere, &err);
-			read(reader, group.aabb  , &err);
-			read(reader, group.obb   , &err);
-			// clang-format on
-
-			read(reader, layout, &err);
-
-			const uint16_t stride = layout.getStride();
-
-			read(reader, group.numVertices, &err);
-
-			const bgfx::Memory* mem = bgfx::alloc(group.numVertices * stride);
-
-			uint32_t compressedSize;
-			bx::read(reader, compressedSize, &err);
-
-			void* compressedVertices = bx::alloc(allocator, compressedSize);
-			bx::read(reader, compressedVertices, compressedSize, &err);
-
-			meshopt_decodeVertexBuffer(mem->data, group.numVertices, stride, (uint8_t*)compressedVertices, compressedSize);
-
-			bx::free(allocator, compressedVertices);
-
-			if (ramcopy)
-			{
-				group.vertices = (uint8_t*)bx::alloc(allocator, group.numVertices * stride);
-				bx::memCopy(group.vertices, mem->data, mem->size);
-			}
-			group.vbh = bgfx::createVertexBuffer(mem, layout);
-		}
-		break;
-
-		case kChunkIndexBuffer:
-		{
-			read(reader, group.numIndices, &err);
-
-			const bgfx::Memory* mem = bgfx::alloc(group.numIndices * 2);
-			read(reader, mem->data, mem->size, &err);
-
-			if (ramcopy)
-			{
-				group.indices = (uint32_t*)bx::alloc(allocator, group.numIndices * 2);
-				bx::memCopy(group.indices, mem->data, mem->size);
-			}
-			group.ibh = bgfx::createIndexBuffer(mem);
-		}
-		break;
-
-		case kChunkIndexBufferCompressed:
-		{
-			bx::read(reader, group.numIndices, &err);
-
-			const bgfx::Memory* mem = bgfx::alloc(group.numIndices * 2);
-
-			uint32_t compressedSize;
-			bx::read(reader, compressedSize, &err);
-
-			void* compressedIndices = bx::alloc(allocator, compressedSize);
-
-			bx::read(reader, compressedIndices, compressedSize, &err);
-
-			meshopt_decodeIndexBuffer(mem->data, group.numIndices, 2, (uint8_t*)compressedIndices, compressedSize);
-
-			bx::free(allocator, compressedIndices);
-
-			if (ramcopy)
-			{
-				group.indices = (uint32_t*)bx::alloc(allocator, group.numIndices * 2);
-				bx::memCopy(group.indices, mem->data, mem->size);
-			}
-			group.ibh = bgfx::createIndexBuffer(mem);
-		}
-		break;
-
-		case kChunkPrimitive:
-		{
-			uint16_t len;
-			read(reader, len, &err);
-
-			std::string material;
-			material.resize(len);
-			read(reader, const_cast<char*>(material.c_str()), len, &err);
-
-			uint16_t num;
-			read(reader, num, &err);
-
-			for (uint32_t ii = 0; ii < num; ++ii)
-			{
-				read(reader, len, &err);
-
-				std::string name;
-				name.resize(len);
-				read(reader, const_cast<char*>(name.c_str()), len, &err);
-
-				Primitive prim;
-				// clang-format off
-				read(reader, prim.startIndex , &err);
-				read(reader, prim.numIndices , &err);
-				read(reader, prim.startVertex, &err);
-				read(reader, prim.numVertices, &err);
-				read(reader, prim.sphere     , &err);
-				read(reader, prim.aabb       , &err);
-				read(reader, prim.obb        , &err);
-				// clang-format on
-
-				group.prims.push_back(prim);
-			}
-
-			groups.push_back(group);
-			group.Reset();
-		}
-		break;
-
-		default:
-			ui::LogWarning("{:08x} at {}", chunk, bx::skip(reader, 0));
-			break;
-		}
 	}
 }
 
@@ -385,9 +215,12 @@ void Mesh::SetBodyTransform()
 	transform.setRotation(btQuaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w));
 
 	// update transform
-	body->body->setWorldTransform(transform);
-	if (auto* motionState = body->body->getMotionState())
-		motionState->setWorldTransform(transform);
+	if (auto& sbody = body->body)
+	{
+		sbody->setWorldTransform(transform);
+		if (auto* motionState = sbody->getMotionState())
+			motionState->setWorldTransform(transform);
+	}
 }
 
 void Mesh::ShowTable() const
@@ -463,7 +296,7 @@ int Mesh::SynchronizePhysics()
 		Object3d::SynchronizePhysics();
 	}
 	// physics?
-	else if (body && body->enabled && body->mass >= 0.0f)
+	else if (body && body->body && body->enabled && body->mass >= 0.0f)
 	{
 		btTransform bTransform;
 		auto        motionState = body->body->getMotionState();
@@ -519,25 +352,6 @@ int Mesh::SynchronizePhysics()
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FUNCTIONS
 ////////////
-
-static sMesh MeshLoad(std::string_view name, bx::ReaderSeekerI* reader, bool ramcopy)
-{
-	auto mesh = std::make_shared<Mesh>(name);
-	mesh->Load(reader, ramcopy);
-	return mesh;
-}
-
-sMesh MeshLoad(std::string_view name, const bx::FilePath& filePath, bool ramcopy)
-{
-	bx::FileReaderI* reader = entry::getFileReader();
-	if (bx::open(reader, filePath))
-	{
-		auto mesh = MeshLoad(name, reader, ramcopy);
-		bx::close(reader);
-		return mesh;
-	}
-	return nullptr;
-}
 
 MeshState* MeshStateCreate()
 {

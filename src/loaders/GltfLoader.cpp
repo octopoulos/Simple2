@@ -1,6 +1,6 @@
 // GltfLoader.cpp
 // @author octopoulos
-// @version 2025-09-03
+// @version 2025-09-04
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -174,7 +174,7 @@ static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optio
 // MAIN
 ///////
 
-sMesh LoadGltf(const std::filesystem::path& path)
+sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy)
 {
 	fastgltf::Parser parser;
 
@@ -345,7 +345,7 @@ sMesh LoadGltf(const std::filesystem::path& path)
 				for (size_t i = 0; i < indices.size(); ++i)
 					group.indices[i] = static_cast<uint32_t>(indices[i]);
 				group.numIndices = static_cast<uint32_t>(indices.size());
-				group.ibh        = bgfx::createIndexBuffer(bgfx::makeRef(group.indices, indices.size() * sizeof(uint16_t)));
+				group.ibh        = bgfx::createIndexBuffer(bgfx::makeRef(group.indices, indices.size() * sizeof(uint32_t)), BGFX_BUFFER_INDEX32);
 			}
 
 			// set up primitive

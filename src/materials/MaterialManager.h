@@ -1,6 +1,6 @@
 // MaterialManager.h
 // @author octopoulos
-// @version 2025-09-01
+// @version 2025-09-04
 
 #pragma once
 
@@ -27,7 +27,7 @@ public:
 
 	/// Load or retrieve a material
 	/// - caches internally
-	sMaterial LoadMaterial(std::string_view name, std::string_view vsName, std::string_view fsName, const VEC_STR& texNames = {}, const VEC<TextureData>& texDatas = {});
+	sMaterial LoadMaterial(std::string_view name, std::string_view vsName, std::string_view fsName, const VEC_STR& texFiles = {}, const VEC<TextureData>& texDatas = {});
 
 	/// Print all materials
 	void PrintMaterials();

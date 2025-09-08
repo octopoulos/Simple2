@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-09-01
+// @version 2025-09-04
 
 #pragma once
 
@@ -114,10 +114,6 @@ public:
 	/// Delete all groups including indices + vertices
 	void Destroy();
 
-	/// Load a mesh
-	/// @param ramcopy: populate indices and vertices in groups
-	void Load(bx::ReaderSeekerI* reader, bool ramcopy);
-
 	/// Render the mesh, if geometry & material program exist, or if program is set
 	/// - if a group => render the children only
 	virtual void Render(uint8_t viewId, int renderFlags) override;
@@ -152,6 +148,5 @@ public:
 // FUNCTIONS
 ////////////
 
-sMesh      MeshLoad(std::string_view name, const bx::FilePath& filePath, bool ramcopy = false);
 MeshState* MeshStateCreate();
 void       MeshStateDestroy(MeshState* meshState);

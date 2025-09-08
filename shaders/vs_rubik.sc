@@ -3,7 +3,7 @@
 $input a_position, a_normal, a_texcoord0, a_color0
 $output v_normal, v_color0
 
-uniform mat4 u_modelViewProj;
+#include "common.sh"
 
 void main()
 {

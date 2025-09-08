@@ -1,6 +1,6 @@
 // config.h
 // @author octopoulos
-// @version 2025-08-29
+// @version 2025-09-04
 
 #pragma once
 
@@ -11,7 +11,7 @@
 #endif // _DEBUG
 
 // DEV
-#define DEV_char     D_TRUE ///< processEvents
+#define DEV_char     false  ///< processEvents
 #define DEV_controls true   ///< FixedControls
 #define DEV_matrix   false  ///< UpdateLocalMatrix
 #define DEV_models   false  ///< ScanModels
