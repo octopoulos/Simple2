@@ -53,8 +53,11 @@ private:
 	/// Per-frame input logic (ex: smooth camera movement)
 	void FluidControls();
 
-	/// Move the cursor using the arrows
-	void MoveCursor(bool force);
+	/// Move the selected object using the arrows
+	void MoveSelected(bool force);
+
+	/// Rotate the selected object using the arrows
+	void RotateSelected(bool force);
 
 	/// Throw a geometry
 	/// @param geometryType: GeometryType_None for random

@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-09-01
+// @version 2025-09-04
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -251,21 +251,23 @@ void Object3d::ShowTable() const
 {
 	// clang-format off
 	ui::ShowTable({
-		{ "id"        , std::to_string(id)                                                                          },
-		{ "irot"      , fmt::format("{}:{}:{}", irot[0], irot[1], irot[2])                                          },
-		{ "name"      , name                                                                                        },
-		{ "names"     , std::to_string(names.size())                                                                },
-		{ "position"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", position.x, position.y, position.z)                     },
-		{ "position1" , fmt::format("{:.2f}:{:.2f}:{:.2f}", position1.x, position1.y, position1.z)                  },
-		{ "position2" , fmt::format("{:.2f}:{:.2f}:{:.2f}", position2.x, position2.y, position2.z)                  },
-		{ "posTs"     , std::to_string(posTs)                                                                       },
-		{ "quaternion", fmt::format("{:.2f}:{:.2f}:{:.2f}", quaternion.x, quaternion.y, quaternion.z, quaternion.w) },
-		{ "quatTs"    , std::to_string(quatTs)                                                                      },
-		{ "rotation"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", rotation.x, rotation.y, rotation.z)                     },
-		{ "scale"     , fmt::format("{:.2f}:{:.2f}:{:.2f}", scale.x, scale.y, scale.z)                              },
-		{ "type"      , std::to_string(type)                                                                        },
-		{ "type:name" , ObjectName(type)                                                                            },
-		{ "visible"   , std::to_string(visible)                                                                     },
+		{ "id"         , std::to_string(id)                                                                           },
+		{ "irot"       , fmt::format("{}:{}:{}", irot[0], irot[1], irot[2])                                           },
+		{ "matrix"     , fmt::format("{:.2f}:{:.2f}:{:.2f}", matrix[3][0], matrix[3][1], matrix[3][2])                },
+		{ "matrixWorld", fmt::format("{:.2f}:{:.2f}:{:.2f}", matrixWorld[3][0], matrixWorld[3][1], matrixWorld[3][2]) },
+		{ "name"       , name                                                                                         },
+		{ "names"      , std::to_string(names.size())                                                                 },
+		{ "position"   , fmt::format("{:.2f}:{:.2f}:{:.2f}", position.x, position.y, position.z)                      },
+		{ "position1"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", position1.x, position1.y, position1.z)                   },
+		{ "position2"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", position2.x, position2.y, position2.z)                   },
+		{ "posTs"      , std::to_string(posTs)                                                                        },
+		{ "quaternion" , fmt::format("{:.2f}:{:.2f}:{:.2f}", quaternion.x, quaternion.y, quaternion.z, quaternion.w)  },
+		{ "quatTs"     , std::to_string(quatTs)                                                                       },
+		{ "rotation"   , fmt::format("{:.2f}:{:.2f}:{:.2f}", rotation.x, rotation.y, rotation.z)                      },
+		{ "scale"      , fmt::format("{:.2f}:{:.2f}:{:.2f}", scale.x, scale.y, scale.z)                               },
+		{ "type"       , std::to_string(type)                                                                         },
+		{ "type:name"  , ObjectName(type)                                                                             },
+		{ "visible"    , std::to_string(visible)                                                                      },
 	});
 	// clang-format on
 }
@@ -318,6 +320,15 @@ int Object3d::SynchronizePhysics()
 	return 0;
 }
 
+glm::mat4 Object3d::TransformPosition(const glm::vec3& _position)
+{
+	glm::mat4 matrix = glm::translate(glm::mat4(1.0f), _position) * glm::mat4_cast(quaternion) * scaleMatrix;
+	if (parent && !(parent->type & ObjectType_Scene))
+		matrix = parent->matrixWorld * matrix;
+
+	return matrix;
+}
+
 void Object3d::UpdateLocalMatrix(std::string_view origin)
 {
 	matrix = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(quaternion) * scaleMatrix;
@@ -340,7 +351,7 @@ void Object3d::UpdateWorldMatrix(bool force)
 	}
 
 	for (auto& child : children)
-		child->UpdateWorldMatrix();
+		child->UpdateWorldMatrix(force);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

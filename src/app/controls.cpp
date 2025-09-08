@@ -143,28 +143,8 @@ void App::FixedControls()
 		// print with GUI
 		if (downs[Key::Print]) wantScreenshot = 1;
 
-		// rotate object
-		if (const int flag = ArrowsFlag())
-		{
-			if (auto target = (camera->follow & CameraFollow_Cursor) ? cursor : selectWeak.lock())
-			{
-				const int angleInc = xsettings.angleInc;
-				if (flag & (1 | 8)) target->irot[0] += (flag & 1) ? -angleInc : angleInc;
-				if (flag & (2 | 4)) target->irot[1] += (flag & 2) ? -angleInc : angleInc;
-				target->RotationFromIrot(false);
-				target->UpdateLocalMatrix("FixedControls");
-
-				// deactivate physical body
-				if (auto mesh = Mesh::SharedPtr(target, ObjectType_HasBody))
-				{
-					mesh->SetBodyTransform();
-					mesh->ActivatePhysics(false);
-				}
-
-				// save?
-				AutoSave(target);
-			}
-		}
+		// rotate cursor/selected
+		RotateSelected(false);
 	}
 	// 4) no modifier
 	else
@@ -238,8 +218,8 @@ void App::FixedControls()
 
 		if (downs[Key::Delete]) {}
 
-		// move cursor
-		MoveCursor(false);
+		// move cursor/selected
+		MoveSelected(false);
 
 		if (downs[Key::NumPad1]) camera->SetOrthographic({ 0.0f, 0.0f, -1.0f });
 		if (downs[Key::NumPad3]) camera->SetOrthographic({ 1.0f, 0.0f, 0.0f });
@@ -348,7 +328,7 @@ void App::FocusScreen()
 	ImGui::SetWindowFocus(nullptr);
 }
 
-void App::MoveCursor(bool force)
+void App::MoveSelected(bool force)
 {
 	using namespace entry;
 
@@ -410,7 +390,7 @@ void App::MoveCursor(bool force)
 				if (xsettings.smoothPos)
 					target->posTs = Nowd();
 				else
-					target->UpdateLocalMatrix("MoveCursor");
+					target->UpdateLocalMatrix("MoveSelected");
 
 				// move cursor at the same time as the selectWeak?
 				if (!isCursor)
@@ -422,7 +402,7 @@ void App::MoveCursor(bool force)
 					cursor->position2   = target->position2;
 					cursor->position2.y = 1.0f;
 					cursor->posTs       = target->posTs;
-					if (!xsettings.smoothPos) cursor->UpdateLocalMatrix("MoveCursor2");
+					if (!xsettings.smoothPos) cursor->UpdateLocalMatrix("MoveSelected/2");
 
 					// save if moved
 					if (flag) AutoSave(target);
@@ -435,7 +415,8 @@ void App::MoveCursor(bool force)
 					mesh->ActivatePhysics(false);
 				}
 
-				camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(result));
+				const glm::mat4 matrix = target->TransformPosition(result);
+				camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(matrix[3]));
 				camera->Zoom();
 			}
 		}
@@ -444,6 +425,44 @@ void App::MoveCursor(bool force)
 	{
 		cacheForward = camera->forward;
 		cacheRight   = camera->right;
+	}
+}
+
+void App::RotateSelected(bool force)
+{
+	if (const int flag = ArrowsFlag(); flag || force)
+	{
+		const bool isCursor = camera->follow & CameraFollow_Cursor;
+		if (auto target = isCursor ? cursor : selectWeak.lock())
+		{
+			const int angleInc = xsettings.angleInc;
+			if (flag & (1 | 8)) target->irot[0] += (flag & 1) ? -angleInc : angleInc;
+			if (flag & (2 | 4)) target->irot[1] += (flag & 2) ? -angleInc : angleInc;
+			target->RotationFromIrot(false);
+			target->UpdateLocalMatrix("RotateSelected");
+
+			// rotate cursor as the same time as the selectWeak?
+			if (!isCursor)
+			{
+				memcpy(cursor->irot, target->irot, sizeof(cursor->irot));
+
+				cursor->quaternion  = target->quaternion;
+				cursor->quaternion1 = target->quaternion;
+				cursor->quaternion2 = target->quaternion;
+				cursor->quatTs      = target->quatTs;
+				if (!xsettings.smoothPos) cursor->UpdateLocalMatrix("RotateSelected/2");
+
+				// save if rotated
+				if (flag) AutoSave(target);
+			}
+
+			// deactivate physical body
+			if (auto mesh = Mesh::SharedPtr(target, ObjectType_HasBody))
+			{
+				mesh->SetBodyTransform();
+				mesh->ActivatePhysics(false);
+			}
+		}
 	}
 }
 

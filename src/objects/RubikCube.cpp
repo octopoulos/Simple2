@@ -1,6 +1,6 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-09-03
+// @version 2025-09-04
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
@@ -12,6 +12,8 @@
 
 void RubikCube::CreateCubies()
 {
+	load = MeshLoad_Full;
+
 	// create material for all cubies
 	const auto cubieMaterial = GetMaterialManager().LoadMaterial("rubik_cubie", "vs_rubik", "fs_rubik");
 
@@ -19,12 +21,12 @@ void RubikCube::CreateCubies()
 	const std::vector<glm::vec4> faceColors = {
 		glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), // +x (red)
 		glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), // -x (orange)
-		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), // +y (white)
-		glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), // -y (yellow)
-		glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), // +z (blue)
-		glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)  // -z (green)
+		glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), // +y (yellow)
+		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), // -y (white)
+		glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), // +z (green)
+		glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), // -z (blue)
 	};
-	const glm::vec4 defaultColor(0.2f, 0.2f, 0.2f, 1.0f); // black/gray for inner faces
+	const glm::vec4 defaultColor(0.4f, 0.4f, 0.4f, 1.0f); // black/gray for inner faces
 
 	// shared geometry for inner cubies (all gray)
 	static uGeometry innerCubieGeometry = nullptr;
@@ -32,8 +34,8 @@ void RubikCube::CreateCubies()
 		innerCubieGeometry = CreateBoxGeometry(1.1f, 1.1f, 1.1f, 1, 1, 1, { defaultColor });
 
 	// total size of each cubie (edge length)
-	const float cubeEdge = 1.1f;                // slightly larger than 1.0 for visible gaps
-	const float spacing  = cubeEdge;            // distance between cubie centers
+	const float cubeEdge = 0.95f;               // slightly larger than 1.0 for visible gaps
+	const float spacing  = 1.0f;                // distance between cubie centers
 	const int   S        = cubeSize - 1;        // shortcut
 	const float offset   = -S * spacing / 2.0f; // center the cube at origin
 
@@ -71,8 +73,7 @@ void RubikCube::CreateCubies()
 				    offset + y * spacing,
 				    offset + z * spacing);
 
-				// set scale to match cubeEdge
-				const glm::vec3 scale(cubeEdge, cubeEdge, cubeEdge);
+				const glm::vec3 scale(1.0f);
 				cubie->ScaleQuaternionPosition(scale, glm::identity<glm::quat>(), position);
 
 				// add cubie as a child
@@ -89,7 +90,7 @@ void RubikCube::CreateCubies()
 
 int RubikCube::Serialize(fmt::memory_buffer& outString, const int depth, const int bounds, const bool addChildren) const
 {
-	int keyId = Object3d::Serialize(outString, depth, bounds & 1, addChildren);
+	int keyId = Mesh::Serialize(outString, depth, bounds & 1, false);
 	if (keyId < 0) return keyId;
 
 	WRITE_KEY_INT(cubeSize);
@@ -100,7 +101,7 @@ int RubikCube::Serialize(fmt::memory_buffer& outString, const int depth, const i
 
 void RubikCube::ShowTable() const
 {
-	Object3d::ShowTable();
+	Mesh::ShowTable();
 	ui::ShowTable({
 	    { "cubeSize", std::to_string(cubeSize) },
 	});

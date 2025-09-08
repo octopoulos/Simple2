@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-09-02
+// @version 2025-09-04
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -10,6 +10,7 @@
 #include "core/common3d.h"             // PrintMatrix
 #include "loaders/MeshLoader.h"        // MeshLoader::
 #include "materials/MaterialManager.h" // GetMaterialManager
+#include "objects/RubikCube.h"         // RubikCube
 
 #include <simdjson.h>
 
@@ -79,6 +80,7 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 	simdjson::ondemand::array  array      = {};
 	simdjson::ondemand::object obj        = {};
 	bool                       tempBool   = true;
+	int64_t                    tempInt64  = 0;
 	std::string                tempString = "";
 
 	// 2) name / type / visible
@@ -119,6 +121,12 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 	{
 		exist = scene->GetObjectByName("Map");
 		if (exist) object = exist;
+	}
+	else if (type & ObjectType_RubikCube)
+	{
+		int cubeSize = 3;
+		if (!doc["cubicSize"].get_int64().get(tempInt64)) cubeSize = TO_INT(tempInt64);
+		object = std::make_shared<RubikCube>(name, cubeSize);
 	}
 	else if (type & ObjectType_Mesh)
 	{
@@ -333,7 +341,7 @@ void App::SelectObject(const sObject3d& obj, bool countIndex)
 		camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(target->position));
 		camera->Zoom();
 
-		MoveCursor(true);
+		MoveSelected(true);
 		if (DEV_matrix) PrintMatrix(target->matrixWorld, target->name);
 		FocusScreen();
 	}

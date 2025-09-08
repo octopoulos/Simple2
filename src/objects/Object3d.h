@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-09-01
+// @version 2025-09-04
 
 #pragma once
 
@@ -55,7 +55,7 @@ public:
 	UMAP_STR<std::weak_ptr<Object3d>> names       = {};                         ///< named children
 	Object3d*                         parent      = nullptr;                    ///< parent object
 	bool                              placed      = false;                      ///< object has been placed on the map?
-	glm::vec3                         position    = glm::vec3(0.0f);            ///< position
+	glm::vec3                         position    = glm::vec3(0.0f);            ///< local position
 	glm::vec3                         position1   = glm::vec3(0.0f);            ///< position: origin
 	glm::vec3                         position2   = glm::vec3(0.0f);            ///< position: target
 	double                            posTs       = 0.0;                        ///< stamp when moved
@@ -122,6 +122,9 @@ public:
 
 	/// Synchronize physics transform
 	virtual int SynchronizePhysics();
+
+	/// Transform a vector
+	glm::mat4 TransformPosition(const glm::vec3& _position);
 
 	/// Update local matrix from scale * quaternion * position
 	void UpdateLocalMatrix(std::string_view origin = "");
