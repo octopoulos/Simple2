@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-06
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -38,32 +38,40 @@ static void AddRecent(const std::filesystem::path& filename)
 	}
 }
 
-static void GetArrayFloat(simdjson::ondemand::object& doc, const char* key, float* out)
+static bool GetArrayFloat(int count, simdjson::ondemand::object& doc, const char* key, float* out, const std::vector<float> reset = {})
 {
+	if (reset.size()) memcpy(out, reset.data(), count * sizeof(float));
+
 	simdjson::ondemand::array arr;
 	if (!doc[key].get_array().get(arr))
 	{
 		for (int i = -1; auto val : arr)
 		{
-			if (++i >= 3) break;
+			if (++i >= count) break;
 			double value;
 			if (!val.get_double().get(value)) out[i] = TO_FLOAT(value);
 		}
+		return true;
 	}
+	return false;
 }
 
-static void GetArrayInt(simdjson::ondemand::object& doc, const char* key, std::array<int, 3>& out)
+static bool GetArrayInt(int count, simdjson::ondemand::object& doc, const char* key, int* out, const std::vector<int> reset = {})
 {
+	if (reset.size()) memcpy(out, reset.data(), count * sizeof(int));
+
 	simdjson::ondemand::array arr;
 	if (!doc[key].get_array().get(arr))
 	{
 		for (int i = -1; auto val : arr)
 		{
-			if (++i >= 3) break;
+			if (++i >= count) break;
 			int64_t value;
 			if (!val.get_int64().get(value)) out[i] = TO_INT(value);
 		}
+		return true;
 	}
+	return false;
 }
 
 static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObject3d scene, void* physics, int depth)
@@ -77,11 +85,12 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 	bool               visible  = true;
 
 	// temp vars
-	simdjson::ondemand::array  array      = {};
-	simdjson::ondemand::object obj        = {};
-	bool                       tempBool   = true;
-	int64_t                    tempInt64  = 0;
-	std::string                tempString = "";
+	simdjson::ondemand::array  array         = {};
+	simdjson::ondemand::object obj           = {};
+	bool                       tempBool      = true;
+	float                      tempFloat4[4] = {};
+	int64_t                    tempInt64     = 0;
+	std::string                tempString    = "";
 
 	// 2) name / type / visible
 	if (!doc["name"].get_string().get(name)) {}
@@ -89,9 +98,11 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 	if (!doc["visible"].get_bool().get(tempBool)) visible = tempBool;
 
 	// 3) irot / position / scale
-	GetArrayInt(doc, "irot", irot);
-	GetArrayFloat(doc, "position", glm::value_ptr(position));
-	GetArrayFloat(doc, "scale", glm::value_ptr(scale));
+	// clang-format off
+	GetArrayInt  (3, doc, "irot"    , irot.data()             , { 0, 0, 0 });
+	GetArrayFloat(3, doc, "position", glm::value_ptr(position), { 0.0f, 0.0f, 0.0f });
+	GetArrayFloat(3, doc, "scale"   , glm::value_ptr(scale)   , { 1.0f, 1.0f, 1.0f });
+	// clang-format on
 
 	// 4) create object based on type
 	sObject3d exist      = nullptr;
@@ -105,11 +116,13 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 
 		if (auto camera = Camera::SharedPtr(object))
 		{
-			GetArrayFloat(doc, "pos", &camera->pos.x);
-			GetArrayFloat(doc, "target", &camera->target.x);
+			// clang-format off
+			GetArrayFloat(3, doc, "pos"   , &camera->pos.x   , { 0.0f, 0.0f, 0.0f });
+			GetArrayFloat(3, doc, "target", &camera->target.x, { 0.0f, 0.0f, 1.0f });
+			// clang-format on
 
-			std::memcpy(&camera->pos2.x, &camera->pos.x, sizeof(bx::Vec3));
-			std::memcpy(&camera->target2.x, &camera->target.x, sizeof(bx::Vec3));
+			memcpy(&camera->pos2.x, &camera->pos.x, sizeof(bx::Vec3));
+			memcpy(&camera->target2.x, &camera->target.x, sizeof(bx::Vec3));
 		}
 	}
 	else if (type & ObjectType_Cursor)
@@ -122,16 +135,16 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 		exist = scene->GetObjectByName("Map");
 		if (exist) object = exist;
 	}
-	else if (type & ObjectType_RubikCube)
-	{
-		int cubeSize = 3;
-		if (!doc["cubicSize"].get_int64().get(tempInt64)) cubeSize = TO_INT(tempInt64);
-		object = std::make_shared<RubikCube>(name, cubeSize);
-	}
 	else if (type & ObjectType_Mesh)
 	{
-		int64_t load = 0;
-		if (!doc["load"].get_int64().get(load))
+		// rubik
+		if (type & ObjectType_RubikCube)
+		{
+			int cubeSize = 3;
+			if (!doc["cubicSize"].get_int64().get(tempInt64)) cubeSize = TO_INT(tempInt64);
+			object = std::make_shared<RubikCube>(name, cubeSize);
+		}
+		else if (int64_t load = 0; !doc["load"].get_int64().get(load))
 		{
 			std::string modelName;
 			if (!doc["modelName"].get_string().get(modelName))
@@ -184,18 +197,30 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 
 		// body
 		{
-			double mass      = 0.0;
-			int    shapeType = ShapeType_Box;
+			btVector4 dims      = { 0.0f, 0.0f, 0.0f, 0.0f };
+			bool      enabled   = true;
+			double    mass      = 0.0;
+			int       shapeType = ShapeType_Box;
 
 			if (!doc["body"].get_object().get(obj))
 			{
+				GetArrayFloat(4, obj, "dims", tempFloat4, { 0.0f, 0.0f, 0.0f, 0.0f });
+				dims = btVector4(tempFloat4[0], tempFloat4[1], tempFloat4[2], tempFloat4[3]);
+
+				if (!obj["enabled"].get_bool().get(tempBool)) enabled = tempBool;
 				if (!obj["mass"].get_double().get(mass)) {}
 				if (!obj["shapeType"].get_string().get(tempString)) shapeType = ShapeType(tempString);
+
+				ui::Log("XX name={} type={}", name, type);
+				ui::Log("XX dims={} {} {} {} => {} {} {} {}", tempFloat4[0], tempFloat4[1], tempFloat4[2], tempFloat4[3], dims.x(), dims.y(), dims.z(), dims.w());
+				ui::Log("XX mass={}", mass);
+				ui::Log("XX shapeType={} ({})", shapeType, tempString);
 			}
 
 			mesh->ScaleIrotPosition(scale, irot, position);
 			positioned = true;
-			mesh->CreateShapeBody((PhysicsWorld*)physics, shapeType, TO_FLOAT(mass));
+			mesh->CreateShapeBody((PhysicsWorld*)physics, shapeType, TO_FLOAT(mass), dims);
+			mesh->body->enabled = enabled;
 		}
 		ui::Log(" -->4 type={}/{} {}", type, object->type, name);
 	}
@@ -243,6 +268,8 @@ bool App::OpenScene(const std::filesystem::path& filename)
 		ui::Log("Parsing JSON object from file: {}", filename.string());
 		Scene::SharedPtr(scene)->Clear();
 		ParseObject(obj, scene, scene, physics.get(), 0);
+
+		entry::setWindowTitle(entry::kDefaultWindowHandle, filename.filename().string().c_str());
 		return true;
 	}
 
@@ -288,9 +315,9 @@ void App::PickObject(int mouseX, int mouseY)
 void App::SelectObject(const sObject3d& obj, bool countIndex)
 {
 	// 1) place + restore material
-	if (const auto& temp = selectWeak.lock())
+	if (const auto temp = selectWeak.lock())
 	{
-		temp->placed = true;
+		temp->placing = false;
 
 		if (auto mesh = Mesh::SharedPtr(temp); mesh && mesh->material0)
 			mesh->material = mesh->material0;

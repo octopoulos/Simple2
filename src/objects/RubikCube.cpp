@@ -1,6 +1,6 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-05
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
@@ -23,15 +23,10 @@ void RubikCube::CreateCubies()
 		glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), // -x (orange)
 		glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), // +y (yellow)
 		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), // -y (white)
-		glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), // +z (green)
+		glm::vec4(0.0f, 0.8f, 0.0f, 1.0f), // +z (green)
 		glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), // -z (blue)
 	};
 	const glm::vec4 defaultColor(0.4f, 0.4f, 0.4f, 1.0f); // black/gray for inner faces
-
-	// shared geometry for inner cubies (all gray)
-	static uGeometry innerCubieGeometry = nullptr;
-	if (!innerCubieGeometry)
-		innerCubieGeometry = CreateBoxGeometry(1.1f, 1.1f, 1.1f, 1, 1, 1, { defaultColor });
 
 	// total size of each cubie (edge length)
 	const float cubeEdge = 0.95f;               // slightly larger than 1.0 for visible gaps
@@ -59,10 +54,8 @@ void RubikCube::CreateCubies()
 				if (z == 0) cubieFaceColors[5] = faceColors[5]; // -z
 
 				// use shared geometry for inner cubies
-				uGeometry  cubieGeometry = innerCubieGeometry;
 				const bool isInnerCubie  = (x > 0 && x < S && y > 0 && y < S && z > 0 && z < S);
-				if (!isInnerCubie)
-					cubieGeometry = CreateBoxGeometry(cubeEdge, cubeEdge, cubeEdge, 1, 1, 1, cubieFaceColors);
+				uGeometry  cubieGeometry = CreateBoxGeometry(cubeEdge, cubeEdge, cubeEdge, 1, 1, 1, cubieFaceColors);
 
 				// create a mesh for the cubie
 				const auto cubie = std::make_shared<Mesh>(cubieName, cubieGeometry, cubieMaterial);

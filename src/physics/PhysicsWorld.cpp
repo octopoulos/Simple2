@@ -1,6 +1,6 @@
 // PhysicsWorld.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-09-05
 
 #include "stdafx.h"
 #include "physics/PhysicsWorld.h"
@@ -40,7 +40,7 @@ void BulletDebugDraw::FlushLines()
 
 	bgfx::TransientVertexBuffer vb;
 	bgfx::allocTransientVertexBuffer(&vb, numVertices, PosColorVertex::ms_layout);
-	std::memcpy(vb.data, lines.data(), numVertices * sizeof(PosColorVertex));
+	memcpy(vb.data, lines.data(), numVertices * sizeof(PosColorVertex));
 	bgfx::setVertexBuffer(0, &vb);
 
 	bgfx::setState(0

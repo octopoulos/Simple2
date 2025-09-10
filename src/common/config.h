@@ -1,6 +1,6 @@
 // config.h
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-05
 
 #pragma once
 
@@ -13,7 +13,7 @@
 // DEV
 #define DEV_char     false  ///< processEvents
 #define DEV_controls true   ///< FixedControls
-#define DEV_matrix   false  ///< UpdateLocalMatrix
+#define DEV_matrix   D_TRUE ///< UpdateLocalMatrix
 #define DEV_models   false  ///< ScanModels
 #define DEV_rotate   D_TRUE ///< RotationFromIrot
 #define DEV_scene    D_TRUE ///< ParseObject

@@ -1,10 +1,11 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-06
 
 #include "stdafx.h"
 #include "physics/Body.h"
 //
+#include "core/common3d.h"  // BulletToGlm, BxToBullet, GlmToBullet
 #include "loaders/writer.h" // WRITE_INIT, WRITE_KEY_xxx
 #include "objects/Mesh.h"   // Group, Mesh
 #include "ui/ui.h"          // ui::
@@ -121,9 +122,13 @@ void Body::CreateBody(float _mass, const btVector3& pos, const btQuaternion& qua
 	if (world) world->addRigidBody(body);
 }
 
-void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
+void Body::CreateShape(int type, Mesh* mesh, const btVector4& newDims)
 {
 	shapeType = type;
+
+	// override dims
+	if (newDims.x() > 0.0f || newDims.y() > 0.0f || newDims.z() > 0.0f)
+		dims = newDims;
 
 	// 1) compound rules:
 	// - if multiple groups or center is not (0, 0, 0) => use a compound
@@ -139,6 +144,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& dims)
 	switch (type)
 	{
 	case ShapeType_Box:
+		ui::Log("{}: dims={} {} {}", type, dims.x(), dims.y(), dims.z());
 		if (dims.x() > 0.0f && dims.y() > 0.0f && dims.z() > 0.0f)
 			shape = new btBoxShape(dims);
 		else if (geometry)
@@ -451,6 +457,14 @@ int Body::Serialize(fmt::memory_buffer& outString, int depth, int bounds) const
 {
 	if (bounds & 1) WRITE_CHAR('{');
 	WRITE_INIT();
+
+	if (const auto& vec = dims; vec.x() != 0.0f || vec.y() != 0.0f || vec.z() != 0.0f || vec.w() != 0.0f)
+	{
+		const auto dims = BulletToGlm(vec);
+		WRITE_KEY_VEC4(dims);
+	}
+
+	WRITE_KEY_BOOL(enabled);
 	WRITE_KEY_FLOAT(mass);
 	WRITE_KEY_STRING2("shapeType", ShapeName(shapeType));
 	if (bounds & 2) WRITE_CHAR('}');
@@ -461,7 +475,7 @@ void Body::ShowTable()
 {
 	// clang-format off
 	ui::ShowTable({
-		{ "enabled"  , std::to_string(enabled)                                },
+		{ "enabled"  , BoolString(enabled)                                    },
 		{ "mass"     , std::to_string(mass)                                   },
 		{ "shapeType", fmt::format("{}: {}", shapeType, ShapeName(shapeType)) },
 	});

@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-05
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -170,7 +170,7 @@ void App::FixedControls()
 		if (downs[Key::Key3]) ThrowGeometry(ThrowAction_Throw, GeometryType_None, { "colors.png" });
 		if (downs[Key::Key0])
 		{
-			if (const auto& temp = prevSelWeak.lock())
+			if (const auto temp = prevSelWeak.lock())
 			{
 				prevSelWeak = selectWeak;
 				selectWeak  = temp;
@@ -189,23 +189,29 @@ void App::FixedControls()
 			// object is being placed => cancel
 			if (camera->follow & CameraFollow_SelectedObj)
 			{
-				if (auto target = selectWeak.lock(); !target->placed) DeleteSelected();
+				if (auto target = selectWeak.lock(); target->placing) DeleteSelected();
 			}
 			hidePopup |= Popup_Any;
 		}
 		if (downs[Key::Tab]) showLearn = !showLearn;
 
-		if (const auto numChild = mapNode->children.size())
+		if (keys[Key::LeftBracket] || keys[Key::RightBracket])
 		{
-			if (DOWN_OR_REPEAT(Key::LeftBracket))
+			if (auto target = selectWeak.lock(); target && target->parent)
 			{
-				mapNode->childId = (mapNode->childId + numChild - 1) % numChild;
-				SelectObject(mapNode->children[mapNode->childId]);
-			}
-			if (DOWN_OR_REPEAT(Key::RightBracket))
-			{
-				mapNode->childId = (mapNode->childId + 1) % numChild;
-				SelectObject(mapNode->children[mapNode->childId]);
+				auto&       parent   = target->parent;
+				const auto& children = parent->children;
+				const auto  numChild = children.size();
+				if (DOWN_OR_REPEAT(Key::LeftBracket))
+				{
+					parent->childId = (parent->childId + numChild - 1) % numChild;
+					SelectObject(children[parent->childId]);
+				}
+				if (DOWN_OR_REPEAT(Key::RightBracket))
+				{
+					parent->childId = (parent->childId + 1) % numChild;
+					SelectObject(children[parent->childId]);
+				}
 			}
 		}
 

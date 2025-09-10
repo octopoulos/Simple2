@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-05
 
 #pragma once
 
@@ -109,7 +109,7 @@ public:
 	sMesh CloneInstance(std::string_view cloneName);
 
 	/// Utility to create a shape then a body
-	void CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass = 0.0f, const btVector4& dims = { 0.0f, 0.0f, 0.0f, 0.0f });
+	void CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass = 0.0f, const btVector4& newDims = { 0.0f, 0.0f, 0.0f, 0.0f });
 
 	/// Delete all groups including indices + vertices
 	void Destroy();

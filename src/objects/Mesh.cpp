@@ -1,10 +1,11 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-05
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
 //
+#include "core/common3d.h"  // GlmToBullet
 #include "loaders/writer.h" // WRITE_KEY_xxx
 #include "ui/ui.h"          // ui::
 #include "ui/xsettings.h"   // xsettings
@@ -39,10 +40,10 @@ sMesh Mesh::CloneInstance(std::string_view cloneName)
 	return clone;
 }
 
-void Mesh::CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, const btVector4& dims)
+void Mesh::CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, const btVector4& newDims)
 {
 	body = std::make_unique<Body>(physics);
-	body->CreateShape(shapeType, this, dims);
+	body->CreateShape(shapeType, this, newDims);
 	body->CreateBody(mass, GlmToBullet(position), GlmToBullet(quaternion));
 	type |= ObjectType_HasBody;
 }
@@ -92,7 +93,7 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 					for (const auto& child : children)
 					{
 						float* mtx = (float*)data;
-						std::memcpy(mtx, glm::value_ptr(child->matrixWorld), 64);
+						memcpy(mtx, glm::value_ptr(child->matrixWorld), 64);
 
 						float* color = (float*)&data[64];
 						{
@@ -196,8 +197,15 @@ void Mesh::SetBodyTransform()
 {
 	position = matrixWorld[3];
 
+	PrintMatrix(matrixWorld, "SBT/1");
+
 	for(int i = 0; i < 3; i++)
+	{
 		scale[i] = glm::length(glm::vec3(matrixWorld[i]));
+		// if (!scale[i]) scale[i] = 1.0f;
+	}
+
+	ui::Log("scale={} {} {}", scale[0], scale[1], scale[2]);
 
 	const glm::mat3 rotMtx(
 		glm::vec3(matrixWorld[0]) / scale[0],
@@ -207,6 +215,9 @@ void Mesh::SetBodyTransform()
 	quaternion  = glm::quat_cast(rotMtx);
 	rotation    = glm::eulerAngles(quaternion);
 	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+
+	ui::Log("quaternion={} {} {} {}", quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
+	ui::Log("rotation={} {} {}", rotation[0], rotation[1], rotation[2]);
 	UpdateLocalMatrix("SetBodyTransform");
 
 	btTransform transform;
@@ -291,12 +302,8 @@ int Mesh::SynchronizePhysics()
 {
 	int change = 0;
 
-	if (type & ObjectType_Group)
-	{
-		Object3d::SynchronizePhysics();
-	}
 	// physics?
-	else if (body && body->body && body->enabled && body->mass >= 0.0f)
+	if (body && body->body && body->enabled && body->mass >= 0.0f)
 	{
 		btTransform bTransform;
 		auto        motionState = body->body->getMotionState();
@@ -316,6 +323,9 @@ int Mesh::SynchronizePhysics()
 			dead   = Dead_Remove;
 			change = 1;
 		}
+
+		// Object3d::SynchronizePhysics();
+		UpdateWorldMatrix(false);
 	}
 	// interpolation
 	else if (posTs > 0.0 || quatTs > 0.0)
@@ -344,6 +354,10 @@ int Mesh::SynchronizePhysics()
 			}
 		}
 		UpdateLocalMatrix("SynchronizePhysics");
+	}
+	else if (type & ObjectType_Group)
+	{
+		Object3d::SynchronizePhysics();
 	}
 
 	return change;

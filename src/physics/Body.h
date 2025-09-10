@@ -1,6 +1,6 @@
 // Body.h
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-09-04
 
 #pragma once
 
@@ -35,11 +35,12 @@ class Mesh;
 class Body
 {
 public:
-	btRigidBody*             body    = nullptr; ///< rigid body
-	bool                     enabled = true;    ///< physics enabled
-	PhysicsWorld*            physics = nullptr; ///< physics reference
-	btCollisionShape*        shape   = nullptr; ///< shape
-	btDiscreteDynamicsWorld* world   = nullptr; ///< physical world
+	btRigidBody*             body    = nullptr;                    ///< rigid body
+	btVector4                dims    = { 0.0f, 0.0f, 0.0f, 0.0f }; ///< shape dims()
+	bool                     enabled = true;                       ///< physics enabled
+	PhysicsWorld*            physics = nullptr;                    ///< physics reference
+	btCollisionShape*        shape   = nullptr;                    ///< shape
+	btDiscreteDynamicsWorld* world   = nullptr;                    ///< physical world
 
 	btVector3 inertia   = { 0.0f, 0.0f, 0.0f }; ///
 	float     mass      = 0.0f;                 ///
@@ -58,7 +59,7 @@ public:
 	void CreateBody(float _mass, const btVector3& pos, const btQuaternion& quat);
 
 	/// Create a collision shape, before the body
-	void CreateShape(int type, Mesh* mesh = nullptr, const btVector4& dims = {});
+	void CreateShape(int type, Mesh* mesh = nullptr, const btVector4& newDims = { 0.0f, 0.0f, 0.0f, 0.0f });
 
 	/// Destroy shape then body
 	void Destroy();

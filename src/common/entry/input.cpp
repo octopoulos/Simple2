@@ -1,4 +1,4 @@
-// @version 2025-07-31
+// @version 2025-09-05
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -617,7 +617,7 @@ void GlobalInput::MouseMove(int mx, int my, int mz, bool hasDelta, int dx, int d
 		mouseRels0[1] = TO_FLOAT(my - dy) / resolution[1];
 	}
 
-	if (!mouseFrame) std::memcpy(mouseRels0, mouseRels, sizeof(mouseRels));
+	if (!mouseFrame) memcpy(mouseRels0, mouseRels, sizeof(mouseRels));
 	++mouseFrame;
 }
 
@@ -661,16 +661,16 @@ bool GlobalInput::RepeatingKey(int key)
 void GlobalInput::Reset()
 {
 	// clang-format off
-	std::memset(buttons   , 0, sizeof(buttons   ));
-	std::memset(keyChanges, 0, sizeof(keyChanges));
-	std::memset(keyRepeats, 0, sizeof(keyRepeats));
-	std::memset(keys      , 0, sizeof(keys      ));
-	std::memset(keyTimes  , 0, sizeof(keyTimes  ));
-	std::memset(mouseAbs  , 0, sizeof(mouseAbs  ));
-	std::memset(mouseAbs2 , 0, sizeof(mouseAbs2 ));
-	std::memset(mouseRels , 0, sizeof(mouseRels ));
-	std::memset(mouseRels0, 0, sizeof(mouseRels0));
-	std::memset(mouseRels2, 0, sizeof(mouseRels2));
+	memset(buttons   , 0, sizeof(buttons   ));
+	memset(keyChanges, 0, sizeof(keyChanges));
+	memset(keyRepeats, 0, sizeof(keyRepeats));
+	memset(keys      , 0, sizeof(keys      ));
+	memset(keyTimes  , 0, sizeof(keyTimes  ));
+	memset(mouseAbs  , 0, sizeof(mouseAbs  ));
+	memset(mouseAbs2 , 0, sizeof(mouseAbs2 ));
+	memset(mouseRels , 0, sizeof(mouseRels ));
+	memset(mouseRels0, 0, sizeof(mouseRels0));
+	memset(mouseRels2, 0, sizeof(mouseRels2));
 	// clang-format on
 
 	keyChangeId = 0;
@@ -692,10 +692,10 @@ void GlobalInput::ResetAscii()
 void GlobalInput::ResetFixed()
 {
 	// clang-format off
-	std::memset(buttonDowns, 0, sizeof(buttonDowns));
-	std::memset(buttonUps  , 0, sizeof(buttonUps  ));
-	std::memset(keyDowns   , 0, sizeof(keyDowns   ));
-	std::memset(keyUps     , 0, sizeof(keyUps     ));
+	memset(buttonDowns, 0, sizeof(buttonDowns));
+	memset(buttonUps  , 0, sizeof(buttonUps  ));
+	memset(keyDowns   , 0, sizeof(keyDowns   ));
+	memset(keyUps     , 0, sizeof(keyUps     ));
 	// clang-format on
 }
 

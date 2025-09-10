@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-09-03
+// @version 2025-09-04
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -58,8 +58,8 @@ void App::AddObject(std::string_view modelName)
 		);
 		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh);
 
+		object->placing = true;
 		mapNode->AddChild(object);
-		AutoSave();
 		SelectObject(object);
 	}
 

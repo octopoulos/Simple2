@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-05
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -174,7 +174,7 @@ void Object3d::RotationFromIrot(bool instant)
 
 void Object3d::ScaleIrotPosition(const glm::vec3& _scale, const std::array<int, 3>& _irot, const glm::vec3& _position)
 {
-	std::memcpy(irot, _irot.data(), sizeof(irot));
+	memcpy(irot, _irot.data(), sizeof(irot));
 
 	position    = _position;
 	scale       = _scale;
@@ -218,6 +218,7 @@ int Object3d::Serialize(fmt::memory_buffer& outString, int depth, int bounds, bo
 {
 	// skip Scene.groups except Map
 	if (depth == 1 && (type & ObjectType_Group) && !(type & ObjectType_Map)) return -1;
+	if (placing) return -2;
 
 	if (bounds & 1) WRITE_CHAR('{');
 	WRITE_INIT();
@@ -279,7 +280,7 @@ void Object3d::ShowTransform(bool isPopup)
 
 	ui::AddInputText(mode | (isPopup ? 16 : 0), ".name", "Name", 256, 0, &name);
 
-	if (ui::AddDragFloat(mode, ".position", "Position", glm::value_ptr(position), 3, 0.5f))
+	if (ui::AddDragFloat(mode, ".position", "Position", glm::value_ptr(position), 3, 0.1f))
 		UpdateLocalMatrix("Position");
 	if (xsettings.rotateMode == RotateMode_Quaternion)
 	{
@@ -288,7 +289,7 @@ void Object3d::ShowTransform(bool isPopup)
 	}
 	else
 	{
-		if (ui::AddDragFloat(mode, ".rotation", "Rotation", glm::value_ptr(rotation), 3))
+		if (ui::AddDragFloat(mode, ".rotation", "Rotation", glm::value_ptr(rotation), 3, 0.01f))
 		{
 			quaternion = glm::quat(rotation);
 			UpdateLocalMatrix("Rotation");
