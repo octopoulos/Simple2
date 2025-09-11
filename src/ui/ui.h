@@ -1,6 +1,6 @@
 // ui.h
 // @author octopoulos
-// @version 2025-08-28
+// @version 2025-09-07
 
 #pragma once
 
@@ -18,10 +18,11 @@ enum WindowTypes_
 	WindowType_Entry    = 1 << 1,
 	WindowType_Log      = 1 << 2,
 	WindowType_Map      = 1 << 3,
-	WindowType_Scene    = 1 << 4,
-	WindowType_Settings = 1 << 5,
-	WindowType_Theme    = 1 << 6,
-	WindowType_Vars     = 1 << 7,
+	WindowType_Object   = 1 << 4,
+	WindowType_Scene    = 1 << 5,
+	WindowType_Settings = 1 << 6,
+	WindowType_Theme    = 1 << 7,
+	WindowType_Vars     = 1 << 8,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +57,7 @@ CommonWindow& GetCommonWindow();
 
 /// Add a combo with label left/right + special Blender support
 /// @param mode: &4: popup, &8: empty label, &16: no label + span all width
-bool AddCheckBox(int mode, const std::string& name, const char* labelLeft, const char* labelRight);
+bool AddCheckbox(int mode, const std::string& name, const char* labelLeft, const char* labelRight, bool* dataPtr = nullptr);
 
 /// Add a combo with label left/right + special Blender support
 /// @param mode: &4: popup, &8: empty label, &16: no label + span all width
@@ -72,7 +73,7 @@ bool AddDragFloat(int mode, const std::string& name, const char* text, float* da
 
 /// Add a drag int with label left/right
 /// @param mode: &4: popup, &8: empty label, &16: no label + span all width
-bool AddDragInt(int mode, const std::string& name, const char* text, float* dataPtr = nullptr, int count = 1, float speed = 1.0f, const char* format = "%d");
+bool AddDragInt(int mode, const std::string& name, const char* text, int* dataPtr = nullptr, int count = 1, float speed = 1.0f, const char* format = "%d");
 
 /// Add an input text input with label left/right + special Blender support
 /// @param mode: &4: popup, &8: empty label, &16: no label + span all width
@@ -254,6 +255,12 @@ CommonWindow& GetMapWindow();
 
 /// Current menu height
 float GetMenuHeight();
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OBJECT
+/////////
+
+CommonWindow& GetObjectWindow();
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SCENE

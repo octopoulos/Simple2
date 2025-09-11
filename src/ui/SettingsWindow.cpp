@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-09-01
+// @version 2025-09-07
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -9,10 +9,6 @@
 
 namespace ui
 {
-
-#define ACTIVATE_RECT(id)                                \
-	if (ImGui::IsItemActive() || ImGui::IsItemHovered()) \
-	app->ActivateRectangle(id)
 
 // see app:ShowMoreFlags
 enum ShowSettingFlags : int
@@ -23,12 +19,11 @@ enum ShowSettingFlags : int
 	Show_Net               = 1 << 3,
 	Show_NetMain           = 1 << 4,
 	Show_NetUser           = 1 << 5,
-	Show_Object            = 1 << 6,
-	Show_Physics           = 1 << 7,
-	Show_Render            = 1 << 8,
-	Show_System            = 1 << 9, // main
-	Show_SystemPerformance = 1 << 10,
-	Show_SystemUI          = 1 << 12,
+	Show_Physics           = 1 << 6,
+	Show_Render            = 1 << 7,
+	Show_System            = 1 << 8, // main
+	Show_SystemPerformance = 1 << 9,
+	Show_SystemUI          = 1 << 10,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +31,7 @@ enum ShowSettingFlags : int
 class SettingsWindow : public CommonWindow
 {
 private:
-	int       changed      = 0;
+	// int       changed      = 0;
 	XSettings prevSettings = {};
 
 public:
@@ -63,7 +58,7 @@ public:
 		}
 
 		const int showTree = xsettings.settingTree;
-		int       tree     = showTree & ~(Show_App | Show_Capture | Show_Map | Show_Net | Show_Object | Show_Physics | Show_Render | Show_System);
+		int       tree     = showTree & ~(Show_App | Show_Capture | Show_Map | Show_Net | Show_Physics | Show_Render | Show_System);
 
 		// APP
 		//////
@@ -83,8 +78,8 @@ public:
 		BEGIN_COLLAPSE("Capture", Show_Capture, 3)
 		{
 			AddInputText(0, "captureDir", "Directory");
-			AddCheckBox(0, "captureVideo", "Video", "Enable Video");
-			AddCheckBox(0, "nvidiaEnc", "", "Use nVidia Encoding");
+			AddCheckbox(0, "captureVideo", "Video", "Enable Video");
+			AddCheckbox(0, "nvidiaEnc", "", "Use nVidia Encoding");
 			END_COLLAPSE();
 		}
 
@@ -95,8 +90,8 @@ public:
 		{
 			AddSliderInt(0, "angleInc", "Angle Increment");
 			AddDragFloat(0, "iconSize", "Icon Size", nullptr, 0, 1.0f, "%.0f");
-			AddCheckBox(0, "smoothPos", "Smooth",  "Translation");
-			AddCheckBox(0, "smoothQuat", "",  "Rotation");
+			AddCheckbox(0, "smoothPos", "Smooth",  "Translation");
+			AddCheckbox(0, "smoothQuat", "",  "Rotation");
 			if (ImGui::Button("Rescan Assets"))
 			{
 				if (auto app = appWeak.lock())
@@ -117,24 +112,14 @@ public:
 			END_COLLAPSE();
 		}
 
-		// OBJECT
-		/////////
-
-		BEGIN_COLLAPSE("Object", Show_Object, 11 + (xsettings.rotateMode == RotateMode_Quaternion) * 1)
-		{
-			if (auto app = appWeak.lock())
-				app->ShowTransform(false);
-			END_COLLAPSE();
-		}
-
 		// PHYSICS
 		//////////
 
 		BEGIN_COLLAPSE("Physics", Show_Physics, 3)
 		{
 			AddDragFloat(1, "bottom", "Bottom");
-			AddCheckBox(0, "physPaused", "", "Paused");
-			AddCheckBox(0, "bulletDebug", "", "Show Body Shapes");
+			AddCheckbox(0, "physPaused", "", "Paused");
+			AddCheckbox(0, "bulletDebug", "", "Show Body Shapes");
 			END_COLLAPSE();
 		}
 
@@ -143,10 +128,10 @@ public:
 
 		BEGIN_COLLAPSE("Render", Show_Render, 9)
 		{
-			AddCheckBox(0, "fixedView", "", "Fixed View");
-			AddCheckBox(0, "gridDraw", "", "Grid");
+			AddCheckbox(0, "fixedView", "", "Fixed View");
+			AddCheckbox(0, "gridDraw", "", "Grid");
 			AddSliderInt(0, "gridSize", "Grid Size");
-			AddCheckBox(0, "instancing", "", "Mesh Instancing");
+			AddCheckbox(0, "instancing", "", "Mesh Instancing");
 			AddDragFloat(2, "lightDir", "Light Direction");
 			AddSliderInt(0, "projection", "Projection", nullptr);
 			AddSliderInt(0, "renderMode", "Render Mode", nullptr);
@@ -192,7 +177,7 @@ public:
 				AddDragFloat(1, "uiScale", "UI Scale");
 				AddDragInt(1, "windowPos", "Window Pos");
 				AddDragInt(1, "windowSize", "Window Size");
-				AddCheckBox(0, "maximized", "", "Maximized");
+				AddCheckbox(0, "maximized", "", "Maximized");
 
 				if (applyChange)
 				{

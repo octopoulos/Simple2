@@ -1,6 +1,6 @@
 // Body.h
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-07
 
 #pragma once
 
@@ -72,6 +72,10 @@ public:
 
 	/// Serialize for JSON output
 	int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3) const;
+
+	/// Show settings in ImGui
+	/// @param show: ShowObjects_
+	void ShowSettings(bool isPopup, int show);
 
 	/// Show info table in ImGui
 	void ShowTable();

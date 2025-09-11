@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-09-03
+// @version 2025-09-07
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -220,7 +220,7 @@ void App::PopupsUi()
 			else if (currentPopup & Popup_Transform)
 			{
 				ImGui::Text("Transform");
-				ShowTransform(true);
+				ShowObjectSettings(true, 3);
 			}
 		}
 
@@ -366,6 +366,7 @@ void App::ShowMainMenu(float alpha)
 			ui::AddMenu("Controls", nullptr, ui::GetControlsWindow());
 			ui::AddMenu("Log"     , nullptr, ui::GetLogWindow());
 			ui::AddMenu("Map"     , nullptr, ui::GetMapWindow());
+			ui::AddMenu("Object"  , nullptr, ui::GetObjectWindow());
 			ui::AddMenu("Scene"   , nullptr, ui::GetSceneWindow());
 			ui::AddMenu("Settings", nullptr, ui::GetSettingsWindow());
 			ImGui::MenuItem("Vars", nullptr, &xsettings.showVars);
@@ -403,10 +404,15 @@ void App::ShowPopup(int flag)
 	showPopup ^= flag;
 }
 
-void App::ShowTransform(bool isPopup)
+void App::ShowObjectSettings(bool isPopup, int show)
 {
 	if (auto target = (camera->follow & CameraFollow_Cursor) ? cursor : selectWeak.lock())
-		target->ShowTransform(isPopup);
+	{
+		if (target->type & ObjectType_Mesh)
+			Mesh::SharedPtr(target)->ShowSettings(isPopup, show);
+		else
+			target->ShowSettings(isPopup, show);
+	}
 }
 
 void App::VarsUi()
@@ -489,6 +495,7 @@ void App::VarsUi()
 				{ "showPopup"             , std::to_string(showPopup)                },
 				{ "showTest"              , BoolString(showTest)                     },
 				{ "videoFrame"            , std::to_string(videoFrame)               },
+				{ "x.objectTree"          , std::to_string(xsettings.objectTree)     },
 				{ "x.physPaused"          , std::to_string(xsettings.physPaused)     },
 				{ "x.settingTree"         , std::to_string(xsettings.settingTree)    },
 				{ "x.varTree"             , std::to_string(xsettings.varTree)        },

@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-09-05
+// @version 2025-09-07
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -248,6 +248,42 @@ int Object3d::Serialize(fmt::memory_buffer& outString, int depth, int bounds, bo
 	return keyId;
 }
 
+void Object3d::ShowSettings(bool isPopup, int show)
+{
+	int mode = 3;
+	if (isPopup) mode |= 4;
+
+	// name
+	if (show & ShowObject_Basic)
+		ui::AddInputText(mode | 16, ".name", "Name", 256, 0, &name);
+
+	// transform
+	if (show & ShowObject_Transform)
+	{
+		if (ui::AddDragFloat(mode, ".position", "Position", glm::value_ptr(position), 3, 0.1f))
+			UpdateLocalMatrix("Position");
+		if (xsettings.rotateMode == RotateMode_Quaternion)
+		{
+			if (ui::AddDragFloat(mode, ".quaternion", "Quaternion", glm::value_ptr(quaternion), 4))
+				UpdateLocalMatrix("Quaternion");
+		}
+		else
+		{
+			if (ui::AddDragFloat(mode, ".rotation", "Rotation", glm::value_ptr(rotation), 3, 0.01f))
+			{
+				quaternion = glm::quat(rotation);
+				UpdateLocalMatrix("Rotation");
+			}
+		}
+		ui::AddCombo(mode | (isPopup ? 16 : 0), "rotateMode", "Mode");
+		if (ui::AddDragFloat(mode, ".scale", "Scale", glm::value_ptr(scale), 3))
+		{
+			scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+			UpdateLocalMatrix("Scale");
+		}
+	}
+}
+
 void Object3d::ShowTable() const
 {
 	// clang-format off
@@ -271,36 +307,6 @@ void Object3d::ShowTable() const
 		{ "visible"    , std::to_string(visible)                                                                      },
 	});
 	// clang-format on
-}
-
-void Object3d::ShowTransform(bool isPopup)
-{
-	int mode = 3;
-	if (isPopup) mode |= 4;
-
-	ui::AddInputText(mode | (isPopup ? 16 : 0), ".name", "Name", 256, 0, &name);
-
-	if (ui::AddDragFloat(mode, ".position", "Position", glm::value_ptr(position), 3, 0.1f))
-		UpdateLocalMatrix("Position");
-	if (xsettings.rotateMode == RotateMode_Quaternion)
-	{
-		if (ui::AddDragFloat(mode, ".quaternion", "Quaternion", glm::value_ptr(quaternion), 4))
-			UpdateLocalMatrix("Quaternion");
-	}
-	else
-	{
-		if (ui::AddDragFloat(mode, ".rotation", "Rotation", glm::value_ptr(rotation), 3, 0.01f))
-		{
-			quaternion = glm::quat(rotation);
-			UpdateLocalMatrix("Rotation");
-		}
-	}
-	ui::AddCombo(mode | (isPopup ? 16 : 0), "rotateMode", "Mode");
-	if (ui::AddDragFloat(mode, ".scale", "Scale", glm::value_ptr(scale), 3))
-	{
-		scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
-		UpdateLocalMatrix("Scale");
-	}
 }
 
 int Object3d::SynchronizePhysics()

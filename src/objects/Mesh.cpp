@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-09-05
+// @version 2025-09-07
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -231,6 +231,31 @@ void Mesh::SetBodyTransform()
 		sbody->setWorldTransform(transform);
 		if (auto* motionState = sbody->getMotionState())
 			motionState->setWorldTransform(transform);
+	}
+}
+
+void Mesh::ShowSettings(bool isPopup, int show)
+{
+	int mode = 3;
+	if (isPopup) mode |= 4;
+
+	// name + transform
+	if (show & (ShowObject_Basic | ShowObject_Transform))
+		Object3d::ShowSettings(isPopup, show);
+
+	// physics
+	if (show & ShowObject_Physics)
+	{
+		if (body) body->ShowSettings(isPopup, show);
+	}
+
+	// material
+	if (show & (ShowObject_MaterialShaders | ShowObject_MaterialTextures))
+	{
+		if (material0)
+			material0->ShowSettings(isPopup, show);
+		else if (material)
+			material->ShowSettings(isPopup, show);
 	}
 }
 

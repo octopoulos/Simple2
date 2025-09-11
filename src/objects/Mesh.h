@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-09-05
+// @version 2025-09-07
 
 #pragma once
 
@@ -129,6 +129,10 @@ public:
 	{
 		return (object && (object->type & type)) ? std::static_pointer_cast<Mesh>(object) : nullptr;
 	}
+
+	/// Show settings in ImGui
+	/// @param show: ShowObjects_
+	virtual void ShowSettings(bool isPopup, int show) override;
 
 	/// Show info table in ImGui
 	virtual void ShowTable() const override;

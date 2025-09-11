@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-09-05
+// @version 2025-09-07
 
 #pragma once
 
@@ -9,6 +9,17 @@ enum Deads_ : int
 	Dead_Alive  = 0, ///< alive object
 	Dead_Dead   = 1, ///< dead object, not moving
 	Dead_Remove = 2, ///< object must be removed
+};
+
+enum ShowObjects_ : int
+{
+	ShowObject_Basic            = 1 << 1,
+	ShowObject_Geometry         = 1 << 2,
+	ShowObject_Material         = 1 << 3, // main
+	ShowObject_MaterialShaders  = 1 << 4,
+	ShowObject_MaterialTextures = 1 << 5,
+	ShowObject_Physics          = 1 << 6,
+	ShowObject_Transform        = 1 << 7,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -114,11 +125,12 @@ public:
 	/// Serialize for JSON output
 	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3, bool addChildren = true) const;
 
+	/// Show settings in ImGui
+	/// @param show: ShowObjects_
+	virtual void ShowSettings(bool isPopup, int show);
+
 	/// Show info table in ImGui
 	virtual void ShowTable() const;
-
-	/// Show transforms in ImGui
-	void ShowTransform(bool isPopup);
 
 	/// Synchronize physics transform
 	virtual int SynchronizePhysics();

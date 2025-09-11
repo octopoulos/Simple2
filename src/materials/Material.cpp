@@ -1,13 +1,15 @@
 // Material.cpp
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-07
 
 #include "stdafx.h"
 #include "materials/Material.h"
 //
 #include "loaders/writer.h"          // WRITE_INIT, WRITE_KEY_xxx
 #include "materials/ShaderManager.h" // GetShaderManager
+#include "objects/Object3d.h"        // ShowObject_xxx
 #include "textures/TextureManager.h" // GetTextureManager
+#include "ui/ui.h"                   // ui::
 
 Material::Material(std::string_view vsName, std::string_view fsName)
 {
@@ -159,4 +161,25 @@ int Material::Serialize(fmt::memory_buffer& outString, int depth, int bounds)
 
 	if (bounds & 2) WRITE_CHAR('}');
 	return keyId;
+}
+
+void Material::ShowSettings(bool isPopup, int show)
+{
+	int mode = 3;
+	if (isPopup) mode |= 4;
+
+	// shaders
+	if (show & ShowObject_MaterialShaders)
+	{
+		ui::AddInputText(mode, ".name", "Name", 256, 0, &name);
+		ui::AddInputText(mode, ".vsName", "Vertex Shader", 256, 0, &vsName);
+		ui::AddInputText(mode, ".fsName", "Fragment Shader", 256, 0, &fsName);
+	}
+
+	// textures
+	if (show & ShowObject_MaterialTextures)
+	{
+		for (int i = 0; i < 8; ++i)
+			ui::AddInputText(mode, fmt::format(".textName:{}", i).c_str(), fmt::format("Texture: {}", i).c_str(), 256, 0, &texNames[i]);
+	}
 }

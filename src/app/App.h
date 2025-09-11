@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-07
 
 #pragma once
 
@@ -228,8 +228,9 @@ public:
 	/// @returns 0: no UI drawn, &1: something was drawn, &2: no video
 	int MainUi();
 
-	/// Show transforms in ImGui
-	void ShowTransform(bool isPopup);
+	/// Show object settings in ImGui
+	/// @param show: &1: name, &2: transform, &4: physics, &8: material/shaders, &16: material/textures
+	void ShowObjectSettings(bool isPopup, int show);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// WINDOW

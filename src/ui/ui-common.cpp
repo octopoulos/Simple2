@@ -1,6 +1,6 @@
 // ui-common.cpp
 // @author octopoulos
-// @version 2025-08-28
+// @version 2025-09-07
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -119,18 +119,22 @@ static int InputTextCallback(ImGuiInputTextCallbackData* data)
 
 #define LABEL_ID(label) fmt::format("##{}", label).c_str()
 
-bool AddCheckBox(int mode, const std::string& name, const char* labelLeft, const char* labelRight)
+bool AddCheckbox(int mode, const std::string& name, const char* labelLeft, const char* labelRight, bool* dataPtr)
 {
-	bool result = false;
-	if (auto config = ConfigFind(name, "AddCheckBox"))
+	if (!dataPtr)
 	{
-		LabelLeft(mode, labelLeft, 1);
-
-		result = ImGui::Checkbox(LABEL_ID(name), (bool*)config->ptr);
-		result |= ItemEvent(name);
-
-		LabelRight(labelRight, 8.0f);
+		if (auto config = ConfigFind(name, "AddCheckBox"))
+			dataPtr = (bool*)config->ptr;
+		else
+			return false;
 	}
+
+	LabelLeft(mode, labelLeft, 1);
+
+	bool result = ImGui::Checkbox(LABEL_ID(name), dataPtr);
+	result |= ItemEvent(name);
+
+	LabelRight(labelRight, 8.0f);
 	return result;
 }
 
@@ -240,11 +244,11 @@ bool AddDragFloat(int mode, const std::string& name, const char* text, float* da
 	return result;
 }
 
-bool AddDragInt(int mode, const std::string& name, const char* text, float* dataPtr, int count, float speed, const char* format)
+bool AddDragInt(int mode, const std::string& name, const char* text, int* dataPtr, int count, float speed, const char* format)
 {
 	bool result = false;
 	if (dataPtr)
-		result = AddDragScalarN(mode, name, text, ImGuiDataType_Float, sizeof(float), dataPtr, count, speed, nullptr, nullptr, format);
+		result = AddDragScalarN(mode, name, text, ImGuiDataType_S32, sizeof(int), dataPtr, count, speed, nullptr, nullptr, format);
 	else if (auto config = ConfigFind(name, "AddDragInt"))
 		result = AddDragScalarN(mode, name, text, ImGuiDataType_S32, sizeof(int32_t), (int*)config->ptr, config->count, speed, &config->minInt, &config->maxFloat, format);
 	return result;

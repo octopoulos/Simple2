@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-09-01
+// @version 2025-09-07
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -84,6 +84,7 @@ static std::vector<Config> configs = {
 	X_BOOL   (XSettings, ui, 0, autoSave   , false),
 	X_FLOAT  (XSettings, ui, 0, fontScale  , 0.65f, 0.3f, 10.0f),
 	X_BOOL   (XSettings, ui, 0, labelLeft  , true),
+	X_INT    (XSettings, ui, 0, objectTree , 0, 0, -1),
 	X_STRINGS(XSettings, ui, 0, recentFiles, "", 6),
 	X_ENUM   (XSettings, ui, 0, rotateMode , RotateMode_EulerXyz, sRotateModes),
 	X_INT    (XSettings, ui, 0, settingPad , 2, -1, 16),

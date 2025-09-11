@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-08-30
+// @version 2025-09-07
 
 #pragma once
 
@@ -121,10 +121,11 @@ struct XSettings
 	bool  autoSave;       ///< save scene at every change
 	float fontScale;      ///< FontScaleMain
 	bool  labelLeft;      ///< labels on the left of the inputs
+	int   objectTree;     ///< which setting tree nodes are open in the Object panel
 	str2k recentFiles[6]; ///< recent files for quick load
 	int   rotateMode;     ///< quaternion, xyz-Euler, axis angle
 	int   settingPad;     ///< override windows padding for CommonWindow
-	int   settingTree;    ///< which setting tree nodes are open in the panel
+	int   settingTree;    ///< which setting tree nodes are open in the Settings panel
 	bool  showVars;       ///< show variables (VarsUi)
 	int   testId;         ///< TestUI FX function
 	int   textButton;     ///< show text under the button

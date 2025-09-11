@@ -1,6 +1,6 @@
 // Material.h
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-07
 
 #pragma once
 
@@ -41,7 +41,7 @@ public:
 	bgfx::UniformHandle sTexMetallicRoughness = BGFX_INVALID_HANDLE; ///
 	bgfx::UniformHandle sTexNormal            = BGFX_INVALID_HANDLE; ///< uniform: normal texture
 	bgfx::UniformHandle sTexOcclusion         = BGFX_INVALID_HANDLE; ///
-	std::string         texNames[4]           = {};                  ///< texture names: 0=diffuse, 1=normal
+	std::string         texNames[8]           = {};                  ///< texture names: 0=diffuse, 1=normal
 	bgfx::TextureHandle textures[8]           = {};                  ///< all found textures
 
 	Material()
@@ -76,4 +76,8 @@ public:
 		metallicFactor  = metallic;
 		roughnessFactor = roughness;
 	}
+
+	/// Show settings in ImGui
+	/// @param show: ShowObjects_
+	void ShowSettings(bool isPopup, int show);
 };

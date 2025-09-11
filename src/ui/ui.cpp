@@ -1,6 +1,6 @@
 // ui.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-09-07
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -38,6 +38,7 @@ void ListWindows(std::shared_ptr<App> &app)
 	windows.push_back(&GetControlsWindow());
 	windows.push_back(&GetLogWindow     ());
 	windows.push_back(&GetMapWindow     ());
+	windows.push_back(&GetObjectWindow  ());
 	windows.push_back(&GetSceneWindow   ());
 	windows.push_back(&GetSettingsWindow());
 	windows.push_back(&GetThemeWindow   ());
