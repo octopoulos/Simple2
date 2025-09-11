@@ -1,11 +1,12 @@
 // Geometry.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-09-07
 
 #include "stdafx.h"
 #include "geometries/Geometry.h"
 //
 #include "loaders/writer.h" // WRITE_INIT, WRITE_KEY_xxx
+#include "ui/ui.h"          // ui::
 
 // clang-format off
 static const UMAP_INT_STR geometryTypeNames = {
@@ -37,6 +38,29 @@ int Geometry::Serialize(fmt::memory_buffer& outString, int depth, int bounds) co
 	WRITE_KEY_STRING2("type", GeometryName(type));
 	if (bounds & 2) WRITE_CHAR('}');
 	return keyId;
+}
+
+void Geometry::ShowSettings(bool isPopup, int show)
+{
+	int mode = 3;
+	if (isPopup) mode |= 4;
+
+	ui::AddInputText(mode, ".args", "Args", 256, 0, &args);
+	ui::AddDragFloat(mode, ".radius", "Radius", &radius);
+	ui::AddSliderInt(mode, ".type", "Type", &type, 1, GeometryType_None, GeometryType_Count - 1);
+}
+
+void Geometry::ShowTable() const
+{
+	// clang-format off
+	ui::ShowTable({
+		{ "aabb"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", aabb.x(), aabb.y(), aabb.z()) },
+		{ "args"  , args                                                              },
+		{ "dims"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", dims.x(), dims.y(), dims.z()) },
+		{ "radius", std::to_string(radius)                                            },
+		{ "type"  , std::to_string(type)                                              },
+	});
+	// clang-format on
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

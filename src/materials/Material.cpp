@@ -183,3 +183,12 @@ void Material::ShowSettings(bool isPopup, int show)
 			ui::AddInputText(mode, fmt::format(".textName:{}", i).c_str(), fmt::format("Texture: {}", i).c_str(), 256, 0, &texNames[i]);
 	}
 }
+
+void Material::ShowTable() const
+{
+	// clang-format off
+	ui::ShowTable({
+		{ "state", std::to_string(state) },
+	});
+	// clang-format on
+}

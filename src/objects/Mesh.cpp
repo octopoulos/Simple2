@@ -243,6 +243,12 @@ void Mesh::ShowSettings(bool isPopup, int show)
 	if (show & (ShowObject_Basic | ShowObject_Transform))
 		Object3d::ShowSettings(isPopup, show);
 
+	// geometry
+	if (show & ShowObject_Geometry)
+	{
+		if (geometry) geometry->ShowSettings(isPopup, show);
+	}
+
 	// physics
 	if (show & ShowObject_Physics)
 	{
@@ -262,16 +268,21 @@ void Mesh::ShowSettings(bool isPopup, int show)
 void Mesh::ShowTable() const
 {
 	Object3d::ShowTable();
-	if (body) body->ShowTable();
 
 	// clang-format off
 	ui::ShowTable({
-		{ "groups.size"   , std::to_string(groups.size())                    },
-		{ "load"          , std::to_string(load)                             },
-		{ "material.state", material ? std::to_string(material->state) : "?" },
-		{ "modelName"     , modelName                                        },
+		{ "groups.size", std::to_string(groups.size()) },
+		{ "load"       , std::to_string(load)          },
+		{ "modelName"  , modelName                     },
 	});
 	// clang-format on
+
+	if (body) body->ShowTable();
+	if (geometry) geometry->ShowTable();
+	if (material0)
+		material0->ShowTable();
+	else if (material)
+		material->ShowTable();
 }
 
 void Mesh::Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, uint64_t state) const

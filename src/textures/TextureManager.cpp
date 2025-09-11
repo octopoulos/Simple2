@@ -1,6 +1,6 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-09-02
+// @version 2025-09-07
 
 #include "stdafx.h"
 #include "textures/TextureManager.h"
@@ -224,10 +224,10 @@ void TextureManager::ShowTable()
 {
 	if (ImGui::BeginTable("2ways", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti))
 	{
-		const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
+		const float aWidth = ImGui::CalcTextSize("A").x;
 
 		ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
-		ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 8.0f);
+		ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed, aWidth * 8.0f);
 		ImGui::TableHeadersRow();
 
 		// sort data?

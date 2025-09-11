@@ -1,6 +1,6 @@
 // MaterialManager.cpp
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-07
 
 #include "stdafx.h"
 #include "materials/MaterialManager.h"
@@ -60,10 +60,10 @@ void MaterialManager::ShowTable()
 {
 	if (ImGui::BeginTable("2ways", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
 	{
-		const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
+		const float countWidth = ImGui::CalcTextSize("Count.").x;
 
 		ImGui::TableSetupColumn("Name" , ImGuiTableColumnFlags_WidthStretch);
-		ImGui::TableSetupColumn("Count", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 3.0f);
+		ImGui::TableSetupColumn("Count", ImGuiTableColumnFlags_WidthFixed, countWidth);
 		ImGui::TableHeadersRow();
 
 		// sort data?

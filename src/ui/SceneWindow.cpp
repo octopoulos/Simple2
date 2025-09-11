@@ -1,6 +1,6 @@
 // SceneWindow.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-09-07
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -31,11 +31,11 @@ public:
 
 		if (ImGui::BeginTable("3ways", 3, ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_RowBg))
 		{
-			const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
+			const float aWidth = ImGui::CalcTextSize("A").x;
 
 			ImGui::TableSetupColumn("##Name", ImGuiTableColumnFlags_NoHide);
-			ImGui::TableSetupColumn("##Vis" , ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 5.0f);
-			ImGui::TableSetupColumn("##Type", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 3.0f);
+			ImGui::TableSetupColumn("##Vis" , ImGuiTableColumnFlags_WidthFixed, aWidth * 5.0f);
+			ImGui::TableSetupColumn("##Type", ImGuiTableColumnFlags_WidthFixed, aWidth * 3.0f);
 
 			if (auto app = appWeak.lock())
 				DrawObject(app->scene, 0);

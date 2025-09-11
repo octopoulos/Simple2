@@ -80,4 +80,7 @@ public:
 	/// Show settings in ImGui
 	/// @param show: ShowObjects_
 	void ShowSettings(bool isPopup, int show);
+
+	/// Show info table in ImGui
+	void ShowTable() const;
 };

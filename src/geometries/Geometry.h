@@ -1,6 +1,6 @@
 // Geometry.h
 // @author octopoulos
-// @version 2025-09-03
+// @version 2025-09-07
 
 #pragma once
 
@@ -41,7 +41,7 @@ class Geometry
 public:
 	btVector3                     aabb     = { 1.0f, 1.0f, 1.0f }; ///< aabb half extents
 	std::string                   args     = "";                   ///< constructor args for serialization
-	btVector3                     dims     = { 1.0f, 1.0f, 1.0f }; ///< dims for CreateShape (ex: radius, height)
+	btVector3                     dims     = { 0.0f, 0.0f, 0.0f }; ///< dims for CreateShape (ex: radius, height)
 	bgfx::IndexBufferHandle       ibh      = BGFX_INVALID_HANDLE;  ///< indices
 	std::vector<uint16_t>         indices  = {};                   ///< used by ConvexHull + TriangleMesh
 	float                         radius   = 1.0f;                 ///< bounding sphere
@@ -72,6 +72,13 @@ public:
 
 	/// Serialize for JSON output
 	int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3) const;
+
+	/// Show settings in ImGui
+	/// @param show: ShowObjects_
+	void ShowSettings(bool isPopup, int show);
+
+	/// Show info table in ImGui
+	void ShowTable() const;
 };
 
 using uGeometry = std::shared_ptr<Geometry>;

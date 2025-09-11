@@ -203,10 +203,11 @@ static bool AddDragScalarN(int mode, const std::string& name, const char* label,
 
 	for (int i = 0; i < components; ++i)
 	{
+		const char* subLabel = (components > 1) ? subLabels[i] : "";
 		if (isPopup)
-			LabelLeft(mode, subLabels[i], 1, 0.1f);
+			LabelLeft(mode, subLabel, 1, 0.1f);
 		else if (!isHori)
-			LabelLeft(mode, fmt::format("{}{}{}", !i ? label : "", !i ? " " : "", subLabels[i]).c_str(), 1);
+			LabelLeft(mode, fmt::format("{}{}{}", !i ? label : "", !i ? " " : "", subLabel).c_str(), 1);
 
 		ImGui::PushID(i);
 		if (isHori && i > 0)

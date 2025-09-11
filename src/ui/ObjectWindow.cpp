@@ -58,7 +58,7 @@ public:
 		// GEOMETRY
 		///////////
 
-		BEGIN_COLLAPSE("Geometry", ShowObject_Geometry, 2)
+		BEGIN_COLLAPSE("Geometry", ShowObject_Geometry, 3)
 		{
 			app->ShowObjectSettings(false, ShowObject_Geometry);
 			END_COLLAPSE();
