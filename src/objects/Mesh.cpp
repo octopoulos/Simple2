@@ -40,6 +40,10 @@ sMesh Mesh::CloneInstance(std::string_view cloneName)
 	return clone;
 }
 
+void Mesh::Controls(int modifier, const bool* downs, bool* ignores, const bool* keys)
+{
+}
+
 void Mesh::CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, const btVector4& newDims)
 {
 	body = std::make_unique<Body>(physics);

@@ -1,4 +1,4 @@
-// @version 2025-07-31
+// @version 2025-09-07
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -104,6 +104,9 @@ int32_t inputGetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::En
 // GlobalInput
 //////////////
 
+#define DOWN(key)           (!ignores[key] && downs[key])
+#define DOWN_OR_REPEAT(key) ((!ignores[key] && (downs[key] || ginput.RepeatingKey(key))) ? 1 : 0)
+
 enum Modifiers_ : int
 {
 	Modifier_None  = 0,
@@ -129,6 +132,7 @@ struct GlobalInput
 	int      keyChangeId     = 0;                           ///< index of current history
 	KeyState keyChanges[128] = {};                          ///< history of key changes
 	bool     keyDowns[256]   = {};                          ///< keys pushed this frame
+	bool     keyIgnores[256] = {};                          ///< keys to ignore (ex: already handled by RubikCube)
 	int64_t  keyRepeats[256] = {};                          ///< last repeat time (in ms)
 	bool     keys[256]       = {};                          ///< keys pushed
 	int64_t  keyTimes[256]   = {};                          ///< when the key was pushed last time (in ms)

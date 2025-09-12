@@ -1,14 +1,111 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-09-05
+// @version 2025-09-07
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
 //
+#include "entry/input.h"               // GetGlobalInput
 #include "geometries/Geometry.h"       // uGeometry
 #include "materials/MaterialManager.h" // GetMaterialManager
 #include "loaders/writer.h"            // WRITE_KEY_xxx
 #include "ui/ui.h"                     // ui::
+
+/// https://www.gancube.com/pages/3x3x3-cfop-guide-of-gancube
+void RubikCube::Controls(int modifier, const bool* downs, bool* ignores, const bool* keys)
+{
+	using namespace entry;
+
+	static const USET_INT newIgnores = {
+		Key::KeyB,
+		Key::KeyD,
+		Key::KeyE,
+		Key::KeyF,
+		Key::KeyL,
+		Key::KeyM,
+		Key::KeyR,
+		Key::KeyS,
+		Key::KeyU,
+		Key::KeyX,
+		Key::KeyY,
+		Key::KeyZ,
+	};
+
+	const int angleInc = 90;
+	int       change   = 0;
+	auto&     ginput   = GetGlobalInput();
+
+	// 1) handle keys
+	// back
+	if (DOWN_OR_REPEAT(Key::KeyB))
+	{
+
+	}
+	// down
+	if (DOWN_OR_REPEAT(Key::KeyD))
+	{
+
+	}
+	if (DOWN_OR_REPEAT(Key::KeyE))
+	{
+
+	}
+	// front
+	if (DOWN_OR_REPEAT(Key::KeyF))
+	{
+
+	}
+	// left
+	if (DOWN_OR_REPEAT(Key::KeyL))
+	{
+
+	}
+	if (DOWN_OR_REPEAT(Key::KeyM))
+	{
+
+	}
+	// right
+	if (DOWN_OR_REPEAT(Key::KeyR))
+	{
+
+	}
+	if (DOWN_OR_REPEAT(Key::KeyS))
+	{
+
+	}
+	// up
+	if (DOWN_OR_REPEAT(Key::KeyU))
+	{
+
+	}
+	if (DOWN_OR_REPEAT(Key::KeyX))
+	{
+		irot[2] += (modifier & Modifier_Shift) ? angleInc : -angleInc;
+		++change;
+	}
+	if (DOWN_OR_REPEAT(Key::KeyY))
+	{
+		irot[1] += (modifier & Modifier_Shift) ? -angleInc : angleInc;
+		++change;
+	}
+	if (DOWN_OR_REPEAT(Key::KeyZ))
+	{
+		irot[0] += (modifier & Modifier_Shift) ? angleInc : -angleInc;
+		++change;
+	}
+
+	// 2) changed => rotate
+	if (change)
+	{
+		ui::Log("change={}", change);
+		RotationFromIrot(false);
+		UpdateLocalMatrix("Controls");
+	}
+
+	// 3) set ignored keys
+	for (const int ignore : newIgnores)
+		ignores[ignore] = true;
+}
 
 void RubikCube::CreateCubies()
 {

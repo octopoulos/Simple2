@@ -1,6 +1,6 @@
 // RubikCube.h
 // @author octopoulos
-// @version 2025-08-03
+// @version 2025-08-07
 
 #pragma once
 
@@ -22,6 +22,9 @@ public:
 	}
 
 	~RubikCube() = default;
+
+	/// Specific Rubik controls
+	virtual void Controls(int modifier, const bool* downs, bool* ignores, const bool* keys) override;
 
 	/// Create all cubies and position them in a 3D grid
 	void CreateCubies();

@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-09-05
+// @version 2025-09-07
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -21,8 +21,6 @@ enum ThrowActions_ : int
 	ThrowAction_Throw,
 };
 
-#define DOWN_OR_REPEAT(key) ((downs[key] || ginput.RepeatingKey(key)) ? 1 : 0)
-
 static inline float SignNonZero(float v)
 {
 	return (v >= 0.0f) ? 1.0f : -1.0f;
@@ -32,8 +30,9 @@ int App::ArrowsFlag()
 {
 	using namespace entry;
 
-	auto&       ginput = GetGlobalInput();
-	const auto& downs  = ginput.keyDowns;
+	auto&       ginput  = GetGlobalInput();
+	const auto& downs   = ginput.keyDowns;
+	const auto& ignores = ginput.keyIgnores;
 
 	// clang-format off
 	const int flag = 0
@@ -104,27 +103,35 @@ void App::FixedControls()
 	}
 
 	const auto&    downs    = ginput.keyDowns;
+	auto&          ignores  = ginput.keyIgnores;
 	const ImGuiIO& io       = ImGui::GetIO();
 	const auto&    keys     = ginput.keys;
 	const int      modifier = ginput.IsModifier();
+
+	// 1) overrides
+	if (auto target = selectWeak.lock())
+	{
+		if (target->type & ObjectType_Mesh)
+			Mesh::SharedPtr(target)->Controls(modifier, downs, ignores, keys);
+	}
 
 	// ignore inputs when focused on a text input
 	if (io.WantTextInput)
 	{
 	}
-	// 1) alt
+	// 2) alt
 	else if (modifier & Modifier_Alt)
 	{
 	}
-	// 2) ctrl
+	// 3) ctrl
 	else if (modifier & Modifier_Ctrl)
 	{
 	}
-	// 3) shift
+	// 4) shift
 	else if (modifier & Modifier_Shift)
 	{
 		// unpause + restore physics to every object
-		if (downs[Key::KeyP])
+		if (DOWN(Key::KeyP))
 		{
 			xsettings.physPaused = false;
 			for (const auto& object : scene->children)
@@ -141,34 +148,34 @@ void App::FixedControls()
 		}
 
 		// print with GUI
-		if (downs[Key::Print]) wantScreenshot = 1;
+		if (DOWN(Key::Print)) wantScreenshot = 1;
 
 		// rotate cursor/selected
 		RotateSelected(false);
 	}
-	// 4) no modifier
+	// 5) no modifier
 	else
 	{
-		// 4.a) new keys
-		if (downs[Key::KeyH]) ShowPopup(Popup_AddGeometry);
-		if (downs[Key::KeyJ]) ShowPopup(Popup_AddMesh);
-		if (downs[Key::KeyM]) ShowPopup(Popup_AddMap);
-		if (downs[Key::KeyN]) ShowPopup(Popup_Transform);
+		// 5.a) new keys
+		if (DOWN(Key::KeyH)) ShowPopup(Popup_AddGeometry);
+		if (DOWN(Key::KeyJ)) ShowPopup(Popup_AddMesh);
+		if (DOWN(Key::KeyM)) ShowPopup(Popup_AddMap);
+		if (DOWN(Key::KeyN)) ShowPopup(Popup_Transform);
 
 		if (DOWN_OR_REPEAT(Key::KeyO))
 		{
 			xsettings.physPaused = false;
 			pauseNextFrame       = true;
 		}
-		if (downs[Key::KeyP]) xsettings.physPaused = !xsettings.physPaused;
-		if (downs[Key::KeyT]) showTest = !showTest;
-		if (downs[Key::KeyX]) ShowPopup(Popup_Delete);
+		if (DOWN(Key::KeyP)) xsettings.physPaused = !xsettings.physPaused;
+		if (DOWN(Key::KeyT)) showTest = !showTest;
+		if (DOWN(Key::KeyX)) ShowPopup(Popup_Delete);
 
-		if (downs[Key::Key1]) ThrowMesh(ThrowAction_Throw, "donut3", ShapeType_Cylinder, { "donut_base.png" });
+		if (DOWN(Key::Key1)) ThrowMesh(ThrowAction_Throw, "donut3", ShapeType_Cylinder, { "donut_base.png" });
 		// TODO: Shape_Capsule doesn't work
-		if (downs[Key::Key2]) ThrowMesh(ThrowAction_Throw, "kenney_car-kit/taxi", ShapeType_Box);
-		if (downs[Key::Key3]) ThrowGeometry(ThrowAction_Throw, GeometryType_None, { "colors.png" });
-		if (downs[Key::Key0])
+		if (DOWN(Key::Key2)) ThrowMesh(ThrowAction_Throw, "kenney_car-kit/taxi", ShapeType_Box);
+		if (DOWN(Key::Key3)) ThrowGeometry(ThrowAction_Throw, GeometryType_None, { "colors.png" });
+		if (DOWN(Key::Key0))
 		{
 			if (const auto temp = prevSelWeak.lock())
 			{
@@ -183,8 +190,8 @@ void App::FixedControls()
 			}
 		}
 
-		if (downs[Key::Return]) SelectObject(nullptr);
-		if (downs[Key::Esc])
+		if (DOWN(Key::Return)) SelectObject(nullptr);
+		if (DOWN(Key::Esc))
 		{
 			// object is being placed => cancel
 			if (camera->follow & CameraFollow_SelectedObj)
@@ -193,7 +200,7 @@ void App::FixedControls()
 			}
 			hidePopup |= Popup_Any;
 		}
-		if (downs[Key::Tab]) showLearn = !showLearn;
+		if (DOWN(Key::Tab)) showLearn = !showLearn;
 
 		if (keys[Key::LeftBracket] || keys[Key::RightBracket])
 		{
@@ -215,22 +222,22 @@ void App::FixedControls()
 			}
 		}
 
-		if (downs[Key::F4]) xsettings.bulletDebug = !xsettings.bulletDebug;
-		if (downs[Key::F5]) xsettings.projection = 1 - xsettings.projection;
-		if (downs[Key::F11]) xsettings.instancing = !xsettings.instancing;
+		if (DOWN(Key::F4)) xsettings.bulletDebug = !xsettings.bulletDebug;
+		if (DOWN(Key::F5)) xsettings.projection = 1 - xsettings.projection;
+		if (DOWN(Key::F11)) xsettings.instancing = !xsettings.instancing;
 
 		// print without GUI
-		if (downs[Key::Print]) wantScreenshot = 2;
+		if (DOWN(Key::Print)) wantScreenshot = 2;
 
-		if (downs[Key::Delete]) {}
+		if (DOWN(Key::Delete)) {}
 
 		// move cursor/selected
 		MoveSelected(false);
 
-		if (downs[Key::NumPad1]) camera->SetOrthographic({ 0.0f, 0.0f, -1.0f });
-		if (downs[Key::NumPad3]) camera->SetOrthographic({ 1.0f, 0.0f, 0.0f });
-		if (downs[Key::NumPad7]) camera->SetOrthographic({ 0.0f, 1.0f, -0.1f });
-		if (downs[Key::NumPad5]) xsettings.projection = 1 - xsettings.projection;
+		if (DOWN(Key::NumPad1)) camera->SetOrthographic({ 0.0f, 0.0f, -1.0f });
+		if (DOWN(Key::NumPad3)) camera->SetOrthographic({ 1.0f, 0.0f, 0.0f });
+		if (DOWN(Key::NumPad7)) camera->SetOrthographic({ 0.0f, 1.0f, -0.1f });
+		if (DOWN(Key::NumPad5)) xsettings.projection = 1 - xsettings.projection;
 		// clang-format off
 		if (DOWN_OR_REPEAT(Key::NumPad2)) camera->RotateAroundAxis(camera->right  ,  bx::toRad(15.0f));
 		if (DOWN_OR_REPEAT(Key::NumPad4)) camera->RotateAroundAxis(camera->worldUp, -bx::toRad(15.0f));
@@ -246,13 +253,14 @@ void App::FixedControls()
 			}
 		}
 
-		// 4.b) holding down
+		// 5.b) holding down
 		{
 			if (keys[Key::NumPadMinus] || keys[Key::Minus]) camera->Zoom(1.0f + xsettings.zoomKb * 0.0025f);
 			if (keys[Key::NumPadPlus] || keys[Key::Equals]) camera->Zoom(1.0f / (1.0f + xsettings.zoomKb * 0.0025f));
 		}
 	}
 
+	// 6) reset fixed
 	GetGlobalInput().ResetFixed();
 	++inputFrame;
 }

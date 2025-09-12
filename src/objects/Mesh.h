@@ -108,6 +108,9 @@ public:
 	/// Make an instanced copy of itself => faster loading
 	sMesh CloneInstance(std::string_view cloneName);
 
+	/// Specific controls
+	virtual void Controls(int modifier, const bool* downs, bool* ignores, const bool* keys);
+
 	/// Utility to create a shape then a body
 	void CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass = 0.0f, const btVector4& newDims = { 0.0f, 0.0f, 0.0f, 0.0f });
 
