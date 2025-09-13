@@ -126,7 +126,9 @@ void RubikCube::AiControls(const sCamera& camera, int modifier, const bool* down
 	}
 
 	// 2) whole cube rotation
-	const int angle = (modifier & Modifier_Shift) ? -90 : 90;
+	int angle = 90;
+	if (modifier & Modifier_Shift) angle *= -1;
+	if (modifier & Modifier_Meta) angle *= 2;
 
 	// clang-format off
 	if (GI_DOWN(Key::KeyX)) RotateCube(rightMaxFace, angle); // x-axis
@@ -159,18 +161,28 @@ void RubikCube::Controls(const sCamera& camera, int modifier, const bool* downs,
 	using namespace entry;
 
 	static const USET_INT newIgnores = {
-		Key::KeyB, Key::KeyD, Key::KeyE, Key::KeyF, Key::KeyK, Key::KeyL, Key::KeyM,
-		Key::KeyR, Key::KeyS, Key::KeyU, Key::KeyX, Key::KeyY, Key::KeyZ,
+		Key::KeyB,
+		Key::KeyD,
+		// Key::KeyE,
+		Key::KeyF,
+		Key::KeyK,
+		Key::KeyL,
+		// Key::KeyM,
+		Key::KeyR,
+		// Key::KeyS,
+		Key::KeyU,
+		Key::KeyX,
+		Key::KeyY,
+		Key::KeyZ,
 	};
 
 	// 1) scramble?
-	if (GI_DOWN(Key::KeyK))
-	{
-		Scramble(camera, MerseneInt32(10, 20));
-		return;
-	}
+	auto& ginput = GetGlobalInput();
+	if (GI_DOWN_REPEAT(Key::KeyK))
+		Scramble(camera, 1);
 	// 2) AI controls
-	else AiControls(camera, modifier, downs);
+	else
+		AiControls(camera, modifier, downs);
 
 	// 3) set ignored keys
 	for (const int ignore : newIgnores)
@@ -294,16 +306,36 @@ void RubikCube::Scramble(const sCamera& camera, int steps)
 {
 	using namespace entry;
 
-	const bool downs[256] = {};
-	const int  modifier   = (MerseneInt32() & 1) ? Modifier_Shift : Modifier_None;
+	for (int step = 0; step < steps; ++step)
+	{
+		static const VEC_INT keys = {
+			Key::KeyB,
+			Key::KeyD,
+			// Key::KeyE,
+			Key::KeyF,
+			Key::KeyL,
+			// Key::KeyM,
+			Key::KeyR,
+			// Key::KeyS,
+			Key::KeyU,
+			Key::KeyX,
+			Key::KeyY,
+			Key::KeyZ,
+		};
 
-	static const VEC_INT keys = {
-		Key::KeyB, Key::KeyD, Key::KeyE, Key::KeyF, Key::KeyL, Key::KeyM,
-		Key::KeyR, Key::KeyS, Key::KeyU, Key::KeyX, Key::KeyY, Key::KeyZ,
-	};
+		bool downs[256] = {};
 
+		const int id  = MerseneInt32() % keys.size();
+		const int key = keys[id];
+		downs[key]    = true;
 
-	AiControls(camera, modifier, downs);
+		int modifier = Modifier_None;
+		if (MerseneInt32() & 1) modifier |= Modifier_Shift;
+		if ((MerseneInt32() & 3) == 0) modifier |= Modifier_Meta;
+
+		// ui::Log("Scramble: id={} key={} modifier={} repeat={}", id, key, modifier, repeat);
+		AiControls(camera, modifier, downs);
+	}
 }
 
 int RubikCube::Serialize(fmt::memory_buffer& outString, const int depth, const int bounds, const bool addChildren) const
