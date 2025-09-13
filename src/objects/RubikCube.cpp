@@ -265,8 +265,10 @@ void RubikCube::RotateCube(const RubikFace* face, int angle)
 	const glm::vec3& axis    = face->normalWorld;
 	const glm::quat  rotQuat = glm::angleAxis(bx::toRad(angle), axis);
 
-	quaternion = glm::normalize(rotQuat * quaternion);
-	isDirty    = true;
+	quaternion1 = quaternion;
+	quaternion2 = glm::normalize(rotQuat * quaternion);
+	quatTs      = Nowd();
+	isDirty     = true;
 }
 
 void RubikCube::RotateLayer(const RubikFace* face, int angle)
@@ -294,8 +296,15 @@ void RubikCube::RotateLayer(const RubikFace* face, int angle)
 			glm::vec3 newLocalPos = rotQuat * cubie->position;
 			newLocalPos = glm::floor(newLocalPos * 2.0f + 0.5f) * 0.5f;
 
-			const auto newCubieQuat = glm::normalize(rotQuat * cubie->quaternion);
-			cubie->ScaleQuaternionPosition(cubie->scale, newCubieQuat, newLocalPos);
+			cubie->arc1        = glm::identity<glm::quat>();
+			cubie->arc2        = rotQuat;
+			cubie->position1   = cubie->position;
+			cubie->position2   = newLocalPos;
+			cubie->quaternion1 = cubie->quaternion;
+			cubie->quaternion2 = glm::normalize(rotQuat * cubie->quaternion);
+
+			cubie->arcTs  = Nowd();
+			cubie->quatTs = Nowd();
 		}
 		isDirty = true;
 	}

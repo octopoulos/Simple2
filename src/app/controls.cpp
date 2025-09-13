@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-09-08
+// @version 2025-09-09
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -128,10 +128,11 @@ void App::FixedControls()
 		if (GI_DOWN(Key::KeyP))
 		{
 			xsettings.physPaused = false;
-			for (const auto& object : scene->children)
+			for (const auto& object : mapNode->children)
 			{
 				if (auto mesh = Mesh::SharedPtr(object, ObjectType_HasBody))
 				{
+					ui::Log("enable mesh: {}", mesh->name);
 					if (auto& body = mesh->body; !body->enabled)
 					{
 						mesh->SetBodyTransform();

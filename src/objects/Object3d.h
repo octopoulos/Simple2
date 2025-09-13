@@ -53,6 +53,9 @@ enum RenderFlags_ : int
 class Object3d
 {
 public:
+	glm::quat                         arc1        = glm::identity<glm::quat>(); ///< quaternion: arc origin
+	glm::quat                         arc2        = glm::identity<glm::quat>(); ///< quaternion: arc target
+	double                            arcTs       = 0.0;                        ///< stamp when arc-rotated
 	int                               childId     = 0;                          ///< selected sub-object
 	int                               childInc    = 0;                          ///< incremental id
 	std::vector<sObject3d>            children    = {};                         ///< sub-objects

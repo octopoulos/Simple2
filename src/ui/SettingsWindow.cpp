@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-09
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -15,15 +15,16 @@ enum ShowSettingFlags : int
 {
 	Show_App               = 1 << 0,
 	Show_Capture           = 1 << 1,
-	Show_Map               = 1 << 2,
-	Show_Net               = 1 << 3,
-	Show_NetMain           = 1 << 4,
-	Show_NetUser           = 1 << 5,
-	Show_Physics           = 1 << 6,
-	Show_Render            = 1 << 7,
-	Show_System            = 1 << 8, // main
-	Show_SystemPerformance = 1 << 9,
-	Show_SystemUI          = 1 << 10,
+	Show_Input             = 1 << 2,
+	Show_Map               = 1 << 3,
+	Show_Net               = 1 << 4,
+	Show_NetMain           = 1 << 5,
+	Show_NetUser           = 1 << 6,
+	Show_Physics           = 1 << 7,
+	Show_Render            = 1 << 8,
+	Show_System            = 1 << 9, // main
+	Show_SystemPerformance = 1 << 10,
+	Show_SystemUI          = 1 << 11,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,7 +59,7 @@ public:
 		}
 
 		const int showTree = xsettings.settingTree;
-		int       tree     = showTree & ~(Show_App | Show_Capture | Show_Map | Show_Net | Show_Physics | Show_Render | Show_System);
+		int       tree     = showTree & ~(Show_App | Show_Capture | Show_Input | Show_Map | Show_Net | Show_Physics | Show_Render | Show_System);
 
 		// APP
 		//////
@@ -80,6 +81,19 @@ public:
 			AddInputText(0, "captureDir", "Directory");
 			AddCheckbox(0, "captureVideo", "Video", "Enable Video");
 			AddCheckbox(0, "nvidiaEnc", "", "Use nVidia Encoding");
+			END_COLLAPSE();
+		}
+
+		// INPUT
+		////////
+
+		BEGIN_COLLAPSE("Input", Show_Input, 5)
+		{
+			AddDragFloat(0, "cameraSpeed", "Camera Speed", nullptr);
+			AddSliderInt(0, "repeatDelay", "Repeat Delay");
+			AddSliderInt(0, "repeatInterval", "Repeat Interval");
+			AddDragFloat(0, "zoomKb", "Zoom Keyboard", nullptr);
+			AddDragFloat(0, "zoomWheel", "Zoom Wheel", nullptr);
 			END_COLLAPSE();
 		}
 

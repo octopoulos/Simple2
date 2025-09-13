@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-09-08
+// @version 2025-09-09
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -364,25 +364,41 @@ int Mesh::SynchronizePhysics()
 			change = 1;
 		}
 
-		// Object3d::SynchronizePhysics();
 		UpdateWorldMatrix(false);
 	}
 	// interpolation
-	else if (posTs > 0.0 || quatTs > 0.0)
+	else if (arcTs > 0.0 || posTs > 0.0 || quatTs > 0.0)
 	{
 		const double interval = xsettings.repeatInterval * 1e-3;
 		const double nowd     = Nowd();
 
-		if (posTs > 0.0)
+		// arc interpolation (overrides pos for layer turns)
+		if (arcTs > 0.0)
+		{
+			if (const double elapsed = nowd - arcTs; elapsed < interval)
+			{
+				const auto arc = glm::slerp(arc1, arc2, TO_FLOAT(elapsed / interval));
+				position       = arc * position1;
+			}
+			else
+			{
+				position = position2;
+				arcTs    = 0.0;
+				posTs    = 0.0;
+			}
+		}
+		// linear position
+		else if (posTs > 0.0)
 		{
 			if (const double elapsed  = nowd - posTs; elapsed < interval)
 				position = glm::mix(position1, position2, TO_FLOAT(elapsed / interval));
 			else
 			{
 				position = position2;
-				posTs    = 0;
+				posTs    = 0.0;
 			}
 		}
+		// spherical interpolation
 		if (quatTs > 0.0)
 		{
 			if (const double elapsed  = nowd - quatTs; elapsed < interval)
@@ -390,7 +406,7 @@ int Mesh::SynchronizePhysics()
 			else
 			{
 				quaternion = quaternion2;
-				quatTs     = 0;
+				quatTs     = 0.0;
 			}
 		}
 		UpdateLocalMatrix("SynchronizePhysics");
