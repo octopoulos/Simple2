@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-09
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -220,7 +220,7 @@ void App::PopupsUi()
 			else if (currentPopup & Popup_Transform)
 			{
 				ImGui::Text("Transform");
-				ShowObjectSettings(true, 3);
+				ShowObjectSettings(true, ShowObject_Basic | ShowObject_Transform);
 			}
 		}
 

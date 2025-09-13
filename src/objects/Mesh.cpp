@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-08
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -40,7 +40,7 @@ sMesh Mesh::CloneInstance(std::string_view cloneName)
 	return clone;
 }
 
-void Mesh::Controls(int modifier, const bool* downs, bool* ignores, const bool* keys)
+void Mesh::Controls(const sCamera& camera, int modifier, const bool* downs, bool* ignores, const bool* keys)
 {
 }
 

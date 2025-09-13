@@ -1,4 +1,4 @@
-// @version 2025-09-07
+// @version 2025-09-08
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -687,6 +687,8 @@ void GlobalInput::ResetAscii()
 		lastAscii = KeyToAscii(lastKey);
 	else
 		lastAscii = -1;
+
+	memset(keyIgnores, 0, sizeof(keyIgnores));
 }
 
 void GlobalInput::ResetFixed()
@@ -695,7 +697,6 @@ void GlobalInput::ResetFixed()
 	memset(buttonDowns, 0, sizeof(buttonDowns));
 	memset(buttonUps  , 0, sizeof(buttonUps  ));
 	memset(keyDowns   , 0, sizeof(keyDowns   ));
-	memset(keyIgnores , 0, sizeof(keyIgnores ));
 	memset(keyUps     , 0, sizeof(keyUps     ));
 	// clang-format on
 }

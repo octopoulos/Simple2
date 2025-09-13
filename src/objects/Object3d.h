@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-09
 
 #pragma once
 
@@ -103,6 +103,9 @@ public:
 	/// Find an direct child by name
 	sObject3d GetObjectByName(std::string_view name) const;
 
+	/// Calculate Irot from Rotation
+	void IrotFromRotation();
+
 	/// Remove a child from the object
 	bool RemoveChild(const sObject3d& child);
 
@@ -112,6 +115,9 @@ public:
 	/// Calculate rotation and quaternion from irot
 	/// @param instant: instant rotation, no smoothing
 	void RotationFromIrot(bool instant);
+
+	/// Calculate rotation and irot from quaternion
+	void RotationFromQuaternion();
 
 	/// Apply scale then rotation then translation
 	void ScaleIrotPosition(const glm::vec3& _scale, const std::array<int, 3>& _irot, const glm::vec3& _position);

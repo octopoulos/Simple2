@@ -1,9 +1,10 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-08
 
 #pragma once
 
+#include "core/Camera.h"
 #include "geometries/Geometry.h"
 #include "materials/Material.h"
 #include "objects/Object3d.h"
@@ -109,7 +110,7 @@ public:
 	sMesh CloneInstance(std::string_view cloneName);
 
 	/// Specific controls
-	virtual void Controls(int modifier, const bool* downs, bool* ignores, const bool* keys);
+	virtual void Controls(const sCamera& camera, int modifier, const bool* downs, bool* ignores, const bool* keys);
 
 	/// Utility to create a shape then a body
 	void CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass = 0.0f, const btVector4& newDims = { 0.0f, 0.0f, 0.0f, 0.0f });

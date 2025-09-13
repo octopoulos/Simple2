@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-08
 
 #pragma once
 
@@ -52,6 +52,9 @@ private:
 
 	/// Per-frame input logic (ex: smooth camera movement)
 	void FluidControls();
+
+	/// Mesh controls + RubikCube
+	void MeshControls();
 
 	/// Move the selected object using the arrows
 	void MoveSelected(bool force);

@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-09
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -85,14 +85,7 @@ void Object3d::DecomposeMatrix()
 
 	// convert to quaternion
 	quaternion = glm::normalize(glm::quat_cast(rotationMatrix));
-
-	// convert to euler angles (radians)
-	rotation = glm::eulerAngles(quaternion);
-
-	// convert to irot (degrees)
-	irot[0] = TO_INT(bx::toDeg(rotation.x));
-	irot[1] = TO_INT(bx::toDeg(rotation.y));
-	irot[2] = TO_INT(bx::toDeg(rotation.z));
+	RotationFromQuaternion();
 }
 
 sObject3d Object3d::GetObjectById(int id) const
@@ -111,6 +104,13 @@ sObject3d Object3d::GetObjectByName(std::string_view name) const
 		if (auto sp = it->second.lock()) return sp;
 	}
 	return nullptr;
+}
+
+void Object3d::IrotFromRotation()
+{
+	irot[0] = TO_INT(bx::toDeg(rotation.x));
+	irot[1] = TO_INT(bx::toDeg(rotation.y));
+	irot[2] = TO_INT(bx::toDeg(rotation.z));
 }
 
 bool Object3d::RemoveChild(const sObject3d& child)
@@ -172,6 +172,12 @@ void Object3d::RotationFromIrot(bool instant)
 	}
 }
 
+void Object3d::RotationFromQuaternion()
+{
+	rotation = glm::eulerAngles(quaternion);
+	IrotFromRotation();
+}
+
 void Object3d::ScaleIrotPosition(const glm::vec3& _scale, const std::array<int, 3>& _irot, const glm::vec3& _position)
 {
 	memcpy(irot, _irot.data(), sizeof(irot));
@@ -192,10 +198,7 @@ void Object3d::ScaleRotationPosition(const glm::vec3& _scale, const glm::vec3& _
 	quaternion  = glm::quat(rotation);
 	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
 
-	irot[0] = TO_INT(bx::toDeg(rotation.x));
-	irot[1] = TO_INT(bx::toDeg(rotation.y));
-	irot[2] = TO_INT(bx::toDeg(rotation.z));
-
+	IrotFromRotation();
 	UpdateLocalMatrix("ScaleRotationPosition");
 }
 
@@ -204,13 +207,9 @@ void Object3d::ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat&
 	position    = _position;
 	quaternion  = _quaternion;
 	scale       = _scale;
-	rotation    = glm::eulerAngles(quaternion);
 	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
 
-	irot[0] = TO_INT(bx::toDeg(rotation.x));
-	irot[1] = TO_INT(bx::toDeg(rotation.y));
-	irot[2] = TO_INT(bx::toDeg(rotation.z));
-
+	RotationFromQuaternion();
 	UpdateLocalMatrix("ScaleQuaternionPosition");
 }
 

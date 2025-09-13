@@ -1,6 +1,6 @@
 // RubikCube.h
 // @author octopoulos
-// @version 2025-08-07
+// @version 2025-09-09
 
 #pragma once
 
@@ -13,6 +13,12 @@ class RubikCube : public Mesh
 private:
 	int cubeSize = 3; ///< size of the cube (e.g., 3 for 3x3x3)
 
+	/// Create all cubies and position them in a 3D grid
+	void CreateCubies();
+
+	/// Face rotation
+	void RotateFace(int axis, int dir, float layerThreshold, float deg);
+
 public:
 	RubikCube(std::string_view name, int cubeSize)
 	    : Mesh(name, ObjectType_Group | ObjectType_RubikCube)
@@ -24,10 +30,7 @@ public:
 	~RubikCube() = default;
 
 	/// Specific Rubik controls
-	virtual void Controls(int modifier, const bool* downs, bool* ignores, const bool* keys) override;
-
-	/// Create all cubies and position them in a 3D grid
-	void CreateCubies();
+	virtual void Controls(const sCamera& camera, int modifier, const bool* downs, bool* ignores, const bool* keys) override;
 
 	/// Serialize for JSON output
 	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3, bool addChildren = true) const override;

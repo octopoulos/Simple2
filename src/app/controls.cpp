@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-08
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -36,13 +36,13 @@ int App::ArrowsFlag()
 
 	// clang-format off
 	const int flag = 0
-		| DOWN_OR_REPEAT(Key::Down )     * 1
-		| DOWN_OR_REPEAT(Key::Left )     * 2
-		| DOWN_OR_REPEAT(Key::Right)     * 4
-		| DOWN_OR_REPEAT(Key::Up   )     * 8
-		| DOWN_OR_REPEAT(Key::Quote)     * 16  // y-down
-		| DOWN_OR_REPEAT(Key::Backslash) * 32  // y-up
-		| DOWN_OR_REPEAT(Key::Semicolon) * 32; // y-up
+		| GI_DOWN_REPEAT(Key::Down )     * 1
+		| GI_DOWN_REPEAT(Key::Left )     * 2
+		| GI_DOWN_REPEAT(Key::Right)     * 4
+		| GI_DOWN_REPEAT(Key::Up   )     * 8
+		| GI_DOWN_REPEAT(Key::Quote)     * 16  // y-down
+		| GI_DOWN_REPEAT(Key::Backslash) * 32  // y-up
+		| GI_DOWN_REPEAT(Key::Semicolon) * 32; // y-up
 	// clang-format on
 
 	return flag;
@@ -61,6 +61,7 @@ void App::Controls()
 	{
 		GetGlobalInput().nowMs = NowMs();
 
+		MeshControls();
 		FluidControls();
 
 		inputLag += deltaTime;
@@ -103,17 +104,10 @@ void App::FixedControls()
 	}
 
 	const auto&    downs    = ginput.keyDowns;
-	auto&          ignores  = ginput.keyIgnores;
+	const auto&    ignores  = ginput.keyIgnores;
 	const ImGuiIO& io       = ImGui::GetIO();
 	const auto&    keys     = ginput.keys;
 	const int      modifier = ginput.IsModifier();
-
-	// 1) overrides
-	if (auto target = selectWeak.lock())
-	{
-		if (target->type & ObjectType_Mesh)
-			Mesh::SharedPtr(target)->Controls(modifier, downs, ignores, keys);
-	}
 
 	// ignore inputs when focused on a text input
 	if (io.WantTextInput)
@@ -131,7 +125,7 @@ void App::FixedControls()
 	else if (modifier & Modifier_Shift)
 	{
 		// unpause + restore physics to every object
-		if (DOWN(Key::KeyP))
+		if (GI_DOWN(Key::KeyP))
 		{
 			xsettings.physPaused = false;
 			for (const auto& object : scene->children)
@@ -148,7 +142,7 @@ void App::FixedControls()
 		}
 
 		// print with GUI
-		if (DOWN(Key::Print)) wantScreenshot = 1;
+		if (GI_DOWN(Key::Print)) wantScreenshot = 1;
 
 		// rotate cursor/selected
 		RotateSelected(false);
@@ -157,25 +151,25 @@ void App::FixedControls()
 	else
 	{
 		// 5.a) new keys
-		if (DOWN(Key::KeyH)) ShowPopup(Popup_AddGeometry);
-		if (DOWN(Key::KeyJ)) ShowPopup(Popup_AddMesh);
-		if (DOWN(Key::KeyM)) ShowPopup(Popup_AddMap);
-		if (DOWN(Key::KeyN)) ShowPopup(Popup_Transform);
+		if (GI_DOWN(Key::KeyH)) ShowPopup(Popup_AddGeometry);
+		if (GI_DOWN(Key::KeyJ)) ShowPopup(Popup_AddMesh);
+		if (GI_DOWN(Key::KeyM)) ShowPopup(Popup_AddMap);
+		if (GI_DOWN(Key::KeyN)) ShowPopup(Popup_Transform);
 
-		if (DOWN_OR_REPEAT(Key::KeyO))
+		if (GI_DOWN_REPEAT(Key::KeyO))
 		{
 			xsettings.physPaused = false;
 			pauseNextFrame       = true;
 		}
-		if (DOWN(Key::KeyP)) xsettings.physPaused = !xsettings.physPaused;
-		if (DOWN(Key::KeyT)) showTest = !showTest;
-		if (DOWN(Key::KeyX)) ShowPopup(Popup_Delete);
+		if (GI_DOWN(Key::KeyP)) xsettings.physPaused = !xsettings.physPaused;
+		if (GI_DOWN(Key::KeyT)) showTest = !showTest;
+		if (GI_DOWN(Key::KeyX)) ShowPopup(Popup_Delete);
 
-		if (DOWN(Key::Key1)) ThrowMesh(ThrowAction_Throw, "donut3", ShapeType_Cylinder, { "donut_base.png" });
+		if (GI_DOWN(Key::Key1)) ThrowMesh(ThrowAction_Throw, "donut3", ShapeType_Cylinder, { "donut_base.png" });
 		// TODO: Shape_Capsule doesn't work
-		if (DOWN(Key::Key2)) ThrowMesh(ThrowAction_Throw, "kenney_car-kit/taxi", ShapeType_Box);
-		if (DOWN(Key::Key3)) ThrowGeometry(ThrowAction_Throw, GeometryType_None, { "colors.png" });
-		if (DOWN(Key::Key0))
+		if (GI_DOWN(Key::Key2)) ThrowMesh(ThrowAction_Throw, "kenney_car-kit/taxi", ShapeType_Box);
+		if (GI_DOWN(Key::Key3)) ThrowGeometry(ThrowAction_Throw, GeometryType_None, { "colors.png" });
+		if (GI_DOWN(Key::Key0))
 		{
 			if (const auto temp = prevSelWeak.lock())
 			{
@@ -190,8 +184,8 @@ void App::FixedControls()
 			}
 		}
 
-		if (DOWN(Key::Return)) SelectObject(nullptr);
-		if (DOWN(Key::Esc))
+		if (GI_DOWN(Key::Return)) SelectObject(nullptr);
+		if (GI_DOWN(Key::Esc))
 		{
 			// object is being placed => cancel
 			if (camera->follow & CameraFollow_SelectedObj)
@@ -200,21 +194,21 @@ void App::FixedControls()
 			}
 			hidePopup |= Popup_Any;
 		}
-		if (DOWN(Key::Tab)) showLearn = !showLearn;
+		if (GI_DOWN(Key::Tab)) showLearn = !showLearn;
 
-		if (keys[Key::LeftBracket] || keys[Key::RightBracket])
+		if (GI_KEY(Key::LeftBracket) || GI_KEY(Key::RightBracket))
 		{
 			if (auto target = selectWeak.lock(); target && target->parent)
 			{
 				auto&       parent   = target->parent;
 				const auto& children = parent->children;
 				const auto  numChild = children.size();
-				if (DOWN_OR_REPEAT(Key::LeftBracket))
+				if (GI_DOWN_REPEAT(Key::LeftBracket))
 				{
 					parent->childId = (parent->childId + numChild - 1) % numChild;
 					SelectObject(children[parent->childId]);
 				}
-				if (DOWN_OR_REPEAT(Key::RightBracket))
+				if (GI_DOWN_REPEAT(Key::RightBracket))
 				{
 					parent->childId = (parent->childId + 1) % numChild;
 					SelectObject(children[parent->childId]);
@@ -222,29 +216,29 @@ void App::FixedControls()
 			}
 		}
 
-		if (DOWN(Key::F4)) xsettings.bulletDebug = !xsettings.bulletDebug;
-		if (DOWN(Key::F5)) xsettings.projection = 1 - xsettings.projection;
-		if (DOWN(Key::F11)) xsettings.instancing = !xsettings.instancing;
+		if (GI_DOWN(Key::F4)) xsettings.bulletDebug = !xsettings.bulletDebug;
+		if (GI_DOWN(Key::F5)) xsettings.projection = 1 - xsettings.projection;
+		if (GI_DOWN(Key::F11)) xsettings.instancing = !xsettings.instancing;
 
 		// print without GUI
-		if (DOWN(Key::Print)) wantScreenshot = 2;
+		if (GI_DOWN(Key::Print)) wantScreenshot = 2;
 
-		if (DOWN(Key::Delete)) {}
+		if (GI_DOWN(Key::Delete)) {}
 
 		// move cursor/selected
 		MoveSelected(false);
 
-		if (DOWN(Key::NumPad1)) camera->SetOrthographic({ 0.0f, 0.0f, -1.0f });
-		if (DOWN(Key::NumPad3)) camera->SetOrthographic({ 1.0f, 0.0f, 0.0f });
-		if (DOWN(Key::NumPad7)) camera->SetOrthographic({ 0.0f, 1.0f, -0.1f });
-		if (DOWN(Key::NumPad5)) xsettings.projection = 1 - xsettings.projection;
+		if (GI_DOWN(Key::NumPad1)) camera->SetOrthographic({ 0.0f, 0.0f, -1.0f });
+		if (GI_DOWN(Key::NumPad3)) camera->SetOrthographic({ 1.0f, 0.0f, 0.0f });
+		if (GI_DOWN(Key::NumPad7)) camera->SetOrthographic({ 0.0f, 1.0f, -0.1f });
+		if (GI_DOWN(Key::NumPad5)) xsettings.projection = 1 - xsettings.projection;
 		// clang-format off
-		if (DOWN_OR_REPEAT(Key::NumPad2)) camera->RotateAroundAxis(camera->right  ,  bx::toRad(15.0f));
-		if (DOWN_OR_REPEAT(Key::NumPad4)) camera->RotateAroundAxis(camera->worldUp, -bx::toRad(15.0f));
-		if (DOWN_OR_REPEAT(Key::NumPad6)) camera->RotateAroundAxis(camera->worldUp,  bx::toRad(15.0f));
-		if (DOWN_OR_REPEAT(Key::NumPad8)) camera->RotateAroundAxis(camera->right  , -bx::toRad(15.0f));
+		if (GI_DOWN_REPEAT(Key::NumPad2)) camera->RotateAroundAxis(camera->right  ,  bx::toRad(15.0f));
+		if (GI_DOWN_REPEAT(Key::NumPad4)) camera->RotateAroundAxis(camera->worldUp, -bx::toRad(15.0f));
+		if (GI_DOWN_REPEAT(Key::NumPad6)) camera->RotateAroundAxis(camera->worldUp,  bx::toRad(15.0f));
+		if (GI_DOWN_REPEAT(Key::NumPad8)) camera->RotateAroundAxis(camera->right  , -bx::toRad(15.0f));
 		// clang-format on
-		if (DOWN_OR_REPEAT(Key::NumPad9))
+		if (GI_DOWN_REPEAT(Key::NumPad9))
 		{
 			for (int i = 0; i < 12; ++i)
 			{
@@ -255,8 +249,8 @@ void App::FixedControls()
 
 		// 5.b) holding down
 		{
-			if (keys[Key::NumPadMinus] || keys[Key::Minus]) camera->Zoom(1.0f + xsettings.zoomKb * 0.0025f);
-			if (keys[Key::NumPadPlus] || keys[Key::Equals]) camera->Zoom(1.0f / (1.0f + xsettings.zoomKb * 0.0025f));
+			if (GI_KEY(Key::NumPadMinus) || GI_KEY(Key::Minus)) camera->Zoom(1.0f + xsettings.zoomKb * 0.0025f);
+			if (GI_KEY(Key::NumPadPlus) || GI_KEY(Key::Equals)) camera->Zoom(1.0f / (1.0f + xsettings.zoomKb * 0.0025f));
 		}
 	}
 
@@ -270,6 +264,7 @@ void App::FluidControls()
 	auto& ginput = GetGlobalInput();
 	ginput.MouseDeltas();
 
+	const auto&    ignores  = ginput.keyIgnores;
 	const ImGuiIO& io       = ImGui::GetIO();
 	const int      modifier = ginput.IsModifier();
 
@@ -305,7 +300,7 @@ void App::FluidControls()
 		{
 			using namespace entry;
 
-			if (keys[Key::Key4])
+			if (GI_KEY(Key::Key4))
 			{
 				static int64_t prevUs;
 				const int64_t  nowUs = NowUs();
@@ -324,14 +319,14 @@ void App::FluidControls()
 			const int  keyQS   = isOrtho ? Key::KeyS : Key::KeyQ;
 			const int  keyEW   = isOrtho ? Key::KeyW : Key::KeyE;
 
-			if (keys[Key::KeyA]) camera->Move(CameraDir_Right, -speed);
-			if (keys[Key::KeyD]) camera->Move(CameraDir_Right, speed);
-			if (keys[keyEW]) camera->Move(CameraDir_Up, speed);
-			if (keys[keyQS]) camera->Move(CameraDir_Up, -speed);
+			if (GI_KEY(Key::KeyA)) camera->Move(CameraDir_Right, -speed);
+			if (GI_KEY(Key::KeyD)) camera->Move(CameraDir_Right, speed);
+			if (GI_KEY(keyEW)) camera->Move(CameraDir_Up, speed);
+			if (GI_KEY(keyQS)) camera->Move(CameraDir_Up, -speed);
 			if (!isOrtho)
 			{
-				if (keys[Key::KeyS]) camera->Move(CameraDir_Forward, -speed);
-				if (keys[Key::KeyW]) camera->Move(CameraDir_Forward, speed);
+				if (GI_KEY(Key::KeyS)) camera->Move(CameraDir_Forward, -speed);
+				if (GI_KEY(Key::KeyW)) camera->Move(CameraDir_Forward, speed);
 			}
 		}
 	}
@@ -342,6 +337,23 @@ void App::FocusScreen()
 	ImGui::SetWindowFocus(nullptr);
 }
 
+void App::MeshControls()
+{
+	if (auto target = selectWeak.lock())
+	{
+		if (target->type & ObjectType_Mesh)
+		{
+			auto&       ginput   = GetGlobalInput();
+			const auto& downs    = ginput.keyDowns;
+			auto&       ignores  = ginput.keyIgnores;
+			const auto& keys     = ginput.keys;
+			const int   modifier = ginput.IsModifier();
+
+			Mesh::SharedPtr(target)->Controls(camera, modifier, downs, ignores, keys);
+		}
+	}
+}
+
 void App::MoveSelected(bool force)
 {
 	using namespace entry;
@@ -349,11 +361,12 @@ void App::MoveSelected(bool force)
 	static bx::Vec3 cacheForward = bx::InitZero;
 	static bx::Vec3 cacheRight   = bx::InitZero;
 
-	auto&       ginput = GetGlobalInput();
-	const auto& keys   = ginput.keys;
+	auto&       ginput  = GetGlobalInput();
+	const auto& ignores = ginput.keyIgnores;
+	const auto& keys    = ginput.keys;
 
 	// keep used camera position locked until all keys are released
-	if (force || keys[Key::Down] || keys[Key::Left] || keys[Key::Right] || keys[Key::Up] || keys[Key::Backslash] || keys[Key::Quote])
+	if (force || GI_KEY(Key::Down) || GI_KEY(Key::Left) || GI_KEY(Key::Right) || GI_KEY(Key::Up) || GI_KEY(Key::Backslash) || GI_KEY(Key::Quote))
 	{
 		if (const int flag = ArrowsFlag(); flag || force)
 		{

@@ -1,108 +1,236 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-09
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
 //
+#include "core/common3d.h"             // BxToGlm
 #include "entry/input.h"               // GetGlobalInput
 #include "geometries/Geometry.h"       // uGeometry
 #include "materials/MaterialManager.h" // GetMaterialManager
 #include "loaders/writer.h"            // WRITE_KEY_xxx
 #include "ui/ui.h"                     // ui::
 
+struct RubikFace
+{
+	std::string color       = "";              // #ff0000
+	std::string name        = "";              // blue, green, orange, red, white, yellow
+	glm::vec3   normal      = glm::vec3(0.0f); // normal
+	// computed
+	glm::vec3   normalWorld = glm::vec3(0.0f); // rotated normal (world)
+};
+
+const std::vector<RubikFace> rubikStartFaces = {
+	{ "", "yellow", {  0.0f,  1.0f,  0.0f } },
+	{ "", "white" , {  0.0f, -1.0f,  0.0f } },
+	{ "", "red"   , {  1.0f,  0.0f,  0.0f } },
+	{ "", "orange", { -1.0f,  0.0f,  0.0f } },
+	{ "", "green" , {  0.0f,  0.0f,  1.0f } },
+	{ "", "blue"  , {  0.0f,  0.0f, -1.0f } },
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /// https://www.gancube.com/pages/3x3x3-cfop-guide-of-gancube
-void RubikCube::Controls(int modifier, const bool* downs, bool* ignores, const bool* keys)
+void RubikCube::Controls(const sCamera& camera, int modifier, const bool* downs, bool* ignores, const bool* keys)
 {
 	using namespace entry;
 
 	static const USET_INT newIgnores = {
-		Key::KeyB,
-		Key::KeyD,
-		Key::KeyE,
-		Key::KeyF,
-		Key::KeyL,
-		Key::KeyM,
-		Key::KeyR,
-		Key::KeyS,
-		Key::KeyU,
-		Key::KeyX,
-		Key::KeyY,
-		Key::KeyZ,
+		Key::KeyB, Key::KeyD, Key::KeyE, Key::KeyF, Key::KeyL, Key::KeyM,
+		Key::KeyR, Key::KeyS, Key::KeyU, Key::KeyX, Key::KeyY, Key::KeyZ,
 	};
 
-	const int angleInc = 90;
-	int       change   = 0;
-	auto&     ginput   = GetGlobalInput();
+	const float angleInc = bx::toRad(90.0f);
+	int         change   = 0;
+	auto&       ginput   = GetGlobalInput();
+	const bool  isShift  = (modifier & Modifier_Shift);
 
-	// 1) handle keys
-	// back
-	if (DOWN_OR_REPEAT(Key::KeyB))
-	{
+	// 1) detect faces
+	// - rotate the normals
+	auto faces = rubikStartFaces;
+	for (auto& face : faces)
+		face.normalWorld = quaternion * face.normal;
 
-	}
-	// down
-	if (DOWN_OR_REPEAT(Key::KeyD))
-	{
+	const auto backward = -BxToGlm(camera->forward);
+	const auto right    = BxToGlm(camera->right);
+	const auto worldUp  = BxToGlm(camera->worldUp);
 
-	}
-	if (DOWN_OR_REPEAT(Key::KeyE))
-	{
+	float            frontMaxDot  = -2.0f;
+	const RubikFace* frontMaxFace = nullptr;
+	float            frontMinDot  = 2.0f;
+	const RubikFace* frontMinFace = nullptr;
+	float            rightMaxDot  = -2.0f;
+	const RubikFace* rightMaxFace = nullptr;
+	float            rightMinDot  = 2.0f;
+	const RubikFace* rightMinFace = nullptr;
+	float            upMaxDot     = -2.0f;
+	const RubikFace* upMaxFace    = nullptr;
+	float            upMinDot     = 2.0f;
+	const RubikFace* upMinFace    = nullptr;
 
-	}
-	// front
-	if (DOWN_OR_REPEAT(Key::KeyF))
+	// 1.a) find up/down
+	for (const auto& face : faces)
 	{
-
+		const float dot = glm::dot(face.normalWorld, worldUp);
+		if (dot > upMaxDot)
+		{
+			upMaxDot  = dot;
+			upMaxFace = &face;
+		}
+		if (dot < upMinDot)
+		{
+			upMinDot  = dot;
+			upMinFace = &face;
+		}
 	}
-	// left
-	if (DOWN_OR_REPEAT(Key::KeyL))
+	if (!upMaxFace || !upMinFace)
 	{
-
-	}
-	if (DOWN_OR_REPEAT(Key::KeyM))
-	{
-
-	}
-	// right
-	if (DOWN_OR_REPEAT(Key::KeyR))
-	{
-
-	}
-	if (DOWN_OR_REPEAT(Key::KeyS))
-	{
-
-	}
-	// up
-	if (DOWN_OR_REPEAT(Key::KeyU))
-	{
-
-	}
-	if (DOWN_OR_REPEAT(Key::KeyX))
-	{
-		irot[2] += (modifier & Modifier_Shift) ? angleInc : -angleInc;
-		++change;
-	}
-	if (DOWN_OR_REPEAT(Key::KeyY))
-	{
-		irot[1] += (modifier & Modifier_Shift) ? -angleInc : angleInc;
-		++change;
-	}
-	if (DOWN_OR_REPEAT(Key::KeyZ))
-	{
-		irot[0] += (modifier & Modifier_Shift) ? angleInc : -angleInc;
-		++change;
+		ui::LogError("RubikCube/Controls: no up/down");
+		return;
 	}
 
-	// 2) changed => rotate
+	// 1.b) find other faces
+	for (const auto& face : faces)
+	{
+		if (&face == upMaxFace || &face == upMinFace) continue;
+
+		// front
+		{
+			const float dot = glm::dot(face.normalWorld, backward);
+			if (dot > frontMaxDot)
+			{
+				frontMaxDot  = dot;
+				frontMaxFace = &face;
+			}
+			if (dot < frontMinDot)
+			{
+				frontMinDot  = dot;
+				frontMinFace = &face;
+			}
+		}
+		// right
+		{
+			const float dot = glm::dot(face.normalWorld, right);
+			if (dot > rightMaxDot)
+			{
+				rightMaxDot  = dot;
+				rightMaxFace = &face;
+			}
+			if (dot < rightMinDot)
+			{
+				rightMinDot  = dot;
+				rightMinFace = &face;
+			}
+		}
+	}
+	if (!frontMaxFace || !frontMinFace || !rightMaxFace || !rightMinFace)
+	{
+		ui::LogError("RubikCube/Controls: no front/back/right/left");
+		return;
+	}
+
+	const float frontVis = frontMaxDot;
+	const float rightVis = glm::dot(rightMaxFace->normalWorld, backward);
+	const float upVis    = glm::dot(upMaxFace->normalWorld   , backward);
+
+	ui::Log("FRONT: maxDot={:5.2f} ({:6}) {:5.2f} : minDot={:5.2f} ({:6}) {:5.2f}", frontMaxDot, frontMaxFace->name, frontVis, frontMinDot, frontMinFace->name, glm::dot(frontMinFace->normalWorld, backward));
+	ui::Log("RIGHT: maxDot={:5.2f} ({:6}) {:5.2f} : minDot={:5.2f} ({:6}) {:5.2f}", rightMaxDot, rightMaxFace->name, rightVis, rightMinDot, rightMinFace->name, glm::dot(rightMinFace->normalWorld, backward));
+	ui::Log("UP   : maxDot={:5.2f} ({:6}) {:5.2f} : minDot={:5.2f} ({:6}) {:5.2f}", upMaxDot   , upMaxFace->name   , upVis   , upMinDot   , upMinFace->name   , glm::dot(upMinFace->normalWorld   , backward));
+
+	// 2) whole cube rotation
+	// 2.a) X: front to up => rotation around X axis (right)
+	if (GI_DOWN_REPEAT(Key::KeyX))
+	{
+		const auto& axis    = rightMaxFace->normalWorld;
+		glm::quat   rotQuat = glm::angleAxis(angleInc * (isShift ? -1.0f : 1.0f), axis);
+		quaternion          = glm::normalize(rotQuat * quaternion);
+		change++;
+	}
+
+	// 2.b) Z: Bring right/front to up (opposite of X)
+	if (GI_DOWN_REPEAT(Key::KeyZ))
+	{
+	// 	const float dir     = (rightVisible ? -1.0f : 1.0f) * (isShift ? -1.0f : 1.0f); // Opposite for right
+	// 	const float deg     = dir * angleInc;
+	// 	glm::quat   rotQuat = glm::angleAxis(bx::toRad(deg), cameraUp); // Around camera up
+	// 	quaternion          = rotQuat * quaternion;
+	// 	rotation            = glm::eulerAngles(quaternion);
+	// 	irot[1]             = TO_INT(bx::toDeg(rotation.y));
+	// 	change++;
+	// 	ui::Log("Z rotation: deg={} (right visible: {})", deg, rightVisible);
+	}
+
+	// // // Y: Roll to bring horiz (up/down) to front (around horizontalViewDir)
+	if (GI_DOWN_REPEAT(Key::KeyY))
+	{
+	// //     bool        horizVisible = upVisible || downVisible;  // Always true, but for logic
+	// //     const float dir          = (upVisible ? 1.0f : -1.0f) * (isShift ? -1.0f : 1.0f);
+	// //     const float deg          = dir * angleInc;
+	// //     glm::quat   rotQuat      = glm::angleAxis(bx::toRad(deg), horizontalViewDir); // Around horizontal view
+	// //     quaternion               = rotQuat * quaternion;
+	// //     rotation                 = glm::eulerAngles(quaternion);
+	// //     irot[2]                  = TO_INT(bx::toDeg(rotation.z)); // Snap roll
+	// //     change++;
+	// //     ui::Log("Y rotation: deg={} (up visible: {})", deg, upVisible);
+	}
+
+	// // 2) Face rotations (U/R/L/F/B/D/E/M/S): Layer-based, cube-local axes
+	// struct FaceTurn
+	// {
+	// 	Key::Enum key;      // key
+	// 	char      face;     // e.g., 'U'
+	// 	int       axis;     // 0=X, 1=Y, 2=Z
+	// 	int       dir;      // +1 or -1 for clockwise view
+	// 	float     layerPos; // Position threshold (±1.0 outer, 0.0 middle)
+	// };
+
+	// const std::vector<FaceTurn> faceTurns = {
+	// 	// Outer faces
+	// 	{ Key::KeyU, 'U', 1, +1, +1.0f }, // Up: +Y (yellow)
+	// 	{ Key::KeyD, 'D', 1, -1, -1.0f }, // Down: -Y (white)
+	// 	{ Key::KeyR, 'R', 0, +1, +1.0f }, // Right: +X (red)
+	// 	{ Key::KeyL, 'L', 0, -1, -1.0f }, // Left: -X (orange)
+	// 	{ Key::KeyF, 'F', 2, +1, +1.0f }, // Front: +Z (green)
+	// 	{ Key::KeyB, 'B', 2, -1, -1.0f }, // Back: -Z (blue)
+	// 	// Middle slices
+	// 	{ Key::KeyE, 'E', 1, -1, 0.0f  }, // Equator: middle Y (as D)
+	// 	{ Key::KeyM, 'M', 0, -1, 0.0f  }, // Middle X (as L)
+	// 	{ Key::KeyS, 'S', 2, -1, 0.0f  }  // Standing: middle Z (as B)
+	// };
+
+	// static std::unordered_map<Key::Enum, int64_t> lastPressTime; // For double-tap 180°
+
+	// for (const auto& turn : faceTurns)
+	// {
+	// 	if (GI_DOWN_REPEAT(turn.key))
+	// 	{
+	// 		auto& lastTime = lastPressTime[turn.key];
+	// 		bool  isDouble = (ginput.nowMs - lastTime < 500) && ginput.RepeatingKey(turn.key);
+	// 		lastTime       = ginput.nowMs;
+
+	// 		const int   numTurn = isDouble ? 2 : 1;
+	// 		const int   rotDir  = isShift ? -numTurn : numTurn;
+	// 		const float deg     = TO_FLOAT(rotDir * angleInc);
+
+	// 		RotateFace(turn.axis, turn.dir, turn.layerPos, deg);
+	// 		change++;
+
+	// 		std::string suffix = isShift ? "'" : (isDouble ? "2" : "");
+	// 		ui::Log("Turn: {}{} (axis={}, dir={}, layer={:.1f}, deg={})", turn.face, suffix, turn.axis, turn.dir, turn.layerPos, deg);
+	// 	}
+	// }
+
+	// 3) apply changes
 	if (change)
 	{
 		ui::Log("change={}", change);
-		RotationFromIrot(false);
+		RotationFromQuaternion();
 		UpdateLocalMatrix("Controls");
 	}
 
-	// 3) set ignored keys
+	// 4) set ignored keys
 	for (const int ignore : newIgnores)
 		ignores[ignore] = true;
 }
@@ -117,7 +245,7 @@ void RubikCube::CreateCubies()
 	// define face colors (RGBA)
 	const std::vector<glm::vec4> faceColors = {
 		glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), // +x (red)
-		glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), // -x (orange)
+		glm::vec4(1.0f, 0.7f, 0.0f, 1.0f), // -x (orange)
 		glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), // +y (yellow)
 		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), // -y (white)
 		glm::vec4(0.0f, 0.8f, 0.0f, 1.0f), // +z (green)
@@ -175,6 +303,46 @@ void RubikCube::CreateCubies()
 	ui::Log("RubikCube: Created {} cubies for {}x{}x{} cube", cubeSize * cubeSize * cubeSize, cubeSize, cubeSize, cubeSize);
 
 	// update world matrices for all children
+	UpdateWorldMatrix(true);
+}
+
+void RubikCube::RotateFace(int axis, int dir, float layerThreshold, float deg)
+{
+	// Get cube's local rotation matrix from quaternion
+	glm::mat3 localRot = glm::mat3_cast(quaternion);
+	glm::vec3 rotAxis  = localRot[axis] * TO_FLOAT(dir); // e.g., local +Y for U
+	rotAxis            = glm::normalize(rotAxis);
+
+	// rotate only cubies in the target layer around cube center (0,0,0)
+	const float tolerance = 0.1f; // for floating-point matching
+	for (auto& child : children)
+	{
+		glm::vec3 localPos = child->position;
+		bool      inLayer  = false;
+		// clang-format off
+		     if (axis == 0) inLayer = fabsf(localPos.x - layerThreshold) < tolerance; // X layer
+		else if (axis == 1) inLayer = fabsf(localPos.y - layerThreshold) < tolerance; // Y
+		else if (axis == 2) inLayer = fabsf(localPos.z - layerThreshold) < tolerance; // Z
+		// clang-format on
+
+		if (inLayer)
+		{
+			// apply rotation to position
+			const float rad     = bx::toRad(deg);
+			glm::quat   rotQuat = glm::angleAxis(rad, rotAxis);
+			localPos            = rotQuat * localPos; // Rotate around center
+
+			// snap to grid for precision (spacing=1.0f, positions like -1.0/0.0/+1.0)
+			localPos = glm::floor(localPos * 2.0f + 0.5f) * 0.5f;
+
+			// update cubie transform (no per-cubie rotation)
+			glm::vec3          scale(1.0f);
+			std::array<int, 3> zeroIrot = { 0, 0, 0 };
+			child->ScaleIrotPosition(scale, zeroIrot, localPos);
+		}
+	}
+
+	// propagate matrix updates
 	UpdateWorldMatrix(true);
 }
 

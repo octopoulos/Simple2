@@ -1,4 +1,4 @@
-// @version 2025-09-07
+// @version 2025-09-08
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -104,8 +104,9 @@ int32_t inputGetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::En
 // GlobalInput
 //////////////
 
-#define DOWN(key)           (!ignores[key] && downs[key])
-#define DOWN_OR_REPEAT(key) ((!ignores[key] && (downs[key] || ginput.RepeatingKey(key))) ? 1 : 0)
+#define GI_DOWN(key)        (!ignores[key] && downs[key])
+#define GI_DOWN_REPEAT(key) ((!ignores[key] && (downs[key] || ginput.RepeatingKey(key))) ? 1 : 0)
+#define GI_KEY(key)         (!ignores[key] && keys[key])
 
 enum Modifiers_ : int
 {
@@ -181,6 +182,7 @@ struct GlobalInput
 	void Reset();
 
 	/// Check if the last ascii must be repeated, if not then reset it
+	/// + reset keyIgnores
 	void ResetAscii();
 
 	/// Reset the keyNews only, must do this every frame
