@@ -6,18 +6,39 @@
 
 #include "objects/Mesh.h"
 
+struct RubikFace
+{
+	std::string color       = "";              // #ff0000
+	std::string name        = "";              // blue, green, orange, red, white, yellow
+	glm::vec3   normal      = glm::vec3(0.0f); // normal
+	// computed
+	glm::vec3   normalWorld = glm::vec3(0.0f); // rotated normal (world)
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 using sRubikCube = std::shared_ptr<class RubikCube>;
 
 class RubikCube : public Mesh
 {
 private:
-	int cubeSize = 3; ///< size of the cube (e.g., 3 for 3x3x3)
+	int  cubeSize = 3;     ///< size of the cube (e.g., 3 for 3x3x3)
+	bool isDirty  = false; ///< cube has rotated and the transforms must be updated
+
+	/// Specific Rubik controls, can be used by AI
+	void AiControls(const sCamera& camera, int modifier, const bool* downs);
 
 	/// Create all cubies and position them in a 3D grid
 	void CreateCubies();
 
-	/// Face rotation
-	void RotateFace(int axis, int dir, float layerThreshold, float deg);
+	/// Rotate the whole cube (XYZ)
+	void RotateCube(const RubikFace* face, int angle);
+
+	/// Rotate a layer (UD/RL/FB)
+	void RotateLayer(const RubikFace* face, int angle);
+
+	/// Scramble cube
+	void Scramble(const sCamera& camera, int steps);
 
 public:
 	RubikCube(std::string_view name, int cubeSize)

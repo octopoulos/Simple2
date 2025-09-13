@@ -1,6 +1,6 @@
 // config.h
 // @author octopoulos
-// @version 2025-09-05
+// @version 2025-09-09
 
 #pragma once
 
@@ -16,5 +16,6 @@
 #define DEV_matrix   D_TRUE ///< UpdateLocalMatrix
 #define DEV_models   false  ///< ScanModels
 #define DEV_rotate   D_TRUE ///< RotationFromIrot
+#define DEV_rubik    false  ///< RubikCube::Controls
 #define DEV_scene    D_TRUE ///< ParseObject
 #define DEV_shader   D_TRUE ///< LoadShader_
