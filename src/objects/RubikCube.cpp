@@ -1,6 +1,6 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-09-09
+// @version 2025-09-11
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
@@ -12,6 +12,7 @@
 #include "materials/MaterialManager.h" // GetMaterialManager
 #include "loaders/writer.h"            // WRITE_KEY_xxx
 #include "ui/ui.h"                     // ui::
+#include "ui/xsettings.h"              // xsettings
 
 static const std::vector<RubikFace> rubikStartFaces = {
 	{ "", "yellow", {  0.0f,  1.0f,  0.0f } },
@@ -178,7 +179,7 @@ void RubikCube::Controls(const sCamera& camera, int modifier, const bool* downs,
 
 	// 1) scramble?
 	auto& ginput = GetGlobalInput();
-	if (GI_DOWN_REPEAT(Key::KeyK))
+	if (GI_REPEAT_RUBIK(Key::KeyK))
 		Scramble(camera, 1);
 	// 2) AI controls
 	else
@@ -189,7 +190,7 @@ void RubikCube::Controls(const sCamera& camera, int modifier, const bool* downs,
 		ignores[ignore] = true;
 }
 
-void RubikCube::CreateCubies()
+void RubikCube::Initialize()
 {
 	load = MeshLoad_Full;
 
@@ -198,14 +199,14 @@ void RubikCube::CreateCubies()
 
 	// define face colors (RGBA)
 	const std::vector<glm::vec4> faceColors = {
-		glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), // +x (red)
-		glm::vec4(1.0f, 0.7f, 0.0f, 1.0f), // -x (orange)
-		glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), // +y (yellow)
-		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), // -y (white)
-		glm::vec4(0.0f, 0.8f, 0.0f, 1.0f), // +z (green)
-		glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), // -z (blue)
+		glm::vec4(0.95f, 0.00f, 0.00f, 1.00f), // +x (red)
+		glm::vec4(1.10f, 0.70f, 0.00f, 1.00f), // -x (orange)
+		glm::vec4(1.00f, 0.95f, 0.00f, 1.00f), // +y (yellow)
+		glm::vec4(1.10f, 1.10f, 1.10f, 1.00f), // -y (white)
+		glm::vec4(0.00f, 0.85f, 0.00f, 1.00f), // +z (green)
+		glm::vec4(0.00f, 0.60f, 0.95f, 1.00f), // -z (blue)
 	};
-	const glm::vec4 defaultColor(0.4f, 0.4f, 0.4f, 1.0f); // black/gray for inner faces
+	const glm::vec4 defaultColor(0.85f, 0.85f, 0.85f, 1.0f); // black/gray for inner faces
 
 	// total size of each cubie (edge length)
 	const float cubeEdge = 0.95f;               // slightly larger than 1.0 for visible gaps
@@ -237,7 +238,7 @@ void RubikCube::CreateCubies()
 				uGeometry  cubieGeometry = CreateBoxGeometry(cubeEdge, cubeEdge, cubeEdge, 1, 1, 1, cubieFaceColors);
 
 				// create a mesh for the cubie
-				const auto cubie = std::make_shared<Mesh>(cubieName, cubieGeometry, cubieMaterial);
+				const auto cubie = std::make_shared<Mesh>(cubieName, ObjectType_RubikNode, cubieGeometry, cubieMaterial);
 
 				// position the cubie in the 3D grid
 				const glm::vec3 position(
@@ -262,17 +263,29 @@ void RubikCube::CreateCubies()
 
 void RubikCube::RotateCube(const RubikFace* face, int angle)
 {
-	const glm::vec3& axis    = face->normalWorld;
-	const glm::quat  rotQuat = glm::angleAxis(bx::toRad(angle), axis);
+	// 1) handle non completed interpolation
+	const int change = CompleteInterpolation();
+	ui::Log("RotateCube: {}", change);
 
-	quaternion1 = quaternion;
-	quaternion2 = glm::normalize(rotQuat * quaternion);
-	quatTs      = Nowd();
-	isDirty     = true;
+	// 2) new interpolation
+	{
+		const glm::vec3& axis    = face->normalWorld;
+		const glm::quat  rotQuat = glm::angleAxis(bx::toRad(angle), axis);
+
+		quaternion1 = quaternion;
+		quaternion2 = glm::normalize(rotQuat * quaternion);
+		quatTs      = Nowd();
+		isDirty     = true;
+	}
 }
 
 void RubikCube::RotateLayer(const RubikFace* face, int angle)
 {
+	// 1) stop current interpolation
+	const int change = CompleteInterpolation();
+	ui::Log("RotateLayer: {}", change);
+
+	// 2) find layer cubies
 	std::vector<sObject3d> cubies     = {};
 	const glm::vec3&       faceNormal = face->normalWorld;
 	const glm::vec3        rubikPos   = matrixWorld[3];
@@ -285,6 +298,7 @@ void RubikCube::RotateLayer(const RubikFace* face, int angle)
 		if (proj >= threshold) cubies.push_back(child);
 	}
 
+	// 3) rotate if the number of cubies match the expected result
 	if (cubies.size() == cubeSize * cubeSize)
 	{
 		const float     angleInc = bx::toRad(angle);
@@ -293,18 +307,20 @@ void RubikCube::RotateLayer(const RubikFace* face, int angle)
 		for (auto& cubie : cubies)
 		{
 			// rotate local position around local axis (0,0,0) + snap to grid
-			glm::vec3 newLocalPos = rotQuat * cubie->position;
-			newLocalPos = glm::floor(newLocalPos * 2.0f + 0.5f) * 0.5f;
+			{
+				glm::vec3 newLocalPos = rotQuat * cubie->position;
+				newLocalPos = glm::floor(newLocalPos * 2.0f + 0.5f) * 0.5f;
 
-			cubie->arc1        = glm::identity<glm::quat>();
-			cubie->arc2        = rotQuat;
-			cubie->position1   = cubie->position;
-			cubie->position2   = newLocalPos;
-			cubie->quaternion1 = cubie->quaternion;
-			cubie->quaternion2 = glm::normalize(rotQuat * cubie->quaternion);
+				cubie->axis1       = glm::identity<glm::quat>();
+				cubie->axis2       = rotQuat;
+				cubie->position1   = cubie->position;
+				cubie->position2   = newLocalPos;
+				cubie->quaternion1 = cubie->quaternion;
+				cubie->quaternion2 = glm::normalize(rotQuat * cubie->quaternion);
 
-			cubie->arcTs  = Nowd();
-			cubie->quatTs = Nowd();
+				cubie->axisTs = Nowd();
+				cubie->quatTs = Nowd();
+			}
 		}
 		isDirty = true;
 	}
@@ -356,6 +372,18 @@ int RubikCube::Serialize(fmt::memory_buffer& outString, const int depth, const i
 
 	if (bounds & 2) WRITE_CHAR('}');
 	return keyId;
+}
+
+void RubikCube::SetPhysics(PhysicsWorld* physics)
+{
+	if (!body) CreateShapeBody(physics, ShapeType_Box, 1.0f);
+
+	for (auto& cubie : children)
+	{
+		auto mesh = Mesh::SharedPtr(cubie);
+		mesh->CreateShapeBody(physics, ShapeType_Box, 1.0f);
+		mesh->body->enabled = body->enabled;
+	}
 }
 
 void RubikCube::ShowTable() const

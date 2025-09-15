@@ -1,4 +1,4 @@
-// @version 2025-09-08
+// @version 2025-09-11
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -621,7 +621,7 @@ void GlobalInput::MouseMove(int mx, int my, int mz, bool hasDelta, int dx, int d
 	++mouseFrame;
 }
 
-bool GlobalInput::RepeatingKey(int key)
+bool GlobalInput::RepeatingKey(int key, int64_t keyInit, int64_t keyRepeat)
 {
 	// 1) key is not down?
 	if (!keys[key])
@@ -635,10 +635,13 @@ bool GlobalInput::RepeatingKey(int key)
 		const int64_t firstMs  = keyTimes[key];
 		int64_t&      repeatMs = keyRepeats[key];
 
+		if (keyInit < 0) keyInit = xsettings.keyInit;
+		if (keyRepeat < 0) keyRepeat = xsettings.keyRepeat;
+
 		// 1st repeat after delay
 		if (!repeatMs)
 		{
-			if (nowMs > firstMs + xsettings.repeatDelay)
+			if (nowMs > firstMs + keyInit)
 			{
 				repeatMs = nowMs;
 				return true;
@@ -647,7 +650,7 @@ bool GlobalInput::RepeatingKey(int key)
 		// subsequent repeats
 		else
 		{
-			if (nowMs > repeatMs + xsettings.repeatInterval)
+			if (nowMs > repeatMs + keyRepeat)
 			{
 				repeatMs = nowMs;
 				return true;

@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-11
 
 #pragma once
 
@@ -20,6 +20,14 @@ enum XChanges_ : int
 	Change_Analysis  = 1,
 	Change_Derivator = 2,
 	Change_Changed   = 128,
+};
+
+enum XEases_ : int
+{
+	Ease_None = 0,
+	Ease_InOutCubic = 1,
+	Ease_InOutQuad  = 2,
+	Ease_OutQuad    = 3,
 };
 
 enum XProjections_ : int
@@ -71,16 +79,19 @@ struct XSettings
 	int    gameId; ///< 0: gori, 1: custom
 
 	// [capture]
-	str2k captureDir;     ///< folder for image + video captures
-	bool  captureVideo;   ///< allow video capture
-	bool  nvidiaEnc;      ///< use nVidia encoding
+	str2k captureDir;   ///< folder for image + video captures
+	bool  captureVideo; ///< allow video capture
+	bool  nvidiaEnc;    ///< use nVidia encoding
 
 	// [input]
-	float   cameraSpeed;    ///< camera movement speed
-	int64_t repeatDelay;    ///< Ms wait for repeat to kick in
-	int64_t repeatInterval; ///< Ms repeat interval
-	float   zoomKb;         ///< zoom speed with the keyboard
-	float   zoomWheel;      ///< zoom speed with the mouse wheel
+	float   cameraSpeed;  ///< camera movement speed
+	int     cursorEase;   ///< easing function
+	int64_t cursorInit;   ///< Ms wait for cursor repeat to kick in
+	int64_t cursorRepeat; ///< Ms cursor repeat interval
+	int64_t keyInit;      ///< Ms wait for key repeat to kick in
+	int64_t keyRepeat;    ///< Ms key repeat interval
+	float   zoomKb;       ///< zoom speed with the keyboard
+	float   zoomWheel;    ///< zoom speed with the mouse wheel
 
 	// [map]
 	int   angleInc;   ///< angle increment in degrees
@@ -105,6 +116,11 @@ struct XSettings
 	float orthoZoom;    ///< zoom in orthographic projection
 	int   projection;   ///< 0: ortho, 1: perspective
 	int   renderMode;   ///< &1: screen, &2: model
+
+	// [rubik]
+	int     rubikEase;   ///< easing function
+	int64_t rubikInit;   ///< Ms wait for rubik repeat to kick in
+	int64_t rubikRepeat; ///< Ms rubik repeat interval
 
 	// [system]
 	float activeMs;    ///< ms per frame when mouse moving + focused

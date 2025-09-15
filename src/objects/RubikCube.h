@@ -1,6 +1,6 @@
 // RubikCube.h
 // @author octopoulos
-// @version 2025-09-09
+// @version 2025-09-11
 
 #pragma once
 
@@ -29,7 +29,7 @@ private:
 	void AiControls(const sCamera& camera, int modifier, const bool* downs);
 
 	/// Create all cubies and position them in a 3D grid
-	void CreateCubies();
+	void Initialize();
 
 	/// Rotate the whole cube (XYZ)
 	void RotateCube(const RubikFace* face, int angle);
@@ -45,13 +45,16 @@ public:
 	    : Mesh(name, ObjectType_Group | ObjectType_RubikCube)
 	    , cubeSize(cubeSize)
 	{
-		CreateCubies();
+		Initialize();
 	}
 
 	~RubikCube() = default;
 
 	/// Specific Rubik controls
 	virtual void Controls(const sCamera& camera, int modifier, const bool* downs, bool* ignores, const bool* keys) override;
+
+	/// Pass the physics object for possible initialization
+	virtual void SetPhysics(PhysicsWorld* physics) override;
 
 	/// Serialize for JSON output
 	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3, bool addChildren = true) const override;

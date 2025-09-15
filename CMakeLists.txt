@@ -1,6 +1,7 @@
 # CMakeLists.txt
-# cmake -B . -S ../.. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=~/Code/vcpkg/scripts/buildsystems/vcpkg.cmake
-# cmake -B . -S ../.. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=~/Code/vcpkg/scripts/buildsystems/vcpkg.cmake
+# windows: cmake -B . -S ../.. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=~/Code/vcpkg/scripts/buildsystems/vcpkg.cmake
+# ubuntu : cmake -B . -S ../.. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=~/Code/vcpkg/scripts/buildsystems/vcpkg.cmake
+# macos  : cmake -B . -S ../.. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=~/Code/vcpkg/scripts/buildsystems/vcpkg.cmake
 # cmake --build . -j8
 # cmake --build . --target AssetsBin
 #
@@ -23,12 +24,14 @@ project(Simple LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-OPTION(WITH_GLFW OFF)
-OPTION(WITH_SDL  OFF)
-OPTION(WITH_SDL3 OFF)
+OPTION(WITH_GLFW   OFF)
+OPTION(WITH_OPENCV ON )
+OPTION(WITH_SDL    OFF)
+OPTION(WITH_SDL3   OFF)
 
 set(ALL_WITHS
 	WITH_GLFW
+	WITH_OPENCV
 	WITH_SDL
 	WITH_SDL3
 )
@@ -229,6 +232,11 @@ elseif(NOT IS_EMSCRIPTEN)
 	endif()
 endif()
 
+if(WITH_OPENCV)
+	set(OpenCV_ROOT "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/share/opencv4")
+	find_package(OpenCV CONFIG REQUIRED)
+endif()
+
 #######################################################################################################################
 # 3) SOURCES
 ############
@@ -334,6 +342,10 @@ elseif(NOT IS_EMSCRIPTEN)
 	elseif(WITH_SDL)
 		target_link_libraries(Simple PRIVATE $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>)
 	endif()
+endif()
+
+if(WITH_OPENCV)
+	target_link_libraries(Simple PRIVATE opencv_core opencv_imgcodecs opencv_imgproc opencv_video opencv_videoio)
 endif()
 
  #if(ENTRY_CONFIG_USE_NATIVE)

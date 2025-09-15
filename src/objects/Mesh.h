@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-09-08
+// @version 2025-09-11
 
 #pragma once
 
@@ -83,19 +83,15 @@ public:
 	uBody                     body      = {};            ///< one body for the whole mesh
 	std::shared_ptr<Geometry> geometry  = nullptr;       ///
 	std::vector<Group>        groups    = {};            ///< groups of vertices
+	int64_t                   interval  = -1;            ///< transition time (defaults to xsettings.keyInterval)
 	bgfx::VertexLayout        layout    = {};            ///
 	int                       load      = MeshLoad_None; ///< how the model was loaded (for open/save scene)
 	sMaterial                 material  = nullptr;       ///< current material (might be "cursor")
 	sMaterial                 material0 = nullptr;       ///< original material
 	std::string               modelName = "";            ///< model name (part of filename)
 
-	Mesh(std::string_view name, int typeFlag = 0)
+	Mesh(std::string_view name, int typeFlag = 0, std::shared_ptr<Geometry> geometry = nullptr, sMaterial material = nullptr)
 	    : Object3d(name, ObjectType_Mesh | typeFlag)
-	{
-	}
-
-	Mesh(std::string_view name, std::shared_ptr<Geometry> geometry, sMaterial material)
-	    : Object3d(name, ObjectType_Mesh)
 	    , geometry(std::move(geometry))
 	    , material(std::move(material))
 	{
@@ -118,6 +114,9 @@ public:
 	/// Delete all groups including indices + vertices
 	void Destroy();
 
+	/// Split all children and enable physics
+	void Explode();
+
 	/// Render the mesh, if geometry & material program exist, or if program is set
 	/// - if a group => render the children only
 	virtual void Render(uint8_t viewId, int renderFlags) override;
@@ -133,6 +132,9 @@ public:
 	{
 		return (object && (object->type & type)) ? std::static_pointer_cast<Mesh>(object) : nullptr;
 	}
+
+	/// Pass the physics object for possible initialization
+	virtual void SetPhysics(PhysicsWorld* physics);
 
 	/// Show settings in ImGui
 	/// @param show: ShowObjects_

@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-09-09
+// @version 2025-09-11
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -36,13 +36,13 @@ int App::ArrowsFlag()
 
 	// clang-format off
 	const int flag = 0
-		| GI_DOWN_REPEAT(Key::Down )     * 1
-		| GI_DOWN_REPEAT(Key::Left )     * 2
-		| GI_DOWN_REPEAT(Key::Right)     * 4
-		| GI_DOWN_REPEAT(Key::Up   )     * 8
-		| GI_DOWN_REPEAT(Key::Quote)     * 16  // y-down
-		| GI_DOWN_REPEAT(Key::Backslash) * 32  // y-up
-		| GI_DOWN_REPEAT(Key::Semicolon) * 32; // y-up
+		| GI_REPEAT_CURSOR(Key::Down )     * 1
+		| GI_REPEAT_CURSOR(Key::Left )     * 2
+		| GI_REPEAT_CURSOR(Key::Right)     * 4
+		| GI_REPEAT_CURSOR(Key::Up   )     * 8
+		| GI_REPEAT_CURSOR(Key::Quote)     * 16  // y-down
+		| GI_REPEAT_CURSOR(Key::Backslash) * 32  // y-up
+		| GI_REPEAT_CURSOR(Key::Semicolon) * 32; // y-up
 	// clang-format on
 
 	return flag;
@@ -157,7 +157,7 @@ void App::FixedControls()
 		if (GI_DOWN(Key::KeyM)) ShowPopup(Popup_AddMap);
 		if (GI_DOWN(Key::KeyN)) ShowPopup(Popup_Transform);
 
-		if (GI_DOWN_REPEAT(Key::KeyO))
+		if (GI_REPEAT(Key::KeyO))
 		{
 			xsettings.physPaused = false;
 			pauseNextFrame       = true;
@@ -204,12 +204,12 @@ void App::FixedControls()
 				auto&       parent   = target->parent;
 				const auto& children = parent->children;
 				const auto  numChild = children.size();
-				if (GI_DOWN_REPEAT(Key::LeftBracket))
+				if (GI_REPEAT(Key::LeftBracket))
 				{
 					parent->childId = (parent->childId + numChild - 1) % numChild;
 					SelectObject(children[parent->childId]);
 				}
-				if (GI_DOWN_REPEAT(Key::RightBracket))
+				if (GI_REPEAT(Key::RightBracket))
 				{
 					parent->childId = (parent->childId + 1) % numChild;
 					SelectObject(children[parent->childId]);
@@ -234,12 +234,12 @@ void App::FixedControls()
 		if (GI_DOWN(Key::NumPad7)) camera->SetOrthographic({ 0.0f, 1.0f, -0.1f });
 		if (GI_DOWN(Key::NumPad5)) xsettings.projection = 1 - xsettings.projection;
 		// clang-format off
-		if (GI_DOWN_REPEAT(Key::NumPad2)) camera->RotateAroundAxis(camera->right  ,  bx::toRad(15.0f));
-		if (GI_DOWN_REPEAT(Key::NumPad4)) camera->RotateAroundAxis(camera->worldUp, -bx::toRad(15.0f));
-		if (GI_DOWN_REPEAT(Key::NumPad6)) camera->RotateAroundAxis(camera->worldUp,  bx::toRad(15.0f));
-		if (GI_DOWN_REPEAT(Key::NumPad8)) camera->RotateAroundAxis(camera->right  , -bx::toRad(15.0f));
+		if (GI_REPEAT(Key::NumPad2)) camera->RotateAroundAxis(camera->right  ,  bx::toRad(15.0f));
+		if (GI_REPEAT(Key::NumPad4)) camera->RotateAroundAxis(camera->worldUp, -bx::toRad(15.0f));
+		if (GI_REPEAT(Key::NumPad6)) camera->RotateAroundAxis(camera->worldUp,  bx::toRad(15.0f));
+		if (GI_REPEAT(Key::NumPad8)) camera->RotateAroundAxis(camera->right  , -bx::toRad(15.0f));
 		// clang-format on
-		if (GI_DOWN_REPEAT(Key::NumPad9))
+		if (GI_REPEAT(Key::NumPad9))
 		{
 			for (int i = 0; i < 12; ++i)
 			{
@@ -532,7 +532,7 @@ void App::ThrowGeometry(int action, int geometryType, const VEC_STR& texFiles)
 		    { scale, scale, scale },
 		    { 0, 0, 0 },
 		    { pos.x, pos.y, pos.z });
-		object->CreateShapeBody(physics.get(), GeometryShape(geometryType), 1.0f);
+		object->CreateShapeBody(GetPhysics(), GeometryShape(geometryType), 1.0f);
 
 		if (action == ThrowAction_Throw)
 		{
@@ -605,7 +605,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, const VEC_
 		    { rot.x, rot.y, rot.z },
 		    { pos.x, pos.y, pos.z }
 		);
-		object->CreateShapeBody(physics.get(), shapeType, 1.0f);
+		object->CreateShapeBody(GetPhysics(), shapeType, 1.0f);
 
 		if (action == ThrowAction_Throw)
 		{

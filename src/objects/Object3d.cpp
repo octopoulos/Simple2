@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-09-09
+// @version 2025-09-11
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -23,6 +23,7 @@ static const MAP_INT_STR objectTypeNames = {
 	{ ObjectType_Map      , "Map"       },
 	{ ObjectType_Mesh     , "Mesh"      },
 	{ ObjectType_RubikCube, "RubikCube" },
+	{ ObjectType_RubikNode, "RubikNode" },
 	{ ObjectType_Scene    , "Scene"     },
 };
 // clang-format on
@@ -62,6 +63,32 @@ void Object3d::ClearDeads(bool force)
 	for (auto& remove : removes) RemoveChild(remove);
 }
 
+int Object3d::CompleteInterpolation()
+{
+	int change = 0;
+	if (axisTs > 0.0 || posTs > 0.0)
+	{
+		position = position2;
+		change |= 1;
+	}
+	if (quatTs > 0.0)
+	{
+		quaternion = quaternion2;
+		RotationFromQuaternion();
+		change |= 2;
+	}
+
+	axisTs = 0.0;
+	posTs  = 0.0;
+	quatTs = 0.0;
+
+	for (auto& child : children)
+		change |= (child->CompleteInterpolation() << 2);
+
+	if (change > 0) UpdateLocalMatrix("CompleteInterpolation");
+	return change;
+}
+
 void Object3d::DecomposeMatrix()
 {
 	// extract position (translation)
@@ -86,6 +113,34 @@ void Object3d::DecomposeMatrix()
 	// convert to quaternion
 	quaternion = glm::normalize(glm::quat_cast(rotationMatrix));
 	RotationFromQuaternion();
+}
+
+float Object3d::EaseFunction(double td)
+{
+	const float t = TO_FLOAT(td);
+
+	// clang-format off
+	switch (GetEase())
+	{
+	case Ease_InOutCubic: return EaseInOutCubic(t);
+	case Ease_InOutQuad : return EaseInOutQuad(t);
+	case Ease_OutQuad   : return EaseOutQuad(t);
+	default: return t;
+	}
+	// clang-format on
+}
+
+int Object3d::GetEase()
+{
+	if (type & ObjectType_Cursor) return xsettings.cursorEase;
+	if (type & (ObjectType_RubikCube | ObjectType_RubikNode)) return xsettings.rubikEase;
+	return Ease_None;
+}
+
+double Object3d::GetInterval()
+{
+	if (type & (ObjectType_RubikCube | ObjectType_RubikNode)) return xsettings.rubikRepeat * 1e-3;
+	return xsettings.keyRepeat * 1e-3;
 }
 
 sObject3d Object3d::GetObjectById(int id) const

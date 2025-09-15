@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-11
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -12,6 +12,7 @@
 static std::string settingsToml = "settings.ini";
 
 const char* sAspectRatios[] = { "1:1", "4:3", "3:2", "16:9", "Native", "Window" };
+const char* sEases[]        = { "None", "InOutCubic", "InOutQuad", "OutQuad" };
 const char* sGames[]        = { "Custom1", "Custom2", "Custom3" };
 const char* sFullScreens[]  = { "Off", "Desktop", "Screen" };
 const char* sProjections[]  = { "Orthogonal", "Perspective" };
@@ -39,11 +40,14 @@ static std::vector<Config> configs = {
 	X_BOOL   (XSettings, capture, 0, nvidiaEnc   , false),
 
 	// [input]
-	X_FLOAT  (XSettings, input, 0, cameraSpeed   , 10.0f, 1.0f, 100.0f),
-	X_INT    (XSettings, input, 0, repeatDelay   , 500, 0, 5000),
-	X_INT    (XSettings, input, 0, repeatInterval, 50 , 0, 500),
-	X_FLOAT  (XSettings, input, 0, zoomKb        , 10.0f, 1.0f, 100.0f),
-	X_FLOAT  (XSettings, input, 0, zoomWheel     , 10.0f, 1.0f, 100.0f),
+	X_FLOAT  (XSettings, input, 0, cameraSpeed , 10.0f, 1.0f, 100.0f),
+	X_INT    (XSettings, input, 0, cursorInit  , 500, 0, 5000),
+	X_ENUM   (XSettings, input, 0, cursorEase  , Ease_None, sEases),
+	X_INT    (XSettings, input, 0, cursorRepeat, 50 , 0, 500),
+	X_INT    (XSettings, input, 0, keyInit     , 500, 0, 5000),
+	X_INT    (XSettings, input, 0, keyRepeat   , 50 , 0, 500),
+	X_FLOAT  (XSettings, input, 0, zoomKb      , 10.0f, 1.0f, 100.0f),
+	X_FLOAT  (XSettings, input, 0, zoomWheel   , 10.0f, 1.0f, 100.0f),
 
 	// [map]
 	X_INT    (XSettings, map, 0, angleInc  , 90, 1, 180),
@@ -68,6 +72,11 @@ static std::vector<Config> configs = {
 	X_FLOAT  (XSettings, render, 0, orthoZoom , 1.0f, 0.001f, 10.0f),
 	X_ENUM   (XSettings, render, 0, projection, Projection_Perspective, sProjections),
 	X_ENUM   (XSettings, render, 0, renderMode, RenderMode_Screen, sRenderModes),
+
+	// [rubik]
+	X_ENUM   (XSettings, rubik, 0, rubikEase  , Ease_None, sEases),
+	X_INT    (XSettings, rubik, 0, rubikInit  , 500, 0, 5000),
+	X_INT    (XSettings, rubik, 0, rubikRepeat, 200, 0, 500),
 
 	// [system]
 	X_FLOAT  (XSettings, system, 0, activeMs   , 0.0f, 0.0f, 1000.0f),

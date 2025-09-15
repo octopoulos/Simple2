@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-11
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -25,7 +25,7 @@ void App::AddGeometry(uGeometry geometry)
 			{ irot[0], irot[1], irot[2] },
 			{ coord.x, coord.y, coord.z }
 		);
-		object->CreateShapeBody(physics.get(), GeometryShape(geometry->type, false));
+		object->CreateShapeBody(GetPhysics(), GeometryShape(geometry->type, false));
 
 		mapNode->AddChild(object);
 		AutoSave();
@@ -41,26 +41,29 @@ void App::AddObject(std::string_view modelName)
 	const auto& irot  = cursor->irot;
 
 	ui::Log("AddObject: {} @ {} {} {}", modelName, coord.x, coord.y, coord.z);
-	sMesh object = nullptr;
+	sMesh mesh = nullptr;
 	if (modelName.front() == ':')
 	{
 		if (modelName == ":RubikCube")
-			object = std::make_shared<RubikCube>("Rubik", 3);
+		{
+			mesh = std::make_shared<RubikCube>("Rubik", 3);
+			mesh->SetPhysics(GetPhysics());
+		}
 	}
-	else object = MeshLoader::LoadModelFull(fmt::format("{}:{}", mapNode->children.size(), NodeName(modelName)), modelName);
+	else mesh = MeshLoader::LoadModelFull(fmt::format("{}:{}", mapNode->children.size(), NodeName(modelName)), modelName);
 
-	if (object)
+	if (mesh)
 	{
-		object->ScaleIrotPosition(
+		mesh->ScaleIrotPosition(
 		    { 1.0f, 1.0f, 1.0f },
 		    { irot[0], irot[1], irot[2] },
 		    { coord.x, coord.y, coord.z }
 		);
-		object->CreateShapeBody(physics.get(), ShapeType_TriangleMesh);
+		mesh->CreateShapeBody(GetPhysics(), ShapeType_TriangleMesh);
 
-		object->placing = true;
-		mapNode->AddChild(object);
-		SelectObject(object);
+		mesh->placing = true;
+		mapNode->AddChild(mesh);
+		SelectObject(mesh);
 	}
 
 	FocusScreen();

@@ -1,4 +1,4 @@
-// @version 2025-09-08
+// @version 2025-09-11
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -104,9 +104,11 @@ int32_t inputGetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::En
 // GlobalInput
 //////////////
 
-#define GI_DOWN(key)        (!ignores[key] && downs[key])
-#define GI_DOWN_REPEAT(key) ((!ignores[key] && (downs[key] || ginput.RepeatingKey(key))) ? 1 : 0)
-#define GI_KEY(key)         (!ignores[key] && keys[key])
+#define GI_DOWN(key)          (!ignores[key] && downs[key])
+#define GI_KEY(key)           (!ignores[key] && keys[key])
+#define GI_REPEAT(key)        ((!ignores[key] && (downs[key] || ginput.RepeatingKey(key))) ? 1 : 0)
+#define GI_REPEAT_CURSOR(key) ((!ignores[key] && (downs[key] || ginput.RepeatingKey(key, xsettings.cursorInit, xsettings.cursorRepeat))) ? 1 : 0)
+#define GI_REPEAT_RUBIK(key)  ((!ignores[key] && (downs[key] || ginput.RepeatingKey(key, xsettings.rubikInit, xsettings.rubikRepeat))) ? 1 : 0)
 
 enum Modifiers_ : int
 {
@@ -176,7 +178,7 @@ struct GlobalInput
 	void MouseMove(int mx, int my, int mz, bool hasDelta, int dx, int dy);
 
 	/// Should the key be repeated?
-	bool RepeatingKey(int key);
+	bool RepeatingKey(int key, int64_t keyInit = -1, int64_t keyRepeat = -1);
 
 	/// Reset data to initial state
 	void Reset();

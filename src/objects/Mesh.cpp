@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-09-09
+// @version 2025-09-11
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -68,6 +68,11 @@ void Mesh::Destroy()
 		}
 		groups.clear();
 	}
+}
+
+void Mesh::Explode()
+{
+	ui::Log("Mesh:Explode");
 }
 
 void Mesh::Render(uint8_t viewId, int renderFlags)
@@ -238,6 +243,10 @@ void Mesh::SetBodyTransform()
 	}
 }
 
+void Mesh::SetPhysics(PhysicsWorld* physics)
+{
+}
+
 void Mesh::ShowSettings(bool isPopup, int show)
 {
 	int mode = 3;
@@ -367,23 +376,23 @@ int Mesh::SynchronizePhysics()
 		UpdateWorldMatrix(false);
 	}
 	// interpolation
-	else if (arcTs > 0.0 || posTs > 0.0 || quatTs > 0.0)
+	else if (axisTs > 0.0 || posTs > 0.0 || quatTs > 0.0)
 	{
-		const double interval = xsettings.repeatInterval * 1e-3;
+		const double interval = GetInterval();
 		const double nowd     = Nowd();
 
 		// arc interpolation (overrides pos for layer turns)
-		if (arcTs > 0.0)
+		if (axisTs > 0.0)
 		{
-			if (const double elapsed = nowd - arcTs; elapsed < interval)
+			if (const double elapsed = nowd - axisTs; elapsed < interval)
 			{
-				const auto arc = glm::slerp(arc1, arc2, TO_FLOAT(elapsed / interval));
-				position       = arc * position1;
+				const auto axis = glm::slerp(axis1, axis2, EaseFunction(elapsed / interval));
+				position        = axis * position1;
 			}
 			else
 			{
 				position = position2;
-				arcTs    = 0.0;
+				axisTs   = 0.0;
 				posTs    = 0.0;
 			}
 		}
@@ -391,7 +400,7 @@ int Mesh::SynchronizePhysics()
 		else if (posTs > 0.0)
 		{
 			if (const double elapsed  = nowd - posTs; elapsed < interval)
-				position = glm::mix(position1, position2, TO_FLOAT(elapsed / interval));
+				position = glm::mix(position1, position2, EaseFunction(elapsed / interval));
 			else
 			{
 				position = position2;
@@ -402,7 +411,7 @@ int Mesh::SynchronizePhysics()
 		if (quatTs > 0.0)
 		{
 			if (const double elapsed  = nowd - quatTs; elapsed < interval)
-				quaternion = glm::slerp(quaternion1, quaternion2, TO_FLOAT(elapsed / interval));
+				quaternion = glm::slerp(quaternion1, quaternion2, EaseFunction(elapsed / interval));
 			else
 			{
 				quaternion = quaternion2;

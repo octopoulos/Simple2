@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-09-06
+// @version 2025-09-11
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -223,6 +223,10 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 			mesh->body->enabled = enabled;
 		}
 		ui::Log(" -->4 type={}/{} {}", type, object->type, name);
+
+		// extras
+		if (type & ObjectType_RubikCube)
+			mesh->SetPhysics((PhysicsWorld*)physics);
 	}
 	else if (type & ObjectType_Scene)
 	{
@@ -267,7 +271,7 @@ bool App::OpenScene(const std::filesystem::path& filename)
 		AddRecent(filename);
 		ui::Log("Parsing JSON object from file: {}", filename.string());
 		Scene::SharedPtr(scene)->Clear();
-		ParseObject(obj, scene, scene, physics.get(), 0);
+		ParseObject(obj, scene, scene, GetPhysics(), 0);
 
 		entry::setWindowTitle(entry::kDefaultWindowHandle, filename.filename().string().c_str());
 		return true;

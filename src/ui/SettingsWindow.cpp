@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-09-09
+// @version 2025-09-11
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -15,16 +15,18 @@ enum ShowSettingFlags : int
 {
 	Show_App               = 1 << 0,
 	Show_Capture           = 1 << 1,
-	Show_Input             = 1 << 2,
-	Show_Map               = 1 << 3,
-	Show_Net               = 1 << 4,
-	Show_NetMain           = 1 << 5,
-	Show_NetUser           = 1 << 6,
-	Show_Physics           = 1 << 7,
-	Show_Render            = 1 << 8,
-	Show_System            = 1 << 9, // main
-	Show_SystemPerformance = 1 << 10,
-	Show_SystemUI          = 1 << 11,
+	Show_Cursor            = 1 << 2,
+	Show_Input             = 1 << 3,
+	Show_Map               = 1 << 4,
+	Show_Net               = 1 << 5,
+	Show_NetMain           = 1 << 6,
+	Show_NetUser           = 1 << 7,
+	Show_Physics           = 1 << 8,
+	Show_Render            = 1 << 9,
+	Show_Rubik             = 1 << 10,
+	Show_System            = 1 << 11, // main
+	Show_SystemPerformance = 1 << 12,
+	Show_SystemUI          = 1 << 13,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -59,7 +61,7 @@ public:
 		}
 
 		const int showTree = xsettings.settingTree;
-		int       tree     = showTree & ~(Show_App | Show_Capture | Show_Input | Show_Map | Show_Net | Show_Physics | Show_Render | Show_System);
+		int       tree     = showTree & ~(Show_App | Show_Capture | Show_Cursor | Show_Input | Show_Map | Show_Net | Show_Physics | Show_Render | Show_Rubik | Show_System);
 
 		// APP
 		//////
@@ -84,14 +86,25 @@ public:
 			END_COLLAPSE();
 		}
 
+		// CURSOR
+		/////////
+
+		BEGIN_COLLAPSE("Cursor", Show_Cursor, 8)
+		{
+			AddCombo(0, "cursorEase", "Easing");
+			AddSliderInt(0, "cursorInit", "Initial");
+			AddSliderInt(0, "cursorRepeat", "Repeat");
+			END_COLLAPSE();
+		}
+
 		// INPUT
 		////////
 
 		BEGIN_COLLAPSE("Input", Show_Input, 5)
 		{
 			AddDragFloat(0, "cameraSpeed", "Camera Speed", nullptr);
-			AddSliderInt(0, "repeatDelay", "Repeat Delay");
-			AddSliderInt(0, "repeatInterval", "Repeat Interval");
+			AddSliderInt(0, "keyInit", "Key Initial");
+			AddSliderInt(0, "keyRepeat", "Key Repeat");
 			AddDragFloat(0, "zoomKb", "Zoom Keyboard", nullptr);
 			AddDragFloat(0, "zoomWheel", "Zoom Wheel", nullptr);
 			END_COLLAPSE();
@@ -149,6 +162,17 @@ public:
 			AddDragFloat(2, "lightDir", "Light Direction");
 			AddSliderInt(0, "projection", "Projection", nullptr);
 			AddSliderInt(0, "renderMode", "Render Mode", nullptr);
+			END_COLLAPSE();
+		}
+
+		// RUBIK
+		////////
+
+		BEGIN_COLLAPSE("Rubik", Show_Rubik, 3)
+		{
+			AddCombo(0, "rubikEase", "Easing");
+			AddSliderInt(0, "rubikInit", "Initial");
+			AddSliderInt(0, "rubikRepeat", "Repeat");
 			END_COLLAPSE();
 		}
 

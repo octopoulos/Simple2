@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-09-09
+// @version 2025-09-11
 
 #pragma once
 
@@ -42,7 +42,8 @@ enum ObjectTypes_ : int
 	ObjectType_Map       = 1 << 7,  ///< map
 	ObjectType_Mesh      = 1 << 8,  ///< mesh
 	ObjectType_RubikCube = 1 << 9,  ///< Rubic cube
-	ObjectType_Scene     = 1 << 10, ///< scene
+	ObjectType_RubikNode = 1 << 10, ///< Rubic node (single cube child)
+	ObjectType_Scene     = 1 << 11, ///< scene
 };
 
 enum RenderFlags_ : int
@@ -53,9 +54,9 @@ enum RenderFlags_ : int
 class Object3d
 {
 public:
-	glm::quat                         arc1        = glm::identity<glm::quat>(); ///< quaternion: arc origin
-	glm::quat                         arc2        = glm::identity<glm::quat>(); ///< quaternion: arc target
-	double                            arcTs       = 0.0;                        ///< stamp when arc-rotated
+	glm::quat                         axis1       = glm::identity<glm::quat>(); ///< quaternion: axis origin
+	glm::quat                         axis2       = glm::identity<glm::quat>(); ///< quaternion: axis target
+	double                            axisTs      = 0.0;                        ///< stamp when rotating face
 	int                               childId     = 0;                          ///< selected sub-object
 	int                               childInc    = 0;                          ///< incremental id
 	std::vector<sObject3d>            children    = {};                         ///< sub-objects
@@ -97,8 +98,21 @@ public:
 	/// Remove dead children
 	void ClearDeads(bool force);
 
+	/// Handle incomplete interpolation
+	/// @returns: &1: axis/pos, &2: quat, &4: child axis/pos, &8: child quat
+	int CompleteInterpolation();
+
 	/// Convert matrix to position, rotation/quaternion, scale + irot
 	void DecomposeMatrix();
+
+	/// Apply the easing function
+	float EaseFunction(double td);
+
+	/// Get the easing function
+	int GetEase();
+
+	/// Get the transition interval
+	double GetInterval();
 
 	/// Find an direct child by id
 	sObject3d GetObjectById(int id) const;

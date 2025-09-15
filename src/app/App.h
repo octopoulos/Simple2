@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-09-08
+// @version 2025-09-11
 
 #pragma once
 
@@ -34,6 +34,8 @@ public:
 
 	int  Initialize(std::shared_ptr<App>& app);
 	void Destroy();
+
+	PhysicsWorld* GetPhysics() { return physics.get(); }
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// CONTROLS
