@@ -1,4 +1,4 @@
-// @version 2025-09-11
+// @version 2025-09-13
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -7,6 +7,8 @@
 #pragma once
 
 #include "entry.h"
+
+#include <bx/ringbuffer.h>
 
 typedef void (*InputBindingFn)(const void* _userData);
 
@@ -50,22 +52,7 @@ void inputInit();
 void inputShutdown();
 
 ///
-void inputAddBindings(const char* _name, const InputBinding* _bindings);
-
-///
-void inputRemoveBindings(const char* _name);
-
-///
-void inputProcess();
-
-///
 void inputSetKeyState(entry::Key::Enum _key, uint8_t _modifiers, bool _down);
-
-///
-bool inputGetKeyState(entry::Key::Enum _key, uint8_t* _modifiers = nullptr);
-
-///
-uint8_t inputGetModifiersState();
 
 /// Adds single UTF-8 encoded character into input buffer.
 void inputChar(uint8_t _len, const uint8_t _char[4]);
@@ -87,9 +74,6 @@ void inputSetMouseButtonState(entry::MouseButton::Enum _button, uint8_t _state);
 
 ///
 void inputSetMouseLock(bool _lock);
-
-///
-void inputGetMouse(float _mouse[3]);
 
 ///
 bool inputIsMouseLocked();
@@ -153,16 +137,27 @@ struct GlobalInput
 	int64_t  nowMs           = 0;                           ///< current timestamp (in ms)
 	float    resolution[3]   = { 1280.0f, 720.0f, 120.0f }; ///< used to normalize mouse coords
 
+	// char ring
+	uint8_t               chars[256] = {};
+	bx::RingBufferControl ring;
+
+	GlobalInput(): ring(BX_COUNTOF(chars) - 4)
+	{
+	}
+
+	/// Reset the char ring
+	void FlushChar();
+
 	/// Check the global modifier, or if the key is a modifier
 	/// @param key: 0 for global modifier
 	/// @returns &1: shift, &2: ctrl, &4: alt, &8: meta
-	int IsModifier(int key = 0);
+	int IsModifier(int key = 0) const;
 
 	/// Keyboard key down/up
 	void KeyDownUp(int key, bool down);
 
 	/// Convert key to ascii char
-	int KeyToAscii(int key);
+	int KeyToAscii(int key) const;
 
 	/// Mouse button change
 	void MouseButton(int button, uint8_t state);
@@ -176,6 +171,12 @@ struct GlobalInput
 
 	/// Mouse motion
 	void MouseMove(int mx, int my, int mz, bool hasDelta, int dx, int dy);
+
+	/// Pop a char from the ring
+	const uint8_t* PopChar();
+
+	/// Push a char onto the ring
+	void PushChar(uint8_t _len, const uint8_t _char[4]);
 
 	/// Should the key be repeated?
 	bool RepeatingKey(int key, int64_t keyInit = -1, int64_t keyRepeat = -1);

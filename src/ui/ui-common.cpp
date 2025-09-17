@@ -1,6 +1,6 @@
 // ui-common.cpp
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-13
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -16,7 +16,7 @@ namespace ui
 
 /// Label on the left
 /// @param mode: &4: popup mode, &8: empty label but aligned, &16: skip
-static void LabelLeft(int mode, const char* label, int components, float widthRatio = 0.4f, float forceLeft = -1.0f)
+static void LabelLeft(int mode, const char* label, int components, float spaceRight = 0.0f, float widthRatio = 0.4f, float forceLeft = -1.0f)
 {
 	if (mode & 16)
 	{
@@ -29,6 +29,7 @@ static void LabelLeft(int mode, const char* label, int components, float widthRa
 		if (mode & 8) label = "";
 		if (mode & 4) widthRatio = 0.1f;
 	}
+	if ((mode & 32) && spaceRight <= 0.0f) spaceRight = 76.0f;
 
 	float valueWidth = 0.0f;
 	if (!xsettings.labelLeft && forceLeft < 0.0f)
@@ -39,7 +40,7 @@ static void LabelLeft(int mode, const char* label, int components, float widthRa
 
 		const float spacingX = (forceLeft >= 0.0f) ? forceLeft : 6.0f;
 		const float width    = ImGui::GetContentRegionAvail().x;
-		valueWidth           = width * (1.0f - widthRatio) - spacingX;
+		valueWidth           = width * (1.0f - widthRatio) - spacingX - spaceRight;
 
 		if (auto labelEnd = ImGui::FindRenderedTextEnd(label))
 		{

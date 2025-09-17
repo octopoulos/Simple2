@@ -147,7 +147,10 @@ void RubikCube::AiControls(const sCamera& camera, int modifier, const bool* down
 	if (GI_DOWN(Key::KeyU)) RotateLayer(upMaxFace   , angle);
 	// clang-format on
 
-	// 4) apply changes
+	// 4) extras
+	if (GI_DOWN(Key::KeyI)) Explode();
+
+	// 5) apply changes
 	if (isDirty)
 	{
 		RotationFromQuaternion();
@@ -166,6 +169,7 @@ void RubikCube::Controls(const sCamera& camera, int modifier, const bool* downs,
 		Key::KeyD,
 		// Key::KeyE,
 		Key::KeyF,
+		Key::KeyI,
 		Key::KeyK,
 		Key::KeyL,
 		// Key::KeyM,

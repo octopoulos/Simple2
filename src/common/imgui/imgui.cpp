@@ -1,4 +1,4 @@
-// @version 2025-08-03
+// @version 2025-08-13
 /*
  * Copyright 2014-2015 Daniel Collin. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -524,22 +524,20 @@ struct OcornutImguiContext
 		io.AddMouseWheelEvent(0.0f, (float)(_scroll - m_lastScroll));
 		m_lastScroll = _scroll;
 
-#if USE_ENTRY
-		using namespace entry;
-		const uint8_t modifiers = inputGetModifiersState();
-		// clang-format off
-		io.AddKeyEvent(ImGuiMod_Shift, 0 != (modifiers & (Modifier::LeftShift | Modifier::RightShift)));
-		io.AddKeyEvent(ImGuiMod_Ctrl , 0 != (modifiers & (Modifier::LeftCtrl  | Modifier::RightCtrl )));
-		io.AddKeyEvent(ImGuiMod_Alt  , 0 != (modifiers & (Modifier::LeftAlt   | Modifier::RightAlt  )));
-		io.AddKeyEvent(ImGuiMod_Super, 0 != (modifiers & (Modifier::LeftMeta  | Modifier::RightMeta )));
-		// clang-format on
+		const auto& ginput   = GetGlobalInput();
+		const int   modifier = ginput.IsModifier();
 
-		for (int32_t ii = 0; ii < int32_t(Key::Count); ++ii)
+		io.AddKeyEvent(ImGuiMod_Alt  , !!(modifier & Modifier_Alt  ));
+		io.AddKeyEvent(ImGuiMod_Ctrl , !!(modifier & Modifier_Ctrl ));
+		io.AddKeyEvent(ImGuiMod_Shift, !!(modifier & Modifier_Shift));
+		io.AddKeyEvent(ImGuiMod_Super, !!(modifier & Modifier_Meta ));
+
+		for (int key = 0; key < TO_INT32(entry::Key::Count); ++key)
 		{
-			io.AddKeyEvent(m_keyMap[ii], inputGetKeyState(Key::Enum(ii)));
-			io.SetKeyEventNativeData(m_keyMap[ii], 0, 0, ii);
+			const ImGuiKey map = m_keyMap[key];
+			io.AddKeyEvent(map, ginput.keys[key]);
+			io.SetKeyEventNativeData(map, 0, 0, key);
 		}
-#endif // USE_ENTRY
 
 		ImGui::NewFrame();
 		ImGuizmo::BeginFrame();

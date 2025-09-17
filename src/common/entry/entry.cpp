@@ -1,4 +1,4 @@
-// @version 2025-08-27
+// @version 2025-09-13
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -389,6 +389,7 @@ int cmdExit(CmdContext* /*_context*/, void* /*_userData*/, int /*_argc*/, char c
 	return bx::kExitSuccess;
 }
 
+// FIXME!!
 static const InputBinding s_bindings[] = {
 	//{ entry::Key::KeyQ,         entry::Modifier::LeftCtrl,  1, nullptr, "exit"                              },
 	//{ entry::Key::KeyQ,         entry::Modifier::RightCtrl, 1, nullptr, "exit"                              },
@@ -666,7 +667,6 @@ int main(int _argc, const char* const* _argv)
 	cmdAdd("app"      , cmdApp);
 
 	inputInit();
-	inputAddBindings("bindings", s_bindings);
 
 	bx::FilePath fp(_argv[0]);
 	char         title[bx::kMaxFilePath];
@@ -712,9 +712,7 @@ restart:
 
 	setCurrentDir("");
 
-	inputRemoveBindings("bindings");
 	inputShutdown();
-
 	cmdShutdown();
 
 	bx::deleteObject(g_allocator, s_fileReader);
@@ -778,8 +776,7 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 			}
 			break;
 
-			case Event::Exit:
-				return true;
+			case Event::Exit: return true;
 
 			case Event::Gamepad:
 			{
@@ -840,11 +837,8 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 			}
 			break;
 
-			case Event::Window:
-				break;
-
-			case Event::Suspend:
-				break;
+			case Event::Window: break;
+			case Event::Suspend: break;
 
 			case Event::DropFile:
 			{
@@ -853,12 +847,9 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 			}
 			break;
 
-			default:
-				break;
+			default: break;
 			}
 		}
-
-		inputProcess();
 	}
 	while (ev);
 
@@ -935,8 +926,7 @@ bool processWindowEvents(WindowState& _state, uint32_t& _debug, uint32_t& _reset
 			}
 			break;
 
-			case Event::Exit:
-				return true;
+			case Event::Exit: return true;
 
 			case Event::Gamepad:
 			{
@@ -1000,8 +990,7 @@ bool processWindowEvents(WindowState& _state, uint32_t& _debug, uint32_t& _reset
 			}
 			break;
 
-			case Event::Suspend:
-				break;
+			case Event::Suspend: break;
 
 			case Event::DropFile:
 			{
@@ -1011,12 +1000,9 @@ bool processWindowEvents(WindowState& _state, uint32_t& _debug, uint32_t& _reset
 			}
 			break;
 
-			default:
-				break;
+			default: break;
 			}
 		}
-
-		inputProcess();
 	}
 	while (ev);
 

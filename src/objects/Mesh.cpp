@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-09-11
+// @version 2025-09-13
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -73,6 +73,13 @@ void Mesh::Destroy()
 void Mesh::Explode()
 {
 	ui::Log("Mesh:Explode");
+	for (auto& child : children)
+	{
+		if (body)
+		{
+			body->enabled = true;
+		}
+	}
 }
 
 void Mesh::Render(uint8_t viewId, int renderFlags)

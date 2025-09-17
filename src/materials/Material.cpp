@@ -1,6 +1,6 @@
 // Material.cpp
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-13
 
 #include "stdafx.h"
 #include "materials/Material.h"
@@ -179,8 +179,15 @@ void Material::ShowSettings(bool isPopup, int show)
 	// textures
 	if (show & ShowObject_MaterialTextures)
 	{
-		for (int i = 0; i < 8; ++i)
-			ui::AddInputText(mode, fmt::format(".textName:{}", i).c_str(), fmt::format("Texture: {}", i).c_str(), 256, 0, &texNames[i]);
+		for (int id = 0; id < TextureType_Count; ++id)
+		{
+			ui::AddInputText(mode | 32, fmt::format(".textName:{}", id).c_str(), TextureName(id).c_str(), 256, 0, &texNames[id]);
+			ImGui::SameLine();
+			if (ImGui::Button(fmt::format("...##Tex{}", id).c_str()))
+			{
+				ui::Log("Tex{} {}", id, TextureName(id));
+			}
+		}
 	}
 }
 
