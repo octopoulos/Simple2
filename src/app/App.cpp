@@ -474,12 +474,10 @@ class EntryApp : public entry::AppI
 private:
 	std::shared_ptr<App> app      = nullptr; ///< main application
 	BgfxCallback         callback = {};      ///< for video capture + screenshot
-	uint32_t             debug    = 0;       ///< options not requiring a reset
 	uint32_t             fheight  = 800;     ///< framebuffer height
 	uint32_t             fwidth   = 1328;    ///< framebuffer width
 	uint32_t             iheight  = 800;     ///< original height
 	uint32_t             iwidth   = 1328;    ///< original width
-	uint32_t             reset    = 0;       ///< options requiring a reset
 
 public:
 	bool isInit = false; ///< was bgfx initialized?
@@ -523,15 +521,12 @@ public:
 			fheight = iheight * xsettings.dpr;
 			fwidth  = iwidth * xsettings.dpr;
 
-			debug  = 0
-			    | BGFX_DEBUG_PROFILER
-			    | BGFX_DEBUG_TEXT;
-			reset = 0
-			    | (xsettings.captureVideo ? BGFX_RESET_CAPTURE : 0)
-				| BGFX_RESET_HIDPI
-			    //| BGFX_RESET_HDR10
-			    | BGFX_RESET_MSAA_X8
-			    | BGFX_RESET_VSYNC;
+			xsettings.reset |= BGFX_RESET_HIDPI;
+
+			if (xsettings.captureVideo)
+				xsettings.reset |= BGFX_RESET_CAPTURE;
+			else
+				xsettings.reset &= ~BGFX_RESET_CAPTURE;
 
 			bgfx::Init init;
 			init.type              = args.m_type;
@@ -541,14 +536,14 @@ public:
 			init.platformData.type = entry::getNativeWindowHandleType();
 			init.resolution.width  = fwidth;
 			init.resolution.height = fheight;
-			init.resolution.reset  = reset;
+			init.resolution.reset  = xsettings.reset;
 			init.callback          = &callback;
 
 			ui::Log("App/init: {}x{}x{} => {}x{}", iwidth, iheight, xsettings.dpr, fwidth, fheight);
 			bgfx::init(init);
 			isInit = true;
 
-			bgfx::setDebug(debug);
+			bgfx::setDebug(xsettings.debug);
 
 			// set view 0 clear state
 			bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x393939ff, 1.0f, 0);
@@ -561,7 +556,7 @@ public:
 		{
 			app = std::make_shared<App>();
 			app->Initialize(app);
-			app->entryReset = &reset;
+			app->entryReset = &xsettings.reset;
 		}
 
 		return true;
@@ -593,7 +588,7 @@ public:
 			callback.wantVideo = app->wantVideo;
 			ginput.ResetAscii();
 
-			if (entry::processEvents(fwidth, fheight, debug, reset)) return false;
+			if (entry::processEvents(fwidth, fheight, xsettings.debug, xsettings.reset)) return false;
 
 			app->SynchronizeEvents(fwidth, fheight);
 			app->Controls();

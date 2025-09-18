@@ -1,6 +1,6 @@
 // ui.h
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-14
 
 #pragma once
 
@@ -79,6 +79,9 @@ bool AddDragInt(int mode, const std::string& name, const char* text, int* dataPt
 /// @param mode: &4: popup, &8: empty label, &16: no label + span all width
 /// @param pstring: if used, then overrides config
 void AddInputText(int mode, const std::string& name, const char* label, size_t size = 256, int flags = 0, std::string* pstring = nullptr);
+
+/// Add a menu item with a flag system
+bool AddMenuFlag(const std::string& label, uint32_t& value, uint32_t flag);
 
 /// Add a slider bool with label left/right
 /// @param mode: &4: popup, &8: empty label, &16: no label + span all width

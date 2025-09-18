@@ -315,100 +315,12 @@ bool setOrToggle(uint32_t& _flags, const char* _name, uint32_t _bit, int _first,
 	return false;
 }
 
-int cmdMouseLock(CmdContext* /*_context*/, void* /*_userData*/, int _argc, char const* const* _argv)
-{
-	if (1 < _argc)
-	{
-		bool set = false;
-		if (2 < _argc)
-		{
-			bx::fromString(&set, _argv[1]);
-			inputSetMouseLock(set);
-		}
-		else inputSetMouseLock(!inputIsMouseLocked());
-
-		return bx::kExitSuccess;
-	}
-
-	return bx::kExitFailure;
-}
-
-int cmdGraphics(CmdContext* /*_context*/, void* /*_userData*/, int _argc, char const* const* _argv)
-{
-	if (_argc > 1)
-	{
-		if (setOrToggle(s_reset, "vsync", BGFX_RESET_VSYNC, 1, _argc, _argv)
-		    || setOrToggle(s_reset, "maxaniso", BGFX_RESET_MAXANISOTROPY, 1, _argc, _argv)
-		    || setOrToggle(s_reset, "msaa", BGFX_RESET_MSAA_X16, 1, _argc, _argv)
-		    || setOrToggle(s_reset, "flush", BGFX_RESET_FLUSH_AFTER_RENDER, 1, _argc, _argv)
-		    || setOrToggle(s_reset, "flip", BGFX_RESET_FLIP_AFTER_RENDER, 1, _argc, _argv)
-		    || setOrToggle(s_reset, "hidpi", BGFX_RESET_HIDPI, 1, _argc, _argv)
-		    || setOrToggle(s_reset, "depthclamp", BGFX_RESET_DEPTH_CLAMP, 1, _argc, _argv))
-		{
-			return bx::kExitSuccess;
-		}
-		else if (setOrToggle(s_debug, "stats", BGFX_DEBUG_STATS, 1, _argc, _argv) || setOrToggle(s_debug, "ifh", BGFX_DEBUG_IFH, 1, _argc, _argv) || setOrToggle(s_debug, "text", BGFX_DEBUG_TEXT, 1, _argc, _argv) || setOrToggle(s_debug, "wireframe", BGFX_DEBUG_WIREFRAME, 1, _argc, _argv) || setOrToggle(s_debug, "profiler", BGFX_DEBUG_PROFILER, 1, _argc, _argv))
-		{
-			bgfx::setDebug(s_debug);
-			return bx::kExitSuccess;
-		}
-		else if (0 == bx::strCmp(_argv[1], "screenshot"))
-		{
-			bgfx::FrameBufferHandle fbh = BGFX_INVALID_HANDLE;
-
-			if (_argc > 2)
-			{
-				bgfx::requestScreenShot(fbh, _argv[2]);
-			}
-			else
-			{
-				time_t tt;
-				time(&tt);
-
-				char filePath[256];
-				bx::snprintf(filePath, sizeof(filePath), "temp/screenshot-%d", tt);
-				bgfx::requestScreenShot(fbh, filePath);
-			}
-
-			return bx::kExitSuccess;
-		}
-		else if (0 == bx::strCmp(_argv[1], "fullscreen"))
-		{
-			WindowHandle window = { 0 };
-			toggleFullscreen(window);
-			return bx::kExitSuccess;
-		}
-	}
-
-	return bx::kExitFailure;
-}
-
-int cmdExit(CmdContext* /*_context*/, void* /*_userData*/, int /*_argc*/, char const* const* /*_argv*/)
-{
-	s_exit = true;
-	return bx::kExitSuccess;
-}
-
 // FIXME!!
 static const InputBinding s_bindings[] = {
-	//{ entry::Key::KeyQ,         entry::Modifier::LeftCtrl,  1, nullptr, "exit"                              },
-	//{ entry::Key::KeyQ,         entry::Modifier::RightCtrl, 1, nullptr, "exit"                              },
-	//{ entry::Key::KeyF,         entry::Modifier::LeftCtrl,  1, nullptr, "graphics fullscreen"               },
-	//{ entry::Key::KeyF,         entry::Modifier::RightCtrl, 1, nullptr, "graphics fullscreen"               },
-	{ entry::Key::Return,       entry::Modifier::RightAlt,  1, nullptr, "graphics fullscreen"               },
-	{ entry::Key::F1,           entry::Modifier::None,      1, nullptr, "graphics stats"                    },
-	{ entry::Key::F1,           entry::Modifier::LeftCtrl,  1, nullptr, "graphics ifh"                      },
-	{ entry::Key::GamepadStart, entry::Modifier::None,      1, nullptr, "graphics stats"                    },
-	{ entry::Key::F1,           entry::Modifier::LeftShift, 1, nullptr, "graphics stats 0\ngraphics text 0" },
-	{ entry::Key::F2,           entry::Modifier::None,      1, nullptr, "mouselock 1"                       },
-	{ entry::Key::F3,           entry::Modifier::None,      1, nullptr, "graphics wireframe"                },
-	{ entry::Key::F6,           entry::Modifier::None,      1, nullptr, "graphics profiler"                 },
-	{ entry::Key::F7,           entry::Modifier::None,      1, nullptr, "graphics vsync"                    },
-	{ entry::Key::F8,           entry::Modifier::None,      1, nullptr, "graphics msaa"                     },
-	{ entry::Key::F9,           entry::Modifier::None,      1, nullptr, "graphics flush"                    },
-	{ entry::Key::F10,          entry::Modifier::None,      1, nullptr, "graphics hidpi"                    },
-	//{ entry::Key::Print,        entry::Modifier::None,      1, nullptr, "graphics screenshot"               },
-	//{ entry::Key::KeyP,         entry::Modifier::LeftCtrl,  1, nullptr, "graphics screenshot"               },
+	{ entry::Key::F2 , entry::Modifier::None, 1, nullptr, "mouselock 1"    },
+	{ entry::Key::F8 , entry::Modifier::None, 1, nullptr, "graphics msaa"  },
+	{ entry::Key::F9 , entry::Modifier::None, 1, nullptr, "graphics flush" },
+	{ entry::Key::F10, entry::Modifier::None, 1, nullptr, "graphics hidpi" },
 
 	INPUT_BINDING_END
 };
@@ -663,10 +575,7 @@ int main(int _argc, const char* const* _argv)
 	s_fileWriter = BX_NEW(g_allocator, FileWriter);
 
 	cmdInit();
-	cmdAdd("mouselock", cmdMouseLock);
-	cmdAdd("graphics" , cmdGraphics);
-	cmdAdd("exit"     , cmdExit);
-	cmdAdd("app"      , cmdApp);
+	cmdAdd("app", cmdApp);
 
 	inputInit();
 
@@ -732,6 +641,7 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 {
 	bool needReset = s_reset != _reset;
 
+	if (s_debug != _debug) bgfx::setDebug(_debug);
 	s_debug = _debug;
 	s_reset = _reset;
 

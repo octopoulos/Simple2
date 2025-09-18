@@ -1,6 +1,6 @@
 // ui-common.cpp
 // @author octopoulos
-// @version 2025-09-13
+// @version 2025-09-14
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -271,6 +271,20 @@ void AddInputText(int mode, const std::string& name, const char* label, size_t s
 
 	PopBlender(pushed);
 	LabelRight(label);
+}
+
+bool AddMenuFlag(const std::string& label, uint32_t& value, uint32_t flag)
+{
+	bool selected = value & flag;
+	if (ImGui::MenuItem(label.c_str(), nullptr, &selected))
+	{
+		if (selected)
+			value |= flag;
+		else
+			value &= ~flag;
+		return true;
+	}
+	return false;
 }
 
 bool AddSliderBool(int mode, const std::string& name, const char* text, const char* format, bool vertical, const ImVec2& size)

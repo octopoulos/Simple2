@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-09-11
+// @version 2025-09-14
 
 #pragma once
 
@@ -24,7 +24,7 @@ enum XChanges_ : int
 
 enum XEases_ : int
 {
-	Ease_None = 0,
+	Ease_None       = 0,
 	Ease_InOutCubic = 1,
 	Ease_InOutQuad  = 2,
 	Ease_OutQuad    = 3,
@@ -84,14 +84,14 @@ struct XSettings
 	bool  nvidiaEnc;    ///< use nVidia encoding
 
 	// [input]
-	float   cameraSpeed;  ///< camera movement speed
-	int     cursorEase;   ///< easing function
-	int64_t cursorInit;   ///< Ms wait for cursor repeat to kick in
-	int64_t cursorRepeat; ///< Ms cursor repeat interval
-	int64_t keyInit;      ///< Ms wait for key repeat to kick in
-	int64_t keyRepeat;    ///< Ms key repeat interval
-	float   zoomKb;       ///< zoom speed with the keyboard
-	float   zoomWheel;    ///< zoom speed with the mouse wheel
+	float cameraSpeed;  ///< camera movement speed
+	int   cursorEase;   ///< easing function
+	int   cursorInit;   ///< Ms wait for cursor repeat to kick in
+	int   cursorRepeat; ///< Ms cursor repeat interval
+	int   keyInit;      ///< Ms wait for key repeat to kick in
+	int   keyRepeat;    ///< Ms key repeat interval
+	float zoomKb;       ///< zoom speed with the keyboard
+	float zoomWheel;    ///< zoom speed with the mouse wheel
 
 	// [map]
 	int   angleInc;   ///< angle increment in degrees
@@ -105,22 +105,24 @@ struct XSettings
 	bool  physPaused;  ///< paused physics
 
 	// [render]
-	float cameraAt[3];  ///< camera lookAt
-	float cameraEye[3]; ///< camera eye
-	float distance;     ///< distance between camera and cursor
-	bool  fixedView;    ///< don't move the view with the mouse
-	bool  gridDraw;     ///< draw grid?
-	int   gridSize;     ///< number of grid divisions
-	bool  instancing;   ///< use mesh instancing
-	float lightDir[3];  ///< light direction
-	float orthoZoom;    ///< zoom in orthographic projection
-	int   projection;   ///< 0: ortho, 1: perspective
-	int   renderMode;   ///< &1: screen, &2: model
+	float    cameraAt[3];  ///< camera lookAt
+	float    cameraEye[3]; ///< camera eye
+	uint32_t debug;        ///< bgfx: debug
+	float    distance;     ///< distance between camera and cursor
+	bool     fixedView;    ///< don't move the view with the mouse
+	bool     gridDraw;     ///< draw grid?
+	int      gridSize;     ///< number of grid divisions
+	bool     instancing;   ///< use mesh instancing
+	float    lightDir[3];  ///< light direction
+	float    orthoZoom;    ///< zoom in orthographic projection
+	int      projection;   ///< 0: ortho, 1: perspective
+	int      renderMode;   ///< &1: screen, &2: model
+	uint32_t reset;        ///< bgfx: reset
 
 	// [rubik]
-	int     rubikEase;   ///< easing function
-	int64_t rubikInit;   ///< Ms wait for rubik repeat to kick in
-	int64_t rubikRepeat; ///< Ms rubik repeat interval
+	int rubikEase;   ///< easing function
+	int rubikInit;   ///< Ms wait for rubik repeat to kick in
+	int rubikRepeat; ///< Ms rubik repeat interval
 
 	// [system]
 	float activeMs;    ///< ms per frame when mouse moving + focused

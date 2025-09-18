@@ -63,6 +63,7 @@ static std::vector<Config> configs = {
 	// [render]
 	X_FLOATS (XSettings, render, 0, cameraAt  , "0.0|0.0|0.0", -100.0f, 100.0f, 3),
 	X_FLOATS (XSettings, render, 0, cameraEye , "0.0|0.0|1.5", -100.0f, 100.0f, 3),
+	X_INT    (XSettings, render, 0, debug     , 0, 0, -1),
 	X_FLOAT  (XSettings, render, 0, distance  , 10.0f, 0.50f, 100.0f),
 	X_BOOL   (XSettings, render, 0, fixedView , true),
 	X_BOOL   (XSettings, render, 0, gridDraw  , true),
@@ -72,6 +73,7 @@ static std::vector<Config> configs = {
 	X_FLOAT  (XSettings, render, 0, orthoZoom , 1.0f, 0.001f, 10.0f),
 	X_ENUM   (XSettings, render, 0, projection, Projection_Perspective, sProjections),
 	X_ENUM   (XSettings, render, 0, renderMode, RenderMode_Screen, sRenderModes),
+	X_INT    (XSettings, render, 0, reset     , 0, 0, -1),
 
 	// [rubik]
 	X_ENUM   (XSettings, rubik, 0, rubikEase  , Ease_None, sEases),

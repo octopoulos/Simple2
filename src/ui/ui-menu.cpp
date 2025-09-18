@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-09-09
+// @version 2025-09-14
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -309,24 +309,9 @@ void App::ShowMainMenu(float alpha)
 			ImGui::EndMenu();
 		}
 
-		// physics
-		if (ImGui::BeginMenu("Physics"))
+		// debug
+		if (ImGui::BeginMenu("Capture"))
 		{
-			ImGui::MenuItem("Paused", nullptr, &xsettings.physPaused);
-			ImGui::MenuItem("Show Body Shapes", nullptr, &xsettings.bulletDebug);
-			ImGui::EndMenu();
-		}
-
-		// render
-		if (ImGui::BeginMenu("Render"))
-		{
-			{
-				bool selected = xsettings.projection == Projection_Orthographic;
-				if (ImGui::MenuItem("Orthographic Projection", nullptr, selected))
-					xsettings.projection = 1 - xsettings.projection;
-			}
-			ImGui::MenuItem("Mesh Instancing", nullptr, &xsettings.instancing);
-			ImGui::Separator();
 			if (ImGui::MenuItem("Capture Screenshot")) wantScreenshot = 6;
 			if (ImGui::MenuItem("Capture Screenshot with UI")) wantScreenshot = 5;
 			if (entryReset)
@@ -356,6 +341,46 @@ void App::ShowMainMenu(float alpha)
 					}
 				}
 			}
+			ImGui::EndMenu();
+		}
+
+		// debug
+		if (ImGui::BeginMenu("Debug"))
+		{
+			ui::AddMenuFlag("No Render", xsettings.debug, BGFX_DEBUG_IFH);
+			ui::AddMenuFlag("Profiler" , xsettings.debug, BGFX_DEBUG_PROFILER);
+			ui::AddMenuFlag("Stats"    , xsettings.debug, BGFX_DEBUG_STATS);
+			ui::AddMenuFlag("Text"     , xsettings.debug, BGFX_DEBUG_TEXT);
+			ui::AddMenuFlag("Wireframe", xsettings.debug, BGFX_DEBUG_WIREFRAME);
+			ImGui::EndMenu();
+		}
+
+		// render
+		if (ImGui::BeginMenu("Render"))
+		{
+			{
+				bool selected = xsettings.projection == Projection_Orthographic;
+				if (ImGui::MenuItem("Orthographic Projection", nullptr, selected))
+					xsettings.projection = 1 - xsettings.projection;
+			}
+			ImGui::MenuItem("Mesh Instancing", nullptr, &xsettings.instancing);
+			ImGui::Separator();
+			ImGui::Separator();
+			ui::AddMenuFlag("Depth Clamp"        , xsettings.reset, BGFX_RESET_DEPTH_CLAMP);
+			ui::AddMenuFlag("Flip After Render"  , xsettings.reset, BGFX_RESET_FLIP_AFTER_RENDER);
+			ui::AddMenuFlag("Flush After Render" , xsettings.reset, BGFX_RESET_FLUSH_AFTER_RENDER);
+			ui::AddMenuFlag("Full Screen"        , xsettings.reset, BGFX_RESET_FULLSCREEN);
+			ui::AddMenuFlag("HDR10"              , xsettings.reset, BGFX_RESET_HDR10);
+			ui::AddMenuFlag("High DPI"           , xsettings.reset, BGFX_RESET_HIDPI);
+			ui::AddMenuFlag("Max Anisotropy"     , xsettings.reset, BGFX_RESET_MAXANISOTROPY);
+			ui::AddMenuFlag("MSAA x2"            , xsettings.reset, BGFX_RESET_MSAA_X2);
+			ui::AddMenuFlag("MSAA x4"            , xsettings.reset, BGFX_RESET_MSAA_X4);
+			ui::AddMenuFlag("MSAA x8"            , xsettings.reset, BGFX_RESET_MSAA_X8);
+			ui::AddMenuFlag("MSAA x16"           , xsettings.reset, BGFX_RESET_MSAA_X16);
+			ui::AddMenuFlag("sRGB Back-buffer"   , xsettings.reset, BGFX_RESET_SRGB_BACKBUFFER);
+			ui::AddMenuFlag("Suspend Rendering"  , xsettings.reset, BGFX_RESET_SUSPEND);
+			ui::AddMenuFlag("Transp. Back-buffer", xsettings.reset, BGFX_RESET_TRANSPARENT_BACKBUFFER);
+			ui::AddMenuFlag("V-Sync"             , xsettings.reset, BGFX_RESET_VSYNC);
 			ImGui::EndMenu();
 		}
 
@@ -495,8 +520,10 @@ void App::VarsUi()
 				{ "showPopup"             , std::to_string(showPopup)                },
 				{ "showTest"              , BoolString(showTest)                     },
 				{ "videoFrame"            , std::to_string(videoFrame)               },
+				{ "x.debug"               , std::to_string(xsettings.debug)          },
 				{ "x.objectTree"          , std::to_string(xsettings.objectTree)     },
 				{ "x.physPaused"          , std::to_string(xsettings.physPaused)     },
+				{ "x.reset"               , std::to_string(xsettings.reset)          },
 				{ "x.settingTree"         , std::to_string(xsettings.settingTree)    },
 				{ "x.varTree"             , std::to_string(xsettings.varTree)        },
 			});

@@ -211,6 +211,8 @@ void App::FixedControls()
 			}
 		}
 
+		if (GI_DOWN(Key::F2)) inputSetMouseLock(!inputIsMouseLocked());
+		if (GI_DOWN(Key::F3)) xsettings.debug ^= BGFX_DEBUG_WIREFRAME;
 		if (GI_DOWN(Key::F4)) xsettings.bulletDebug = !xsettings.bulletDebug;
 		if (GI_DOWN(Key::F5)) xsettings.projection = 1 - xsettings.projection;
 		if (GI_DOWN(Key::F11)) xsettings.instancing = !xsettings.instancing;
