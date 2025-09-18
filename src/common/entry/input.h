@@ -1,4 +1,4 @@
-// @version 2025-09-13
+// @version 2025-09-14
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -145,6 +145,12 @@ struct GlobalInput
 	{
 	}
 
+	/// Decode encoded to key, modifier
+	static std::pair<int, int> DecodeKey(int keyMod);
+
+	/// Encode a key, modifier into an encoded key
+	static int EncodeKey(int key, int modifier);
+
 	/// Reset the char ring
 	void FlushChar();
 
@@ -174,6 +180,9 @@ struct GlobalInput
 
 	/// Pop a char from the ring
 	const uint8_t* PopChar();
+
+	/// Print keys being pushed
+	void PrintKeys();
 
 	/// Push a char onto the ring
 	void PushChar(uint8_t _len, const uint8_t _char[4]);

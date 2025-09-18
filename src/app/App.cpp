@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-09-11
+// @version 2025-09-14
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -474,22 +474,25 @@ class EntryApp : public entry::AppI
 private:
 	std::shared_ptr<App> app      = nullptr; ///< main application
 	BgfxCallback         callback = {};      ///< for video capture + screenshot
-	uint32_t             debug    = 0;       ///
+	uint32_t             debug    = 0;       ///< options not requiring a reset
 	uint32_t             fheight  = 800;     ///< framebuffer height
 	uint32_t             fwidth   = 1328;    ///< framebuffer width
 	uint32_t             iheight  = 800;     ///< original height
 	uint32_t             iwidth   = 1328;    ///< original width
-	uint32_t             reset    = 0;       ///
+	uint32_t             reset    = 0;       ///< options requiring a reset
 
 public:
+	bool isInit = false; ///< was bgfx initialized?
+
 	EntryApp(const char* _name, const char* _description, const char* _url)
 	    : entry::AppI(_name, _description, _url)
 	{
 	}
 
-	virtual void init(int32_t argc, const char* const* argv, uint32_t width, uint32_t height) override
+	virtual bool init(int32_t argc, const char* const* argv, uint32_t width, uint32_t height) override
 	{
 		Args args(argc, argv);
+		isInit = false;
 
 		// 0) CLI
 		auto cliFunc = [&]() -> int
@@ -511,7 +514,7 @@ public:
 			}
 			return 0;
 		};
-		if (const int result = cliFunc()) return;
+		if (const int result = cliFunc()) return false;
 
 		// 1) bgfx
 		{
@@ -543,6 +546,7 @@ public:
 
 			ui::Log("App/init: {}x{}x{} => {}x{}", iwidth, iheight, xsettings.dpr, fwidth, fheight);
 			bgfx::init(init);
+			isInit = true;
 
 			bgfx::setDebug(debug);
 
@@ -559,24 +563,29 @@ public:
 			app->Initialize(app);
 			app->entryReset = &reset;
 		}
+
+		return true;
 	}
 
 	virtual int shutdown() override
 	{
 		// Reversed order:
 		// 3) app
-		app.reset();
+		if (isInit) app.reset();
 
 		// 2) imGui
-		imguiDestroy();
+		if (isInit) imguiDestroy();
 
 		// 1) bgfx
-		bgfx::shutdown();
+		if (isInit) bgfx::shutdown();
+
+		isInit = false;
 		return 0;
 	}
 
 	virtual bool update() override
 	{
+		if (!isInit) return false;
 		auto& ginput = GetGlobalInput();
 
 		// 1) events

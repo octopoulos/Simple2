@@ -1,4 +1,4 @@
-// @version 2025-08-19
+// @version 2025-09-14
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -400,7 +400,7 @@ public:
 	virtual ~AppI() = 0;
 
 	///
-	virtual void init(int32_t _argc, const char* const* _argv, uint32_t _width, uint32_t _height) = 0;
+	virtual bool init(int32_t _argc, const char* const* _argv, uint32_t _width, uint32_t _height) = 0;
 
 	///
 	virtual int shutdown() = 0;

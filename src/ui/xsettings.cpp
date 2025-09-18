@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-09-11
+// @version 2025-09-14
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -76,7 +76,7 @@ static std::vector<Config> configs = {
 	// [rubik]
 	X_ENUM   (XSettings, rubik, 0, rubikEase  , Ease_None, sEases),
 	X_INT    (XSettings, rubik, 0, rubikInit  , 500, 0, 5000),
-	X_INT    (XSettings, rubik, 0, rubikRepeat, 200, 0, 500),
+	X_INT    (XSettings, rubik, 0, rubikRepeat, 500, 0, 2000),
 
 	// [system]
 	X_FLOAT  (XSettings, system, 0, activeMs   , 0.0f, 0.0f, 1000.0f),

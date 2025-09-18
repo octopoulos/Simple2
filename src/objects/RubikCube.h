@@ -1,6 +1,6 @@
 // RubikCube.h
 // @author octopoulos
-// @version 2025-09-11
+// @version 2025-09-14
 
 #pragma once
 
@@ -26,16 +26,16 @@ private:
 	bool isDirty  = false; ///< cube has rotated and the transforms must be updated
 
 	/// Specific Rubik controls, can be used by AI
-	void AiControls(const sCamera& camera, int modifier, const bool* downs);
+	void AiControls(const sCamera& camera, int modifier, const bool* downs, bool isQueue);
 
 	/// Create all cubies and position them in a 3D grid
 	void Initialize();
 
 	/// Rotate the whole cube (XYZ)
-	void RotateCube(const RubikFace* face, int angle);
+	void RotateCube(const RubikFace* face, int angle, int key, bool isQueue);
 
 	/// Rotate a layer (UD/RL/FB)
-	void RotateLayer(const RubikFace* face, int angle);
+	void RotateLayer(const RubikFace* face, int angle, int key, bool isQueue);
 
 	/// Scramble cube
 	void Scramble(const sCamera& camera, int steps);

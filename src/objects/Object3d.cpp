@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-09-11
+// @version 2025-09-14
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -63,29 +63,37 @@ void Object3d::ClearDeads(bool force)
 	for (auto& remove : removes) RemoveChild(remove);
 }
 
-int Object3d::CompleteInterpolation()
+int Object3d::CompleteInterpolation(bool warp, std::string_view origin)
 {
+	if (DEV_interpolate) ui::Log("CompleteInterpolation/{}: axisTs={} posTs={} quatTs={}", origin, axisTs, posTs, quatTs ? Nowd() - quatTs : 0);
+
 	int change = 0;
 	if (axisTs > 0.0 || posTs > 0.0)
 	{
-		position = position2;
+		if (warp) position = position2;
 		change |= 1;
 	}
 	if (quatTs > 0.0)
 	{
-		quaternion = quaternion2;
-		RotationFromQuaternion();
+		if (warp)
+		{
+			quaternion = quaternion2;
+			RotationFromQuaternion();
+		}
 		change |= 2;
 	}
 
-	axisTs = 0.0;
-	posTs  = 0.0;
-	quatTs = 0.0;
+	if (warp)
+	{
+		axisTs = 0.0;
+		posTs  = 0.0;
+		quatTs = 0.0;
+	}
 
 	for (auto& child : children)
-		change |= (child->CompleteInterpolation() << 2);
+		change |= (child->CompleteInterpolation(warp, "child") << 2);
 
-	if (change > 0) UpdateLocalMatrix("CompleteInterpolation");
+	if (warp && change > 0) UpdateLocalMatrix("CompleteInterpolation");
 	return change;
 }
 
@@ -137,8 +145,12 @@ int Object3d::GetEase()
 	return Ease_None;
 }
 
-double Object3d::GetInterval()
+double Object3d::GetInterval(bool recalculate)
 {
+	// 1) manually set interval
+	if (!recalculate && interval > 0.0) return interval;
+
+	// 2) default interval
 	if (type & (ObjectType_RubikCube | ObjectType_RubikNode)) return xsettings.rubikRepeat * 1e-3;
 	return xsettings.keyRepeat * 1e-3;
 }

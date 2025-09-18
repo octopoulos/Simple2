@@ -1,4 +1,4 @@
-// @version 2025-09-13
+// @version 2025-09-14
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -572,17 +572,19 @@ int runApp(AppI* _app, int _argc, const char* const* _argv)
 	ui::Log("entry/runApp: {}x{} {}x{}", s_width, s_height, xsettings.windowSize[0], xsettings.windowSize[1]);
 	setWindowSize(kDefaultWindowHandle, s_width, s_height);
 
-	_app->init(_argc, _argv, s_width, s_height);
-	bgfx::frame();
+	if (_app->init(_argc, _argv, s_width, s_height))
+	{
+		bgfx::frame();
 
 #if BX_PLATFORM_EMSCRIPTEN
-	s_app = _app;
-	emscripten_set_main_loop(&updateApp, -1, 1);
+		s_app = _app;
+		emscripten_set_main_loop(&updateApp, -1, 1);
 #else
-	while (_app->update())
-		if (0 != bx::strLen(s_restartArgs))
-			break;
+		while (_app->update())
+			if (0 != bx::strLen(s_restartArgs))
+				break;
 #endif // BX_PLATFORM_EMSCRIPTEN
+	}
 
 	return _app->shutdown();
 }

@@ -1,11 +1,10 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-09-11
+// @version 2025-09-14
 
 #include "stdafx.h"
 #include "app/App.h"
 //
-#include "common/config.h"             // DEV_controls
 #include "core/common3d.h"             // PrintMatrix
 #include "entry/input.h"               // GetGlobalInput
 #include "loaders/MeshLoader.h"        // MeshLoader::
@@ -59,7 +58,9 @@ void App::Controls()
 
 	// 2) controls
 	{
-		GetGlobalInput().nowMs = NowMs();
+		auto& ginput = GetGlobalInput();
+		ginput.nowMs = NowMs();
+		ginput.PrintKeys();
 
 		MeshControls();
 		FluidControls();
@@ -95,14 +96,7 @@ void App::FixedControls()
 {
 	using namespace entry;
 
-	auto& ginput = GetGlobalInput();
-
-	if (DEV_controls)
-	{
-		for (int id = 0; id < Key::Count; ++id)
-			if (ginput.keyDowns[id]) ui::Log("Controls: {} {:3} {:5} {}", ginput.keyTimes[id], id, ginput.keys[id], getName((Key::Enum)id));
-	}
-
+	auto&          ginput   = GetGlobalInput();
 	const auto&    downs    = ginput.keyDowns;
 	const auto&    ignores  = ginput.keyIgnores;
 	const ImGuiIO& io       = ImGui::GetIO();

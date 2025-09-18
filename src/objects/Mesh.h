@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-09-11
+// @version 2025-09-14
 
 #pragma once
 
@@ -83,12 +83,12 @@ public:
 	uBody                     body      = {};            ///< one body for the whole mesh
 	std::shared_ptr<Geometry> geometry  = nullptr;       ///
 	std::vector<Group>        groups    = {};            ///< groups of vertices
-	int64_t                   interval  = -1;            ///< transition time (defaults to xsettings.keyInterval)
 	bgfx::VertexLayout        layout    = {};            ///
 	int                       load      = MeshLoad_None; ///< how the model was loaded (for open/save scene)
 	sMaterial                 material  = nullptr;       ///< current material (might be "cursor")
 	sMaterial                 material0 = nullptr;       ///< original material
 	std::string               modelName = "";            ///< model name (part of filename)
+	std::deque<int>           nextKeys  = {};            ///< queued keys
 
 	Mesh(std::string_view name, int typeFlag = 0, std::shared_ptr<Geometry> geometry = nullptr, sMaterial material = nullptr)
 	    : Object3d(name, ObjectType_Mesh | typeFlag)
@@ -116,6 +116,13 @@ public:
 
 	/// Split all children and enable physics
 	void Explode();
+
+	/// Get the transition interval
+	virtual double GetInterval(bool recalculate = false) override;
+
+	/// Queue a key
+	/// @param isQueue: key was the front of the queue => place it back in front
+	void QueueKey(int key, bool isQueue);
 
 	/// Render the mesh, if geometry & material program exist, or if program is set
 	/// - if a group => render the children only

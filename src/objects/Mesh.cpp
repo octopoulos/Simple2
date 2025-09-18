@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-09-13
+// @version 2025-09-14
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -80,6 +80,24 @@ void Mesh::Explode()
 			body->enabled = true;
 		}
 	}
+}
+
+double Mesh::GetInterval(bool recalculate)
+{
+	// 1) manually set interval
+	if (!recalculate && interval > 0.0) return interval;
+
+	// 2) default interval
+	const double baseInterval = Object3d::GetInterval(recalculate);
+	return baseInterval / (1 + nextKeys.size());
+}
+
+void Mesh::QueueKey(int key, bool isQueue)
+{
+	if (isQueue)
+		nextKeys.push_front(key);
+	else
+		nextKeys.push_back(key);
 }
 
 void Mesh::Render(uint8_t viewId, int renderFlags)
@@ -291,9 +309,10 @@ void Mesh::ShowTable() const
 
 	// clang-format off
 	ui::ShowTable({
-		{ "groups.size", std::to_string(groups.size()) },
-		{ "load"       , std::to_string(load)          },
-		{ "modelName"  , modelName                     },
+		{ "groups.size", std::to_string(groups.size())   },
+		{ "load"       , std::to_string(load)            },
+		{ "modelName"  , modelName                       },
+		{ "nextKeys"   , std::to_string(nextKeys.size()) },
 	});
 	// clang-format on
 

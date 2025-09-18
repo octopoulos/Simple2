@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-09-11
+// @version 2025-09-14
 
 #pragma once
 
@@ -63,6 +63,7 @@ public:
 	int                               dead        = Dead_Alive;                 ///< dead status: Deads_
 	int                               id          = 0;                          ///< unique id
 	MAP<int, std::weak_ptr<Object3d>> ids         = {};                         ///< id'd children
+	double                            interval    = 0.0;                        ///< current interval
 	int                               irot[3]     = {};                         ///< number of 45 deg rotations
 	glm::mat4                         matrix      = glm::mat4(1.0f);            ///< full local transform (S * R * T)
 	glm::mat4                         matrixWorld = glm::mat4(1.0f);            ///< parent->matrixWorld * matrix
@@ -99,8 +100,9 @@ public:
 	void ClearDeads(bool force);
 
 	/// Handle incomplete interpolation
+	/// @param warp: warp to next position/quaternion, otherwise only check
 	/// @returns: &1: axis/pos, &2: quat, &4: child axis/pos, &8: child quat
-	int CompleteInterpolation();
+	int CompleteInterpolation(bool warp, std::string_view origin);
 
 	/// Convert matrix to position, rotation/quaternion, scale + irot
 	void DecomposeMatrix();
@@ -112,7 +114,7 @@ public:
 	int GetEase();
 
 	/// Get the transition interval
-	double GetInterval();
+	virtual double GetInterval(bool recalculate = false);
 
 	/// Find an direct child by id
 	sObject3d GetObjectById(int id) const;

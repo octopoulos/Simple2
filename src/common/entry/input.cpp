@@ -1,4 +1,4 @@
-// @version 2025-09-13
+// @version 2025-09-14
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -8,8 +8,9 @@
 #include "input.h"
 #include "cmd.h"
 //
-#include "entry_p.h"
-#include "ui/xsettings.h"
+#include "common/config.h" // DEV_inputKeys
+#include "entry_p.h"       // entry::
+#include "ui/xsettings.h"  // xsettings
 
 struct Gamepad
 {
@@ -260,6 +261,58 @@ static UMAP_INT_INT MODIFIER_KEYS = {
 	{ entry::Key::RightShift, Modifier_Shift },
 };
 
+std::pair<int, int> GlobalInput::DecodeKey(int keyMod)
+{
+	return { keyMod & 4095, keyMod >> 12 };
+}
+
+TEST_CASE("DecodeKey")
+{
+	// clang-format off
+	const std::vector<std::tuple<int, int, int>> vectors = {
+		{ 0        , 0, 0 },
+		{ 4        , 4, 0 },
+		{ 4 | 4096 , 4, 1 },
+		{ 4 | 8192 , 4, 2 },
+		{ 4 | 16384, 4, 4 },
+		{ 4 | 32768, 4, 8 },
+	};
+	// clang-format on
+	for (int i = -1; const auto& [keyMod, answerKey, answerModified] : vectors)
+	{
+		SUBCASE_FMT("{}_{}", ++i, keyMod)
+		{
+			const auto& [key, modified] = GlobalInput::DecodeKey(keyMod);
+			CHECK(key == answerKey);
+			CHECK(modified == answerModified);
+		}
+	}
+}
+
+int GlobalInput::EncodeKey(int key, int modifier)
+{
+	return (key & 4095) | (modifier << 12);
+}
+
+TEST_CASE("EncodeKey")
+{
+	// clang-format off
+	const std::vector<std::tuple<int, int, int>> vectors = {
+		{ 0, 0, 0         },
+		{ 4, 0, 4         },
+		{ 4, 1, 4 | 4096  },
+		{ 4, 2, 4 | 8192  },
+		{ 4, 4, 4 | 16384 },
+		{ 4, 8, 4 | 32768 },
+	};
+	// clang-format on
+	for (int i = -1; const auto& [key, modifier, answer] : vectors)
+	{
+		SUBCASE_FMT("{}_{}_{}", ++i, key, modifier)
+		CHECK(GlobalInput::EncodeKey(key, modifier) == answer);
+	}
+}
+
 void GlobalInput::FlushChar()
 {
 	ring.m_current = 0;
@@ -386,6 +439,15 @@ const uint8_t* GlobalInput::PopChar()
 		return utf8;
 	}
 	return nullptr;
+}
+
+void GlobalInput::PrintKeys()
+{
+	if (DEV_inputKeys)
+	{
+		for (int id = 0; id < entry::Key::Count; ++id)
+			if (keyDowns[id]) ui::Log("Controls: {} {:3} {:5} {}", keyTimes[id], id, keys[id], getName((entry::Key::Enum)id));
+	}
 }
 
 void GlobalInput::PushChar(uint8_t _len, const uint8_t _char[4])

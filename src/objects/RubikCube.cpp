@@ -1,6 +1,6 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-09-11
+// @version 2025-09-14
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
@@ -25,7 +25,7 @@ static const std::vector<RubikFace> rubikStartFaces = {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void RubikCube::AiControls(const sCamera& camera, int modifier, const bool* downs)
+void RubikCube::AiControls(const sCamera& camera, int modifier, const bool* downs, bool isQueue)
 {
 	using namespace entry;
 
@@ -131,20 +131,28 @@ void RubikCube::AiControls(const sCamera& camera, int modifier, const bool* down
 	if (modifier & Modifier_Shift) angle *= -1;
 	if (modifier & Modifier_Meta) angle *= 2;
 
+	auto keyRotateCube = [&](int key, const RubikFace* face) {
+		if (!isDirty && GI_DOWN(key)) RotateCube(face, angle, GlobalInput::EncodeKey(key, modifier), isQueue);
+	};
+
 	// clang-format off
-	if (GI_DOWN(Key::KeyX)) RotateCube(rightMaxFace, angle); // x-axis
-	if (GI_DOWN(Key::KeyY)) RotateCube(upMaxFace   , angle); // y-axis
-	if (GI_DOWN(Key::KeyZ)) RotateCube(frontMaxFace, angle); // z-axis
+	keyRotateCube(Key::KeyX, rightMaxFace);
+	keyRotateCube(Key::KeyY, upMaxFace   );
+	keyRotateCube(Key::KeyZ, frontMaxFace);
 	// clang-format off
 
 	// 3) handle layer rotations
+	auto keyRotateLayer = [&](int key, const RubikFace* face) {
+		if (!isDirty && GI_DOWN(key)) RotateLayer(face, angle, GlobalInput::EncodeKey(key, modifier), isQueue);
+	};
+
 	// clang-format off
-	if (GI_DOWN(Key::KeyB)) RotateLayer(frontMinFace, angle);
-	if (GI_DOWN(Key::KeyD)) RotateLayer(upMinFace   , angle);
-	if (GI_DOWN(Key::KeyF)) RotateLayer(frontMaxFace, angle);
-	if (GI_DOWN(Key::KeyL)) RotateLayer(rightMinFace, angle);
-	if (GI_DOWN(Key::KeyR)) RotateLayer(rightMaxFace, angle);
-	if (GI_DOWN(Key::KeyU)) RotateLayer(upMaxFace   , angle);
+	keyRotateLayer(Key::KeyB, frontMinFace);
+	keyRotateLayer(Key::KeyD, upMinFace   );
+	keyRotateLayer(Key::KeyF, frontMaxFace);
+	keyRotateLayer(Key::KeyL, rightMinFace);
+	keyRotateLayer(Key::KeyR, rightMaxFace);
+	keyRotateLayer(Key::KeyU, upMaxFace   );
 	// clang-format on
 
 	// 4) extras
@@ -181,13 +189,27 @@ void RubikCube::Controls(const sCamera& camera, int modifier, const bool* downs,
 		Key::KeyZ,
 	};
 
-	// 1) scramble?
 	auto& ginput = GetGlobalInput();
+
+	if (nextKeys.size())
+	{
+		const int encoded = nextKeys.front();
+		nextKeys.pop_front();
+
+		const auto& [key, modifier] = ginput.DecodeKey(encoded);
+
+		bool downs[256] = {};
+		downs[key]      = true;
+
+		AiControls(camera, modifier, downs, true);
+	}
+
+	// 1) scramble?
 	if (GI_REPEAT_RUBIK(Key::KeyK))
 		Scramble(camera, 1);
 	// 2) AI controls
 	else
-		AiControls(camera, modifier, downs);
+		AiControls(camera, modifier, downs, false);
 
 	// 3) set ignored keys
 	for (const int ignore : newIgnores)
@@ -265,17 +287,23 @@ void RubikCube::Initialize()
 	UpdateWorldMatrix(true);
 }
 
-void RubikCube::RotateCube(const RubikFace* face, int angle)
+void RubikCube::RotateCube(const RubikFace* face, int angle, int key, bool isQueue)
 {
 	// 1) handle non completed interpolation
-	const int change = CompleteInterpolation();
+	const int change = CompleteInterpolation(false, "RotateCube");
 	ui::Log("RotateCube: {}", change);
+	if (change)
+	{
+		QueueKey(key, isQueue);
+		return;
+	}
 
 	// 2) new interpolation
 	{
 		const glm::vec3& axis    = face->normalWorld;
 		const glm::quat  rotQuat = glm::angleAxis(bx::toRad(angle), axis);
 
+		interval    = GetInterval(true);
 		quaternion1 = quaternion;
 		quaternion2 = glm::normalize(rotQuat * quaternion);
 		quatTs      = Nowd();
@@ -283,11 +311,16 @@ void RubikCube::RotateCube(const RubikFace* face, int angle)
 	}
 }
 
-void RubikCube::RotateLayer(const RubikFace* face, int angle)
+void RubikCube::RotateLayer(const RubikFace* face, int angle, int key, bool isQueue)
 {
 	// 1) stop current interpolation
-	const int change = CompleteInterpolation();
+	const int change = CompleteInterpolation(false, "RotateLayer");
 	ui::Log("RotateLayer: {}", change);
+	if (change)
+	{
+		QueueKey(key, isQueue);
+		return;
+	}
 
 	// 2) find layer cubies
 	std::vector<sObject3d> cubies     = {};
@@ -308,6 +341,8 @@ void RubikCube::RotateLayer(const RubikFace* face, int angle)
 		const float     angleInc = bx::toRad(angle);
 		const glm::quat rotQuat  = glm::angleAxis(angleInc, face->normal);
 
+		interval = GetInterval(true);
+
 		for (auto& cubie : cubies)
 		{
 			// rotate local position around local axis (0,0,0) + snap to grid
@@ -317,6 +352,7 @@ void RubikCube::RotateLayer(const RubikFace* face, int angle)
 
 				cubie->axis1       = glm::identity<glm::quat>();
 				cubie->axis2       = rotQuat;
+				cubie->interval    = interval;
 				cubie->position1   = cubie->position;
 				cubie->position2   = newLocalPos;
 				cubie->quaternion1 = cubie->quaternion;
@@ -363,7 +399,7 @@ void RubikCube::Scramble(const sCamera& camera, int steps)
 		if ((MerseneInt32() & 3) == 0) modifier |= Modifier_Meta;
 
 		// ui::Log("Scramble: id={} key={} modifier={} repeat={}", id, key, modifier, repeat);
-		AiControls(camera, modifier, downs);
+		AiControls(camera, modifier, downs, false);
 	}
 }
 

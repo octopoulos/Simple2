@@ -1,6 +1,6 @@
 // config.h
 // @author octopoulos
-// @version 2025-09-09
+// @version 2025-09-14
 
 #pragma once
 
@@ -11,11 +11,12 @@
 #endif // _DEBUG
 
 // DEV
-#define DEV_char     false  ///< processEvents
-#define DEV_controls true   ///< FixedControls
-#define DEV_matrix   false  ///< UpdateLocalMatrix
-#define DEV_models   false  ///< ScanModels
-#define DEV_rotate   D_TRUE ///< RotationFromIrot
-#define DEV_rubik    false  ///< RubikCube::Controls
-#define DEV_scene    D_TRUE ///< ParseObject
-#define DEV_shader   D_TRUE ///< LoadShader_
+#define DEV_char        false  ///< processEvents
+#define DEV_inputKeys   true   ///< PrintKeys
+#define DEV_interpolate false  ///< CompleteInterpolation
+#define DEV_matrix      false  ///< UpdateLocalMatrix
+#define DEV_models      false  ///< ScanModels
+#define DEV_rotate      D_TRUE ///< RotationFromIrot
+#define DEV_rubik       false  ///< RubikCube::Controls
+#define DEV_scene       D_TRUE ///< ParseObject
+#define DEV_shader      D_TRUE ///< LoadShader_
