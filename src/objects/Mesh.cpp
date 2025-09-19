@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-09-14
+// @version 2025-09-15
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -46,9 +46,23 @@ void Mesh::Controls(const sCamera& camera, int modifier, const bool* downs, bool
 
 void Mesh::CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, const btVector4& newDims)
 {
+	// 1) create shape
 	body = std::make_unique<Body>(physics);
 	body->CreateShape(shapeType, this, newDims);
-	body->CreateBody(mass, GlmToBullet(position), GlmToBullet(quaternion));
+
+	// 2) create physical body
+	// child => get the position and rotation from the matrix
+	if (parent && !(parent->type & (ObjectType_Map | ObjectType_Scene)))
+	{
+		glm::vec3 positionW;
+		glm::quat quaternionW;
+		glm::vec3 scaleW;
+		::DecomposeMatrix(matrixWorld, positionW, quaternionW, scaleW);
+		body->CreateBody(mass, GlmToBullet(positionW), GlmToBullet(quaternionW));
+	}
+	// quicker path
+	else body->CreateBody(mass, GlmToBullet(position), GlmToBullet(quaternion));
+
 	type |= ObjectType_HasBody;
 }
 
@@ -229,35 +243,15 @@ int Mesh::Serialize(fmt::memory_buffer& outString, int depth, int bounds, bool a
 
 void Mesh::SetBodyTransform()
 {
-	position = matrixWorld[3];
-
-	PrintMatrix(matrixWorld, "SBT/1");
-
-	for(int i = 0; i < 3; i++)
-	{
-		scale[i] = glm::length(glm::vec3(matrixWorld[i]));
-		// if (!scale[i]) scale[i] = 1.0f;
-	}
-
-	ui::Log("scale={} {} {}", scale[0], scale[1], scale[2]);
-
-	const glm::mat3 rotMtx(
-		glm::vec3(matrixWorld[0]) / scale[0],
-		glm::vec3(matrixWorld[1]) / scale[1],
-		glm::vec3(matrixWorld[2]) / scale[2]);
-
-	quaternion  = glm::quat_cast(rotMtx);
-	rotation    = glm::eulerAngles(quaternion);
-	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
-
-	ui::Log("quaternion={} {} {} {}", quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
-	ui::Log("rotation={} {} {}", rotation[0], rotation[1], rotation[2]);
-	UpdateLocalMatrix("SetBodyTransform");
+	glm::vec3 positionW;
+	glm::quat quaternionW;
+	glm::vec3 scaleW;
+	::DecomposeMatrix(matrixWorld, positionW, quaternionW, scaleW);
 
 	btTransform transform;
 	transform.setIdentity();
-	transform.setOrigin(btVector3(position.x, position.y, position.z));
-	transform.setRotation(btQuaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w));
+	transform.setOrigin(btVector3(positionW.x, positionW.y, positionW.z));
+	transform.setRotation(btQuaternion(quaternionW.x, quaternionW.y, quaternionW.z, quaternionW.w));
 
 	// update transform
 	if (auto& sbody = body->body)
@@ -378,7 +372,7 @@ int Mesh::SynchronizePhysics()
 	int change = 0;
 
 	// physics?
-	if (body && body->body && body->enabled && body->mass >= 0.0f)
+	if (body && body->body && (body->enabled || 1) && body->mass >= 0.0f)
 	{
 		btTransform bTransform;
 		auto        motionState = body->body->getMotionState();

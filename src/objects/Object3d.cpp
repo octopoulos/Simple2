@@ -1,12 +1,12 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-09-14
+// @version 2025-09-15
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
 //
 #include "common/config.h"  // DEV_matrix, DEV_rotate
-#include "core/common3d.h"  // PrintMatrix
+#include "core/common3d.h"  // DecomposeMatrix, PrintMatrix
 #include "loaders/writer.h" // WRITE_INIT, WRITE_KEY_xxx
 #include "ui/ui.h"          // ui::
 #include "ui/xsettings.h"   // xsettings
@@ -99,27 +99,7 @@ int Object3d::CompleteInterpolation(bool warp, std::string_view origin)
 
 void Object3d::DecomposeMatrix()
 {
-	// extract position (translation)
-	position = glm::vec3(matrix[3]);
-
-	// extract scale from basis vectors
-	scale.x = glm::length(glm::vec3(matrix[0]));
-	scale.y = glm::length(glm::vec3(matrix[1]));
-	scale.z = glm::length(glm::vec3(matrix[2]));
-
-	// avoid division by zero
-	if (scale.x == 0.0f) scale.x = 1.0f;
-	if (scale.y == 0.0f) scale.y = 1.0f;
-	if (scale.z == 0.0f) scale.z = 1.0f;
-
-	// extract rotation matrix by removing scale
-	glm::mat3 rotationMatrix(
-	    glm::vec3(matrix[0]) / scale.x,
-	    glm::vec3(matrix[1]) / scale.y,
-	    glm::vec3(matrix[2]) / scale.z);
-
-	// convert to quaternion
-	quaternion = glm::normalize(glm::quat_cast(rotationMatrix));
+	::DecomposeMatrix(matrix, position, quaternion, scale);
 	RotationFromQuaternion();
 }
 
@@ -363,6 +343,8 @@ void Object3d::ShowTable() const
 		{ "matrixWorld", fmt::format("{:.2f}:{:.2f}:{:.2f}", matrixWorld[3][0], matrixWorld[3][1], matrixWorld[3][2])    },
 		{ "name"       , name                                                                                            },
 		{ "names"      , std::to_string(names.size())                                                                    },
+		{ "parent"     , parent ? parent->name : ""                                                                      },
+		{ "parentSync" , BoolString(parentSync)                                                                          },
 		{ "position"   , fmt::format("{:.2f}:{:.2f}:{:.2f}", position.x, position.y, position.z)                         },
 		{ "position1"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", position1.x, position1.y, position1.z)                      },
 		{ "position2"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", position2.x, position2.y, position2.z)                      },
@@ -420,7 +402,7 @@ void Object3d::UpdateLocalMatrix(std::string_view origin)
 
 void Object3d::UpdateWorldMatrix(bool force)
 {
-	if (!(type & ObjectType_HasBody) || force)
+	if (parentSync && (!(type & ObjectType_HasBody) || force))
 	{
 		if (parent && !(parent->type & ObjectType_Scene))
 			matrixWorld = parent->matrixWorld * matrix;

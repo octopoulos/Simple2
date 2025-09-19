@@ -1,6 +1,6 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-09-14
+// @version 2025-09-15
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
@@ -423,6 +423,7 @@ void RubikCube::SetPhysics(PhysicsWorld* physics)
 		auto mesh = Mesh::SharedPtr(cubie);
 		mesh->CreateShapeBody(physics, ShapeType_Box, 1.0f);
 		mesh->body->enabled = body->enabled;
+		mesh->parentSync    = false;
 	}
 }
 
