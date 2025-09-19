@@ -1,4 +1,4 @@
-// @version 2025-09-14
+// @version 2025-09-15
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -20,18 +20,15 @@
 #endif // BX_PLATFORM_EMSCRIPTEN
 
 #include "entry_p.h"
-#include "cmd.h"
 #include "input.h"
 
 extern "C" int32_t _main_(int32_t _argc, char** _argv);
 
 namespace entry
 {
-static uint32_t s_debug  = BGFX_DEBUG_NONE;
-static uint32_t s_reset  = BGFX_RESET_NONE;
-static uint32_t s_width  = ENTRY_DEFAULT_WIDTH;
-static uint32_t s_height = ENTRY_DEFAULT_HEIGHT;
-static bool     s_exit   = false;
+static uint32_t s_debug = BGFX_DEBUG_NONE;
+static uint32_t s_reset = BGFX_RESET_NONE;
+static bool     s_exit  = false;
 
 static bx::FileReaderI* s_fileReader = nullptr;
 static bx::FileWriterI* s_fileWriter = nullptr;
@@ -258,38 +255,6 @@ const char* getName(Key::Enum _key)
 	return s_keyName[_key];
 }
 
-char keyToAscii(Key::Enum _key, uint8_t _modifiers)
-{
-	const bool isAscii = (Key::Key0 <= _key && _key <= Key::KeyZ) || (Key::Esc <= _key && _key <= Key::Minus);
-	if (!isAscii) return '\0';
-
-	const bool isNumber = (Key::Key0 <= _key && _key <= Key::Key9);
-	if (isNumber) return '0' + char(_key - Key::Key0);
-
-	enum
-	{
-		ShiftMask = Modifier::LeftShift | Modifier::RightShift
-	};
-	const bool shift = !!(_modifiers & ShiftMask);
-
-	const bool isChar = (Key::KeyA <= _key && _key <= Key::KeyZ);
-	if (isChar) return (shift ? 'A' : 'a') + char(_key - Key::KeyA);
-
-	switch (_key)
-	{
-	case Key::Esc: return 0x1b;
-	case Key::Return: return '\n';
-	case Key::Tab: return '\t';
-	case Key::Space: return ' ';
-	case Key::Backspace: return 0x08;
-	case Key::Equals: return shift ? '+' : '=';
-	case Key::Minus: return shift ? '_' : '-';
-	default: break;
-	}
-
-	return '\0';
-}
-
 bool setOrToggle(uint32_t& _flags, const char* _name, uint32_t _bit, int _first, int _argc, char const* const* _argv)
 {
 	if (0 == bx::strCmp(_argv[_first], _name))
@@ -314,16 +279,6 @@ bool setOrToggle(uint32_t& _flags, const char* _name, uint32_t _bit, int _first,
 
 	return false;
 }
-
-// FIXME!!
-static const InputBinding s_bindings[] = {
-	{ entry::Key::F2 , entry::Modifier::None, 1, nullptr, "mouselock 1"    },
-	{ entry::Key::F8 , entry::Modifier::None, 1, nullptr, "graphics msaa"  },
-	{ entry::Key::F9 , entry::Modifier::None, 1, nullptr, "graphics flush" },
-	{ entry::Key::F10, entry::Modifier::None, 1, nullptr, "graphics hidpi" },
-
-	INPUT_BINDING_END
-};
 
 #if BX_PLATFORM_EMSCRIPTEN
 static AppI* s_app;
@@ -355,45 +310,6 @@ static AppI* getNextWrap(AppI* _app)
 	AppI* next = _app->getNext();
 	if (next) return next;
 	return getFirstApp();
-}
-
-int cmdApp(CmdContext* /*_context*/, void* /*_userData*/, int _argc, char const* const* _argv)
-{
-	if (0 == bx::strCmp(_argv[1], "restart"))
-	{
-		if (2 == _argc)
-		{
-			bx::strCopy(s_restartArgs, BX_COUNTOF(s_restartArgs), getCurrentApp()->getName());
-			return bx::kExitSuccess;
-		}
-
-		if (0 == bx::strCmp(_argv[2], "next"))
-		{
-			AppI* next = getNextWrap(getCurrentApp());
-			bx::strCopy(s_restartArgs, BX_COUNTOF(s_restartArgs), next->getName());
-			return bx::kExitSuccess;
-		}
-		else if (0 == bx::strCmp(_argv[2], "prev"))
-		{
-			AppI* prev = getCurrentApp();
-			for (AppI* app = getNextWrap(prev); app != getCurrentApp(); app = getNextWrap(app))
-				prev = app;
-
-			bx::strCopy(s_restartArgs, BX_COUNTOF(s_restartArgs), prev->getName());
-			return bx::kExitSuccess;
-		}
-
-		for (AppI* app = getFirstApp(); app; app = app->getNext())
-		{
-			if (0 == bx::strCmp(_argv[2], app->getName()))
-			{
-				bx::strCopy(s_restartArgs, BX_COUNTOF(s_restartArgs), app->getName());
-				return bx::kExitSuccess;
-			}
-		}
-	}
-
-	return bx::kExitFailure;
 }
 
 struct AppInternal
@@ -481,10 +397,10 @@ uint32_t getNumApps()
 
 int runApp(AppI* _app, int _argc, const char* const* _argv)
 {
-	ui::Log("entry/runApp: {}x{} {}x{}", s_width, s_height, xsettings.windowSize[0], xsettings.windowSize[1]);
-	setWindowSize(kDefaultWindowHandle, s_width, s_height);
+	ui::Log("entry/runApp: {}x{}", xsettings.windowSize[0], xsettings.windowSize[1]);
+	setWindowSize(kDefaultWindowHandle, xsettings.windowSize[0], xsettings.windowSize[1]);
 
-	if (_app->init(_argc, _argv, s_width, s_height))
+	if (_app->init(_argc, _argv, xsettings.windowSize[0], xsettings.windowSize[1]))
 	{
 		bgfx::frame();
 
@@ -510,9 +426,6 @@ void EntryBegin(const char* name)
 	InitGameSettings();
 	LoadGameSettings();
 	LoadGameSettings(xsettings.gameId);
-
-	s_width  = xsettings.windowSize[0];
-	s_height = xsettings.windowSize[1];
 }
 
 void EntryEnd()
@@ -528,6 +441,44 @@ void ExitApp()
 }
 
 const char* GetEntryName() { return entryName.c_str(); }
+
+void RestartApp(int dir, const char* name)
+{
+	switch (dir)
+	{
+	case -1:
+	{
+		AppI* prev = getCurrentApp();
+		for (AppI* app = getNextWrap(prev); app != getCurrentApp(); app = getNextWrap(app))
+			prev = app;
+
+		bx::strCopy(s_restartArgs, BX_COUNTOF(s_restartArgs), prev->getName());
+		break;
+	}
+	case 0:
+		bx::strCopy(s_restartArgs, BX_COUNTOF(s_restartArgs), getCurrentApp()->getName());
+		break;
+	case 1:
+	{
+		AppI* next = getNextWrap(getCurrentApp());
+		bx::strCopy(s_restartArgs, BX_COUNTOF(s_restartArgs), next->getName());
+		break;
+	}
+	default:
+		for (AppI* app = getFirstApp(); app; app = app->getNext())
+		{
+			if (0 == bx::strCmp(name, app->getName()))
+			{
+				bx::strCopy(s_restartArgs, BX_COUNTOF(s_restartArgs), app->getName());
+				break;
+			}
+		}
+		break;
+	}
+
+	ui::Log("restartArgs={}", s_restartArgs);
+	ExitApp();
+}
 
 static int32_t sortApp(const void* _lhs, const void* _rhs)
 {
@@ -574,9 +525,6 @@ int main(int _argc, const char* const* _argv)
 	s_fileReader = BX_NEW(g_allocator, FileReader);
 	s_fileWriter = BX_NEW(g_allocator, FileWriter);
 
-	cmdInit();
-	cmdAdd("app", cmdApp);
-
 	inputInit();
 
 	bx::FilePath fp(_argv[0]);
@@ -594,23 +542,20 @@ int main(int _argc, const char* const* _argv)
 
 restart:
 	AppI* selected = nullptr;
+	s_exit         = false;
 
 	for (AppI* app = getFirstApp(); app; app = app->getNext())
 	{
 		if (!selected && !bx::strFindI(app->getName(), find).isEmpty())
+		{
 			selected = app;
-#if 0
-			DBG("%c %s, %s"
-				, app == selected ? '>' : ' '
-				, app->getName()
-				, app->getDescription()
-				);
-#endif // 0
+			break;
+		}
 	}
 
 	int32_t result   = bx::kExitSuccess;
 	s_restartArgs[0] = '\0';
-	if (0 == s_numApps)
+	if (!s_numApps)
 		result = ::_main_(_argc, (char**)_argv);
 	else
 		result = runApp(getCurrentApp(selected), _argc, _argv);
@@ -624,11 +569,9 @@ restart:
 	setCurrentDir("");
 
 	inputShutdown();
-	cmdShutdown();
 
 	bx::deleteObject(g_allocator, s_fileReader);
 	s_fileReader = nullptr;
-
 	bx::deleteObject(g_allocator, s_fileWriter);
 	s_fileWriter = nullptr;
 
@@ -743,7 +686,7 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 				handle  = size->m_handle;
 				_width  = width;
 				_height = height;
-				BX_TRACE("Window resize event: %d: %dx%d", handle, _width, _height);
+				BX_TRACE("Window resize event: %d: %dx%d dpr=%d", handle, _width, _height, xsettings.dpr);
 				ui::Log("processEvents/Event::Size: {}: {}x{}", (void*)&handle, _width, _height);
 				needReset = true;
 			}
@@ -776,10 +719,6 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 	}
 
 	_debug = s_debug;
-
-	s_width  = _width;
-	s_height = _height;
-
 	return s_exit;
 }
 
@@ -941,7 +880,6 @@ bool processWindowEvents(WindowState& _state, uint32_t& _debug, uint32_t& _reset
 	}
 
 	_debug = s_debug;
-
 	return s_exit;
 }
 

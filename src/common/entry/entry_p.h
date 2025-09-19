@@ -1,4 +1,4 @@
-// @version 2025-07-25
+// @version 2025-09-15
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -82,8 +82,6 @@ struct TinyStlAllocator
 };
 
 int main(int _argc, const char* const* _argv);
-
-char keyToAscii(Key::Enum _key, uint8_t _modifiers);
 
 struct Event
 {

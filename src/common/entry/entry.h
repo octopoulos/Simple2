@@ -1,4 +1,4 @@
-// @version 2025-09-14
+// @version 2025-09-15
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -444,5 +444,9 @@ void ExitApp();
 
 ///
 const char* GetEntryName();
+
+/// Restart the app
+/// @param dir: -1: prev, 0: current, 1: next, 2: find name
+void RestartApp(int dir, const char* name = nullptr);
 
 } // namespace entry

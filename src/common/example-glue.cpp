@@ -1,4 +1,4 @@
-// @version 2025-08-10
+// @version 2025-09-15
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -6,14 +6,13 @@
 
 #include "stdafx.h"
 #include "imgui/imgui.h"
-#include "entry/entry.h"
-#include "entry/cmd.h"
 #include "entry/dialog.h"
+#include "entry/entry.h"
 #include "ui/xsettings.h"
 
+#include <bx/math.h>
 #include <bx/string.h>
 #include <bx/timer.h>
-#include <bx/math.h>
 
 struct SampleData
 {
@@ -168,11 +167,7 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 		}
 
 		if (1 < num && ImGui::Combo("Example", &current, items, num))
-		{
-			char command[1024];
-			bx::snprintf(command, BX_COUNTOF(command), "app restart %s", items[current]);
-			cmdExec(command);
-		}
+			entry::RestartApp(2, items[current]);
 
 		const bgfx::Caps* caps = bgfx::getCaps();
 		if (0 != (caps->supported & BGFX_CAPS_GRAPHICS_DEBUGGER))
@@ -183,22 +178,18 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(3.0f, 3.0f));
 
-		if (ImGui::Button(ICON_FA_REPEAT " Restart"))
-			cmdExec("app restart");
+		if (ImGui::Button(ICON_FA_REPEAT " Restart")) entry::RestartApp(0);
 
 		if (1 < entry::getNumApps())
 		{
 			ImGui::SameLine();
-			if (ImGui::Button(ICON_KI_PREVIOUS " Prev"))
-				cmdExec("app restart prev");
-
+			if (ImGui::Button(ICON_KI_PREVIOUS " Prev")) entry::RestartApp(-1);
 			ImGui::SameLine();
-			if (ImGui::Button(ICON_KI_NEXT " Next"))
-				cmdExec("app restart next");
+			if (ImGui::Button(ICON_KI_NEXT " Next")) entry::RestartApp(1);
 		}
 
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_KI_EXIT " Exit")) cmdExec("exit");
+		if (ImGui::Button(ICON_KI_EXIT " Exit")) entry::ExitApp();
 
 		ImGui::SameLine();
 		s_showStats ^= ImGui::Button(ICON_FA_BAR_CHART);
@@ -222,7 +213,7 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 			if (supportedRenderers[ii] == caps->rendererType) current = ii;
 		}
 
-		if (ImGui::Combo("Renderer", &current, items, num)) cmdExec("app restart");
+		if (ImGui::Combo("Renderer", &current, items, num)) RestartApp(0);
 
 		num = caps->numGPUs;
 		if (0 != num)
@@ -242,7 +233,7 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 					current = ii;
 			}
 
-			if (ImGui::Combo("GPU", &current, items, num)) cmdExec("app restart");
+			if (ImGui::Combo("GPU", &current, items, num)) RestartApp(0);
 		}
 	}
 #else
