@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-09-14
+// @version 2025-09-16
 
 #pragma once
 
@@ -103,6 +103,7 @@ struct XSettings
 	float bottom;      ///< remove object if drops below this
 	bool  bulletDebug; ///< bullet debug draw
 	bool  physPaused;  ///< paused physics
+	float rayLength;   ///< ray max distance
 
 	// [render]
 	float    cameraAt[3];  ///< camera lookAt
@@ -110,6 +111,7 @@ struct XSettings
 	uint32_t debug;        ///< bgfx: debug
 	float    distance;     ///< distance between camera and cursor
 	bool     fixedView;    ///< don't move the view with the mouse
+	float    fov;          ///< field of view
 	bool     gridDraw;     ///< draw grid?
 	int      gridSize;     ///< number of grid divisions
 	bool     instancing;   ///< use mesh instancing

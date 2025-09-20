@@ -77,7 +77,9 @@ struct MeshState
 
 using sMesh = std::shared_ptr<class Mesh>;
 
-class Mesh : public Object3d
+class Mesh
+    : public Object3d
+    , public std::enable_shared_from_this<Mesh>
 {
 public:
 	uBody                     body      = {};            ///< one body for the whole mesh

@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-09-11
+// @version 2025-09-16
 
 #pragma once
 
@@ -21,7 +21,7 @@ enum Popups_ : int
 	Popup_Any         = Popup_Add | Popup_AddGeometry | Popup_AddMap | Popup_AddMesh | Popup_Delete | Popup_Transform,
 };
 
-class App
+class App : public std::enable_shared_from_this<App>
 {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// INIT
@@ -32,7 +32,7 @@ public:
 
 	~App() { Destroy(); }
 
-	int  Initialize(std::shared_ptr<App>& app);
+	int  Initialize();
 	void Destroy();
 
 	PhysicsWorld* GetPhysics() { return physics.get(); }

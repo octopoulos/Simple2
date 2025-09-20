@@ -153,7 +153,7 @@ void Camera::UpdateViewProjection(uint8_t viewId, float fscreenX, float fscreenY
 		const float zoomY = fscreenY * xsettings.orthoZoom;
 		bx::mtxOrtho(proj, -zoomX, zoomX, -zoomY, zoomY, -1000.0f, 1000.0f, 0.0f, homoDepth);
 	}
-	else bx::mtxProj(proj, 60.0f, fscreenX / fscreenY, 0.1f, 2000.0f, homoDepth);
+	else bx::mtxProj(proj, xsettings.fov, fscreenX / fscreenY, 0.1f, 2000.0f, homoDepth);
 
 	bgfx::setViewTransform(0, view, proj);
 }

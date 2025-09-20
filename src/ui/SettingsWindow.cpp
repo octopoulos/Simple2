@@ -147,6 +147,7 @@ public:
 			AddDragFloat(1, "bottom", "Bottom");
 			AddCheckbox(0, "physPaused", "", "Paused");
 			AddCheckbox(0, "bulletDebug", "", "Show Body Shapes");
+			AddDragFloat(1, "rayLength", "Ray Max Distance");
 			END_COLLAPSE();
 		}
 

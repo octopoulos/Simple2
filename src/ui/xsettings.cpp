@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-09-14
+// @version 2025-09-16
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -59,6 +59,7 @@ static std::vector<Config> configs = {
 	X_FLOAT  (XSettings, physics, 0, bottom     , -100.0f, -1000.0f, 0.0f),
 	X_BOOL   (XSettings, physics, 0, bulletDebug, false),
 	X_BOOL   (XSettings, physics, 0, physPaused , false),
+	X_FLOAT  (XSettings, physics, 0, rayLength  , 2000.0f, 0.0f, -1.0f),
 
 	// [render]
 	X_FLOATS (XSettings, render, 0, cameraAt  , "0.0|0.0|0.0", -100.0f, 100.0f, 3),
@@ -66,6 +67,7 @@ static std::vector<Config> configs = {
 	X_INT    (XSettings, render, 0, debug     , 0, 0, -1),
 	X_FLOAT  (XSettings, render, 0, distance  , 10.0f, 0.50f, 100.0f),
 	X_BOOL   (XSettings, render, 0, fixedView , true),
+	X_FLOAT  (XSettings, render, 0, fov       , 60.0f, 1.0f, 180.0f),
 	X_BOOL   (XSettings, render, 0, gridDraw  , true),
 	X_INT    (XSettings, render, 0, gridSize  , 50, 1, 500),
 	X_BOOL   (XSettings, render, 0, instancing, true),

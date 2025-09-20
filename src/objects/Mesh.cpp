@@ -63,6 +63,10 @@ void Mesh::CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, con
 	// quicker path
 	else body->CreateBody(mass, GlmToBullet(position), GlmToBullet(quaternion));
 
+	// 3) data for raycasting
+	if (auto& sbody = body->body)
+		sbody->setUserPointer(this);
+
 	type |= ObjectType_HasBody;
 }
 

@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-09-14
+// @version 2025-09-16
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -64,7 +64,7 @@ void App::Destroy()
 	BGFX_DESTROY(uTime);
 }
 
-int App::Initialize(std::shared_ptr<App>& app)
+int App::Initialize()
 {
 	// 1) app directory
 	ui::Log("App::Initialize");
@@ -75,7 +75,8 @@ int App::Initialize(std::shared_ptr<App>& app)
 		InitializeImGui();
 		ImGui::LoadIniSettingsFromDisk(imguiPath.string().c_str());
 
-		ui::ListWindows(app);
+		auto appPtr = shared_from_this();
+		ui::ListWindows(appPtr);
 		ui::UpdateTheme();
 	}
 
@@ -555,7 +556,7 @@ public:
 		// 3) app
 		{
 			app = std::make_shared<App>();
-			app->Initialize(app);
+			app->Initialize();
 			app->entryReset = &xsettings.reset;
 		}
 
