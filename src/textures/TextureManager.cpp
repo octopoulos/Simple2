@@ -1,6 +1,6 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-16
 
 #include "stdafx.h"
 #include "textures/TextureManager.h"
@@ -220,8 +220,10 @@ bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 	return texture;
 }
 
-void TextureManager::ShowTable()
+void TextureManager::ShowInfoTable(bool showTitle) const
 {
+	if (showTitle) ImGui::TextUnformatted("Textures");
+
 	if (ImGui::BeginTable("2ways", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti))
 	{
 		const float aWidth = ImGui::CalcTextSize("A").x;

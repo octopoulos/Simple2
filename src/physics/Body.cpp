@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-16
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -471,17 +471,10 @@ int Body::Serialize(fmt::memory_buffer& outString, int depth, int bounds) const
 	return keyId;
 }
 
-void Body::ShowSettings(bool isPopup, int show)
+void Body::ShowInfoTable(bool showTitle) const
 {
-	int mode = 3;
-	if (isPopup) mode |= 4;
+	if (showTitle) ImGui::TextUnformatted("Body");
 
-	ui::AddCheckbox(mode, ".enabled", "", "Enabled", &enabled);
-	ui::AddDragFloat(mode, ".mass", "Mass", &mass);
-}
-
-void Body::ShowTable()
-{
 	// clang-format off
 	ui::ShowTable({
 		{ "enabled"  , BoolString(enabled)                                    },
@@ -489,6 +482,15 @@ void Body::ShowTable()
 		{ "shapeType", fmt::format("{}: {}", shapeType, ShapeName(shapeType)) },
 	});
 	// clang-format on
+}
+
+void Body::ShowSettings(bool isPopup, int show)
+{
+	int mode = 3;
+	if (isPopup) mode |= 4;
+
+	ui::AddCheckbox(mode, ".enabled", "", "Enabled", &enabled);
+	ui::AddDragFloat(mode, ".mass", "Mass", &mass);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

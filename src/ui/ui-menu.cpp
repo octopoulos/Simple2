@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-09-14
+// @version 2025-09-16
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -455,35 +455,35 @@ void App::VarsUi()
 		if (ImGui::CollapsingHeader("Camera", SHOW_TREE(Show_Camera)))
 		{
 			tree |= Show_Camera;
-			camera->ShowTable();
+			camera->ShowInfoTable(false);
 		}
 
 		// cursor
 		if (ImGui::CollapsingHeader("Cursor", SHOW_TREE(Show_Cursor)))
 		{
 			tree |= Show_Cursor;
-			cursor->ShowTable();
+			cursor->ShowInfoTable(false);
 		}
 
 		// materials
 		if (ImGui::CollapsingHeader("Materials", SHOW_TREE(Show_Materials)))
 		{
 			tree |= Show_Materials;
-			GetMaterialManager().ShowTable();
+			GetMaterialManager().ShowInfoTable(false);
 		}
 
 		// selected object
 		if (ImGui::CollapsingHeader("Selected Object", SHOW_TREE(Show_SelectedObj)))
 		{
 			tree |= Show_SelectedObj;
-			if (auto object = selectWeak.lock()) object->ShowTable();
+			if (auto object = selectWeak.lock()) object->ShowInfoTable();
 		}
 
 		// textures
 		if (ImGui::CollapsingHeader("Textures", SHOW_TREE(Show_Textures)))
 		{
 			tree |= Show_Textures;
-			GetTextureManager().ShowTable();
+			GetTextureManager().ShowInfoTable(false);
 		}
 
 		// vars

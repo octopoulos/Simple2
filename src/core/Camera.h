@@ -1,6 +1,6 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-09-01
+// @version 2025-09-16
 
 #pragma once
 
@@ -84,7 +84,7 @@ public:
 	}
 
 	/// Show info table in ImGui
-	void ShowTable();
+	void ShowInfoTable(bool showTitle = true) const override;
 
 	/// Update smoothed camera state
 	void Update(float delta);

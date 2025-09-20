@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-09-15
+// @version 2025-09-16
 
 #pragma once
 
@@ -151,12 +151,12 @@ public:
 	/// Serialize for JSON output
 	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3, bool addChildren = true) const;
 
+	/// Show info table in ImGui
+	virtual void ShowInfoTable(bool showTitle = true) const;
+
 	/// Show settings in ImGui
 	/// @param show: ShowObjects_
 	virtual void ShowSettings(bool isPopup, int show);
-
-	/// Show info table in ImGui
-	virtual void ShowTable() const;
 
 	/// Synchronize physics transform
 	virtual int SynchronizePhysics();

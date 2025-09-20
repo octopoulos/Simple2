@@ -1,6 +1,6 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-09-15
+// @version 2025-09-16
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
@@ -427,10 +427,14 @@ void RubikCube::SetPhysics(PhysicsWorld* physics)
 	}
 }
 
-void RubikCube::ShowTable() const
+void RubikCube::ShowInfoTable(bool showTitle) const
 {
-	Mesh::ShowTable();
+	Mesh::ShowInfoTable(showTitle);
+	if (showTitle) ImGui::TextUnformatted("RubikCube");
+
+	// clang-format off
 	ui::ShowTable({
-	    { "cubeSize", std::to_string(cubeSize) },
+		{ "cubeSize", std::to_string(cubeSize) },
 	});
+	// clang-format on
 }

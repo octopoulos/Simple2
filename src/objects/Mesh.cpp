@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-09-15
+// @version 2025-09-16
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -266,6 +266,28 @@ void Mesh::SetPhysics(PhysicsWorld* physics)
 {
 }
 
+void Mesh::ShowInfoTable(bool showTitle) const
+{
+	Object3d::ShowInfoTable(showTitle);
+	if (showTitle) ImGui::TextUnformatted("Mesh");
+
+	// clang-format off
+	ui::ShowTable({
+		{ "groups.size", std::to_string(groups.size())   },
+		{ "load"       , std::to_string(load)            },
+		{ "modelName"  , modelName                       },
+		{ "nextKeys"   , std::to_string(nextKeys.size()) },
+	});
+	// clang-format on
+
+	if (body) body->ShowInfoTable();
+	if (geometry) geometry->ShowInfoTable();
+	if (material0)
+		material0->ShowInfoTable();
+	else if (material)
+		material->ShowInfoTable();
+}
+
 void Mesh::ShowSettings(bool isPopup, int show)
 {
 	int mode = 3;
@@ -295,27 +317,6 @@ void Mesh::ShowSettings(bool isPopup, int show)
 		else if (material)
 			material->ShowSettings(isPopup, show);
 	}
-}
-
-void Mesh::ShowTable() const
-{
-	Object3d::ShowTable();
-
-	// clang-format off
-	ui::ShowTable({
-		{ "groups.size", std::to_string(groups.size())   },
-		{ "load"       , std::to_string(load)            },
-		{ "modelName"  , modelName                       },
-		{ "nextKeys"   , std::to_string(nextKeys.size()) },
-	});
-	// clang-format on
-
-	if (body) body->ShowTable();
-	if (geometry) geometry->ShowTable();
-	if (material0)
-		material0->ShowTable();
-	else if (material)
-		material->ShowTable();
 }
 
 void Mesh::Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, uint64_t state) const

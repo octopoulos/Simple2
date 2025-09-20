@@ -1,6 +1,6 @@
 // MaterialManager.h
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-16
 
 #pragma once
 
@@ -33,7 +33,7 @@ public:
 	void PrintMaterials();
 
 	/// Show materials in ImGui
-	void ShowTable();
+	void ShowInfoTable(bool showTitle = true) const;
 };
 
 MaterialManager& GetMaterialManager();

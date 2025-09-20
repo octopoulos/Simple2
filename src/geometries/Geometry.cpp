@@ -1,6 +1,6 @@
 // Geometry.cpp
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-16
 
 #include "stdafx.h"
 #include "geometries/Geometry.h"
@@ -40,18 +40,10 @@ int Geometry::Serialize(fmt::memory_buffer& outString, int depth, int bounds) co
 	return keyId;
 }
 
-void Geometry::ShowSettings(bool isPopup, int show)
+void Geometry::ShowInfoTable(bool showTitle) const
 {
-	int mode = 3;
-	if (isPopup) mode |= 4;
+	if (showTitle) ImGui::TextUnformatted("Geometry");
 
-	ui::AddInputText(mode, ".args", "Args", 256, 0, &args);
-	ui::AddDragFloat(mode, ".radius", "Radius", &radius);
-	ui::AddSliderInt(mode, ".type", "Type", &type, 1, GeometryType_None, GeometryType_Count - 1);
-}
-
-void Geometry::ShowTable() const
-{
 	// clang-format off
 	ui::ShowTable({
 		{ "aabb"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", aabb.x(), aabb.y(), aabb.z()) },
@@ -61,6 +53,16 @@ void Geometry::ShowTable() const
 		{ "type"  , std::to_string(type)                                              },
 	});
 	// clang-format on
+}
+
+void Geometry::ShowSettings(bool isPopup, int show)
+{
+	int mode = 3;
+	if (isPopup) mode |= 4;
+
+	ui::AddInputText(mode, ".args", "Args", 256, 0, &args);
+	ui::AddDragFloat(mode, ".radius", "Radius", &radius);
+	ui::AddSliderInt(mode, ".type", "Type", &type, 1, GeometryType_None, GeometryType_Count - 1);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

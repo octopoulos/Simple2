@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-09-14
+// @version 2025-09-16
 
 #pragma once
 
@@ -143,12 +143,12 @@ public:
 	/// Pass the physics object for possible initialization
 	virtual void SetPhysics(PhysicsWorld* physics);
 
+	/// Show info table in ImGui
+	virtual void ShowInfoTable(bool showTitle = true) const override;
+
 	/// Show settings in ImGui
 	/// @param show: ShowObjects_
 	virtual void ShowSettings(bool isPopup, int show) override;
-
-	/// Show info table in ImGui
-	virtual void ShowTable() const override;
 
 	/// Submit for render pass
 	void Submit(uint16_t id, bgfx::ProgramHandle program, const float* mtx, uint64_t state) const;

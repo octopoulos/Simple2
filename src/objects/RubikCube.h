@@ -1,6 +1,6 @@
 // RubikCube.h
 // @author octopoulos
-// @version 2025-09-14
+// @version 2025-09-16
 
 #pragma once
 
@@ -66,5 +66,5 @@ public:
 	}
 
 	/// Show info table in ImGui
-	virtual void ShowTable() const override;
+	virtual void ShowInfoTable(bool showTitle = true) const override;
 };

@@ -1,6 +1,6 @@
 // MaterialManager.cpp
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-16
 
 #include "stdafx.h"
 #include "materials/MaterialManager.h"
@@ -56,8 +56,10 @@ void MaterialManager::PrintMaterials()
 		ui::Log("{:2}: {:2} : {}", ++i, material.use_count(), name);
 }
 
-void MaterialManager::ShowTable()
+void MaterialManager::ShowInfoTable(bool showTitle) const
 {
+	if (showTitle) ImGui::TextUnformatted("Materials");
+
 	if (ImGui::BeginTable("2ways", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
 	{
 		const float countWidth = ImGui::CalcTextSize("Count.").x;

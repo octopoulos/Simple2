@@ -1,6 +1,6 @@
 // TextureManager.h
 // @author octopoulos
-// @version 2025-09-02
+// @version 2025-09-16
 
 #pragma once
 
@@ -54,7 +54,7 @@ public:
 	bgfx::TextureHandle LoadTexture(std::string_view name);
 
 	/// Show textures in ImGui
-	void ShowTable();
+	void ShowInfoTable(bool showTitle = true) const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

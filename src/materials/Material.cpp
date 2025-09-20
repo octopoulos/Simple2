@@ -1,6 +1,6 @@
 // Material.cpp
 // @author octopoulos
-// @version 2025-09-13
+// @version 2025-09-16
 
 #include "stdafx.h"
 #include "materials/Material.h"
@@ -163,6 +163,17 @@ int Material::Serialize(fmt::memory_buffer& outString, int depth, int bounds)
 	return keyId;
 }
 
+void Material::ShowInfoTable(bool showTitle) const
+{
+	if (showTitle) ImGui::TextUnformatted("Material");
+
+	// clang-format off
+	ui::ShowTable({
+		{ "state", std::to_string(state) },
+	});
+	// clang-format on
+}
+
 void Material::ShowSettings(bool isPopup, int show)
 {
 	int mode = 3;
@@ -189,13 +200,4 @@ void Material::ShowSettings(bool isPopup, int show)
 			}
 		}
 	}
-}
-
-void Material::ShowTable() const
-{
-	// clang-format off
-	ui::ShowTable({
-		{ "state", std::to_string(state) },
-	});
-	// clang-format on
 }

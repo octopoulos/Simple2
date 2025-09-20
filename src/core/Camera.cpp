@@ -1,6 +1,6 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-09-01
+// @version 2025-09-16
 
 #include "stdafx.h"
 #include "core/Camera.h"
@@ -93,8 +93,17 @@ int Camera::Serialize(fmt::memory_buffer& outString, int depth, int bounds, bool
 	return keyId;
 }
 
-void Camera::ShowTable()
+void Camera::SetOrthographic(const bx::Vec3& axis)
 {
+	pos2 = bx::mad(bx::normalize(axis), distance, target2);
+
+	xsettings.projection = Projection_Orthographic;
+}
+
+void Camera::ShowInfoTable(bool showTitle) const
+{
+	if (showTitle) ImGui::TextUnformatted("Camera");
+
 	// clang-format off
 	ui::ShowTable({
 		{ "follow"  , std::to_string(follow)                                                  },
@@ -109,13 +118,6 @@ void Camera::ShowTable()
 		{ "worldUp" , fmt::format("{:.2f}:{:.2f}:{:.2f}", worldUp.x, worldUp.y, worldUp.z)    },
 	});
 	// clang-format on
-}
-
-void Camera::SetOrthographic(const bx::Vec3& axis)
-{
-	pos2 = bx::mad(bx::normalize(axis), distance, target2);
-
-	xsettings.projection = Projection_Orthographic;
 }
 
 void Camera::Update(float delta)

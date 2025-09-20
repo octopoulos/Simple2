@@ -1,6 +1,6 @@
 // Material.h
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-16
 
 #pragma once
 
@@ -77,10 +77,10 @@ public:
 		roughnessFactor = roughness;
 	}
 
+	/// Show info table in ImGui
+	void ShowInfoTable(bool showTitle = true) const;
+
 	/// Show settings in ImGui
 	/// @param show: ShowObjects_
 	void ShowSettings(bool isPopup, int show);
-
-	/// Show info table in ImGui
-	void ShowTable() const;
 };
