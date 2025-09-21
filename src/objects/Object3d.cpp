@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-09-17
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -44,8 +44,9 @@ void Object3d::AddChild(sObject3d child)
 		if (!inserted) ui::LogWarning("AddChild: {} already exists", child->name);
 	}
 
-	child->id     = childInc;
-	child->parent = this;
+	child->id         = childInc;
+	child->parent     = this;
+	child->parentLink = !(type & (ObjectType_Container | ObjectType_Instance));
 	children.push_back(std::move(child));
 }
 
@@ -118,14 +119,14 @@ float Object3d::EaseFunction(double td)
 	// clang-format on
 }
 
-int Object3d::GetEase()
+int Object3d::GetEase() const
 {
 	if (type & ObjectType_Cursor) return xsettings.cursorEase;
 	if (type & (ObjectType_RubikCube | ObjectType_RubikNode)) return xsettings.rubikEase;
 	return Ease_None;
 }
 
-double Object3d::GetInterval(bool recalculate)
+double Object3d::GetInterval(bool recalculate) const
 {
 	// 1) manually set interval
 	if (!recalculate && interval > 0.0) return interval;
@@ -310,7 +311,7 @@ void Object3d::ShowInfoTable(bool showTitle) const
 		{ "name"       , name                                                                                            },
 		{ "names"      , std::to_string(names.size())                                                                    },
 		{ "parent"     , parent ? parent->name : ""                                                                      },
-		{ "parentSync" , BoolString(parentSync)                                                                          },
+		{ "parentLink" , BoolString(parentLink)                                                                          },
 		{ "position"   , fmt::format("{:.2f}:{:.2f}:{:.2f}", position.x, position.y, position.z)                         },
 		{ "position1"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", position1.x, position1.y, position1.z)                      },
 		{ "position2"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", position2.x, position2.y, position2.z)                      },
@@ -404,7 +405,7 @@ void Object3d::UpdateLocalMatrix(std::string_view origin)
 
 void Object3d::UpdateWorldMatrix(bool force)
 {
-	if (parentSync && (!(type & ObjectType_HasBody) || force))
+	if (parentLink && (!(type & ObjectType_HasBody) || force))
 	{
 		if (parent && !(parent->type & ObjectType_Scene))
 			matrixWorld = parent->matrixWorld * matrix;

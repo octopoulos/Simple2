@@ -1,4 +1,4 @@
-// fs_instancing.sc
+// fs_instance.sc
 
 $input v_color0
 

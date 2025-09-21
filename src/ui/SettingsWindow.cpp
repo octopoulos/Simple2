@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-09-11
+// @version 2025-09-17
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -142,12 +142,13 @@ public:
 		// PHYSICS
 		//////////
 
-		BEGIN_COLLAPSE("Physics", Show_Physics, 3)
+		BEGIN_COLLAPSE("Physics", Show_Physics, 5)
 		{
 			AddDragFloat(1, "bottom", "Bottom");
 			AddCheckbox(0, "physPaused", "", "Paused");
+			AddCheckbox(0, "picking", "", "Raycast picking");
+			AddDragFloat(1, "rayLength", "Ray Length");
 			AddCheckbox(0, "bulletDebug", "", "Show Body Shapes");
-			AddDragFloat(1, "rayLength", "Ray Max Distance");
 			END_COLLAPSE();
 		}
 

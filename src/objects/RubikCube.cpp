@@ -1,6 +1,6 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-09-17
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
@@ -420,10 +420,12 @@ void RubikCube::SetPhysics(PhysicsWorld* physics)
 
 	for (auto& cubie : children)
 	{
-		auto mesh = Mesh::SharedPtr(cubie);
-		mesh->CreateShapeBody(physics, ShapeType_Box, 1.0f);
-		mesh->body->enabled = body->enabled;
-		mesh->parentSync    = false;
+		if (auto mesh = Mesh::SharedPtr(cubie); !mesh->body)
+		{
+			mesh->CreateShapeBody(physics, ShapeType_Box, 1.0f);
+			mesh->body->enabled = body->enabled;
+			mesh->parentLink    = true;
+		}
 	}
 }
 

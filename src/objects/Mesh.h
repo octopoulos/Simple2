@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-09-17
 
 #pragma once
 
@@ -101,7 +101,7 @@ public:
 
 	virtual ~Mesh() override { Destroy(); }
 
-	/// Activate/deactivate physics
+	/// Activate/deactivate physics on itself + children
 	void ActivatePhysics(bool activate);
 
 	/// Make an instanced copy of itself => faster loading
@@ -120,7 +120,10 @@ public:
 	void Explode();
 
 	/// Get the transition interval
-	virtual double GetInterval(bool recalculate = false) override;
+	virtual double GetInterval(bool recalculate = false) const override;
+
+	/// Does the mesh have a body, and is it enabled?
+	bool HasBody(bool checkEnabled) const;
 
 	/// Queue a key
 	/// @param isQueue: key was the front of the queue => place it back in front

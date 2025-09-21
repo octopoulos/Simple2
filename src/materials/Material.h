@@ -1,6 +1,6 @@
 // Material.h
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-09-17
 
 #pragma once
 
@@ -22,8 +22,8 @@ public:
 	std::string         fsName                = "";                  ///< fragment shader
 	std::string         name                  = "";                  ///< material name
 	bgfx::ProgramHandle program               = BGFX_INVALID_HANDLE; ///< compiled program
-	std::string         vsName                = "";                  ///< vertex shader
 	uint64_t            state                 = 0;                   ///< if !=0: override default state
+	std::string         vsName                = "";                  ///< vertex shader
 	// modes
 	float               alphaCutoff           = 0.5f;             ///< alpha cutoff for Mask mode
 	int                 alphaMode             = AlphaMode_Opaque; ///< transparency mode

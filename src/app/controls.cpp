@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-09-14
+// @version 2025-09-17
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -78,7 +78,7 @@ void App::DeleteSelected()
 {
 	if (auto target = selectWeak.lock())
 	{
-		if (!(target->type & (ObjectType_Cursor | ObjectType_Map | ObjectType_Scene)))
+		if (!(target->type & (ObjectType_Container | ObjectType_Cursor)))
 		{
 			if (auto* parent = target->parent; parent->RemoveChild(target))
 			{

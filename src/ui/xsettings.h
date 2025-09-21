@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-09-17
 
 #pragma once
 
@@ -103,6 +103,7 @@ struct XSettings
 	float bottom;      ///< remove object if drops below this
 	bool  bulletDebug; ///< bullet debug draw
 	bool  physPaused;  ///< paused physics
+	bool  picking;     ///< raycast picking
 	float rayLength;   ///< ray max distance
 
 	// [render]

@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-09-11
+// @version 2025-09-17
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -315,130 +315,125 @@ void Scene::Clear()
 
 void App::PickObject(int mouseX, int mouseY)
 {
-	return;
-    ui::Log("PickObject: Mouse ({}, {})", mouseX, mouseY);
+	if (!xsettings.picking) return;
+	ui::Log("PickObject: Mouse ({}, {})", mouseX, mouseY);
 
-    // Get screen dimensions from xsettings
-    const float screenX = static_cast<float>(xsettings.windowSize[0]);
-    const float screenY = static_cast<float>(xsettings.windowSize[1]);
-    if (screenX <= 0 || screenY <= 0)
-    {
-        ui::LogError("PickObject: Invalid window size ({}, {})", screenX, screenY);
-        return;
-    }
+	// Get screen dimensions from xsettings
+	const float screenX = static_cast<float>(xsettings.windowSize[0]);
+	const float screenY = static_cast<float>(xsettings.windowSize[1]);
+	if (screenX <= 0 || screenY <= 0)
+	{
+		ui::LogError("PickObject: Invalid window size ({}, {})", screenX, screenY);
+		return;
+	}
 
-    // 1) Convert mouse coords to normalized device coordinates (NDC: [-1, 1])
-    const float ndcX = (2.0f * mouseX) / screenX - 1.0f;
-    const float ndcY = 1.0f - (2.0f * mouseY) / screenY; // Flip Y (screen Y=0 is top)
-    ui::Log("PickObject: NDC ({:.2f}, {:.2f})", ndcX, ndcY);
+	// 1) Convert mouse coords to normalized device coordinates (NDC: [-1, 1])
+	const float ndcX = (2.0f * mouseX) / screenX - 1.0f;
+	const float ndcY = 1.0f - (2.0f * mouseY) / screenY; // Flip Y (screen Y=0 is top)
+	ui::Log("PickObject: NDC ({:.2f}, {:.2f})", ndcX, ndcY);
 
-    // 2) Get view and projection matrices from camera
-    float view[16];
-    camera->GetViewMatrix(view);
-    glm::mat4 viewMtx = glm::make_mat4(view);
+	// 2) Get view and projection matrices from camera
+	float view[16];
+	camera->GetViewMatrix(view);
+	glm::mat4 viewMtx = glm::make_mat4(view);
 
-    float proj[16];
-    const bool homoDepth = bgfx::getCaps()->homogeneousDepth;
-    if (xsettings.projection == Projection_Orthographic)
-    {
-        const float zoomX = screenX * xsettings.orthoZoom;
-        const float zoomY = screenY * xsettings.orthoZoom;
-        bx::mtxOrtho(proj, -zoomX, zoomX, -zoomY, zoomY, -1000.0f, 1000.0f, 0.0f, homoDepth);
-    }
-    else
-    {
-        bx::mtxProj(proj, xsettings.fov, screenX / screenY, 0.1f, 2000.0f, homoDepth);
-    }
-    glm::mat4 projMtx = glm::make_mat4(proj);
+	float      proj[16];
+	const bool homoDepth = bgfx::getCaps()->homogeneousDepth;
+	if (xsettings.projection == Projection_Orthographic)
+	{
+		const float zoomX = screenX * xsettings.orthoZoom;
+		const float zoomY = screenY * xsettings.orthoZoom;
+		bx::mtxOrtho(proj, -zoomX, zoomX, -zoomY, zoomY, -1000.0f, 1000.0f, 0.0f, homoDepth);
+	}
+	else
+	{
+		bx::mtxProj(proj, xsettings.fov, screenX / screenY, 0.1f, 2000.0f, homoDepth);
+	}
+	glm::mat4 projMtx = glm::make_mat4(proj);
 
-    // 3) Compute inverse view-projection matrix
-    glm::mat4 invViewProj = glm::inverse(projMtx * viewMtx);
+	// 3) Compute inverse view-projection matrix
+	glm::mat4 invViewProj = glm::inverse(projMtx * viewMtx);
 
-    // 4) Ray origin and direction in world space
-    glm::vec4 nearPoint = invViewProj * glm::vec4(ndcX, ndcY, -1.0f, 1.0f);
-    glm::vec4 farPoint = invViewProj * glm::vec4(ndcX, ndcY, 1.0f, 1.0f);
-    nearPoint /= nearPoint.w;
-    farPoint /= farPoint.w;
+	// 4) Ray origin and direction in world space
+	glm::vec4 nearPoint = invViewProj * glm::vec4(ndcX, ndcY, -1.0f, 1.0f);
+	glm::vec4 farPoint  = invViewProj * glm::vec4(ndcX, ndcY, 1.0f, 1.0f);
+	nearPoint /= nearPoint.w;
+	farPoint /= farPoint.w;
 
-    glm::vec3 rayOrigin = glm::vec3(nearPoint);
-    glm::vec3 rayDir = glm::normalize(glm::vec3(farPoint - nearPoint));
-    ui::Log("PickObject: Ray from ({:.2f}, {:.2f}, {:.2f}) dir ({:.2f}, {:.2f}, {:.2f})",
-            rayOrigin.x, rayOrigin.y, rayOrigin.z, rayDir.x, rayDir.y, rayDir.z);
+	glm::vec3 rayOrigin = glm::vec3(nearPoint);
+	glm::vec3 rayDir    = glm::normalize(glm::vec3(farPoint - nearPoint));
+	ui::Log("PickObject: Ray from ({:.2f}, {:.2f}, {:.2f}) dir ({:.2f}, {:.2f}, {:.2f})", rayOrigin.x, rayOrigin.y, rayOrigin.z, rayDir.x, rayDir.y, rayDir.z);
 
-    // 5) Perform Bullet raycast
-    btVector3 from = GlmToBullet(rayOrigin);
-    btVector3 to = GlmToBullet(rayOrigin + rayDir * xsettings.rayLength); // Configurable distance
-    auto* world = GetPhysics()->GetWorld();
-    ui::Log("PickObject: Physics world has {} objects", world->getNumCollisionObjects());
+	// 5) Perform Bullet raycast
+	btVector3 from  = GlmToBullet(rayOrigin);
+	btVector3 to    = GlmToBullet(rayOrigin + rayDir * xsettings.rayLength); // Configurable distance
+	auto*     world = GetPhysics()->GetWorld();
+	ui::Log("PickObject: Physics world has {} objects", world->getNumCollisionObjects());
 
-    // Update AABBs and pairs (like RaytestDemo)
-    world->updateAabbs();
-    world->computeOverlappingPairs();
+	// Update AABBs and pairs (like RaytestDemo)
+	world->updateAabbs();
+	world->computeOverlappingPairs();
 
-    btCollisionWorld::ClosestRayResultCallback rayCallback(from, to);
-    rayCallback.m_flags |= btTriangleRaycastCallback::kF_FilterBackfaces; // Filter backfaces
-    rayCallback.m_flags |= btTriangleRaycastCallback::kF_UseSubSimplexConvexCastRaytest; // More accurate raycast
-    world->rayTest(from, to, rayCallback);
+	btCollisionWorld::ClosestRayResultCallback rayCallback(from, to);
+	rayCallback.m_flags |= btTriangleRaycastCallback::kF_FilterBackfaces;                // Filter backfaces
+	rayCallback.m_flags |= btTriangleRaycastCallback::kF_UseSubSimplexConvexCastRaytest; // More accurate raycast
+	world->rayTest(from, to, rayCallback);
 
-    // Visualize ray (red if no hit, green if hit)
-    btVector3 color = rayCallback.hasHit() ? btVector3(0, 1, 0) : btVector3(1, 0, 0);
-    world->getDebugDrawer()->drawLine(from, to, color);
-    if (rayCallback.hasHit())
-    {
-        btVector3 hitPoint = from.lerp(to, rayCallback.m_closestHitFraction);
-        world->getDebugDrawer()->drawSphere(hitPoint, 0.1f, btVector3(0, 1, 0));
-        world->getDebugDrawer()->drawLine(hitPoint, hitPoint + rayCallback.m_hitNormalWorld, btVector3(0, 1, 0));
-    }
+	// Visualize ray (red if no hit, green if hit)
+	btVector3 color = rayCallback.hasHit() ? btVector3(0, 1, 0) : btVector3(1, 0, 0);
+	world->getDebugDrawer()->drawLine(from, to, color);
+	if (rayCallback.hasHit())
+	{
+		btVector3 hitPoint = from.lerp(to, rayCallback.m_closestHitFraction);
+		world->getDebugDrawer()->drawSphere(hitPoint, 0.1f, btVector3(0, 1, 0));
+		world->getDebugDrawer()->drawLine(hitPoint, hitPoint + rayCallback.m_hitNormalWorld, btVector3(0, 1, 0));
+	}
 
-    // 6) Process hit
-    if (rayCallback.hasHit())
-    {
-        const btCollisionObject* hitObject = rayCallback.m_collisionObject;
-        ui::Log("PickObject: Hit at ({:.2f}, {:.2f}, {:.2f})",
-                rayCallback.m_hitPointWorld.x(), rayCallback.m_hitPointWorld.y(), rayCallback.m_hitPointWorld.z());
+	// 6) Process hit
+	if (rayCallback.hasHit())
+	{
+		const btCollisionObject* hitObject = rayCallback.m_collisionObject;
+		ui::Log("PickObject: Hit at ({:.2f}, {:.2f}, {:.2f})", rayCallback.m_hitPointWorld.x(), rayCallback.m_hitPointWorld.y(), rayCallback.m_hitPointWorld.z());
 
-        if (void* userPtr = hitObject->getUserPointer())
-        {
-            Mesh* hitMesh = static_cast<Mesh*>(userPtr);
-            ui::Log("PickObject: userPointer = {}, type = {}, name = '{}'",
-                    (void*)hitMesh, hitMesh->type, hitMesh->name);
+		if (void* userPtr = hitObject->getUserPointer())
+		{
+			Mesh* hitMesh = static_cast<Mesh*>(userPtr);
+			ui::Log("PickObject: userPointer = {}, type = {}, name = '{}'", (void*)hitMesh, hitMesh->type, hitMesh->name);
 
-            if (hitMesh && (hitMesh->type & ObjectType_Mesh))
-            {
-                try
-                {
-                    sObject3d hitObj = hitMesh->shared_from_this();
-                    SelectObject(hitObj);
-                    camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(hitMesh->position));
-                    camera->Zoom();
-                    ui::Log("PickObject: Selected mesh '{}' at position ({:.2f}, {:.2f}, {:.2f})",
-                            hitMesh->name, hitMesh->position.x, hitMesh->position.y, hitMesh->position.z);
-                    ui::Log("PickObject: Camera target2 = ({:.2f}, {:.2f}, {:.2f})",
-                            camera->target2.x, camera->target2.y, camera->target2.z);
-                    return;
-                }
-                catch (const std::bad_weak_ptr& e)
-                {
-                    ui::LogError("PickObject: shared_from_this failed for mesh '{}'", hitMesh->name);
-                }
-            }
-            else
-            {
-                ui::Log("PickObject: Invalid mesh or type");
-            }
-        }
-        else
-        {
-            ui::Log("PickObject: No userPointer set");
-        }
-    }
-    else
-    {
-        ui::Log("PickObject: No hit");
-    }
+			if (hitMesh && (hitMesh->type & ObjectType_Mesh))
+			{
+				try
+				{
+					sObject3d hitObj = hitMesh->shared_from_this();
+					SelectObject(hitObj);
+					camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(hitMesh->position));
+					camera->Zoom();
+					ui::Log("PickObject: Selected mesh '{}' at position ({:.2f}, {:.2f}, {:.2f})", hitMesh->name, hitMesh->position.x, hitMesh->position.y, hitMesh->position.z);
+					ui::Log("PickObject: Camera target2 = ({:.2f}, {:.2f}, {:.2f})", camera->target2.x, camera->target2.y, camera->target2.z);
+					return;
+				}
+				catch (const std::bad_weak_ptr& e)
+				{
+					ui::LogError("PickObject: shared_from_this failed for mesh '{}'", hitMesh->name);
+				}
+			}
+			else
+			{
+				ui::Log("PickObject: Invalid mesh or type");
+			}
+		}
+		else
+		{
+			ui::Log("PickObject: No userPointer set");
+		}
+	}
+	else
+	{
+		ui::Log("PickObject: No hit");
+	}
 
-    // No valid hit, deselect
-    SelectObject(nullptr);
+	// No valid hit, deselect
+	SelectObject(nullptr);
 }
 
 void App::SelectObject(const sObject3d& obj, bool countIndex)
@@ -468,8 +463,10 @@ void App::SelectObject(const sObject3d& obj, bool countIndex)
 
 		if (auto mesh = Mesh::SharedPtr(obj))
 		{
+			std::string_view shaderName = ((mesh->type & ObjectType_Group) && (mesh->type & ObjectType_Instance)) ? "cursor_instance" : "cursor";
+
 			mesh->material0 = mesh->material;
-			mesh->material  = GetMaterialManager().GetMaterial("cursor");
+			mesh->material  = GetMaterialManager().GetMaterial(shaderName);
 			cursor->visible = false;
 		}
 

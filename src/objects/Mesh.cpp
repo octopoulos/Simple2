@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-09-17
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -20,11 +20,19 @@ constexpr uint64_t defaultState = 0
 
 void Mesh::ActivatePhysics(bool activate)
 {
+	// 1) itself
 	body->enabled = activate;
 	if (auto& sbody = body->body)
 	{
 		sbody->setActivationState(activate ? ACTIVE_TAG : DISABLE_SIMULATION);
 		sbody->activate(activate);
+	}
+
+	// 2) children
+	for (auto& child : children)
+	{
+		if (auto mesh = Mesh::SharedPtr(child, ObjectType_HasBody))
+			mesh->ActivatePhysics(activate);
 	}
 }
 
@@ -52,7 +60,7 @@ void Mesh::CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, con
 
 	// 2) create physical body
 	// child => get the position and rotation from the matrix
-	if (parent && !(parent->type & (ObjectType_Map | ObjectType_Scene)))
+	if (parent && !(parent->type & ObjectType_Container))
 	{
 		glm::vec3 positionW;
 		glm::quat quaternionW;
@@ -91,16 +99,13 @@ void Mesh::Destroy()
 void Mesh::Explode()
 {
 	ui::Log("Mesh:Explode");
+	ActivatePhysics(true);
 	for (auto& child : children)
 	{
-		if (body)
-		{
-			body->enabled = true;
-		}
 	}
 }
 
-double Mesh::GetInterval(bool recalculate)
+double Mesh::GetInterval(bool recalculate) const
 {
 	// 1) manually set interval
 	if (!recalculate && interval > 0.0) return interval;
@@ -108,6 +113,16 @@ double Mesh::GetInterval(bool recalculate)
 	// 2) default interval
 	const double baseInterval = Object3d::GetInterval(recalculate);
 	return baseInterval / (1 + nextKeys.size());
+}
+
+bool Mesh::HasBody(bool checkEnabled) const
+{
+	if (!body || !body->body) return false;
+	if (checkEnabled)
+	{
+		if (!body->enabled || body->mass < 0.0f) return false;
+	}
+	return true;
 }
 
 void Mesh::QueueKey(int key, bool isQueue)
@@ -126,7 +141,7 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 	{
 		if (const uint32_t numChild = TO_UINT32(children.size()))
 		{
-			if ((type & ObjectType_Instance) && renderFlags & RenderFlag_Instancing)
+			if ((type & ObjectType_Instance) && (renderFlags & RenderFlag_Instancing))
 			{
 				// 64 bytes for 4x4 matrix
 				const uint16_t stride = 64 + 16;
@@ -377,7 +392,7 @@ int Mesh::SynchronizePhysics()
 	int change = 0;
 
 	// physics?
-	if (body && body->body && (body->enabled || 1) && body->mass >= 0.0f)
+	if (!parentLink && HasBody(true))
 	{
 		btTransform bTransform;
 		auto        motionState = body->body->getMotionState();
@@ -444,6 +459,8 @@ int Mesh::SynchronizePhysics()
 			}
 		}
 		UpdateLocalMatrix("SynchronizePhysics");
+
+		if (HasBody(false)) SetBodyTransform();
 	}
 	else if (type & ObjectType_Group)
 	{

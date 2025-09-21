@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-09-17
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -59,6 +59,7 @@ static std::vector<Config> configs = {
 	X_FLOAT  (XSettings, physics, 0, bottom     , -100.0f, -1000.0f, 0.0f),
 	X_BOOL   (XSettings, physics, 0, bulletDebug, false),
 	X_BOOL   (XSettings, physics, 0, physPaused , false),
+	X_BOOL   (XSettings, physics, 0, picking    , false),
 	X_FLOAT  (XSettings, physics, 0, rayLength  , 2000.0f, 0.0f, -1.0f),
 
 	// [render]

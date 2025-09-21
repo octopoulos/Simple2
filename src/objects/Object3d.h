@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-09-17
 
 #pragma once
 
@@ -44,6 +44,8 @@ enum ObjectTypes_ : int
 	ObjectType_RubikCube = 1 << 9,  ///< Rubic cube
 	ObjectType_RubikNode = 1 << 10, ///< Rubic node (single cube child)
 	ObjectType_Scene     = 1 << 11, ///< scene
+	// combined
+	ObjectType_Container = ObjectType_Map | ObjectType_Scene, ///< not a real parent (rather: virtual)
 };
 
 enum RenderFlags_ : int
@@ -70,7 +72,7 @@ public:
 	std::string                       name        = "";                         ///< object name (used to find in scene)
 	UMAP_STR<std::weak_ptr<Object3d>> names       = {};                         ///< named children
 	Object3d*                         parent      = nullptr;                    ///< parent object
-	bool                              parentSync  = true;                       ///< sync'd to the parent or physically independent?
+	bool                              parentLink  = true;                       ///< linked to the parent or physically independent?
 	bool                              placing     = false;                      ///< object is being placed on the map?
 	glm::vec3                         position    = glm::vec3(0.0f);            ///< local position
 	glm::vec3                         position1   = glm::vec3(0.0f);            ///< position: origin
@@ -112,10 +114,10 @@ public:
 	float EaseFunction(double td);
 
 	/// Get the easing function
-	int GetEase();
+	int GetEase() const;
 
 	/// Get the transition interval
-	virtual double GetInterval(bool recalculate = false);
+	virtual double GetInterval(bool recalculate = false) const;
 
 	/// Find an direct child by id
 	sObject3d GetObjectById(int id) const;
