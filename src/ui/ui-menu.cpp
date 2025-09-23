@@ -1,6 +1,6 @@
 // menu.cpp
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-09-19
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -280,7 +280,7 @@ void App::ShowMainMenu(float alpha)
 					{
 						++numRecent;
 						std::filesystem::path path = name;
-						if (ImGui::MenuItem(path.filename().string().c_str()))
+						if (ImGui::MenuItem(Cstr(path.filename())))
 							OpenedFile(OpenAction_OpenScene, path);
 					}
 				}
@@ -331,7 +331,7 @@ void App::ShowMainMenu(float alpha)
 				if (canCapture)
 				{
 					ImGui::MenuItem("Use Nvidia Encoding", "", &xsettings.nvidiaEnc);
-					if (ImGui::MenuItem(wantVideo ? fmt::format("Stop Video Capture ({})", videoFrame).c_str() : "Start Video Capture", "", wantVideo))
+					if (ImGui::MenuItem(wantVideo ? Format("Stop Video Capture (%d)", videoFrame) : "Start Video Capture", "", wantVideo))
 					{
 						wantVideo = !wantVideo;
 						if (!wantVideo)

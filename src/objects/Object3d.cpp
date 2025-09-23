@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-09-17
+// @version 2025-09-19
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -45,7 +45,7 @@ void Object3d::AddChild(sObject3d child)
 	}
 
 	child->id         = childInc;
-	child->parent     = this;
+	// child->parent     = Object3d::shared_from_this(); // BUG HERE FROM CUBIE (RubikCube::Initialize)
 	child->parentLink = !(type & (ObjectType_Container | ObjectType_Instance));
 	children.push_back(std::move(child));
 }
@@ -177,7 +177,7 @@ bool Object3d::RemoveChild(const sObject3d& child)
 	// 3) children
 	if (const auto& it = std::find(children.begin(), children.end(), child); it != children.end())
 	{
-		(*it)->parent = nullptr;
+		(*it)->parent = {};
 		children.erase(it);
 		return true;
 	}
@@ -302,29 +302,31 @@ void Object3d::ShowInfoTable(bool showTitle) const
 {
 	if (showTitle) ImGui::TextUnformatted("Object3d");
 
+	const auto sparent = parent.lock();
+
 	// clang-format off
 	ui::ShowTable({
-		{ "id"         , std::to_string(id)                                                                              },
-		{ "irot"       , fmt::format("{}:{}:{}", irot[0], irot[1], irot[2])                                              },
-		{ "matrix"     , fmt::format("{:.2f}:{:.2f}:{:.2f}", matrix[3][0], matrix[3][1], matrix[3][2])                   },
-		{ "matrixWorld", fmt::format("{:.2f}:{:.2f}:{:.2f}", matrixWorld[3][0], matrixWorld[3][1], matrixWorld[3][2])    },
-		{ "name"       , name                                                                                            },
-		{ "names"      , std::to_string(names.size())                                                                    },
-		{ "parent"     , parent ? parent->name : ""                                                                      },
-		{ "parentLink" , BoolString(parentLink)                                                                          },
-		{ "position"   , fmt::format("{:.2f}:{:.2f}:{:.2f}", position.x, position.y, position.z)                         },
-		{ "position1"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", position1.x, position1.y, position1.z)                      },
-		{ "position2"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", position2.x, position2.y, position2.z)                      },
-		{ "posTs"      , std::to_string(posTs)                                                                           },
-		{ "quaternion" , fmt::format("{:.2f}:{:.2f}:{:.2f}", quaternion.x, quaternion.y, quaternion.z, quaternion.w)     },
-		{ "quaternion1", fmt::format("{:.2f}:{:.2f}:{:.2f}", quaternion1.x, quaternion1.y, quaternion1.z, quaternion1.w) },
-		{ "quaternion2", fmt::format("{:.2f}:{:.2f}:{:.2f}", quaternion2.x, quaternion2.y, quaternion2.z, quaternion2.w) },
-		{ "quatTs"     , std::to_string(quatTs)                                                                          },
-		{ "rotation"   , fmt::format("{:.2f}:{:.2f}:{:.2f}", rotation.x, rotation.y, rotation.z)                         },
-		{ "scale"      , fmt::format("{:.2f}:{:.2f}:{:.2f}", scale.x, scale.y, scale.z)                                  },
-		{ "type"       , std::to_string(type)                                                                            },
-		{ "type:name"  , ObjectName(type)                                                                                },
-		{ "visible"    , std::to_string(visible)                                                                         },
+		{ "id"         , std::to_string(id)                                                                   },
+		{ "irot"       , Format("%d:%d:%d", irot[0], irot[1], irot[2])                                        },
+		{ "matrix"     , Format("%.2f:%.2f:%.2f", matrix[3][0], matrix[3][1], matrix[3][2])                   },
+		{ "matrixWorld", Format("%.2f:%.2f:%.2f", matrixWorld[3][0], matrixWorld[3][1], matrixWorld[3][2])    },
+		{ "name"       , name                                                                                 },
+		{ "names"      , std::to_string(names.size())                                                         },
+		{ "parent"     , sparent ? sparent->name : ""                                                         },
+		{ "parentLink" , BoolString(parentLink)                                                               },
+		{ "position"   , Format("%.2f:%.2f:%.2f", position.x, position.y, position.z)                         },
+		{ "position1"  , Format("%.2f:%.2f:%.2f", position1.x, position1.y, position1.z)                      },
+		{ "position2"  , Format("%.2f:%.2f:%.2f", position2.x, position2.y, position2.z)                      },
+		{ "posTs"      , std::to_string(posTs)                                                                },
+		{ "quaternion" , Format("%.2f:%.2f:%.2f", quaternion.x, quaternion.y, quaternion.z, quaternion.w)     },
+		{ "quaternion1", Format("%.2f:%.2f:%.2f", quaternion1.x, quaternion1.y, quaternion1.z, quaternion1.w) },
+		{ "quaternion2", Format("%.2f:%.2f:%.2f", quaternion2.x, quaternion2.y, quaternion2.z, quaternion2.w) },
+		{ "quatTs"     , std::to_string(quatTs)                                                               },
+		{ "rotation"   , Format("%.2f:%.2f:%.2f", rotation.x, rotation.y, rotation.z)                         },
+		{ "scale"      , Format("%.2f:%.2f:%.2f", scale.x, scale.y, scale.z)                                  },
+		{ "type"       , std::to_string(type)                                                                 },
+		{ "type:name"  , ObjectName(type)                                                                     },
+		{ "visible"    , std::to_string(visible)                                                              },
 	});
 	// clang-format on
 }
@@ -386,8 +388,8 @@ int Object3d::SynchronizePhysics()
 glm::mat4 Object3d::TransformPosition(const glm::vec3& _position)
 {
 	glm::mat4 matrix = glm::translate(glm::mat4(1.0f), _position) * glm::mat4_cast(quaternion) * scaleMatrix;
-	if (parent && !(parent->type & ObjectType_Scene))
-		matrix = parent->matrixWorld * matrix;
+	if (auto sparent = parent.lock(); sparent && !(sparent->type & ObjectType_Scene))
+		matrix = sparent->matrixWorld * matrix;
 
 	return matrix;
 }
@@ -405,10 +407,10 @@ void Object3d::UpdateLocalMatrix(std::string_view origin)
 
 void Object3d::UpdateWorldMatrix(bool force)
 {
-	if (parentLink && (!(type & ObjectType_HasBody) || force))
+	if (!(type & ObjectType_HasBody) || force)
 	{
-		if (parent && !(parent->type & ObjectType_Scene))
-			matrixWorld = parent->matrixWorld * matrix;
+		if (auto sparent = parent.lock(); sparent && !(sparent->type & ObjectType_Scene) && parentLink)
+			matrixWorld = sparent->matrixWorld * matrix;
 		else
 			matrixWorld = matrix;
 	}

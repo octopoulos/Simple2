@@ -1,6 +1,6 @@
 // GltfLoader.cpp
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-19
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -17,11 +17,11 @@
 //////////
 
 /// Save embedded image data to a temporary file and return its path
-static std::string SaveEmbeddedImage(const fastgltf::sources::Vector& data, const std::string& name, const std::filesystem::path& gltfPath)
+static std::string SaveEmbeddedImage(const fastgltf::sources::Vector& data, std::string_view name, const std::filesystem::path& gltfPath)
 {
 	if (!data.bytes.empty())
 	{
-		const auto    tempPath = std::filesystem::path("temp") / fmt::format("{}.png", name);
+		const auto    tempPath = std::filesystem::path("temp") / Format("%s.png", Cstr(name));
 		std::ofstream out(tempPath, std::ios::binary);
 		if (!out)
 		{
@@ -37,7 +37,7 @@ static std::string SaveEmbeddedImage(const fastgltf::sources::Vector& data, cons
 }
 
 /// Handle image data variant
-static std::string ProcessImageData(const fastgltf::DataSource& data, const std::string& name, const std::filesystem::path& gltfPath)
+static std::string ProcessImageData(const fastgltf::DataSource& data, std::string_view name, const std::filesystem::path& gltfPath)
 {
 	ui::Log("ProcessImageData: {} {}", name, gltfPath);
 	return std::visit(
@@ -71,7 +71,7 @@ static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optio
 	if (materialId.has_value() && materialId.value() < asset.materials.size())
 	{
 		const auto& mat = asset.materials[materialId.value()];
-		materialName    = mat.name.empty() ? fmt::format("Material_{}", materialId.value()) : std::string(mat.name);
+		materialName    = mat.name.empty() ? Format("Material_%d", materialId.value()) : mat.name;
 
 		// select shaders based on material type
 		if (mat.unlit)
@@ -87,7 +87,7 @@ static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optio
 			if (texture.imageIndex.has_value() && texture.imageIndex.value() < asset.images.size())
 			{
 				const auto& image   = asset.images[texture.imageIndex.value()];
-				const auto  texName = ProcessImageData(image.data, fmt::format("embedded_{}_baseColor", materialId.value()), gltfPath);
+				const auto  texName = ProcessImageData(image.data, Format("embedded_%d_baseColor", materialId.value()), gltfPath);
 				if (texName.size()) texNames.push_back(texName);
 			}
 		}
@@ -99,7 +99,7 @@ static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optio
 			if (texture.imageIndex.has_value() && texture.imageIndex.value() < asset.images.size())
 			{
 				const auto& image   = asset.images[texture.imageIndex.value()];
-				const auto  texName = ProcessImageData(image.data, fmt::format("embedded_{}_normal", materialId.value()), gltfPath);
+				const auto  texName = ProcessImageData(image.data, Format("embedded_%d_normal", materialId.value()), gltfPath);
 				if (texName.size()) texNames.push_back(texName);
 			}
 		}
@@ -111,7 +111,7 @@ static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optio
 			if (texture.imageIndex.has_value() && texture.imageIndex.value() < asset.images.size())
 			{
 				const auto& image   = asset.images[texture.imageIndex.value()];
-				const auto  texName = ProcessImageData(image.data, fmt::format("embedded_{}_emissive", materialId.value()), gltfPath);
+				const auto  texName = ProcessImageData(image.data, Format("embedded_%d_emissive", materialId.value()), gltfPath);
 				if (texName.size()) texNames.push_back(texName);
 			}
 		}

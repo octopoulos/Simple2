@@ -1,6 +1,6 @@
 // stdafx.h
 // @author octopoulos
-// @version 2025-09-05
+// @version 2025-09-19
 
 #pragma once
 
@@ -32,7 +32,7 @@ using namespace std::literals;
 #include "AI/common.h"  // DEV, MerseneUint, s, SUBCASE_FMT, THROW_RUNTIME, ui, uSSL
 #include "AI/extract.h" // YYJSON_*
 #include "AI/html.h"    // FillTemplate, ReplaceMetas
-#include "AI/text.h"    // FastAtoi32, FastAtoi32i, Hex64, Printify, SplitStringView
+#include "AI/text.h"    // Cstr, FastAtoi32, FastAtoi32i, Format, FormatStr, Hex64, Printify, SplitStringView
 #include "AI/time.h"    // CurrentDateTime, FormatDate, FromDate32, MakeDateTime, Now32, Now64, OffsetDateText, UnixTimestamp
 
 #include "entry/entry.h"

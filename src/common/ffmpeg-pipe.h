@@ -1,6 +1,6 @@
 // ffmpeg-pipe.h
 // @author octopoulos
-// @version 2025-07-29
+// @version 2025-09-18
 
 #pragma once
 
@@ -29,18 +29,18 @@ struct FfmpegPipe
 		}
 	}
 
-	bool Open(const std::string& outFile, int _width, int _height, int fps, bool yflip)
+	bool Open(std::string_view outFile, int _width, int _height, int fps, bool yflip)
 	{
 		height = _height;
 		width  = _width;
 
-		std::string_view encoding = xsettings.nvidiaEnc ? "-c:v h264_nvenc -cq:v 21" : "-c:v libx264 -crf 21";
+		const char* encoding = xsettings.nvidiaEnc ? "-c:v h264_nvenc -cq:v 21" : "-c:v libx264 -crf 21";
 
-		std::string cmd = fmt::format(
-		    "ffmpeg -loglevel error -y -f rawvideo -pixel_format bgra -video_size {}x{} -framerate {} -i -{} {} {}",
-		    width, height, fps, yflip ? " -vf vflip" : "", encoding, outFile);
+		const char* cmd = Format(
+		    "ffmpeg -loglevel error -y -f rawvideo -pixel_format bgra -video_size %dx%d -framerate %d -i -%s %s %s",
+		    width, height, fps, yflip ? " -vf vflip" : "", encoding, Cstr(outFile));
 
-		pipe = popen(cmd.c_str(), POPEN_MODE);
+		pipe = popen(cmd, POPEN_MODE);
 		if (!pipe)
 		{
 			perror("popen failed");

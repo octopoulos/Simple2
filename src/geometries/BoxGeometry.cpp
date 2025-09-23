@@ -1,6 +1,6 @@
 // BoxGeometry.cpp
 // @author octopoulos
-// @version 2025-09-03
+// @version 2025-09-18
 //
 // based on THREE.js BoxGeometry implementation
 
@@ -76,7 +76,7 @@ static void BuildPlane(std::vector<PosNormalUvColor>& vertices, std::vector<uint
 
 uGeometry CreateBoxGeometry(float width, float height, float depth, int widthSegments, int heightSegments, int depthSegments, const std::vector<glm::vec4>& faceColors)
 {
-	std::string args = fmt::format("{} {} {} {} {} {}", width, height, depth, widthSegments, heightSegments, depthSegments);
+	std::string args = FormatStr("%f %f %f %d %d %d", width, height, depth, widthSegments, heightSegments, depthSegments);
 
 	// 1) geometry
 	std::vector<PosNormalUvColor> vertices;

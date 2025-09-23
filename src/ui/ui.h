@@ -1,6 +1,6 @@
 // ui.h
 // @author octopoulos
-// @version 2025-09-14
+// @version 2025-09-19
 
 #pragma once
 
@@ -57,51 +57,51 @@ CommonWindow& GetCommonWindow();
 
 /// Add a combo with label left/right + special Blender support
 /// @param mode: &4: popup, &8: empty label, &16: no label + span all width
-bool AddCheckbox(int mode, const std::string& name, const char* labelLeft, const char* labelRight, bool* dataPtr = nullptr);
+bool AddCheckbox(int mode, std::string_view name, const char* labelLeft, const char* labelRight, bool* dataPtr = nullptr);
 
 /// Add a combo with label left/right + special Blender support
 /// @param mode: &4: popup, &8: empty label, &16: no label + span all width
-bool AddCombo(int mode, const std::string& name, const char* label);
+bool AddCombo(int mode, std::string_view name, const char* label);
 
 /// Add a combo with label left/right + special Blender support
 /// @param mode: &4: popup, &8: empty label, &16: no label + span all width
-bool AddCombo(int mode, const std::string& name, const char* label, const char* texts[], const VEC_INT values);
+bool AddCombo(int mode, std::string_view name, const char* label, const char* texts[], const VEC_INT values);
 
 /// Add a drag float with label left/right
 /// @param mode: 0: slider, &1: drag, &2: new line, &4: popup, &8: empty label, &16: no label + span all width
-bool AddDragFloat(int mode, const std::string& name, const char* text, float* dataPtr = nullptr, int count = 1, float speed = 0.0005f, const char* format = "%.3f");
+bool AddDragFloat(int mode, std::string_view name, const char* text, float* dataPtr = nullptr, int count = 1, float speed = 0.0005f, const char* format = "%.3f");
 
 /// Add a drag int with label left/right
 /// @param mode: &4: popup, &8: empty label, &16: no label + span all width
-bool AddDragInt(int mode, const std::string& name, const char* text, int* dataPtr = nullptr, int count = 1, float speed = 1.0f, const char* format = "%d");
+bool AddDragInt(int mode, std::string_view name, const char* text, int* dataPtr = nullptr, int count = 1, float speed = 1.0f, const char* format = "%d");
 
 /// Add an input text input with label left/right + special Blender support
 /// @param mode: &4: popup, &8: empty label, &16: no label + span all width
 /// @param pstring: if used, then overrides config
-void AddInputText(int mode, const std::string& name, const char* label, size_t size = 256, int flags = 0, std::string* pstring = nullptr);
+void AddInputText(int mode, std::string_view name, const char* label, size_t size = 256, int flags = 0, std::string* pstring = nullptr);
 
 /// Add a menu item with a flag system
-bool AddMenuFlag(const std::string& label, uint32_t& value, uint32_t flag);
+bool AddMenuFlag(std::string_view label, uint32_t& value, uint32_t flag);
 
 /// Add a slider bool with label left/right
 /// @param mode: &4: popup, &8: empty label, &16: no label + span all width
-bool AddSliderBool(int mode, const std::string& name, const char* text, const char* format = "%d", bool vertical = false, const ImVec2& size = { 30, 120 });
+bool AddSliderBool(int mode, std::string_view name, const char* text, const char* format = "%d", bool vertical = false, const ImVec2& size = { 30, 120 });
 
 /// Create an horizontal or vertical slider, with label left/right
 /// @param mode: &4: popup, &8: empty label, &16: no label + span all width
 /// @param format: nullptr => slider enum, to use instead of AddCombo
-bool AddSliderInt(int mode, const std::string& name, const char* text, const char* format = "%d", bool vertical = false, const ImVec2& size = { 30, 120 }, bool isBool = false);
+bool AddSliderInt(int mode, std::string_view name, const char* text, const char* format = "%d", bool vertical = false, const ImVec2& size = { 30, 120 }, bool isBool = false);
 
 /// Create an horizontal or vertical slider, with label left/right
 /// @param mode: &4: popup, &8: empty label, &16: no label + span all width
 /// @param format: nullptr => slider enum, to use instead of AddCombo
-bool AddSliderInt(int mode, const std::string& name, const char* text, int* value, int count, int min, int max, const char* format = "%d");
+bool AddSliderInt(int mode, std::string_view name, const char* text, int* value, int count, int min, int max, const char* format = "%d");
 
 /// Add vertical space
 void AddSpace(float height = -1.0f);
 
 /// Right click => reset to default
-bool ItemEvent(const std::string& name, int index = -1);
+bool ItemEvent(std::string_view name, int index = -1);
 
 /// Show a 2 column Stats table
 void ShowTable(const std::vector<std::tuple<std::string, std::string>>& stats);
@@ -282,7 +282,7 @@ CommonWindow& GetSettingsWindow();
 ////////
 
 CommonWindow& GetThemeWindow();
-ImFont*       FindFont(const std::string& name);
+ImFont*       FindFont(std::string_view name);
 void          UpdateFonts();
 void          UpdateTheme();
 

@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-09-17
+// @version 2025-09-18
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -60,7 +60,7 @@ void Mesh::CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, con
 
 	// 2) create physical body
 	// child => get the position and rotation from the matrix
-	if (parent && !(parent->type & ObjectType_Container))
+	if (auto sparent = parent.lock(); sparent && !(sparent->type & ObjectType_Container))
 	{
 		glm::vec3 positionW;
 		glm::quat quaternionW;
@@ -292,10 +292,14 @@ void Mesh::ShowInfoTable(bool showTitle) const
 
 	// clang-format off
 	ui::ShowTable({
-		{ "groups.size", std::to_string(groups.size())   },
-		{ "load"       , std::to_string(load)            },
-		{ "modelName"  , modelName                       },
-		{ "nextKeys"   , std::to_string(nextKeys.size()) },
+		{ "aabb.max"     , Format("%.2f:%.2f:%.2f", aabb.max.x, aabb.max.y, aabb.max.z)                },
+		{ "aabb.min"     , Format("%.2f:%.2f:%.2f", aabb.min.x, aabb.min.y, aabb.min.z)                },
+		{ "groups.size"  , std::to_string(groups.size())                                               },
+		{ "load"         , std::to_string(load)                                                        },
+		{ "modelName"    , modelName                                                                   },
+		{ "nextKeys"     , std::to_string(nextKeys.size())                                             },
+		{ "sphere.center", Format("%.2f:%.2f:%.2f", sphere.center.x, sphere.center.y, sphere.center.z) },
+		{ "sphere.radius", Format("%.2f", sphere.radius)                                               },
 	});
 	// clang-format on
 
@@ -458,8 +462,8 @@ int Mesh::SynchronizePhysics()
 				quatTs     = 0.0;
 			}
 		}
-		UpdateLocalMatrix("SynchronizePhysics");
 
+		UpdateLocalMatrix("SynchronizePhysics");
 		if (HasBody(false)) SetBodyTransform();
 	}
 	else if (type & ObjectType_Group)

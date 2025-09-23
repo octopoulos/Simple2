@@ -1,6 +1,6 @@
 // Material.cpp
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-09-19
 
 #include "stdafx.h"
 #include "materials/Material.h"
@@ -59,8 +59,8 @@ void Material::FindModelTextures(std::string_view modelName, const VEC_STR& texF
 			{
 				const auto& path     = dirEntry.path();
 				const auto  filename = path.filename();
-				const auto  texFile  = fmt::format("{}/{}", parent.string(), filename.string());
-				texFiles.push_back(texFile);
+				std::string texFile  = Format("%s/%s", Cstr(parent), Cstr(filename));
+				texFiles.push_back(std::move(texFile));
 			}
 
 			// load all texture variations
@@ -192,9 +192,9 @@ void Material::ShowSettings(bool isPopup, int show)
 	{
 		for (int id = 0; id < TextureType_Count; ++id)
 		{
-			ui::AddInputText(mode | 32, fmt::format(".textName:{}", id).c_str(), TextureName(id).c_str(), 256, 0, &texNames[id]);
+			ui::AddInputText(mode | 32, Format(".textName:%d", id), TextureName(id).c_str(), 256, 0, &texNames[id]);
 			ImGui::SameLine();
-			if (ImGui::Button(fmt::format("...##Tex{}", id).c_str()))
+			if (ImGui::Button(Format("...##Tex%d", id)))
 			{
 				ui::Log("Tex{} {}", id, TextureName(id));
 			}

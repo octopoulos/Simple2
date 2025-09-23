@@ -1,6 +1,6 @@
 // learn.cpp
 // @author octopoulos
-// @version 2025-08-28
+// @version 2025-09-18
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -102,8 +102,8 @@ void App::LearnUi()
 			ImGui::Text("Progress Bar");
 
 			const float progressSaturated = bx::clamp(progress, 0.0f, 1.0f);
-			const auto  buf               = fmt::format("{}/{}", (int)(progressSaturated * 1753), 1753);
-			ImGui::ProgressBar(progress, ImVec2(0.f, 0.f), buf.c_str());
+			const char* buf               = Format("%d/%d", (int)(progressSaturated * 1753), 1753);
+			ImGui::ProgressBar(progress, ImVec2(0.f, 0.f), buf);
 
 			// Pass an animated negative value, e.g. -1.0f * (float)ImGui::GetTime() is the recommended value.
 			// Adjust the factor if you want to adjust the animation speed.

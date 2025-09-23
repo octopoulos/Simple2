@@ -1,6 +1,6 @@
 // Geometry.cpp
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-09-18
 
 #include "stdafx.h"
 #include "geometries/Geometry.h"
@@ -46,11 +46,11 @@ void Geometry::ShowInfoTable(bool showTitle) const
 
 	// clang-format off
 	ui::ShowTable({
-		{ "aabb"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", aabb.x(), aabb.y(), aabb.z()) },
-		{ "args"  , args                                                              },
-		{ "dims"  , fmt::format("{:.2f}:{:.2f}:{:.2f}", dims.x(), dims.y(), dims.z()) },
-		{ "radius", std::to_string(radius)                                            },
-		{ "type"  , std::to_string(type)                                              },
+		{ "aabb"  , Format("%.2f:%.2f:%.2f", aabb.x(), aabb.y(), aabb.z()) },
+		{ "args"  , args                                                   },
+		{ "dims"  , Format("%.2f:%.2f:%.2f", dims.x(), dims.y(), dims.z()) },
+		{ "radius", std::to_string(radius)                                 },
+		{ "type"  , std::to_string(type)                                   },
 	});
 	// clang-format on
 }

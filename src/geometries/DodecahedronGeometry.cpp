@@ -1,6 +1,6 @@
 // DodecahedronGeometry.cpp
 // @author octopoulos
-// @version 2025-09-03
+// @version 2025-09-18
 //
 // based on THREE.js DodecahedronGeometry implementation
 
@@ -9,7 +9,7 @@
 
 uGeometry CreateDodecahedronGeometry(float radius, int detail)
 {
-	std::string args = fmt::format("{} {}", radius, detail);
+	std::string args = FormatStr("%f %d", radius, detail);
 
 	constexpr float t = (1.0f + bx::sqrt(5.0f)) * 0.5f;
 	constexpr float r = 1.0f / t;

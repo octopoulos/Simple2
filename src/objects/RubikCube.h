@@ -1,6 +1,6 @@
 // RubikCube.h
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-09-18
 
 #pragma once
 
@@ -28,9 +28,6 @@ private:
 	/// Specific Rubik controls, can be used by AI
 	void AiControls(const sCamera& camera, int modifier, const bool* downs, bool isQueue);
 
-	/// Create all cubies and position them in a 3D grid
-	void Initialize();
-
 	/// Rotate the whole cube (XYZ)
 	void RotateCube(const RubikFace* face, int angle, int key, bool isQueue);
 
@@ -45,13 +42,15 @@ public:
 	    : Mesh(name, ObjectType_Group | ObjectType_RubikCube)
 	    , cubeSize(cubeSize)
 	{
-		Initialize();
 	}
 
 	~RubikCube() = default;
 
 	/// Specific Rubik controls
 	virtual void Controls(const sCamera& camera, int modifier, const bool* downs, bool* ignores, const bool* keys) override;
+
+	/// Create all cubies and position them in a 3D grid
+	void Initialize();
 
 	/// Pass the physics object for possible initialization
 	virtual void SetPhysics(PhysicsWorld* physics) override;

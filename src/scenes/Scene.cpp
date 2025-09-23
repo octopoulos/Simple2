@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-09-17
+// @version 2025-09-19
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -25,7 +25,7 @@
 static void AddRecent(const std::filesystem::path& filename)
 {
 	str2k temp;
-	strcpy(temp, filename.string().c_str());
+	strcpy(temp, Cstr(filename));
 
 	auto& files = xsettings.recentFiles;
 	int   id    = 0;
@@ -107,9 +107,10 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 	// clang-format on
 
 	// 4) create object based on type
-	sObject3d exist      = nullptr;
-	sObject3d object     = nullptr;
-	bool      positioned = false;
+	sObject3d  exist      = nullptr;
+	sObject3d  object     = nullptr;
+	bool       positioned = false;
+	sRubikCube rubik      = nullptr;
 
 	if (type & ObjectType_Camera)
 	{
@@ -145,6 +146,7 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 			int cubeSize = 3;
 			if (!doc["cubicSize"].get_int64().get(tempInt64)) cubeSize = TO_INT(tempInt64);
 			object = std::make_shared<RubikCube>(name, cubeSize);
+			rubik  = RubikCube::SharedPtr(object);
 		}
 		else if (int64_t load = 0; !doc["load"].get_int64().get(load))
 		{
@@ -176,7 +178,7 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 			if (!obj["fsName"].get_string().get(fsName) && !obj["vsName"].get_string().get(vsName))
 			{
 				if (!mesh->material)
-					mesh->material = std::make_shared<Material>(vsName, fsName);
+					mesh->material = std::make_shared<Material>(Cstr(vsName), Cstr(fsName));
 
 				// state
 				{
@@ -227,8 +229,11 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 		ui::Log(" -->4 type={}/{} {}", type, object->type, name);
 
 		// extras
-		if (type & ObjectType_RubikCube)
-			mesh->SetPhysics((PhysicsWorld*)physics);
+		// if (type & ObjectType_RubikCube)
+		// {
+		// 	RubikCube::SharedPtr(mesh)->Initialize();
+		// 	mesh->SetPhysics((PhysicsWorld*)physics);
+		// }
 	}
 	else if (type & ObjectType_Scene)
 	{
@@ -249,7 +254,14 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 	if (object && !exist)
 		parent->AddChild(object);
 
-	// 7) check children
+	// 7) extra initializers
+	if (rubik)
+	{
+		rubik->Initialize();
+		rubik->SetPhysics((PhysicsWorld*)physics);
+	}
+
+	// 8) check children
 	if (!doc["children"].get_array().get(array))
 	{
 		for (simdjson::ondemand::object child : array)
@@ -275,7 +287,7 @@ bool App::OpenScene(const std::filesystem::path& filename)
 		Scene::SharedPtr(scene)->Clear();
 		ParseObject(obj, scene, scene, GetPhysics(), 0);
 
-		entry::setWindowTitle(entry::kDefaultWindowHandle, filename.filename().string().c_str());
+		entry::setWindowTitle(entry::kDefaultWindowHandle, Cstr(filename.filename()));
 		return true;
 	}
 
@@ -404,7 +416,7 @@ void App::PickObject(int mouseX, int mouseY)
 			{
 				try
 				{
-					sObject3d hitObj = hitMesh->shared_from_this();
+					sObject3d hitObj = hitMesh->Object3d::shared_from_this();
 					SelectObject(hitObj);
 					camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(hitMesh->position));
 					camera->Zoom();
@@ -473,7 +485,7 @@ void App::SelectObject(const sObject3d& obj, bool countIndex)
 		// find the parent's childId
 		if (countIndex)
 		{
-			if (auto* parent = obj->parent)
+			if (auto parent = obj->parent.lock())
 			{
 				for (int id = -1; const auto& child : parent->children)
 				{

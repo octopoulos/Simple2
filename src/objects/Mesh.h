@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-09-17
+// @version 2025-09-18
 
 #pragma once
 
@@ -82,6 +82,7 @@ class Mesh
     , public std::enable_shared_from_this<Mesh>
 {
 public:
+	bx::Aabb                  aabb      = {};            ///< AABB around the whole mesh
 	uBody                     body      = {};            ///< one body for the whole mesh
 	std::shared_ptr<Geometry> geometry  = nullptr;       ///
 	std::vector<Group>        groups    = {};            ///< groups of vertices
@@ -91,6 +92,7 @@ public:
 	sMaterial                 material0 = nullptr;       ///< original material
 	std::string               modelName = "";            ///< model name (part of filename)
 	std::deque<int>           nextKeys  = {};            ///< queued keys
+	bx::Sphere                sphere    = {};            ///< sphere around the whole mesh
 
 	Mesh(std::string_view name, int typeFlag = 0, std::shared_ptr<Geometry> geometry = nullptr, sMaterial material = nullptr)
 	    : Object3d(name, ObjectType_Mesh | typeFlag)

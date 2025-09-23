@@ -1,6 +1,6 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-09-19
 
 #include "stdafx.h"
 #include "textures/TextureManager.h"
@@ -208,7 +208,7 @@ bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 
 	// 3) create the BGFX texture
 	bgfx::TextureInfo   info    = {};
-	bgfx::TextureHandle texture = LoadTexture_(bx::FilePath(path.string().c_str()), 0, 0, &info);
+	bgfx::TextureHandle texture = LoadTexture_(bx::FilePath(Cstr(path)), 0, 0, &info);
 	if (!bgfx::isValid(texture))
 	{
 		ui::LogError("LoadTexture: Cannot load: {}", clean);

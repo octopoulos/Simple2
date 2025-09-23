@@ -1,6 +1,6 @@
 // ui-common.cpp
 // @author octopoulos
-// @version 2025-09-14
+// @version 2025-09-18
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -118,9 +118,9 @@ static int InputTextCallback(ImGuiInputTextCallbackData* data)
 // FUNCTIONS
 ////////////
 
-#define LABEL_ID(label) fmt::format("##{}", label).c_str()
+#define LABEL_ID(label) Format("##%s", label)
 
-bool AddCheckbox(int mode, const std::string& name, const char* labelLeft, const char* labelRight, bool* dataPtr)
+bool AddCheckbox(int mode, std::string_view name, const char* labelLeft, const char* labelRight, bool* dataPtr)
 {
 	if (!dataPtr)
 	{
@@ -132,14 +132,14 @@ bool AddCheckbox(int mode, const std::string& name, const char* labelLeft, const
 
 	LabelLeft(mode, labelLeft, 1);
 
-	bool result = ImGui::Checkbox(LABEL_ID(name), dataPtr);
+	bool result = ImGui::Checkbox(LABEL_ID(Cstr(name)), dataPtr);
 	result |= ItemEvent(name);
 
 	LabelRight(labelRight, 8.0f);
 	return result;
 }
 
-bool AddCombo(int mode, const std::string& name, const char* label)
+bool AddCombo(int mode, std::string_view name, const char* label)
 {
 	bool result = false;
 	if (auto config = ConfigFind(name, "AddCombo"))
@@ -156,7 +156,7 @@ bool AddCombo(int mode, const std::string& name, const char* label)
 	return result;
 }
 
-bool AddCombo(int mode, const std::string& name, const char* label, const char* texts[], const VEC_INT values)
+bool AddCombo(int mode, std::string_view name, const char* label, const char* texts[], const VEC_INT values)
 {
 	bool result = false;
 	if (auto config = ConfigFind(name, "AddCombo"))
@@ -182,7 +182,7 @@ bool AddCombo(int mode, const std::string& name, const char* label, const char* 
 
 /// Same as DraggScalarN but can be reset with right click
 /// @param mode: 0: slider, &1: drag, &2: vertical (new line), &4: popup (label above)
-static bool AddDragScalarN(int mode, const std::string& name, const char* label, ImGuiDataType data_type, size_t type_size, void* p_data, int components, float v_speed, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags = 0)
+static bool AddDragScalarN(int mode, std::string_view name, const char* label, ImGuiDataType data_type, size_t type_size, void* p_data, int components, float v_speed, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags = 0)
 {
 	const bool  isHori       = !(mode & 2);
 	const bool  isPopup      = (mode & 4);
@@ -208,16 +208,16 @@ static bool AddDragScalarN(int mode, const std::string& name, const char* label,
 		if (isPopup)
 			LabelLeft(mode, subLabel, 1, 0.1f);
 		else if (!isHori)
-			LabelLeft(mode, fmt::format("{}{}{}", !i ? label : "", !i ? " " : "", subLabel).c_str(), 1);
+			LabelLeft(mode, Format("%s%s%s", !i ? label : "", !i ? " " : "", subLabel), 1);
 
 		ImGui::PushID(i);
 		if (isHori && i > 0)
 			ImGui::SameLine(0, spacingX);
 
 		if (!(mode & 1))
-			valueChanged |= ImGui::SliderScalar(fmt::format("##{}{}", name, i).c_str(), data_type, p_data, p_min, p_max, format, flags);
+			valueChanged |= ImGui::SliderScalar(Format("##%s%d", Cstr(name), i), data_type, p_data, p_min, p_max, format, flags);
 		else
-			valueChanged |= ImGui::DragScalar(fmt::format("##{}{}", name, i).c_str(), data_type, p_data, v_speed, p_min, p_max, format, flags);
+			valueChanged |= ImGui::DragScalar(Format("##%s%d", Cstr(name), i), data_type, p_data, v_speed, p_min, p_max, format, flags);
 
 		valueChanged |= ItemEvent(name, i);
 
@@ -236,7 +236,7 @@ static bool AddDragScalarN(int mode, const std::string& name, const char* label,
 	return valueChanged;
 }
 
-bool AddDragFloat(int mode, const std::string& name, const char* text, float* dataPtr, int count, float speed, const char* format)
+bool AddDragFloat(int mode, std::string_view name, const char* text, float* dataPtr, int count, float speed, const char* format)
 {
 	bool result = false;
 	if (dataPtr)
@@ -246,7 +246,7 @@ bool AddDragFloat(int mode, const std::string& name, const char* text, float* da
 	return result;
 }
 
-bool AddDragInt(int mode, const std::string& name, const char* text, int* dataPtr, int count, float speed, const char* format)
+bool AddDragInt(int mode, std::string_view name, const char* text, int* dataPtr, int count, float speed, const char* format)
 {
 	bool result = false;
 	if (dataPtr)
@@ -256,7 +256,7 @@ bool AddDragInt(int mode, const std::string& name, const char* text, int* dataPt
 	return result;
 }
 
-void AddInputText(int mode, const std::string& name, const char* label, size_t size, int flags, std::string* pstring)
+void AddInputText(int mode, std::string_view name, const char* label, size_t size, int flags, std::string* pstring)
 {
 	LabelLeft(mode, label, 1);
 	const int pushed = PushBlender(2);
@@ -273,10 +273,10 @@ void AddInputText(int mode, const std::string& name, const char* label, size_t s
 	LabelRight(label);
 }
 
-bool AddMenuFlag(const std::string& label, uint32_t& value, uint32_t flag)
+bool AddMenuFlag(std::string_view label, uint32_t& value, uint32_t flag)
 {
 	bool selected = value & flag;
-	if (ImGui::MenuItem(label.c_str(), nullptr, &selected))
+	if (ImGui::MenuItem(Cstr(label), nullptr, &selected))
 	{
 		if (selected)
 			value |= flag;
@@ -287,12 +287,12 @@ bool AddMenuFlag(const std::string& label, uint32_t& value, uint32_t flag)
 	return false;
 }
 
-bool AddSliderBool(int mode, const std::string& name, const char* text, const char* format, bool vertical, const ImVec2& size)
+bool AddSliderBool(int mode, std::string_view name, const char* text, const char* format, bool vertical, const ImVec2& size)
 {
 	return AddSliderInt(mode, name, text, format, vertical, size, true);
 }
 
-bool AddSliderInt(int mode, const std::string& name, const char* text, const char* format, bool vertical, const ImVec2& size, bool isBool)
+bool AddSliderInt(int mode, std::string_view name, const char* text, const char* format, bool vertical, const ImVec2& size, bool isBool)
 {
 	bool result = false;
 	if (auto config = ConfigFind(name, "AddSliderInt"))
@@ -314,7 +314,7 @@ bool AddSliderInt(int mode, const std::string& name, const char* text, const cha
 	return result;
 }
 
-bool AddSliderInt(int mode, const std::string& name, const char* text, int* value, int count, int min, int max, const char* format)
+bool AddSliderInt(int mode, std::string_view name, const char* text, int* value, int count, int min, int max, const char* format)
 {
 	return AddDragScalarN(mode, name, text, ImGuiDataType_S32, sizeof(int32_t), value, count, 1.0f, &min, &max, format);
 }
@@ -325,7 +325,7 @@ void AddSpace(float height)
 	ImGui::Dummy(ImVec2(0.0f, height * xsettings.uiScale));
 }
 
-bool ItemEvent(const std::string& name, int index)
+bool ItemEvent(std::string_view name, int index)
 {
 	if (name.size() && name.front() != '.')
 	{

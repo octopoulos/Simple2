@@ -1,6 +1,6 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-09-17
+// @version 2025-09-18
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
@@ -248,7 +248,7 @@ void RubikCube::Initialize()
 			for (int z = 0; z < cubeSize; ++z)
 			{
 				// name each cubie for identification
-				const std::string cubieName = fmt::format("Cubie_{}_{}_{}", x, y, z);
+				const auto cubieName = FormatStr("Cubie_%d_%d_%d", x, y, z);
 
 				// determine face colors based on position
 				std::vector<glm::vec4> cubieFaceColors(6, defaultColor);
@@ -264,7 +264,7 @@ void RubikCube::Initialize()
 				uGeometry  cubieGeometry = CreateBoxGeometry(cubeEdge, cubeEdge, cubeEdge, 1, 1, 1, cubieFaceColors);
 
 				// create a mesh for the cubie
-				const auto cubie = std::make_shared<Mesh>(cubieName, ObjectType_RubikNode, cubieGeometry, cubieMaterial);
+				auto cubie = std::make_shared<Mesh>(cubieName, ObjectType_RubikNode, cubieGeometry, cubieMaterial);
 
 				// position the cubie in the 3D grid
 				const glm::vec3 position(
@@ -276,7 +276,7 @@ void RubikCube::Initialize()
 				cubie->ScaleQuaternionPosition(scale, glm::identity<glm::quat>(), position);
 
 				// add cubie as a child
-				AddChild(cubie);
+				AddChild(cubie); // CREATES A BUG IN ADDCHILD: bad weak_ptr
 			}
 		}
 	}
@@ -423,8 +423,7 @@ void RubikCube::SetPhysics(PhysicsWorld* physics)
 		if (auto mesh = Mesh::SharedPtr(cubie); !mesh->body)
 		{
 			mesh->CreateShapeBody(physics, ShapeType_Box, 1.0f);
-			mesh->body->enabled = body->enabled;
-			mesh->parentLink    = true;
+			mesh->ActivatePhysics(false);
 		}
 	}
 }

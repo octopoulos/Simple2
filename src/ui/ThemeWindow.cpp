@@ -1,6 +1,6 @@
 // ThemeWindow.cpp
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-09-19
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -179,9 +179,9 @@ CommonWindow& GetThemeWindow() { return themeWindow; }
 // FONTS
 ////////
 
-std::unordered_map<std::string, ImFont*> fontNames;
+static UMAP_STR<ImFont*> fontNames;
 
-ImFont* FindFont(const std::string& name)
+ImFont* FindFont(std::string_view name)
 {
 	if (const auto it = fontNames.find(name); it != fontNames.end()) return it->second;
 	return fontNames["mono"];
@@ -308,7 +308,7 @@ static void SetThemeBlender(ImGuiStyle& style)
 	if (const std::filesystem::path interFont = "runtime/fonts/inter.ttf"; IsFile(interFont))
 	{
 		ImGuiIO& io    = ImGui::GetIO();
-		io.FontDefault = io.Fonts->AddFontFromFileTTF(interFont.string().c_str());
+		io.FontDefault = io.Fonts->AddFontFromFileTTF(Cstr(interFont));
 	}
 }
 

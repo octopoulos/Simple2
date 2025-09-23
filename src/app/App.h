@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-09-18
 
 #pragma once
 
@@ -149,7 +149,7 @@ private:
 	int64_t                       lastUs       = 0;       ///< microseconds
 	std::unique_ptr<PhysicsWorld> physics      = nullptr; ///< physics world
 	int                           physicsFrame = 0;       ///< current physics frame
-	std::weak_ptr<Object3d>       prevSelWeak  = {};      ///< previously selected object
+	wObject3d                     prevSelWeak  = {};      ///< previously selected object
 	int64_t                       startTime    = 0;       ///< initial time
 
 	/// Delete the selected object
@@ -168,8 +168,8 @@ private:
 	bool SaveScene(const std::filesystem::path& filename = {});
 
 public:
-	sObject3d               scene      = nullptr; ///< scene container
-	std::weak_ptr<Object3d> selectWeak = {};      ///< selected object for edit
+	sObject3d scene      = nullptr; ///< scene container
+	wObject3d selectWeak = {};      ///< selected object for edit
 
 	/// Select the object to follow
 	/// @param countIndex: calculate the parent's childId

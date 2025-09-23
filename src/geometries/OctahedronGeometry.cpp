@@ -1,6 +1,6 @@
 // OctahedronGeometry.cpp
 // @author octopoulos
-// @version 2025-08-05
+// @version 2025-09-18
 //
 // based on THREE.js OctahedronGeometry implementation
 
@@ -9,7 +9,7 @@
 
 uGeometry CreateOctahedronGeometry(float radius, int detail)
 {
-	std::string args = fmt::format("{} {}", radius, detail);
+	std::string args = FormatStr("%f %d", radius, detail);
 
 	// clang-format off
 	constexpr float vertices[] = {

@@ -1,6 +1,6 @@
 // FbxLoader.cpp
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-18
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -26,7 +26,7 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 
 	if (fbxMaterial)
 	{
-		materialName = fbxMaterial->name[0] ? std::string(fbxMaterial->name) : fmt::format("Material_{}", fbxMaterial->id);
+		materialName = fbxMaterial->name[0] ? std::string(fbxMaterial->name) : Format("Material_%d", fbxMaterial->id);
 
 		// process textures
 		for (int type = 0; type < TextureType_Count; ++type)
@@ -65,7 +65,7 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 					ofbx::DataView embeddedData = texture->getEmbeddedData();
 					if (embeddedData.begin && embeddedData.end)
 					{
-						texData.name   = fmt::format("embedded_{}_{}", fbxMaterial->id, typeName);
+						texData.name   = Format("embedded_%d_%s", fbxMaterial->id, Cstr(typeName));
 						texData.handle = GetTextureManager().AddRawTexture(texData.name, embeddedData.begin, TO_UINT32(embeddedData.end - embeddedData.begin));
 						if (bgfx::isValid(texData.handle))
 							ui::Log("CreateMaterialFromFbx: loaded embedded {} texture {} for {}", typeName, texData.name, materialName);
@@ -117,7 +117,7 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 /// Create mesh for FBX node
 static sMesh CreateNodeMesh(const ofbx::Object* node)
 {
-	std::string nodeName = node->name[0] ? std::string(node->name) : fmt::format("Node_{}", node->id);
+	const char* nodeName = node->name[0] ? node->name : Format("Node_%d", node->id);
 	sMesh       mesh     = std::make_shared<Mesh>(nodeName, 0);
 	mesh->type |= ObjectType_Mesh;
 
@@ -130,6 +130,11 @@ static sMesh CreateNodeMesh(const ofbx::Object* node)
 	mesh->matrix = glmMatrix;
 	mesh->DecomposeMatrix();
 	mesh->UpdateLocalMatrix("CreateNodeMesh");
+
+	// clang-format off
+	mesh->aabb   = { { FLT_MAX, FLT_MAX, FLT_MAX }, { -FLT_MAX, -FLT_MAX, -FLT_MAX } };
+	mesh->sphere = { { 0.0f, 0.0f, 0.0f }, 0.0f };
+	// clang-format on
 
 	ui::Log("CreateNodeMesh: {}", nodeName);
 	return mesh;
@@ -195,15 +200,21 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 			continue;
 		}
 
-		// vertices and indices
-		std::vector<Vertex>   vertices;
+		// vertices and indices + positions (for AABB)
 		std::vector<uint32_t> indices;
+		std::vector<Vertex>   vertices;
+		std::vector<bx::Vec3> vpositions;
+
+		// clang-format off
+		bx::Aabb groupAabb = { { FLT_MAX, FLT_MAX, FLT_MAX  }, { -FLT_MAX, -FLT_MAX, -FLT_MAX } };
+		bx::Sphere groupSphere = { { 0.0f, 0.0f, 0.0f }, 0.0f };
+		// clang-format on
 
 		// process polygons
 		for (int polygonId = 0; polygonId < partition.polygon_count; ++polygonId)
 		{
 			const auto& polygon = partition.polygons[polygonId];
-			int         triIndices[128]; // max 42 triangles (128/3) per polygon
+			int         triIndices[128];
 			const int   triCount = ofbx::triangulate(geom, polygon, triIndices);
 			// ui::Log("Mesh {} partition {} polygon {}: {} indices", nodeName, partitionId, polygonId, triCount);
 			if (triCount % 3 != 0)
@@ -224,19 +235,18 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 				Vertex     vertex;
 				ofbx::Vec3 pos  = positions.get(vertexId);
 				vertex.position = glm::vec3(TO_FLOAT(pos.x), TO_FLOAT(pos.y), TO_FLOAT(pos.z));
+				vpositions.push_back({ vertex.position.x, vertex.position.y, vertex.position.z });
 
 				if (normals.values && vertexId < normals.count)
 				{
 					ofbx::Vec3 norm = normals.get(vertexId);
 					vertex.normal   = glm::vec3(TO_FLOAT(norm.x), TO_FLOAT(norm.y), TO_FLOAT(norm.z));
 				}
-
 				if (uvs.values && vertexId < uvs.count)
 				{
 					ofbx::Vec2 uv = uvs.get(vertexId);
 					vertex.uv     = glm::vec2(TO_FLOAT(uv.x), TO_FLOAT(uv.y));
 				}
-
 				if (colors.values && vertexId < colors.count)
 				{
 					ofbx::Vec4 col = colors.get(vertexId);
@@ -247,6 +257,31 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 				indices.push_back(TO_UINT32(vertices.size() - 1));
 			}
 		}
+
+		// calculate group AABB and sphere
+		const uint32_t numVpos = TO_UINT32(vpositions.size());
+		if (numVpos)
+		{
+			bx::toAabb(groupAabb, vpositions.data(), numVpos, sizeof(bx::Vec3));
+			bx::calcMaxBoundingSphere(groupSphere, vpositions.data(), numVpos, sizeof(bx::Vec3));
+		}
+		else
+		{
+			ui::LogError("ProcessMesh: No vertices for mesh {} partition {}", nodeName, partitionId);
+			continue;
+		}
+
+		// update groups AABB and sphere
+		group.aabb   = groupAabb;
+		group.sphere = groupSphere;
+
+		// update mesh AABB and sphere
+		mesh->aabb.min = bx::min(mesh->aabb.min, groupAabb.min);
+		mesh->aabb.max = bx::max(mesh->aabb.max, groupAabb.max);
+		bx::Sphere tempSphere;
+		bx::calcMaxBoundingSphere(tempSphere, vpositions.data(), numVpos, sizeof(bx::Vec3));
+		if (tempSphere.radius > mesh->sphere.radius)
+			mesh->sphere = tempSphere;
 
 		// create BGFX buffers
 		if (!vertices.empty())
@@ -283,6 +318,8 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 		prim.numIndices  = group.numIndices;
 		prim.startVertex = 0;
 		prim.numVertices = group.numVertices;
+		prim.aabb        = groupAabb;
+		prim.sphere      = groupSphere;
 		group.prims.push_back(prim);
 
 		mesh->groups.push_back(std::move(group));
@@ -293,6 +330,39 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 	mesh->material0 = mesh->material;
 
 	return mesh;
+}
+
+static bx::Aabb TransformAabb(const bx::Aabb& aabb, const glm::mat4& matrix)
+{
+	bx::Aabb transformedAabb = { { FLT_MAX, FLT_MAX, FLT_MAX  }, { -FLT_MAX, -FLT_MAX, -FLT_MAX } };
+	if (aabb.min.x >= aabb.max.x)
+	{
+		ui::LogError("TransformAabb: Invalid input AABB");
+		return transformedAabb;
+	}
+
+	// get the eight corners of the AABB
+	bx::Vec3 corners[8] = {
+		{ aabb.min.x, aabb.min.y, aabb.min.z },
+		{ aabb.max.x, aabb.min.y, aabb.min.z },
+		{ aabb.min.x, aabb.max.y, aabb.min.z },
+		{ aabb.max.x, aabb.max.y, aabb.min.z },
+		{ aabb.min.x, aabb.min.y, aabb.max.z },
+		{ aabb.max.x, aabb.min.y, aabb.max.z },
+		{ aabb.min.x, aabb.max.y, aabb.max.z },
+		{ aabb.max.x, aabb.max.y, aabb.max.z },
+	};
+
+	// Transform corners by matrix
+	for (int j = 0; j < 8; ++j)
+	{
+		glm::vec4 corner = matrix * glm::vec4(corners[j].x, corners[j].y, corners[j].z, 1.0f);
+		corners[j]       = { corner.x, corner.y, corner.z };
+	}
+
+	// Compute AABB from transformed corners
+	bx::toAabb(transformedAabb, corners, 8, sizeof(bx::Vec3));
+	return transformedAabb;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -338,8 +408,7 @@ sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy)
 	}
 
 	// create root mesh
-	sMesh rootMesh = std::make_shared<Mesh>(path.filename().string(), 0);
-	rootMesh->type |= ObjectType_Group;
+	sMesh rootMesh = std::make_shared<Mesh>(path.filename().string(), ObjectType_Group);
 
 	// map to track meshes by object id
 	std::unordered_map<uint64_t, sMesh> meshMap;
@@ -363,7 +432,7 @@ sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy)
 				parentMesh = it->second;
 			else
 			{
-				// create parent node
+				// create parent node (aabb initialized in CreateNodeMesh)
 				parentMesh          = CreateNodeMesh(parent);
 				meshMap[parent->id] = parentMesh;
 
@@ -383,11 +452,41 @@ sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy)
 		// add mesh to parent
 		parentMesh->AddChild(mesh);
 		ui::Log("LoadFbx: add mesh {} to parent {}", mesh->name, parentMesh->name);
+
+		// update parent AABBs up the hierarchy
+		sMesh current = mesh;
+		while (auto parent = current ? Mesh::SharedPtr(current->parent.lock()) : nullptr)
+		{
+			if (current->aabb.min.x >= current->aabb.max.x)
+			{
+				ui::LogError("LoadFbx: Invalid AABB for mesh {}", current->name);
+				break;
+			}
+
+			// transform child AABB to parent space
+			bx::Aabb transformedAabb = TransformAabb(current->aabb, current->matrix);
+
+			// aggregate into parent AABB
+			parent->aabb.min = bx::min(parent->aabb.min, transformedAabb.min);
+			parent->aabb.max = bx::max(parent->aabb.max, transformedAabb.max);
+
+			// update groups AABB for group-type parent
+			if (parent->type & ObjectType_Group)
+				for (auto& group : parent->groups)
+					group.aabb = parent->aabb;
+
+			ui::Log("LoadFbx: updated parent {}: AABB min=({:.2f}, {:.2f}, {:.2f}), max=({:.2f}, {:.2f}, {:.2f})", parent->name, parent->aabb.min.x, parent->aabb.min.y, parent->aabb.min.z, parent->aabb.max.x, parent->aabb.max.y, parent->aabb.max.z);
+
+			current = parent;
+		}
 	}
 
 	// log hierarchy
 	for (const auto& child : rootMesh->children)
-		ui::Log("LoadFbx: child {}: parent={} groups={} children={}", child->name, child->parent ? child->parent->name : "none", Mesh::SharedPtr(child)->groups.size(), child->children.size());
+	{
+		const auto sparent = child->parent.lock();
+		ui::Log("LoadFbx: child {}: parent={} groups={} children={}", child->name, sparent ? sparent->name : "none", Mesh::SharedPtr(child)->groups.size(), child->children.size());
+	}
 
 	// clean up
 	scene->destroy();

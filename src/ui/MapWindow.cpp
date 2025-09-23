@@ -1,6 +1,6 @@
 // MapWindow.cpp
 // @author octopoulos
-// @version 2025-08-28
+// @version 2025-09-19
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -37,7 +37,7 @@ public:
 		ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 0.0f);
 		for (const auto& [kit, models] : app->kitModels)
 		{
-			if (ImGui::TreeNodeEx(fmt::format("[{}] {}", models.size(), kit.size() ? kit : "*"s).c_str(), ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Selected | ImGuiTreeNodeFlags_SpanFullWidth))
+			if (ImGui::TreeNodeEx(Format("[%d] %s", models.size(), kit.size() ? Cstr(kit) : "*"), ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Selected | ImGuiTreeNodeFlags_SpanFullWidth))
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(spacing, spacing));
 
@@ -47,13 +47,13 @@ public:
 				for (const auto& [name, hasPreview] : models)
 				{
 					bool       hasImage = false;
-					const auto kitName  = fmt::format("{}/{}", kit, name);
+					const auto kitName  = FormatStr("%s/%s", Cstr(kit), Cstr(name));
 					// ImGui::TextUnformatted(name.c_str());
 
 					// display previews here (png files)
 					if (hasPreview)
 					{
-						const auto preview = fmt::format("runtime/models-prev/{}.png", kitName);
+						const auto preview = FormatStr("runtime/models-prev/%s.png", Cstr(kitName));
 						const auto handle  = GetTextureManager().LoadTexture(preview);
 						if (bgfx::isValid(handle))
 						{
@@ -67,10 +67,10 @@ public:
 							}
 
 							ImTextureID texId = (ImTextureID)(uintptr_t)handle.idx;
-							if (ImGui::ImageButton(fmt::format("##{}", kitName).c_str(), ImTextureRef(texId), ImVec2(imageSize, imageSize), uv0, uv1))
+							if (ImGui::ImageButton(Format("##%s", Cstr(kitName)), ImTextureRef(texId), ImVec2(imageSize, imageSize), uv0, uv1))
 								app->AddObject(kitName);
 
-							if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", name.c_str());
+							if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", Cstr(name));
 							hasImage = true;
 						}
 					}
@@ -79,7 +79,7 @@ public:
 					if (!hasImage)
 					{
 						const ImVec2 boxSize = { imageSize + imagePadding, imageSize + imagePadding };
-						if (ImGui::Button(fmt::format("##{}", kitName).c_str(), boxSize))
+						if (ImGui::Button(Format("##%s", Cstr(kitName)), boxSize))
 							app->AddObject(kitName);
 
 						// draw wrapped text manually inside the button

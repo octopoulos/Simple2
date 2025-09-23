@@ -1,6 +1,6 @@
 // LogWindow.cpp
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-09-18
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -106,7 +106,7 @@ public:
 		const auto  region = ImGui::GetContentRegionAvail();
 		ImVec2      childDims(region.x, region.y);
 
-		ImGui::BeginChild(fmt::format("Scroll{}", active).c_str(), childDims, false);
+		ImGui::BeginChild(Format("Scroll%d", active), childDims, false);
 		{
 			ImGui::PushFont(FindFont("mono"));
 			ImGuiListClipper clipper;

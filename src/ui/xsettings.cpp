@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-09-17
+// @version 2025-09-18
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -172,7 +172,7 @@ void InitGameSettings()
 void LoadGameSettings(int gameId, std::string baseName, std::string_view suffix)
 {
 	if (baseName.empty() && gameId >= 0 && gameId < NUM_GAMES)
-		baseName = fmt::format("{}{}.ini", sGames[gameId], suffix);
+		baseName = Format("%s%s.ini", sGames[gameId], Cstr(suffix));
 
 	LoadSettings(&xsettings, sizeof(XSettings), baseName, suffix);
 
@@ -192,7 +192,7 @@ int SaveGameSettings(std::string baseName, bool saveGame, std::string_view suffi
 	if (saveGame && sections.empty())
 	{
 		if (const auto gameId = xsettings.gameId; gameId >= 0 && gameId < NUM_GAMES)
-			SaveSettings(fmt::format("{}{}.ini", sGames[gameId], suffix), "", { "app", "user" });
+			SaveSettings(FormatStr("%s%s.ini", sGames[gameId], Cstr(suffix)), "", { "app", "user" });
 	}
 	return 1;
 }

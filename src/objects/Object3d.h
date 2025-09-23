@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-09-17
+// @version 2025-09-18
 
 #pragma once
 
@@ -28,6 +28,7 @@ enum ShowObjects_ : int
 
 class Object3d;
 using sObject3d = std::shared_ptr<Object3d>;
+using wObject3d = std::weak_ptr<Object3d>;
 
 /// An object can have multiple types (like a flag)
 enum ObjectTypes_ : int
@@ -53,40 +54,40 @@ enum RenderFlags_ : int
 	RenderFlag_Instancing = 1 << 0,
 };
 
-class Object3d
+class Object3d : public std::enable_shared_from_this<Object3d>
 {
 public:
-	glm::quat                         axis1       = glm::identity<glm::quat>(); ///< quaternion: axis origin
-	glm::quat                         axis2       = glm::identity<glm::quat>(); ///< quaternion: axis target
-	double                            axisTs      = 0.0;                        ///< stamp when rotating face
-	int                               childId     = 0;                          ///< selected sub-object
-	int                               childInc    = 0;                          ///< incremental id
-	std::vector<sObject3d>            children    = {};                         ///< sub-objects
-	int                               dead        = Dead_Alive;                 ///< dead status: Deads_
-	int                               id          = 0;                          ///< unique id
-	MAP<int, std::weak_ptr<Object3d>> ids         = {};                         ///< id'd children
-	double                            interval    = 0.0;                        ///< current interval
-	int                               irot[3]     = {};                         ///< number of 45 deg rotations
-	glm::mat4                         matrix      = glm::mat4(1.0f);            ///< full local transform (S * R * T)
-	glm::mat4                         matrixWorld = glm::mat4(1.0f);            ///< parent->matrixWorld * matrix
-	std::string                       name        = "";                         ///< object name (used to find in scene)
-	UMAP_STR<std::weak_ptr<Object3d>> names       = {};                         ///< named children
-	Object3d*                         parent      = nullptr;                    ///< parent object
-	bool                              parentLink  = true;                       ///< linked to the parent or physically independent?
-	bool                              placing     = false;                      ///< object is being placed on the map?
-	glm::vec3                         position    = glm::vec3(0.0f);            ///< local position
-	glm::vec3                         position1   = glm::vec3(0.0f);            ///< position: origin
-	glm::vec3                         position2   = glm::vec3(0.0f);            ///< position: target
-	double                            posTs       = 0.0;                        ///< stamp when moved
-	glm::quat                         quaternion  = glm::identity<glm::quat>(); ///< quaternion
-	glm::quat                         quaternion1 = glm::identity<glm::quat>(); ///< quaternion: origin
-	glm::quat                         quaternion2 = glm::identity<glm::quat>(); ///< quaternion: target
-	double                            quatTs      = 0.0;                        ///< stamp when rotated
-	glm::vec3                         rotation    = glm::vec3(0.0f);            ///< rotation: Euler angles
-	glm::vec3                         scale       = glm::vec3(1.0f);            ///< sx, sy, sz
-	glm::mat4                         scaleMatrix = glm::mat4(1.0f);            ///< uses scale
-	int                               type        = ObjectType_Basic;           ///< ObjectTypes_
-	bool                              visible     = true;                       ///< object is rendered if true
+	glm::quat              axis1       = glm::identity<glm::quat>(); ///< quaternion: axis origin
+	glm::quat              axis2       = glm::identity<glm::quat>(); ///< quaternion: axis target
+	double                 axisTs      = 0.0;                        ///< stamp when rotating face
+	int                    childId     = 0;                          ///< selected sub-object
+	int                    childInc    = 0;                          ///< incremental id
+	std::vector<sObject3d> children    = {};                         ///< sub-objects
+	int                    dead        = Dead_Alive;                 ///< dead status: Deads_
+	int                    id          = 0;                          ///< unique id
+	MAP<int, wObject3d>    ids         = {};                         ///< id'd children
+	double                 interval    = 0.0;                        ///< current interval
+	int                    irot[3]     = {};                         ///< number of 45 deg rotations
+	glm::mat4              matrix      = glm::mat4(1.0f);            ///< full local transform (S * R * T)
+	glm::mat4              matrixWorld = glm::mat4(1.0f);            ///< parent->matrixWorld * matrix
+	std::string            name        = "";                         ///< object name (used to find in scene)
+	UMAP_STR<wObject3d>    names       = {};                         ///< named children
+	wObject3d              parent      = {};                         ///< parent object
+	bool                   parentLink  = true;                       ///< linked to the parent or physically independent?
+	bool                   placing     = false;                      ///< object is being placed on the map?
+	glm::vec3              position    = glm::vec3(0.0f);            ///< local position
+	glm::vec3              position1   = glm::vec3(0.0f);            ///< position: origin
+	glm::vec3              position2   = glm::vec3(0.0f);            ///< position: target
+	double                 posTs       = 0.0;                        ///< stamp when moved
+	glm::quat              quaternion  = glm::identity<glm::quat>(); ///< quaternion
+	glm::quat              quaternion1 = glm::identity<glm::quat>(); ///< quaternion: origin
+	glm::quat              quaternion2 = glm::identity<glm::quat>(); ///< quaternion: target
+	double                 quatTs      = 0.0;                        ///< stamp when rotated
+	glm::vec3              rotation    = glm::vec3(0.0f);            ///< rotation: Euler angles
+	glm::vec3              scale       = glm::vec3(1.0f);            ///< sx, sy, sz
+	glm::mat4              scaleMatrix = glm::mat4(1.0f);            ///< uses scale
+	int                    type        = ObjectType_Basic;           ///< ObjectTypes_
+	bool                   visible     = true;                       ///< object is rendered if true
 
 	Object3d(std::string_view name, int type = ObjectType_Basic)
 		: name(name)

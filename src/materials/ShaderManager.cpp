@@ -1,6 +1,6 @@
 // ShaderManager.cpp
 // @author octopoulos
-// @version 2025-08-29
+// @version 2025-09-19
 
 #include "stdafx.h"
 #include "materials/ShaderManager.h"
@@ -37,10 +37,10 @@ static bgfx::ShaderHandle LoadShader_(bx::FileReaderI* reader, std::string_view 
 	if (shaderName.empty()) return BGFX_INVALID_HANDLE;
 
 	path /= shaderName;
-	path /= fmt::format("{}.bin", name);
+	path /= Format("%s.bin", Cstr(name));
 	if (!IsFile(path)) return BGFX_INVALID_HANDLE;
 
-	bgfx::ShaderHandle handle = bgfx::createShader(BgfxLoadMemory(reader, path.string().c_str()));
+	bgfx::ShaderHandle handle = bgfx::createShader(BgfxLoadMemory(reader, Cstr(path)));
 	bgfx::setName(handle, name.data(), name.size());
 
 	if (DEV_shader) ui::Log("LoadShader_: {} : {}", path, (void*)&handle);
@@ -50,25 +50,6 @@ static bgfx::ShaderHandle LoadShader_(bx::FileReaderI* reader, std::string_view 
 static bgfx::ShaderHandle LoadShader_(std::string_view name)
 {
 	return LoadShader_(entry::getFileReader(), name);
-}
-
-static bgfx::ProgramHandle LoadProgram_(bx::FileReaderI* reader, std::string_view vsName, std::string_view fsName)
-{
-	bgfx::ShaderHandle vsh = LoadShader_(reader, vsName);
-	if (!bgfx::isValid(vsh)) vsh = LoadShader_(reader, "vs_cube");
-
-	bgfx::ShaderHandle fsh = BGFX_INVALID_HANDLE;
-	if (fsName.size())
-	{
-		fsh = LoadShader_(reader, fsName);
-		if (!bgfx::isValid(fsh)) vsh = LoadShader_(reader, "fs_cube");
-	}
-	return bgfx::createProgram(vsh, fsh, true);
-}
-
-static bgfx::ProgramHandle LoadProgram_(std::string_view vsName, std::string_view fsName)
-{
-	return LoadProgram_(entry::getFileReader(), vsName, fsName);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -125,7 +106,7 @@ void ShaderManager::InitializeUniforms()
 bgfx::ProgramHandle ShaderManager::LoadProgram(std::string_view vsName, std::string_view fsName)
 {
 	// 1) check cache
-	const std::string key = fmt::format("{}|{}", vsName, fsName);
+	const std::string key = FormatStr("%s|%s", Cstr(vsName), Cstr(fsName));
 	if (const auto exist = GetProgram(key); bgfx::isValid(exist)) return exist;
 
 	// 2) load shaders

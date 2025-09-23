@@ -1,6 +1,6 @@
 // MeshLoader.cpp
 // @author octopoulos
-// @version 2025-09-04
+// @version 2025-09-19
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -34,7 +34,7 @@ sMesh MeshLoader::LoadModel(std::string_view name, std::string_view modelName, b
 
 	for (const auto& ext : priorityExts)
 	{
-		const auto path = modelDir / fmt::format("{}.{}", modelName, ext);
+		const auto path = modelDir / Format("%s.%s", Cstr(modelName), Cstr(ext));
 		if (IsFile(path))
 		{
 			const int format = FindDefault(extFormats, ext, 0);

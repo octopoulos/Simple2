@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-09-19
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -73,10 +73,10 @@ int App::Initialize()
 	// 2) load imgui.ini
 	{
 		InitializeImGui();
-		ImGui::LoadIniSettingsFromDisk(imguiPath.string().c_str());
+		ImGui::LoadIniSettingsFromDisk(Cstr(imguiPath));
 
-		auto appPtr = shared_from_this();
-		ui::ListWindows(appPtr);
+		auto sapp = shared_from_this();
+		ui::ListWindows(sapp);
 		ui::UpdateTheme();
 	}
 
@@ -199,7 +199,7 @@ int App::InitializeScene()
 
 				for (int i = 0; i < 2; ++i)
 				{
-					auto cubeMesh      = std::make_shared<Mesh>(fmt::format("wall-{}", 1 + i));
+					auto cubeMesh      = std::make_shared<Mesh>(Format("wall-%d", 1 + i));
 					cubeMesh->geometry = CreateBoxGeometry(39.0f, 6.0f, 1.0f, 4, 1, 4);
 					cubeMesh->material = GetMaterialManager().LoadMaterial("brick", "vs_model_texture", "fs_model_texture", { "brick_diffuse.jpg" });
 
@@ -214,7 +214,7 @@ int App::InitializeScene()
 				}
 				for (int i = 0; i < 2; ++i)
 				{
-					auto cubeMesh      = std::make_shared<Mesh>(fmt::format("wall-{}", 3 + i));
+					auto cubeMesh      = std::make_shared<Mesh>(Format("wall-%d", 3 + i));
 					cubeMesh->geometry = CreateBoxGeometry(1.0f, 6.0f, 39.0f, 4, 1, 4);
 					cubeMesh->material = GetMaterialManager().LoadMaterial("wood", "vs_model_texture", "fs_model_texture", { "hardwood2_diffuse.jpg" });
 
@@ -369,7 +369,7 @@ void App::Render()
 			if (CreateDirectories("temp"))
 			{
 				bgfx::FrameBufferHandle fbh = BGFX_INVALID_HANDLE;
-				bgfx::requestScreenShot(fbh, fmt::format("temp/{}.png", FormatDateTime(2, true)).c_str());
+				bgfx::requestScreenShot(fbh, Format("temp/%s.png", FormatDateTime(2, true).c_str()));
 			}
 		}
 	}
@@ -387,7 +387,7 @@ void App::InitializeImGui()
 	static char iniFilename[512];
 
 	imguiPath = ConfigFolder() / "imgui.ini";
-	strcpy(iniFilename, imguiPath.string().c_str());
+	strcpy(iniFilename, Cstr(imguiPath));
 	ImGuiIO& io    = ImGui::GetIO();
 	io.IniFilename = iniFilename;
 }
@@ -441,7 +441,7 @@ struct BgfxCallback : public bgfx::CallbackI
 		{
 			if (numFailure > 3)
 				wantVideo = false;
-			else if (!ffmpeg.Open(fmt::format("temp/{}.mp4", FormatDateTime(2, true)), width, height, 60, yflip))
+			else if (!ffmpeg.Open(Format("temp/%s.mp4", FormatDateTime(2, true).c_str()), width, height, 60, yflip))
 				++numFailure;
 		}
 		else ffmpeg.WriteFrame(data, size);
@@ -500,7 +500,7 @@ public:
 
 			// name, type, default, implicit, needApp, help
 			// clang-format off
-			CLI_OPTION(tests, int, 0, 1, 0, "Run tests");
+			CLI_OPTION(tests, int, 0, "1", 0, "Run tests");
 			// clang-format on
 
 			if (argc && argv) CLI11_PARSE(cli, argc, argv);

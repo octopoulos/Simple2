@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-09-11
+// @version 2025-09-19
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -14,7 +14,7 @@ void App::AddGeometry(uGeometry geometry)
 	const auto& coord = cursor->position;
 	const auto& irot  = cursor->irot;
 
-	if (auto object = std::make_shared<Mesh>(fmt::format("{}:{}", mapNode->children.size(), GeometryName(geometry->type), GeometryShape(geometry->type, false))))
+	if (auto object = std::make_shared<Mesh>(Format("%d:%s", mapNode->children.size(), GeometryName(geometry->type).c_str())))
 	{
 		object->geometry = geometry;
 		object->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
@@ -47,10 +47,11 @@ void App::AddObject(std::string_view modelName)
 		if (modelName == ":RubikCube")
 		{
 			mesh = std::make_shared<RubikCube>("Rubik", 3);
+			RubikCube::SharedPtr(mesh)->Initialize();
 			mesh->SetPhysics(GetPhysics());
 		}
 	}
-	else mesh = MeshLoader::LoadModelFull(fmt::format("{}:{}", mapNode->children.size(), NodeName(modelName)), modelName);
+	else mesh = MeshLoader::LoadModelFull(FormatStr("%d:%s", mapNode->children.size(), NodeName(modelName).c_str()), modelName);
 
 	if (mesh)
 	{
@@ -74,8 +75,11 @@ void App::AutoSave(const sObject3d& target)
 	if (target)
 	{
 		// don't save if parent is not "Map"
-		const auto* parent = target->parent;
-		if (!parent || !(parent->type & ObjectType_Map)) return;
+		if (auto parent = target->parent.lock())
+		{
+			if (!parent || !(parent->type & ObjectType_Map)) return;
+		}
+		else return;
 	}
 	SaveScene();
 }
@@ -88,7 +92,7 @@ std::string App::NodeName(std::string_view modelName)
 	const auto filename = path.filename().string();
 	const auto parent   = path.parent_path().string();
 
-	return parent.empty() ? filename : fmt::format("{} ({})", filename, parent);
+	return parent.empty() ? filename : FormatStr("%s (%s)", filename.c_str(), parent.c_str());
 }
 
 TEST_CASE("NodeName")
@@ -171,8 +175,8 @@ void App::RescanAssets()
 
 			CreateDirectories(modelOut.parent_path());
 
-			const auto cmd    = fmt::format(R"(geometryc -f "{}" -o "{}")", path.string(), modelOut.string());
-			const int  result = std::system(cmd.c_str());
+			const char* cmd    = Format(R"(geometryc -f "%s" -o "%s")", Cstr(path), Cstr(modelOut));
+			const int   result = std::system(cmd);
 			if (result != 0) ui::Log("ERROR: geometryc failed with code {}", result);
 		}
 
@@ -261,7 +265,7 @@ void App::ScanModels(const std::filesystem::path& folder, const std::filesystem:
 	// 2) check sub folders, combine 'shuffle' and 'older first'
 	{
 		for (const auto& subFolder : subFolders)
-			ScanModels(folder / subFolder, folderPrev / subFolder, depth + 1, fmt::format("{}{}{}", relative, relative.size() ? "/" : "", subFolder.filename().string()));
+			ScanModels(folder / subFolder, folderPrev / subFolder, depth + 1, Format("%s%s%s", Cstr(relative), relative.size() ? "/" : "", Cstr(subFolder.filename())));
 	}
 
 	// 3) summary
