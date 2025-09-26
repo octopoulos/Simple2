@@ -76,6 +76,7 @@ int App::Initialize()
 		ImGui::LoadIniSettingsFromDisk(Cstr(imguiPath));
 
 		auto sapp = shared_from_this();
+		ui::Log("sapp={}", (intptr_t)sapp.get());
 		ui::ListWindows(sapp);
 		ui::UpdateTheme();
 	}

@@ -1,6 +1,6 @@
-// menu.cpp
+// ui-menu.cpp
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-22
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -178,7 +178,7 @@ void App::PopupsUi()
 		{
 			if (currentPopup & Popup_AddGeometry)
 			{
-				ImGui::Text("Add geometry");
+				ImGui::TextUnformatted("Add geometry");
 				ImGui::Separator();
 				for (int type = GeometryType_None + 1; type < GeometryType_Count; ++type)
 				{
@@ -192,12 +192,12 @@ void App::PopupsUi()
 			}
 			else if (currentPopup & Popup_AddMap)
 			{
-				ImGui::Text("Add map tile");
+				ImGui::TextUnformatted("Add map tile");
 				ImGui::Separator();
 			}
 			else if (currentPopup & Popup_AddMesh)
 			{
-				ImGui::Text("Add mesh");
+				ImGui::TextUnformatted("Add mesh");
 				ImGui::Separator();
 				if (ImGui::MenuItem("Rubik Cube")) AddObject(":RubikCube");
 			}
@@ -205,7 +205,7 @@ void App::PopupsUi()
 			{
 				if (auto target = selectWeak.lock())
 				{
-					ImGui::Text("Delete selected object?");
+					ImGui::TextUnformatted("Delete selected object?");
 					ImGui::Text("(%s)", target->name.c_str());
 					ImGui::Dummy(ImVec2(0.0f, 8.0f));
 					if (ImGui::Button("Cancel", ImVec2(160.0f, 0.0f))) hidePopup |= Popup_Delete;
@@ -219,7 +219,7 @@ void App::PopupsUi()
 			}
 			else if (currentPopup & Popup_Transform)
 			{
-				ImGui::Text("Transform");
+				ImGui::TextUnformatted("Transform");
 				ShowObjectSettings(true, ShowObject_Basic | ShowObject_Transform);
 			}
 		}

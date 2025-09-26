@@ -1,4 +1,4 @@
-// @version 2025-09-18
+// @version 2025-09-22
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -286,7 +286,7 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 				const float maxWidth   = 90.0f;
 
 				ImGui::PushFont(ImGui::Font::Mono);
-				ImGui::Text("Res: Num  / Max");
+				ImGui::TextUnformatted("Res: Num  / Max");
 				resourceBar("DIB", "Dynamic index buffers", stats->numDynamicIndexBuffers, caps->limits.maxDynamicIndexBuffers, maxWidth, itemHeight);
 				resourceBar("DVB", "Dynamic vertex buffers", stats->numDynamicVertexBuffers, caps->limits.maxDynamicVertexBuffers, maxWidth, itemHeight);
 				resourceBar(" FB", "Frame buffers", stats->numFrameBuffers, caps->limits.maxFrameBuffers, maxWidth, itemHeight);
@@ -304,7 +304,7 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 			if (ImGui::CollapsingHeader(ICON_FA_CLOCK_O " Profiler"))
 			{
 				if (!stats->numViews)
-					ImGui::Text("Profiler is not enabled.");
+					ImGui::TextUnformatted("Profiler is not enabled.");
 				else
 				{
 					if (ImGui::BeginChild("##view_profiler", ImVec2(0.0f, 0.0f)))

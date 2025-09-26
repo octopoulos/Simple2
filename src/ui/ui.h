@@ -1,12 +1,13 @@
 // ui.h
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-21
 
 #pragma once
 
 #include "imgui-include.h"
 
 class App;
+using wEngine = std::weak_ptr<App>;
 
 namespace ui
 {
@@ -34,15 +35,15 @@ enum WindowTypes_
 class CommonWindow
 {
 public:
-	float              alpha   = 1.0f;            ///< window opacity
-	std::weak_ptr<App> appWeak = {};              ///< pointer to App, to display App properties
-	int                drawn   = 0;               ///< used for initial setup
-	int                hidden  = 0;               ///< automatic flag, 2=cannot be hidden
-	bool               isOpen  = false;           ///< manual flag, the user opened/closed the window
-	std::string        name    = "";              ///< Controls, Log, Scene, Settings, Theme
-	ImVec2             pos     = {};              ///< current position
-	ImVec2             size    = {};              ///< current size
-	int                type    = WindowType_None; ///< WindowTypes_
+	float       alpha   = 1.0f;            ///< window opacity
+	wEngine     appWeak = {};              ///< pointer to App, to display App properties
+	int         drawn   = 0;               ///< used for initial setup
+	int         hidden  = 0;               ///< automatic flag, 2=cannot be hidden
+	bool        isOpen  = false;           ///< manual flag, the user opened/closed the window
+	std::string name    = "";              ///< Controls, Log, Scene, Settings, Theme
+	ImVec2      pos     = {};              ///< current position
+	ImVec2      size    = {};              ///< current size
+	int         type    = WindowType_None; ///< WindowTypes_
 
 	virtual ~CommonWindow() {}
 
@@ -74,6 +75,10 @@ bool AddDragFloat(int mode, std::string_view name, const char* text, float* data
 /// Add a drag int with label left/right
 /// @param mode: &4: popup, &8: empty label, &16: no label + span all width
 bool AddDragInt(int mode, std::string_view name, const char* text, int* dataPtr = nullptr, int count = 1, float speed = 1.0f, const char* format = "%d");
+
+/// Add an input int with label left/right
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
+void AddInputInt(int mode, std::string_view name, const char* label, int flags = 0, int* pint = nullptr);
 
 /// Add an input text input with label left/right + special Blender support
 /// @param mode: &4: popup, &8: empty label, &16: no label + span all width
@@ -304,9 +309,6 @@ void SaveWindows();
 
 /// Set alpha for the next window
 bool SetAlpha(float alpha);
-
-/// Show the menu bar
-void ShowMainMenu(float alpha);
 
 /// Hide/unhide windows
 ///  - only change hidden, not isOpen

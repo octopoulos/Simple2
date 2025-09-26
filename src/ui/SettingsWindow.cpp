@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-09-17
+// @version 2025-09-22
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -19,14 +19,12 @@ enum ShowSettingFlags : int
 	Show_Input             = 1 << 3,
 	Show_Map               = 1 << 4,
 	Show_Net               = 1 << 5,
-	Show_NetMain           = 1 << 6,
-	Show_NetUser           = 1 << 7,
-	Show_Physics           = 1 << 8,
-	Show_Render            = 1 << 9,
-	Show_Rubik             = 1 << 10,
-	Show_System            = 1 << 11, // main
-	Show_SystemPerformance = 1 << 12,
-	Show_SystemUI          = 1 << 13,
+	Show_Physics           = 1 << 6,
+	Show_Render            = 1 << 7,
+	Show_Rubik             = 1 << 8,
+	Show_System            = 1 << 9, // main
+	Show_SystemPerformance = 1 << 10,
+	Show_SystemUI          = 1 << 11,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,7 +32,6 @@ enum ShowSettingFlags : int
 class SettingsWindow : public CommonWindow
 {
 private:
-	// int       changed      = 0;
 	XSettings prevSettings = {};
 
 public:

@@ -10,7 +10,9 @@
 // if commented, you have two defualt interface, std::filesystem or dirent
 // #define USE_CUSTOM_FILESYSTEM
 // this options need c++17
+#ifndef USE_STD_FILESYSTEM
 #define USE_STD_FILESYSTEM
+#endif // USE_STD_FILESYSTEM
 
 /////////////////////////////////
 //// MISC ///////////////////////
