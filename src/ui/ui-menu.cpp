@@ -1,6 +1,6 @@
 // ui-menu.cpp
 // @author octopoulos
-// @version 2025-09-22
+// @version 2025-09-25
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -241,12 +241,6 @@ void App::PopupsUi()
 
 void App::ShowMainMenu(float alpha)
 {
-	// if (!SetAlpha(alpha))
-	//{
-	//	menuHeight = 0.0f;
-	//	return;
-	// }
-
 	if (wantVideo)
 	{
 		ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -419,8 +413,6 @@ void App::ShowMainMenu(float alpha)
 	}
 
 	// drawGui();
-
-	// ImGui::PopStyleColor();
 }
 
 void App::ShowPopup(int flag)

@@ -1,6 +1,6 @@
 // ui.cpp
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-25
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -60,17 +60,6 @@ void SaveWindows()
 	{
 		if (window->isOpen) xsettings.winOpen |= window->type;
 	}
-}
-
-bool SetAlpha(float alpha)
-{
-	if (alpha <= 0.0f) return false;
-
-	ImVec4 color = ImGui::GetStyle().Colors[ImGuiCol_Text];
-	color.w      = alpha;
-	ImGui::PushStyleColor(ImGuiCol_Text, color);
-	ImGui::SetNextWindowBgAlpha(alpha);
-	return true;
 }
 
 bool ShowWindows(bool show, bool force)

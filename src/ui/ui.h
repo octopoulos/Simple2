@@ -1,6 +1,6 @@
 // ui.h
 // @author octopoulos
-// @version 2025-09-21
+// @version 2025-09-25
 
 #pragma once
 
@@ -306,9 +306,6 @@ void ListWindows(std::shared_ptr<App> &app);
 
 /// Save windows open states
 void SaveWindows();
-
-/// Set alpha for the next window
-bool SetAlpha(float alpha);
 
 /// Hide/unhide windows
 ///  - only change hidden, not isOpen

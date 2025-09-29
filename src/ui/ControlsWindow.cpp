@@ -1,6 +1,6 @@
 // ControlsWindow.cpp
 // @author octopoulos
-// @version 2025-08-28
+// @version 2025-09-25
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -85,8 +85,6 @@ public:
 			++drawn;
 		}
 
-		if (!SetAlpha(alpha)) return;
-
 		if (ImGui::Begin("Controls", &isOpen))
 		{
 			//const auto app = static_cast<App*>(engine.get());
@@ -108,7 +106,6 @@ public:
 			ImGui::PopFont();
 		}
 		ImGui::End();
-		ImGui::PopStyleColor();
 	}
 
 	/// Image text button aligned on a row
