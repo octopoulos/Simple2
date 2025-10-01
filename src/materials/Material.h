@@ -1,6 +1,6 @@
 // Material.h
 // @author octopoulos
-// @version 2025-09-17
+// @version 2025-09-27
 
 #pragma once
 
@@ -63,7 +63,10 @@ public:
 	/// Load the shaders + compile program + remember shader names
 	void LoadProgram(std::string_view vsName, std::string_view fsName);
 
-	/// Load a color and normal texture if available
+	/// Load a specific texture
+	void LoadTexture(int texId, std::string_view name);
+
+	/// Load all textures
 	void LoadTextures(const VEC_STR& texFiles);
 
 	/// Serialize for JSON output

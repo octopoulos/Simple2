@@ -105,17 +105,20 @@ void Material::LoadProgram(std::string_view vsName, std::string_view fsName)
 	program      = GetShaderManager().LoadProgram(vsName, fsName);
 }
 
+void Material::LoadTexture(int texId, std::string_view name)
+{
+	if (name.size())
+	{
+		const auto proxy = RelativeName(name, { "runtime/textures" });
+		texNames[texId]  = proxy;
+		textures[texId]  = GetTextureManager().LoadTexture(proxy);
+	}
+}
+
 void Material::LoadTextures(const VEC_STR& texFiles)
 {
-	for (int i = -1; const auto& texFile : texFiles)
-	{
-		++i;
-		if (texFile.size())
-		{
-			texNames[i] = texFile;
-			textures[i] = GetTextureManager().LoadTexture(texFile);
-		}
-	}
+	for (int id = -1; const auto& texFile : texFiles)
+		LoadTexture(++id, texFile);
 }
 
 int Material::Serialize(fmt::memory_buffer& outString, int depth, int bounds)

@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-09-27
 
 #pragma once
 
@@ -93,6 +93,7 @@ public:
 	std::string               modelName = "";            ///< model name (part of filename)
 	std::deque<int>           nextKeys  = {};            ///< queued keys
 	bx::Sphere                sphere    = {};            ///< sphere around the whole mesh
+	std::string               texPath   = "";            ///< texture path overrider (fbx/gltf)
 
 	Mesh(std::string_view name, int typeFlag = 0, std::shared_ptr<Geometry> geometry = nullptr, sMaterial material = nullptr)
 	    : Object3d(name, ObjectType_Mesh | typeFlag)

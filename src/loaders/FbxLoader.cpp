@@ -1,6 +1,6 @@
 // FbxLoader.cpp
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-09-27
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -15,7 +15,7 @@
 //////////
 
 /// Create material from FBX
-static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Material* fbxMaterial, const std::filesystem::path& fbxPath)
+static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Material* fbxMaterial, const std::filesystem::path& fbxPath, std::string_view texPath)
 {
 	std::string      vsName       = "vs_model_color"; // default to color-based lit shader
 	std::string      fsName       = "fs_model_color";
@@ -42,20 +42,31 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 				}
 
 				ofbx::DataView filename = texture->getFileName();
-				char           texturePath[256];
-				filename.toString(texturePath);
-				ui::Log("TEX: {}={} for {}", typeName, texturePath, materialName);
+				char           textureCpath[256];
+				filename.toString(textureCpath);
+				ui::Log("TEX: {}={} for {}", typeName, textureCpath, materialName);
 
 				TextureData texData = { type, "" };
-				if (texturePath[0])
+				if (textureCpath[0])
 				{
-					texData.name        = std::filesystem::path(texturePath).filename().string();
-					const auto fullPath = fbxPath.parent_path() / texData.name;
-					texData.handle      = GetTextureManager().LoadTexture(fullPath.string());
+					auto       tryPath  = std::filesystem::path(NormalizeFilename(textureCpath));
+					const auto filename = tryPath.filename().string();
+					texData.name        = filename;
+
+					if (!IsFile(tryPath))
+					{
+						if (texPath.size())
+							tryPath = std::filesystem::path(texPath) / filename;
+						else
+							tryPath = fbxPath.filename().stem() / filename;
+					}
+
+					// tryPath        = RelativeName(tryPath, { "runtime/textures" });
+					texData.handle = GetTextureManager().LoadTexture(tryPath.string());
 					if (bgfx::isValid(texData.handle))
 						ui::Log("CreateMaterialFromFbx: loaded {} texture {} for {}", typeName, texData.name, materialName);
 					else
-						ui::LogError("CreateMaterialFromFbx: failed {} file: {} for {}", typeName, fullPath.string(), materialName);
+						ui::LogError("CreateMaterialFromFbx: failed {} file: {} for {}", typeName, tryPath, materialName);
 					textures.push_back(texData);
 				}
 
@@ -141,7 +152,7 @@ static sMesh CreateNodeMesh(const ofbx::Object* node)
 }
 
 /// Process FBX node recursively
-static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, const std::filesystem::path& fbxPath)
+static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, const std::filesystem::path& fbxPath, std::string_view texPath)
 {
 	// 1) create mesh
 	sMesh      mesh     = CreateNodeMesh(fbxMesh);
@@ -193,7 +204,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 
 		// material
 		const auto* material = fbxMesh->getMaterial(partitionId);
-		group.material       = CreateMaterialFromFbx(scene, material, fbxPath);
+		group.material       = CreateMaterialFromFbx(scene, material, fbxPath, texPath);
 		if (!group.material)
 		{
 			ui::LogError("ProcessMesh: Cannot create material for mesh {} partition {}", nodeName, partitionId);
@@ -326,7 +337,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 	}
 
 	// 6) set default material for the mesh
-	mesh->material  = CreateMaterialFromFbx(scene, nullptr, fbxPath);
+	mesh->material  = CreateMaterialFromFbx(scene, nullptr, fbxPath, texPath);
 	mesh->material0 = mesh->material;
 
 	return mesh;
@@ -369,7 +380,7 @@ static bx::Aabb TransformAabb(const bx::Aabb& aabb, const glm::mat4& matrix)
 // MAIN
 ///////
 
-sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy)
+sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy, std::string_view texPath)
 {
 	if (!std::filesystem::exists(path))
 	{
@@ -418,7 +429,7 @@ sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy)
 	for (int i = 0, meshCount = scene->getMeshCount(); i < meshCount; ++i)
 	{
 		const ofbx::Mesh* fbxMesh = scene->getMesh(i);
-		sMesh             mesh    = ProcessMesh(*scene, fbxMesh, path);
+		sMesh             mesh    = ProcessMesh(*scene, fbxMesh, path, texPath);
 		meshMap[fbxMesh->id]      = mesh;
 
 		ui::Log("LoadFbx: {}/{} name={}", i, meshCount, mesh->name);

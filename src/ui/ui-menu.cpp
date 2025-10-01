@@ -81,7 +81,18 @@ void App::OpenedFile(int action, int param, const std::filesystem::path& path)
 
 	switch (action)
 	{
-	case OpenAction_Image    : ui::Log("OpenAction_Image"); break;
+	case OpenAction_Image:
+		if (auto target = selectWeak.lock())
+		{
+			if (target->type & ObjectType_Mesh)
+			{
+				ui::Log("current_path={}", std::filesystem::current_path());
+				ui::Log("relative={}", std::filesystem::relative(path, "mnt/d"));
+				ui::Log("proximate={}", std::filesystem::proximate(path, "mnt/d"));
+				Mesh::SharedPtr(target)->material->LoadTexture(param, path.string());
+			}
+		}
+		break;
 	case OpenAction_OpenScene: OpenScene(path); break;
 	case OpenAction_SaveScene: SaveScene(path); break;
 	default:

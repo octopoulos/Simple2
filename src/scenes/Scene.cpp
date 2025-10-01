@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-27
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -140,6 +140,9 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 	}
 	else if (type & ObjectType_Mesh)
 	{
+		std::string texPath;
+		if (!doc["texPath"].get_string().get(texPath)) {}
+
 		// rubik
 		if (type & ObjectType_RubikCube)
 		{
@@ -152,7 +155,7 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 		{
 			std::string modelName;
 			if (!doc["modelName"].get_string().get(modelName))
-				object = MeshLoader::LoadModelFull(name, modelName);
+				object = MeshLoader::LoadModelFull(name, modelName, {}, texPath);
 		}
 
 		if (!object) object = std::make_shared<Mesh>(name, type);

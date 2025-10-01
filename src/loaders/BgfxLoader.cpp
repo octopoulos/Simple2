@@ -1,6 +1,6 @@
 // BgfxLoader.cpp
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-27
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -12,7 +12,7 @@ namespace bgfx
 	int32_t read(bx::ReaderI* reader, bgfx::VertexLayout& layout, bx::Error* err);
 }
 
-sMesh LoadBgfx(const std::filesystem::path& path, bool ramcopy)
+sMesh LoadBgfx(const std::filesystem::path& path, bool ramcopy, std::string_view texPath)
 {
 	const bx::FilePath filePath = Cstr(path);
 

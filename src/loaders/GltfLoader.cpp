@@ -1,6 +1,6 @@
 // GltfLoader.cpp
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-27
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -58,7 +58,7 @@ static std::string ProcessImageData(const fastgltf::DataSource& data, std::strin
 }
 
 /// Create an sMaterial from a fastgltf::Material using MaterialManager and TextureManager
-static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optional<std::size_t> materialId, const std::filesystem::path& gltfPath)
+static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optional<std::size_t> materialId, const std::filesystem::path& gltfPath, std::string_view texPath)
 {
 	// default shaders
 	std::string      fsName       = "fs_model_texture_normal";
@@ -174,7 +174,7 @@ static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optio
 // MAIN
 ///////
 
-sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy)
+sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy, std::string_view texPath)
 {
 	fastgltf::Parser parser;
 
@@ -238,7 +238,7 @@ sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy)
 			Group group;
 
 			// assign material to group
-			group.material = CreateMaterialFromGltf(asset, primitive.materialIndex, path);
+			group.material = CreateMaterialFromGltf(asset, primitive.materialIndex, path, texPath);
 
 			// === Indices ===
 			std::vector<uint32_t> indices;
@@ -361,7 +361,7 @@ sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy)
 	}
 
 	// 7) set a default material for the mesh (optional, for fallback)
-	mesh->material  = CreateMaterialFromGltf(asset, std::nullopt, path);
+	mesh->material  = CreateMaterialFromGltf(asset, std::nullopt, path, texPath);
 	mesh->material0 = mesh->material;
 
 	return mesh;

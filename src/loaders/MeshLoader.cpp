@@ -1,6 +1,6 @@
 // MeshLoader.cpp
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-27
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -26,7 +26,7 @@ static const VEC_STR priorityExts = { "glb", "gltf", "fbx", "bin" };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-sMesh MeshLoader::LoadModel(std::string_view name, std::string_view modelName, bool ramcopy)
+sMesh MeshLoader::LoadModel(std::string_view name, std::string_view modelName, bool ramcopy, std::string_view texPath)
 {
 	const std::filesystem::path modelDir = "runtime/models";
 
@@ -41,9 +41,9 @@ sMesh MeshLoader::LoadModel(std::string_view name, std::string_view modelName, b
 			// clang-format off
 			switch (format)
 			{
-			case MeshFormat_Bgfx: mesh = LoadBgfx(path, ramcopy); break;
-			case MeshFormat_Fbx : mesh = LoadFbx (path, ramcopy); break;
-			case MeshFormat_Gltf: mesh = LoadGltf(path, ramcopy); break;
+			case MeshFormat_Bgfx: mesh = LoadBgfx(path, ramcopy, texPath); break;
+			case MeshFormat_Fbx : mesh = LoadFbx (path, ramcopy, texPath); break;
+			case MeshFormat_Gltf: mesh = LoadGltf(path, ramcopy, texPath); break;
 			}
 			// clang-format on
 
@@ -63,10 +63,10 @@ sMesh MeshLoader::LoadModel(std::string_view name, std::string_view modelName, b
 	return mesh;
 }
 
-sMesh MeshLoader::LoadModelFull(std::string_view name, std::string_view modelName, const VEC_STR& texFiles)
+sMesh MeshLoader::LoadModelFull(std::string_view name, std::string_view modelName, const VEC_STR& texFiles, std::string_view texPath)
 {
 	// 1) load model
-	auto mesh = LoadModel(name, modelName, true);
+	auto mesh = LoadModel(name, modelName, true, texPath);
 	if (!mesh) return nullptr;
 	ui::Log("LoadModelFull: {} {} groups={}", name, modelName, mesh->groups.size());
 
