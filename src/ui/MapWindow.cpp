@@ -1,6 +1,6 @@
 // MapWindow.cpp
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-27
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -22,7 +22,7 @@ public:
 
 	void Draw()
 	{
-		auto app = appWeak.lock();
+		auto app = App::GetApp();
 		if (!app) return;
 
 		if (!BeginDraw()) return;

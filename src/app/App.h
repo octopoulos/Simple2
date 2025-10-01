@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-09-27
 
 #pragma once
 
@@ -8,6 +8,16 @@
 #include "objects/Mesh.h"         // sMesh
 #include "physics/PhysicsWorld.h" // PhysicsWorld
 #include "ui/xsettings.h"         // xsettings
+
+enum OpenActions_ : int
+{
+	OpenAction_None       = 0, ///
+	OpenAction_Image      = 1, ///< choose an image (texture)
+	OpenAction_OpenScene  = 2, ///< open scene
+	OpenAction_SaveScene  = 3, ///< save scene
+	OpenAction_ShaderFrag = 4, ///< choose a shader file
+	OpenAction_ShaderVert = 5, ///< choose a vertex shader file
+};
 
 enum Popups_ : int
 {
@@ -21,7 +31,8 @@ enum Popups_ : int
 	Popup_Any         = Popup_Add | Popup_AddGeometry | Popup_AddMap | Popup_AddMesh | Popup_Delete | Popup_Transform,
 };
 
-class App : public std::enable_shared_from_this<App>
+class App
+    : public std::enable_shared_from_this<App>
 {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// INIT
@@ -32,10 +43,17 @@ public:
 
 	~App() { Destroy(); }
 
+	/// Initialize objects
 	int  Initialize();
+
+	/// Destroy objects
 	void Destroy();
 
+	/// Get a naked pointer to physics
 	PhysicsWorld* GetPhysics() { return physics.get(); }
+
+	/// Get a shared pointer to self
+	static std::shared_ptr<App> GetApp();
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// CONTROLS
@@ -193,9 +211,10 @@ protected:
 private:
 	UMAP_INT_STR actionFolders = {};    ///< open image & save screenshot in different folders
 	int          currentPopup  = 0;     ///< current popup being displayed
-	int          fileAction    = 0;     ///< action to take in OpenedFile
-	std::string  fileFolder    = {};    ///< folder after OpenFile
 	int          hidePopup     = 0;     ///< close specific ImGui popups
+	int          openAction    = 0;     ///< action to take in OpenedFile
+	std::string  openFolder    = {};    ///< folder after OpenFile
+	int          openParam     = 0;     ///< param to use in OpenedFile
 	bool         showImGuiDemo = false; ///< show ImGui demo window
 	int          showPopup     = 0;     ///< show specific ImGui popups
 	int          videoFrame    = 0;     ///< how many video frames have been captured so far
@@ -206,11 +225,8 @@ private:
 	/// Focus on the screen (non UI)
 	void FocusScreen();
 
-	/// Open an ImGuiFileDialog
-	void OpenFile(int action);
-
 	/// Opened a file with the dialog
-	void OpenedFile(int action, const std::filesystem::path& path);
+	void OpenedFile(int action, int param, const std::filesystem::path& path);
 
 	/// Show all the popups
 	void PopupsUi();
@@ -232,6 +248,9 @@ public:
 	/// Show all custom UI elements
 	/// @returns 0: no UI drawn, &1: something was drawn, &2: no video
 	int MainUi();
+
+	/// Open an ImGuiFileDialog
+	void OpenFile(int action, int param = 0);
 
 	/// Show object settings in ImGui
 	/// @param show: &1: name, &2: transform, &4: physics, &8: material/shaders, &16: material/textures

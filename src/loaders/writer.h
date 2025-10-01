@@ -1,10 +1,8 @@
 // writer.h
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-09-27
 
 #pragma once
-
-#include "AI/price.h" // TrimDecimals
 
 #define WRITE_INIT() int keyId = 0
 

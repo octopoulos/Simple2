@@ -1,6 +1,6 @@
 // SceneWindow.cpp
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-27
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -37,7 +37,7 @@ public:
 			ImGui::TableSetupColumn("##Vis" , ImGuiTableColumnFlags_WidthFixed, aWidth * 5.0f);
 			ImGui::TableSetupColumn("##Type", ImGuiTableColumnFlags_WidthFixed, aWidth * 3.0f);
 
-			if (auto app = appWeak.lock())
+			if (auto app = App::GetApp())
 				DrawObject(app->scene, 0);
 
 			ImGui::EndTable();
@@ -51,7 +51,7 @@ public:
 	{
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
 		{
-			if (auto app = appWeak.lock())
+			if (auto app = App::GetApp())
 				app->SelectObject(node, true);
 		}
 
@@ -80,7 +80,7 @@ public:
 
 		// blue background
 		bool selected = false;
-		if (auto app = appWeak.lock())
+		if (auto app = App::GetApp())
 			selected = (node == app->selectWeak.lock());
 		if (selected)
 		{

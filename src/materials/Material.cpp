@@ -1,10 +1,11 @@
 // Material.cpp
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-27
 
 #include "stdafx.h"
 #include "materials/Material.h"
 //
+#include "app/App.h"                 // App
 #include "loaders/writer.h"          // WRITE_INIT, WRITE_KEY_xxx
 #include "materials/ShaderManager.h" // GetShaderManager
 #include "objects/Object3d.h"        // ShowObject_xxx
@@ -179,12 +180,27 @@ void Material::ShowSettings(bool isPopup, int show)
 	int mode = 3;
 	if (isPopup) mode |= 4;
 
+	auto app = App::GetApp();
+	if (!app) return;
+
 	// shaders
 	if (show & ShowObject_MaterialShaders)
 	{
 		ui::AddInputText(mode, ".name", "Name", 256, 0, &name);
-		ui::AddInputText(mode, ".vsName", "Vertex Shader", 256, 0, &vsName);
-		ui::AddInputText(mode, ".fsName", "Fragment Shader", 256, 0, &fsName);
+		ui::AddInputText(mode | 32, ".vsName", "Vertex Shader", 256, 0, &vsName);
+		ImGui::SameLine();
+		if (ImGui::Button(Format("...##vert%s", Cstr(vsName))))
+		{
+			ui::Log("Vertex{}", vsName);
+			app->OpenFile(OpenAction_ShaderVert);
+		}
+		ui::AddInputText(mode | 32, ".fsName", "Fragment Shader", 256, 0, &fsName);
+		ImGui::SameLine();
+		if (ImGui::Button(Format("...##frag%s", Cstr(fsName))))
+		{
+			ui::Log("Fragment{}", fsName);
+			app->OpenFile(OpenAction_ShaderFrag);
+		}
 	}
 
 	// textures
@@ -197,6 +213,7 @@ void Material::ShowSettings(bool isPopup, int show)
 			if (ImGui::Button(Format("...##Tex%d", id)))
 			{
 				ui::Log("Tex{} {}", id, TextureName(id));
+				app->OpenFile(OpenAction_Image, id);
 			}
 		}
 	}

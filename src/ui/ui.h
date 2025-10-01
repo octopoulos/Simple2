@@ -1,13 +1,10 @@
 // ui.h
 // @author octopoulos
-// @version 2025-09-25
+// @version 2025-09-27
 
 #pragma once
 
 #include "imgui-include.h"
-
-class App;
-using wEngine = std::weak_ptr<App>;
 
 namespace ui
 {
@@ -36,7 +33,6 @@ class CommonWindow
 {
 public:
 	float       alpha   = 1.0f;            ///< window opacity
-	wEngine     appWeak = {};              ///< pointer to App, to display App properties
 	int         drawn   = 0;               ///< used for initial setup
 	int         hidden  = 0;               ///< automatic flag, 2=cannot be hidden
 	bool        isOpen  = false;           ///< manual flag, the user opened/closed the window
@@ -302,7 +298,7 @@ bool AddMenu(const char* text, const char* shortcut, CommonWindow& window);
 void DrawWindows();
 
 /// Create a list of the windows
-void ListWindows(std::shared_ptr<App> &app);
+void ListWindows();
 
 /// Save windows open states
 void SaveWindows();

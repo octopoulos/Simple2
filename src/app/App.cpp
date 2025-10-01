@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-27
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -31,6 +31,8 @@
 #include <CLI/CLI.hpp>
 
 extern std::string VERSION;
+
+static std::weak_ptr<App> appWeak = {};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // INIT
@@ -64,6 +66,11 @@ void App::Destroy()
 	BGFX_DESTROY(uTime);
 }
 
+std::shared_ptr<App> App::GetApp()
+{
+	return std::static_pointer_cast<App>(appWeak.lock());
+}
+
 int App::Initialize()
 {
 	// 1) app directory
@@ -76,8 +83,9 @@ int App::Initialize()
 		ImGui::LoadIniSettingsFromDisk(Cstr(imguiPath));
 
 		auto sapp = shared_from_this();
+		appWeak   = sapp;
 		ui::Log("sapp={}", (intptr_t)sapp.get());
-		ui::ListWindows(sapp);
+		ui::ListWindows();
 		ui::UpdateTheme();
 	}
 

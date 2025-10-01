@@ -1,6 +1,6 @@
 // ConeGeometry.cpp
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-09-27
 //
 // based on THREE.js ConeGeometry implementation
 
@@ -9,7 +9,7 @@
 
 uGeometry CreateConeGeometry(float radius, float height, int radialSegments, int heightSegments, bool openEnded, float thetaStart, float thetaLength)
 {
-	std::string args = FormatStr("%f %f %d %d %d %f %f", radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength);
+	std::string args = FormatStr("%s %s %d %d %d %s %s", Cfloat(radius), Cfloat(height), radialSegments, heightSegments, openEnded, Cfloat(thetaStart), Cfloat(thetaLength));
 
 	// 1) configuration
 	const float halfHeight = height * 0.5f;

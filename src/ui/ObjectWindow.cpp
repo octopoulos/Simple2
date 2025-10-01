@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-09-07
+// @version 2025-09-27
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -22,7 +22,7 @@ public:
 	/// Draw in the same order as Blender
 	void Draw()
 	{
-		auto app = appWeak.lock();
+		auto app = App::GetApp();
 		if (!app) return;
 
 		BEGIN_PADDING();

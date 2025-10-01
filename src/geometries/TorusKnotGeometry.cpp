@@ -1,6 +1,6 @@
 // TorusKnotGeometry.cpp
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-09-27
 //
 // based on THREE.js TorusKnotGeometry implementation
 
@@ -9,7 +9,7 @@
 
 uGeometry CreateTorusKnotGeometry(float radius, float tube, int tubularSegments, int radialSegments, int p, int q)
 {
-	std::string args = FormatStr("%f %f %d %d %d %d", radius, tube, tubularSegments, radialSegments, p, q);
+	std::string args = FormatStr("%s %s %d %d %d %d", Cfloat(radius), Cfloat(tube), tubularSegments, radialSegments, p, q);
 
 	// 1) sanitize inputs
 	tubularSegments = glm::max(3, tubularSegments);

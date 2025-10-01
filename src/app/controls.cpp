@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-09-27
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -62,7 +62,9 @@ void App::Controls()
 		ginput.nowMs = NowMs();
 		ginput.PrintKeys();
 
-		MeshControls();
+		// hold button => disable mesh controls
+		if (!ginput.buttons[1]) MeshControls();
+
 		FluidControls();
 
 		inputLag += deltaTime;

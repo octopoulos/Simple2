@@ -1,6 +1,6 @@
 // ui.cpp
 // @author octopoulos
-// @version 2025-09-25
+// @version 2025-09-27
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -30,7 +30,7 @@ void DrawWindows()
 		window->Draw();
 }
 
-void ListWindows(std::shared_ptr<App> &app)
+void ListWindows()
 {
 	if (windows.size()) return;
 
@@ -46,8 +46,7 @@ void ListWindows(std::shared_ptr<App> &app)
 
 	for (const auto& window : windows)
 	{
-		window->appWeak = app;
-		window->isOpen  = (window->type & xsettings.winOpen);
+		window->isOpen = (window->type & xsettings.winOpen);
 
 		windowNames[window->name] = window;
 	}

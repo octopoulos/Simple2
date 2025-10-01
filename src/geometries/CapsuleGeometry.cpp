@@ -1,6 +1,6 @@
 // CapsuleGeometry.cpp
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-09-27
 //
 // based on THREE.js CapsuleGeometry implementation
 
@@ -9,7 +9,7 @@
 
 uGeometry CreateCapsuleGeometry(float radius, float height, int capSegments, int radialSegments, int heightSegments)
 {
-	std::string args = FormatStr("%f %f %d %d %d", radius, height, capSegments, radialSegments, heightSegments);
+	std::string args = FormatStr("%s %s %d %d %d", Cfloat(radius), Cfloat(height), capSegments, radialSegments, heightSegments);
 
 	// 1) configuration
 	const float h         = bx::max(0.0f, height);

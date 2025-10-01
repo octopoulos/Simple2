@@ -1,6 +1,6 @@
 // PlaneGeometry.cpp
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-09-27
 //
 // based on THREE.js PlaneGeometry implementation
 
@@ -9,7 +9,7 @@
 
 uGeometry CreatePlaneGeometry(float width, float height, int widthSegments, int heightSegments)
 {
-	std::string args = FormatStr("%f %f %d %d", width, height, widthSegments, heightSegments);
+	std::string args = FormatStr("%s %s %d %d", Cfloat(width), Cfloat(height), widthSegments, heightSegments);
 
 	// 1) config
 	widthSegments  = bx::max(1, widthSegments);

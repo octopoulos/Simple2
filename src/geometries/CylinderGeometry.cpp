@@ -1,6 +1,6 @@
 // CylinderGeometry.cpp
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-09-27
 //
 // based on THREE.js CylinderGeometry implementation
 
@@ -9,7 +9,7 @@
 
 uGeometry CreateCylinderGeometry(float radiusTop, float radiusBottom, float height, int radialSegments, int heightSegments, bool openEnded, float thetaStart, float thetaLength)
 {
-	std::string args = FormatStr("%f %f %f %d %d %d %f %f", radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength);
+	std::string args = FormatStr("%s %s %s %d %d %d %s %s", Cfloat(radiusTop), Cfloat(radiusBottom), Cfloat(height), radialSegments, heightSegments, openEnded, Cfloat(thetaStart), Cfloat(thetaLength));
 
 	// 1) parameters
 	const int   radial     = bx::max(3, radialSegments);

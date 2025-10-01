@@ -1,6 +1,6 @@
 // ui-menu.cpp
 // @author octopoulos
-// @version 2025-09-25
+// @version 2025-09-27
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -14,13 +14,6 @@
 
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
 
-enum OpenActions_ : int
-{
-	OpenAction_None      = 0,
-	OpenAction_OpenScene = 1,
-	OpenAction_SaveScene = 2,
-};
-
 // see app:ShowMoreFlags
 enum ShowVarFlags : int
 {
@@ -31,6 +24,8 @@ enum ShowVarFlags : int
 	Show_Textures    = 1 << 4,
 	Show_Vars        = 1 << 5,
 };
+
+static const std::string SIMAGE_EXTS = "Textures{.bmp,.dds,.exr,.gif,.hdr,.jpg,.ktx,.pic,.pgm,.png,.ppm,.psd,.tga}";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // APP
@@ -43,9 +38,9 @@ void App::FilesUi()
 	{
 		if (instance->IsOk())
 		{
-			fileFolder                = instance->GetCurrentPath();
-			actionFolders[fileAction] = fileFolder;
-			OpenedFile(fileAction, instance->GetFilePathName());
+			openFolder                = instance->GetCurrentPath();
+			actionFolders[openAction] = openFolder;
+			OpenedFile(openAction, openParam, instance->GetFilePathName());
 		}
 		instance->Close();
 	}
@@ -79,45 +74,62 @@ int App::MainUi()
 	return drawnFlag;
 }
 
-void App::OpenFile(int action)
+void App::OpenedFile(int action, int param, const std::filesystem::path& path)
 {
-	// clang-format off
-	static const UMAP_INT_STR titles = {
-		{ OpenAction_OpenScene, "Open Scene" },
-		{ OpenAction_SaveScene, "Save Scene" },
-	};
-	// clang-format on
-
-	fileAction = action;
-
-	IGFD::FileDialogConfig config;
-	if (action == OpenAction_SaveScene)
-	{
-		config.filePathName = xsettings.recentFiles[0];
-		config.flags        = ImGuiFileDialogFlags_ConfirmOverwrite | ImGuiFileDialogFlags_Modal;
-	}
-	else
-	{
-		config.path  = FindDefault(actionFolders, action, "data");
-		config.flags = ImGuiFileDialogFlags_Modal;
-	}
-	ImGuiFileDialog::Instance()->OpenDialog("OpenFileX", FindDefault(titles, action, "Choose File"), ".json", config);
-}
-
-void App::OpenedFile(int action, const std::filesystem::path& path)
-{
-	ui::Log("App/OpenedFile: {} action={} folder={}", path, action, fileFolder);
+	ui::Log("App/OpenedFile: {} action={} param={} folder={}", path, action, param, openFolder);
 	if (path.empty()) return;
 
 	switch (action)
 	{
+	case OpenAction_Image    : ui::Log("OpenAction_Image"); break;
 	case OpenAction_OpenScene: OpenScene(path); break;
 	case OpenAction_SaveScene: SaveScene(path); break;
 	default:
-		ui::Log("OpenedFile: Unknown action: {} {}", action, path);
+		ui::Log("OpenedFile: Unknown action: {} {} {}", action, param, path);
 	}
 
 	FocusScreen();
+}
+
+void App::OpenFile(int action, int param)
+{
+	// clang-format off
+	static const UMAP<int, std::pair<std::string, std::string>> titleExts = {
+		{ OpenAction_Image     , { "Choose an image"         , SIMAGE_EXTS      } },
+		{ OpenAction_OpenScene , { "Open Scene"              , ".json"          } },
+		{ OpenAction_SaveScene , { "Save Scene"              , ".json"          } },
+		{ OpenAction_ShaderFrag, { "Choose a fragment shader", "((fs_.*\\.sc))" } },
+		{ OpenAction_ShaderVert, { "Choose a vertex shader"  , "((vs_.*\\.sc))" } },
+	};
+	// clang-format on
+
+	openAction = action;
+	openParam  = param;
+
+	IGFD::FileDialogConfig config;
+	config.path  = FindDefault(actionFolders, action, "data");
+	config.flags = ImGuiFileDialogFlags_Modal;
+
+	switch (action)
+	{
+	case OpenAction_Image:
+		config.path = FindDefault(actionFolders, action, "runtime/textures");
+		break;
+	case OpenAction_SaveScene:
+		config.filePathName = xsettings.recentFiles[0];
+		config.flags |= ImGuiFileDialogFlags_ConfirmOverwrite;
+		break;
+	case OpenAction_ShaderFrag:
+	case OpenAction_ShaderVert:
+		config.path = FindDefault(actionFolders, action, "shaders");
+		break;
+	}
+
+	if (const auto& it = titleExts.find(action); it != titleExts.end())
+	{
+		const auto& [title, ext] = it->second;
+		ImGuiFileDialog::Instance()->OpenDialog("OpenFileX", title, Cstr(ext), config);
+	}
 }
 
 void App::PopupsUi()
@@ -275,7 +287,7 @@ void App::ShowMainMenu(float alpha)
 						++numRecent;
 						std::filesystem::path path = name;
 						if (ImGui::MenuItem(Cstr(path.filename())))
-							OpenedFile(OpenAction_OpenScene, path);
+							OpenedFile(OpenAction_OpenScene, 0, path);
 					}
 				}
 				if (!numRecent)
@@ -490,8 +502,6 @@ void App::VarsUi()
 				{ "BaseFolder"            , BaseFolder().string()                    },
 				{ "current_path"          , std::filesystem::current_path().string() },
 				{ "currentPopup"          , std::to_string(currentPopup)             },
-				{ "fileAction"            , std::to_string(fileAction)               },
-				{ "fileFolder"            , fileFolder                               },
 				{ "hidePopup"             , std::to_string(hidePopup)                },
 				{ "inputFrame"            , std::to_string(inputFrame)               },
 				{ "inputLag"              , std::to_string(inputLag)                 },
@@ -503,6 +513,9 @@ void App::VarsUi()
 				{ "kitModels.size"        , std::to_string(kitModels.size())         },
 				{ "mapNode.childId"       , std::to_string(mapNode->childId)         },
 				{ "MouseOverArea"         , BoolString(ImGui::MouseOverArea())       },
+				{ "openAction"            , std::to_string(openAction)               },
+				{ "openFolder"            , openFolder                               },
+				{ "openParam"             , std::to_string(openParam)                },
 				{ "pauseNextFrame"        , BoolString(pauseNextFrame)               },
 				{ "physicsFrame"          , std::to_string(physicsFrame)             },
 				{ "renderFrame"           , std::to_string(renderFrame)              },

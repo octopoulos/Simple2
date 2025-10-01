@@ -1,6 +1,6 @@
 // IcosahedronGeometry.cpp
 // @author octopoulos
-// @version 2025-08-18
+// @version 2025-09-27
 //
 // based on THREE.js IcosahedronGeometry implementation
 
@@ -9,7 +9,7 @@
 
 uGeometry CreateIcosahedronGeometry(float radius, int detail)
 {
-	std::string args = FormatStr("%f %d", radius, detail);
+	std::string args = FormatStr("%s %d", Cfloat(radius), detail);
 
 	constexpr float t = (1.0f + bx::sqrt(5.0f)) * 0.5f;
 

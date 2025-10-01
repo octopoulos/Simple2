@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-09-22
+// @version 2025-09-27
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -118,7 +118,7 @@ public:
 			AddCheckbox(0, "smoothQuat", "",  "Rotation");
 			if (ImGui::Button("Rescan Assets"))
 			{
-				if (auto app = appWeak.lock())
+				if (auto app = App::GetApp())
 					app->RescanAssets();
 			}
 			END_COLLAPSE();
