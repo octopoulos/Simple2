@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -175,7 +175,7 @@ void App::RescanAssets()
 
 			CreateDirectories(modelOut.parent_path());
 
-			const char* cmd    = Format(R"(geometryc -f "%s" -o "%s")", Cstr(path), Cstr(modelOut));
+			const char* cmd    = Format(R"(geometryc -f "%s" -o "%s")", PathStr(path), PathStr(modelOut));
 			const int   result = std::system(cmd);
 			if (result != 0) ui::Log("ERROR: geometryc failed with code {}", result);
 		}
@@ -265,7 +265,7 @@ void App::ScanModels(const std::filesystem::path& folder, const std::filesystem:
 	// 2) check sub folders, combine 'shuffle' and 'older first'
 	{
 		for (const auto& subFolder : subFolders)
-			ScanModels(folder / subFolder, folderPrev / subFolder, depth + 1, Format("%s%s%s", Cstr(relative), relative.size() ? "/" : "", Cstr(subFolder.filename())));
+			ScanModels(folder / subFolder, folderPrev / subFolder, depth + 1, Format("%s%s%s", Cstr(relative), relative.size() ? "/" : "", PathStr(subFolder.filename())));
 	}
 
 	// 3) summary

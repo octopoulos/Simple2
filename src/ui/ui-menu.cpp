@@ -1,6 +1,6 @@
 // ui-menu.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -297,7 +297,7 @@ void App::ShowMainMenu(float alpha)
 					{
 						++numRecent;
 						std::filesystem::path path = name;
-						if (ImGui::MenuItem(Cstr(path.filename())))
+						if (ImGui::MenuItem(PathStr(path.filename())))
 							OpenedFile(OpenAction_OpenScene, 0, path);
 					}
 				}

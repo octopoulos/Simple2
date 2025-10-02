@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -25,7 +25,7 @@
 static void AddRecent(const std::filesystem::path& filename)
 {
 	str2k temp;
-	strcpy(temp, Cstr(filename));
+	strcpy(temp, PathStr(filename));
 
 	auto& files = xsettings.recentFiles;
 	int   id    = 0;
@@ -290,7 +290,7 @@ bool App::OpenScene(const std::filesystem::path& filename)
 		Scene::SharedPtr(scene)->Clear();
 		ParseObject(obj, scene, scene, GetPhysics(), 0);
 
-		entry::setWindowTitle(entry::kDefaultWindowHandle, Cstr(filename.filename()));
+		entry::setWindowTitle(entry::kDefaultWindowHandle, PathStr(filename.filename()));
 		return true;
 	}
 

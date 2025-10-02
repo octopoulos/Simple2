@@ -1,6 +1,6 @@
 // ThemeWindow.cpp
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -308,7 +308,7 @@ static void SetThemeBlender(ImGuiStyle& style)
 	if (const std::filesystem::path interFont = "runtime/fonts/inter.ttf"; IsFile(interFont))
 	{
 		ImGuiIO& io    = ImGui::GetIO();
-		io.FontDefault = io.Fonts->AddFontFromFileTTF(Cstr(interFont));
+		io.FontDefault = io.Fonts->AddFontFromFileTTF(PathStr(interFont));
 	}
 }
 

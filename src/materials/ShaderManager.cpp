@@ -1,6 +1,6 @@
 // ShaderManager.cpp
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "materials/ShaderManager.h"
@@ -40,7 +40,7 @@ static bgfx::ShaderHandle LoadShader_(bx::FileReaderI* reader, std::string_view 
 	path /= Format("%s.bin", Cstr(name));
 	if (!IsFile(path)) return BGFX_INVALID_HANDLE;
 
-	bgfx::ShaderHandle handle = bgfx::createShader(BgfxLoadMemory(reader, Cstr(path)));
+	bgfx::ShaderHandle handle = bgfx::createShader(BgfxLoadMemory(reader, PathStr(path)));
 	bgfx::setName(handle, name.data(), name.size());
 
 	if (DEV_shader) ui::Log("LoadShader_: {} : {}", path, (void*)&handle);

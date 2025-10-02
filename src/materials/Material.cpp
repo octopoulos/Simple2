@@ -1,6 +1,6 @@
 // Material.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "materials/Material.h"
@@ -60,7 +60,7 @@ void Material::FindModelTextures(std::string_view modelName, const VEC_STR& texF
 			{
 				const auto& path     = dirEntry.path();
 				const auto  filename = path.filename();
-				std::string texFile  = Format("%s/%s", Cstr(parent), Cstr(filename));
+				std::string texFile  = Format("%s/%s", PathStr(parent), PathStr(filename));
 				texFiles.push_back(std::move(texFile));
 			}
 
