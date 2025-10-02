@@ -80,7 +80,7 @@ int App::Initialize()
 	// 2) load imgui.ini
 	{
 		InitializeImGui();
-		ImGui::LoadIniSettingsFromDisk(Cstr(imguiPath));
+		ImGui::LoadIniSettingsFromDisk(PathStr(imguiPath));
 
 		auto sapp = shared_from_this();
 		appWeak   = sapp;
@@ -396,7 +396,7 @@ void App::InitializeImGui()
 	static char iniFilename[512];
 
 	imguiPath = ConfigFolder() / "imgui.ini";
-	strcpy(iniFilename, Cstr(imguiPath));
+	strcpy(iniFilename, PathStr(imguiPath));
 	ImGuiIO& io    = ImGui::GetIO();
 	io.IniFilename = iniFilename;
 }
