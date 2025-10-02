@@ -1,4 +1,4 @@
-// @version 2025-07-11
+// @version 2025-09-27
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -8,6 +8,35 @@
 #include "bgfx_utils.h"
 
 #include <bx/commandline.h>
+
+static UMAP_STR_INT bgfxRenderers = {
+	{ ""      , bgfx::RendererType::Count      },
+	{ "agc"   , bgfx::RendererType::Agc        },
+	{ "d3d11" , bgfx::RendererType::Direct3D11 },
+	{ "d3d11" , bgfx::RendererType::Direct3D11 },
+	{ "d3d12" , bgfx::RendererType::Direct3D12 },
+	{ "gl"    , bgfx::RendererType::OpenGL     },
+	{ "gles"  , bgfx::RendererType::OpenGLES   },
+	{ "gnm"   , bgfx::RendererType::Gnm        },
+	{ "mtl"   , bgfx::RendererType::Metal      },
+	{ "nvn"   , bgfx::RendererType::Nvn        },
+	{ "noop"  , bgfx::RendererType::Noop       },
+	{ "opengl", bgfx::RendererType::OpenGL     },
+	{ "vk"    , bgfx::RendererType::Vulkan     },
+	{ "vulkan", bgfx::RendererType::Vulkan     },
+};
+
+static UMAP_STR_INT bgfxVendors = {
+	{ ""      , BGFX_PCI_ID_NONE                },
+	{ "amd"   , BGFX_PCI_ID_AMD                 },
+	{ "apple" , BGFX_PCI_ID_APPLE               },
+	{ "intel" , BGFX_PCI_ID_INTEL               },
+	{ "ms"    , BGFX_PCI_ID_MICROSOFT           },
+	{ "nvidia", BGFX_PCI_ID_NVIDIA              },
+	{ "sw"    , BGFX_PCI_ID_SOFTWARE_RASTERIZER },
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void calcTangents(void* _vertices, uint16_t _numVertices, bgfx::VertexLayout _layout, const uint16_t* _indices, uint32_t _numIndices)
 {
@@ -110,85 +139,24 @@ void calcTangents(void* _vertices, uint16_t _numVertices, bgfx::VertexLayout _la
 // FUNCTIONS
 ////////////
 
-struct RendererTypeRemap
+bgfx::RendererType::Enum RendererId(std::string_view name)
 {
-	bx::StringView           name;
-	bgfx::RendererType::Enum type;
-};
-
-static RendererTypeRemap s_rendererTypeRemap[] = {
-	{ "d3d11", bgfx::RendererType::Direct3D11 },
-	{ "d3d12", bgfx::RendererType::Direct3D12 },
-	{ "gl",    bgfx::RendererType::OpenGL     },
-	{ "mtl",   bgfx::RendererType::Metal      },
-	{ "noop",  bgfx::RendererType::Noop       },
-	{ "vk",    bgfx::RendererType::Vulkan     },
-};
-
-bx::StringView getName(bgfx::RendererType::Enum _type)
-{
-	for (uint32_t ii = 0; ii < BX_COUNTOF(s_rendererTypeRemap); ++ii)
-	{
-		const RendererTypeRemap& remap = s_rendererTypeRemap[ii];
-
-		if (_type == remap.type)
-			return remap.name;
-	}
-
-	return "";
+	return (bgfx::RendererType::Enum)FindDefault(bgfxRenderers, name, bgfx::RendererType::Count);
 }
 
-bgfx::RendererType::Enum getType(const bx::StringView& _name)
+std::string RendererName(int rendererId)
 {
-	for (uint32_t ii = 0; ii < BX_COUNTOF(s_rendererTypeRemap); ++ii)
+	static UMAP_INT_STR bgfxRendererNames;
+	if (bgfxRendererNames.empty())
 	{
-		const RendererTypeRemap& remap = s_rendererTypeRemap[ii];
-
-		if (0 == bx::strCmpI(_name, remap.name))
-			return remap.type;
+		for (const auto& [name, id] : bgfxRenderers)
+			bgfxRendererNames[id] = name;
 	}
 
-	return bgfx::RendererType::Count;
+	return FindDefault(bgfxRendererNames, rendererId, "?");
 }
 
-Args::Args(int _argc, const char* const* _argv)
-    : m_type(bgfx::RendererType::Count)
-    , m_pciId(BGFX_PCI_ID_NONE)
+int VendorId(std::string_view name)
 {
-	bx::CommandLine cmdLine(_argc, (const char**)_argv);
-
-	if (cmdLine.hasArg("gl"))
-	{
-		m_type = bgfx::RendererType::OpenGL;
-	}
-	else if (cmdLine.hasArg("vk"))
-	{
-		m_type = bgfx::RendererType::Vulkan;
-	}
-	else if (cmdLine.hasArg("noop"))
-	{
-		m_type = bgfx::RendererType::Noop;
-	}
-	else if (cmdLine.hasArg("d3d11"))
-	{
-		m_type = bgfx::RendererType::Direct3D11;
-	}
-	else if (cmdLine.hasArg("d3d12"))
-	{
-		m_type = bgfx::RendererType::Direct3D12;
-	}
-	else if (BX_ENABLED(BX_PLATFORM_OSX))
-	{
-		if (cmdLine.hasArg("mtl"))
-			m_type = bgfx::RendererType::Metal;
-	}
-
-	if (cmdLine.hasArg("amd"))
-		m_pciId = BGFX_PCI_ID_AMD;
-	else if (cmdLine.hasArg("nvidia"))
-		m_pciId = BGFX_PCI_ID_NVIDIA;
-	else if (cmdLine.hasArg("intel"))
-		m_pciId = BGFX_PCI_ID_INTEL;
-	else if (cmdLine.hasArg("sw"))
-		m_pciId = BGFX_PCI_ID_SOFTWARE_RASTERIZER;
+	return FindDefault(bgfxVendors, name, BGFX_PCI_ID_NONE);
 }

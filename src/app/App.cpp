@@ -499,22 +499,23 @@ public:
 
 	virtual bool init(int32_t argc, const char* const* argv, uint32_t width, uint32_t height) override
 	{
-		Args args(argc, argv);
 		isInit = false;
+
+		CLI_BEGIN("Simple");
+
+		// name, type, default, implicit, needApp, help
+		// clang-format off
+		CLI_OPTION(renderer, std::string, "", "" , 0, "Renderer (d3d11, d3d12, gl, mtl, vk)");
+		CLI_OPTION(tests   , int        , 0 , "1", 0, "Run tests");
+		CLI_OPTION(vendor  , std::string, "", "" , 0, "Vendor (amd, intel, nvidia)");
+		// clang-format on
+
+		if (argc && argv) CLI11_PARSE(cli, argc, argv);
+		CLI_NEEDAPP();
 
 		// 0) CLI
 		auto cliFunc = [&]() -> int
 		{
-			CLI_BEGIN("Simple");
-
-			// name, type, default, implicit, needApp, help
-			// clang-format off
-			CLI_OPTION(tests, int, 0, "1", 0, "Run tests");
-			// clang-format on
-
-			if (argc && argv) CLI11_PARSE(cli, argc, argv);
-			CLI_NEEDAPP();
-
 			if (tests)
 			{
 				const int res = AiTests(tests, argc, (char**)argv);
@@ -539,8 +540,8 @@ public:
 				xsettings.reset &= ~BGFX_RESET_CAPTURE;
 
 			bgfx::Init init;
-			init.type              = args.m_type;
-			init.vendorId          = args.m_pciId;
+			init.type              = RendererId(renderer);
+			init.vendorId          = VendorId(vendor);
 			init.platformData.nwh  = entry::getNativeWindowHandle(entry::kDefaultWindowHandle);
 			init.platformData.ndt  = entry::getNativeDisplayHandle();
 			init.platformData.type = entry::getNativeWindowHandleType();
@@ -549,6 +550,7 @@ public:
 			init.resolution.reset  = xsettings.reset;
 			init.callback          = &callback;
 
+			ui::Log("renderer={} vendor={} => type={} vendorId={}", renderer, vendor, (int)init.type, init.vendorId);
 			ui::Log("App/init: {}x{}x{} => {}x{}", iwidth, iheight, xsettings.dpr, fwidth, fheight);
 			bgfx::init(init);
 			isInit = true;

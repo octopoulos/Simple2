@@ -1,3 +1,4 @@
+// @version 2025-09-27
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -5,6 +6,7 @@
 
 #pragma once
 
+#include <string>
 #include <bx/filepath.h>
 #include <bx/pixelformat.h>
 
@@ -38,17 +40,11 @@ inline uint32_t encodeNormalRgba8(float _x, float _y = 0.0f, float _z = 0.0f, fl
 	return dst;
 }
 
-/// bgfx::RendererType::Enum to name.
-bx::StringView getName(bgfx::RendererType::Enum _type);
+/// Renderer name to id
+bgfx::RendererType::Enum RendererId(std::string_view name);
 
-/// Name to bgfx::RendererType::Enum.
-bgfx::RendererType::Enum getType(const bx::StringView& _name);
+/// Renderer id to name
+std::string RendererName(int rendererId);
 
-///
-struct Args
-{
-	Args(int _argc, const char* const* _argv);
-
-	bgfx::RendererType::Enum m_type;
-	uint16_t                 m_pciId;
-};
+/// Vendor name to id
+int VendorId(std::string_view name);
