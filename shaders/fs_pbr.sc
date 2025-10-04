@@ -64,7 +64,7 @@ void main()
 	float alpha = baseColor.a;
 
 	// Fresnel base reflectivity (F0)
-	vec3 F0 = mix(vec3(0.04), albedo, metallic); // 0.04 for dielectrics
+	vec3 F0 = mix(vec3(0.04, 0.04, 0.04), albedo, metallic); // 0.04 for dielectrics
 
 	// BRDF components
 	float NoL = max(dot(N, L), 0.0);
@@ -82,7 +82,7 @@ void main()
 	vec3 diffuse = (1.0 - F) * (1.0 - metallic) * albedo / PI;
 
 	// Combine lighting terms
-	vec3 lightColor = vec3(u_lightDir.w); // Light intensity
+	vec3 lightColor = vec3(u_lightDir.www); // Light intensity
 	vec3 color = (diffuse + specular) * lightColor * NoL;
 
 	// Add ambient (simple approximation)

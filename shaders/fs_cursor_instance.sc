@@ -21,6 +21,6 @@ void main()
 	float diffuse = max(0.0, dot(v_normal, u_lightDir.xyz));
 	float lambert = mix(ambient, 1.0, diffuse);
 
-	vec3 color   = mix(vec3(u_cursorCol), vec3(1.0, 1.0, 0.0), pulse);
+	vec3 color   = mix(vec3(u_cursorCol.xyz), vec3(1.0, 1.0, 0.0), pulse);
 	gl_FragColor = vec4(color * lambert, 0.6);
 }
