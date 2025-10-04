@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-09-30
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -95,7 +95,18 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 	std::string                tempString    = "";
 
 	// 2) name / type / visible
-	if (!doc["name"].get_string().get(name)) {}
+	// name should be unique
+	if (!doc["name"].get_string().get(name))
+	{
+		if (parent->type & ObjectType_Map)
+		{
+			if (parent->GetObjectByName(name))
+			{
+				ui::LogWarning("ParseObject: %s already in Map!", Cstr(name));
+				return;
+			}
+		}
+	}
 	if (!doc["type"].get_string().get(tempString)) type = ObjectType(tempString);
 	if (!doc["visible"].get_bool().get(tempBool)) visible = tempBool;
 

@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-09-30
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -139,7 +139,7 @@ void App::RescanAssets()
 		const auto relPath     = std::filesystem::relative(path, MODEL_SRC_DIR);
 		const auto firstFolder = (relPath.empty() || relPath.parent_path().empty()) ? "" : *relPath.begin();
 
-		ui::Log("       path=%s\n    relPath=%s\nfirstFolder=%s", PathStr(path), PathStr(relPath), Cstr(firstFolder));
+		ui::Log("       path=%s\n    relPath=%s\nfirstFolder=%s", PathStr(path), PathStr(relPath), PathStr(firstFolder));
 
 		const auto modelOut = firstFolder.empty()
 		    ? (MODEL_OUT_DIR / (modelName + ".bin"))
