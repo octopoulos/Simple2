@@ -316,7 +316,9 @@ bool App::SaveScene(const std::filesystem::path& filename)
 	scene->Serialize(outString, 0);
 	ui::Log("SaveScene: %s", Cstr(OUTSTRING_VIEW));
 	WriteData(output, OUTSTRING_VIEW);
+
 	AddRecent(output);
+	entry::setWindowTitle(entry::kDefaultWindowHandle, PathStr(output.filename()));
 	return true;
 }
 

@@ -1,6 +1,6 @@
 // learn.cpp
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-09-30
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -132,7 +132,7 @@ void App::TestUi()
 		ImDrawList* drawList   = ImGui::GetWindowDrawList();
 
 		// --- BACKGROUND RECT ---
-		const float size = bx::min(windowSize.x * 0.4f, windowSize.y * 0.8f);
+		const float size = bx::max(16.0f, bx::min(windowSize.x * 0.4f, windowSize.y * 0.8f));
 
 		ImVec2 bgSize(size, size);
 		ImVec2 bgPos(
