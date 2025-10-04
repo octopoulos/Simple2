@@ -1,4 +1,4 @@
-// @version 2025-09-15
+// @version 2025-09-29
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -397,7 +397,7 @@ uint32_t getNumApps()
 
 int runApp(AppI* _app, int _argc, const char* const* _argv)
 {
-	ui::Log("entry/runApp: {}x{}", xsettings.windowSize[0], xsettings.windowSize[1]);
+	ui::Log("entry/runApp: %dx%d", xsettings.windowSize[0], xsettings.windowSize[1]);
 	setWindowSize(kDefaultWindowHandle, xsettings.windowSize[0], xsettings.windowSize[1]);
 
 	if (_app->init(_argc, _argv, xsettings.windowSize[0], xsettings.windowSize[1]))
@@ -419,7 +419,7 @@ int runApp(AppI* _app, int _argc, const char* const* _argv)
 
 void EntryBegin(const char* name)
 {
-	ui::Log("EntryBegin: {} debug={}", name, BX_CONFIG_DEBUG);
+	ui::Log("EntryBegin: %s debug=%d", name, BX_CONFIG_DEBUG);
 	entryName = name;
 
 	FindAppDirectory(true);
@@ -436,7 +436,7 @@ void EntryEnd()
 
 void ExitApp()
 {
-	ui::Log("ExitApp: {}", s_exit);
+	ui::Log("ExitApp: %d", s_exit);
 	s_exit = true;
 }
 
@@ -476,7 +476,7 @@ void RestartApp(int dir, const char* name)
 		break;
 	}
 
-	ui::Log("restartArgs={}", s_restartArgs);
+	ui::Log("restartArgs=%s", s_restartArgs);
 	ExitApp();
 }
 
@@ -627,7 +627,7 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 			{
 				const CharEvent* chev = static_cast<const CharEvent*>(ev);
 				inputChar(chev->m_len, chev->m_char);
-				if (DEV_char) ui::Log("char={} {} {} {} {}", chev->m_len, chev->m_char[0], chev->m_char[1], chev->m_char[2], chev->m_char[3]);
+				if (DEV_char) ui::Log("char=%d %d %d %d %d", chev->m_len, chev->m_char[0], chev->m_char[1], chev->m_char[2], chev->m_char[3]);
 			}
 			break;
 
@@ -687,7 +687,7 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 				_width  = width;
 				_height = height;
 				BX_TRACE("Window resize event: %d: %dx%d dpr=%d", handle, _width, _height, xsettings.dpr);
-				ui::Log("processEvents/Event::Size: {}: {}x{}", (void*)&handle, _width, _height);
+				ui::Log("processEvents/Event::Size: %p: %dx%d", (void*)&handle, _width, _height);
 				needReset = true;
 			}
 			break;

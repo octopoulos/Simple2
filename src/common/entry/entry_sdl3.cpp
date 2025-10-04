@@ -1,6 +1,6 @@
 // entry_sdl3.cpp
 // @author octopoulos
-// @version 2025-08-10
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "entry_p.h"
@@ -450,7 +450,7 @@ struct Context
 	int run(int _argc, char** _argv)
 	{
 		EntryBegin("SDL3");
-		ui::Log("SDL3/run: {}x{}", xsettings.windowSize[0], xsettings.windowSize[1]);
+		ui::Log("SDL3/run: %dx%d", xsettings.windowSize[0], xsettings.windowSize[1]);
 
 		m_mte.m_argc = _argc;
 		m_mte.m_argv = _argv;
@@ -580,7 +580,7 @@ struct Context
 					{
 						uint8_t   modifiers = translateKeyModifiers(kev.mod);
 						Key::Enum key       = translateKey(kev.scancode);
-						if (!key) ui::Log("SDL3: Unknown code: {} {}", TO_INT(kev.scancode), SDL_GetScancodeName(kev.scancode));
+						if (!key) ui::Log("SDL3: Unknown code: %d %s", TO_INT(kev.scancode), SDL_GetScancodeName(kev.scancode));
 
 						/// If you only press (e.g.) 'shift' and nothing else, then key == 'shift', modifier == 0.
 						/// Further along, pressing 'shift' + 'ctrl' would be: key == 'shift', modifier == 'ctrl.

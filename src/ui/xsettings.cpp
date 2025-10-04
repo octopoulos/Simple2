@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -151,7 +151,7 @@ void InitGameSettings()
 #ifdef WITH_SDL3
 		exePath = SDL_GetBasePath();
 		if (exePath.ends_with('/') || exePath.ends_with('\\')) exePath.pop_back();
-		if (DEV_path) ui::Log("InitGameSettings: {} : {}", std::filesystem::current_path(), exePath);
+		if (DEV_path) ui::Log("InitGameSettings: %s : %s", PathStr(std::filesystem::current_path()), Cstr(exePath));
 #endif // WITH_SDL3
 		InitSettings(&xsettings, sizeof(XSettings), true, exePath);
 	}

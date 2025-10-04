@@ -1,6 +1,6 @@
 // ui.h
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-09-29
 
 #pragma once
 
@@ -241,11 +241,11 @@ void Tab(int value);
 #undef LogOutput
 #undef LogWarning
 
-#define Log(...)        AddLog(0, fmt::format(__VA_ARGS__))
-#define LogError(...)   AddLog(1, fmt::format(__VA_ARGS__))
-#define LogInfo(...)    AddLog(2, fmt::format(__VA_ARGS__))
-#define LogOutput(...)  AddLog(4, fmt::format(__VA_ARGS__))
-#define LogWarning(...) AddLog(3, fmt::format(__VA_ARGS__))
+#define Log(...)        AddLog(0, FormatStr(__VA_ARGS__))
+#define LogError(...)   AddLog(1, FormatStr(__VA_ARGS__))
+#define LogInfo(...)    AddLog(2, FormatStr(__VA_ARGS__))
+#define LogOutput(...)  AddLog(4, FormatStr(__VA_ARGS__))
+#define LogWarning(...) AddLog(3, FormatStr(__VA_ARGS__))
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // MAP

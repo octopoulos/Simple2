@@ -1,4 +1,4 @@
-// @version 2025-08-10
+// @version 2025-09-29
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -446,7 +446,7 @@ struct Context
 	int run(int _argc, char** _argv)
 	{
 		EntryBegin("SDL2");
-		ui::Log("SDL2/run: {}x{}", xsettings.windowSize[0], xsettings.windowSize[1]);
+		ui::Log("SDL2/run: %dx%d", xsettings.windowSize[0], xsettings.windowSize[1]);
 
 		m_mte.m_argc = _argc;
 		m_mte.m_argv = _argv;
@@ -576,7 +576,7 @@ struct Context
 					{
 						uint8_t   modifiers = translateKeyModifiers(kev.keysym.mod);
 						Key::Enum key       = translateKey(kev.keysym.scancode);
-						if (!key) ui::Log("SDL2: Unknown code: {} {}", TO_INT(kev.keysym.scancode), SDL_GetScancodeName(kev.keysym.scancode));
+						if (!key) ui::Log("SDL2: Unknown code: %d %s", TO_INT(kev.keysym.scancode), SDL_GetScancodeName(kev.keysym.scancode));
 
 						/// If you only press (e.g.) 'shift' and nothing else, then key == 'shift', modifier == 0.
 						/// Further along, pressing 'shift' + 'ctrl' would be: key == 'shift', modifier == 'ctrl.

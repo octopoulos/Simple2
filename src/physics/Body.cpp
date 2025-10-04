@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -112,7 +112,7 @@ void Body::CreateBody(float _mass, const btVector3& pos, const btQuaternion& qua
 	auto ci     = btRigidBody::btRigidBodyConstructionInfo(mass, motion, shape, inertia);
 
 	body = new btRigidBody(ci);
-	//ui::Log("friction={} rollingFriction={} spinningFriction={}", body->getFriction(), body->getRollingFriction(), body->getSpinningFriction());
+	//ui::Log("friction=%f rollingFriction=%f spinningFriction=%f", body->getFriction(), body->getRollingFriction(), body->getSpinningFriction());
 	body->setDamping(0.25f, 0.1f);
 	body->setFriction(0.4f);
 	body->setRollingFriction(0.015f);
@@ -144,7 +144,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& newDims)
 	switch (type)
 	{
 	case ShapeType_Box:
-		ui::Log("{}: dims={} {} {}", type, dims.x(), dims.y(), dims.z());
+		ui::Log("%d: dims=%f %f %f", type, dims.x(), dims.y(), dims.z());
 		if (dims.x() > 0.0f && dims.y() > 0.0f && dims.z() > 0.0f)
 			shape = new btBoxShape(dims);
 		else if (geometry)
@@ -163,7 +163,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& newDims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Box: Invalid dims / mesh: {} {} {} {} {}", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
+		else ui::LogError("CreateShape/ShapeType_Box: Invalid dims / mesh: %f %f %f %d %d", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
 		break;
 	case ShapeType_Box2d:
 		if (dims.x() > 0.0f && dims.y() > 0.0f && dims.z() > 0.0f)
@@ -182,7 +182,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& newDims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Box2d: Invalid dims / mesh: {} {} {} {} {}", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
+		else ui::LogError("CreateShape/ShapeType_Box2d: Invalid dims / mesh: %f %f %f %d %d", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
 		break;
 	case ShapeType_BoxObb:
 		if (numGroup > 0)
@@ -219,7 +219,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& newDims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Capsule: Invalid dims / mesh: {} {} {} {} {}", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
+		else ui::LogError("CreateShape/ShapeType_Capsule: Invalid dims / mesh: %f %f %f %d %d", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
 		break;
 	case ShapeType_Cone:
 		if (dims.x() > 0.0f && dims.y() > 0.0f)
@@ -240,7 +240,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& newDims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Cone: Invalid dims / mesh: {} {} {} {} {}", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
+		else ui::LogError("CreateShape/ShapeType_Cone: Invalid dims / mesh: %f %f %f %d %d", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
 		break;
 	case ShapeType_Convex2d:
 		if (numGroup > 0)
@@ -313,7 +313,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& newDims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Cylinder: Invalid dims / mesh: {} {} {} {} {}", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
+		else ui::LogError("CreateShape/ShapeType_Cylinder: Invalid dims / mesh: %f %f %f %d %d", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
 		break;
 	case ShapeType_Plane:
 		if (dims.x() != 0.0f || dims.y() != 0.0f || dims.z() != 0.0f)
@@ -340,7 +340,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& newDims)
 				}
 			}
 		}
-		else ui::LogError("CreateShape/ShapeType_Sphere: Invalid dims / mesh: {} {} {} {} {}", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
+		else ui::LogError("CreateShape/ShapeType_Sphere: Invalid dims / mesh: %f %f %f %d %d", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
 		break;
 	case ShapeType_Terrain:
 		shape = new btHeightfieldTerrainShape(1, 1, (const float*)nullptr, 0.0f, 0.0f, 1, false);
@@ -411,7 +411,7 @@ void Body::CreateShape(int type, Mesh* mesh, const btVector4& newDims)
 		}
 		else ui::LogError("CreateShape/ShapeType_TriangleMesh: Invalid mesh");
 		break;
-	default: ui::LogError("CreateShape: Unknown type: {}", type);
+	default: ui::LogError("CreateShape: Unknown type: %d", type);
 	}
 
 	// 3) set shape to compound + possibly offset the shape

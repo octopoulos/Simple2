@@ -1,6 +1,6 @@
 // MaterialManager.cpp
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "materials/MaterialManager.h"
@@ -51,9 +51,9 @@ sMaterial MaterialManager::LoadMaterial(std::string_view name, std::string_view 
 
 void MaterialManager::PrintMaterials()
 {
-	ui::Log("Materials ({}):", materials.size());
+	ui::Log("Materials (%lld):", materials.size());
 	for (int i = -1; const auto& [name, material] : materials)
-		ui::Log("{:2}: {:2} : {}", ++i, material.use_count(), name);
+		ui::Log("%2d: %2d : %s", ++i, material.use_count(), Cstr(name));
 }
 
 void MaterialManager::ShowInfoTable(bool showTitle) const

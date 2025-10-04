@@ -224,7 +224,7 @@ struct Context
 
 		int keyCode = keyChar;
 		*specialKeys = translateModifiers(int([event modifierFlags]));
-		//ui::Log("keyCode={}", keyCode);
+		//ui::Log("keyCode=%d", keyCode);
 
 		// if this is a unhandled key just return None
 		if (keyCode < 256) return (Key::Enum)s_translateKey[keyCode];
@@ -256,7 +256,7 @@ struct Context
 		case NSPrintScreenFunctionKey: return Key::Print;
 		}
 
-		ui::Log("OSX: Unknown code: {}", keyCode);
+		ui::Log("OSX: Unknown code: %d", keyCode);
 		return Key::None;
 	}
 

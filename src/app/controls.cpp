@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -80,6 +80,7 @@ void App::DeleteSelected()
 {
 	if (auto target = selectWeak.lock())
 	{
+		ui::Log("DeleteSelected: %s %d", Cstr(target->name), target->type);
 		if (!(target->type & (ObjectType_Container | ObjectType_Cursor)))
 		{
 			if (auto parent = target->parent.lock(); parent && parent->RemoveChild(target))
@@ -128,7 +129,7 @@ void App::FixedControls()
 			{
 				if (auto mesh = Mesh::SharedPtr(object, ObjectType_HasBody))
 				{
-					ui::Log("enable mesh: {}", mesh->name);
+					ui::Log("enable mesh: %s", Cstr(mesh->name));
 					if (auto& body = mesh->body; !body->enabled)
 					{
 						mesh->SetBodyTransform();
@@ -516,7 +517,7 @@ void App::ThrowGeometry(int action, int geometryType, const VEC_STR& texFiles)
 		scene->AddChild(mesh);
 
 		parent = mesh.get();
-		ui::Log("ThrowGeometry: new parent: {}", name);
+		ui::Log("ThrowGeometry: new parent: %s", Cstr(name));
 	}
 	if (!parent) return;
 
@@ -563,7 +564,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, const VEC_
 		scene->AddChild(mesh);
 
 		parent = mesh.get();
-		ui::Log("ThrowMesh: new parent: {}", name);
+		ui::Log("ThrowMesh: new parent: %s", Cstr(name));
 	}
 	if (!parent) return;
 
@@ -582,7 +583,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, const VEC_
 			{
 				const auto& child = parent->children.back();
 				const auto& cpos  = child->matrixWorld[3];
-				ui::Log(" - {}: {} {} {}", child->name, cpos[0], cpos[1], cpos[2]);
+				ui::Log(" - %s: %.2f %.2f %.2f", Cstr(child->name), cpos[0], cpos[1], cpos[2]);
 				pos.y = bx::max(pos.x, cpos[1] + 0.5f);
 			}
 			else pos.y = 10.0f;

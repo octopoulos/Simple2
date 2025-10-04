@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-09-29
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -84,7 +84,7 @@ int App::Initialize()
 
 		auto sapp = shared_from_this();
 		appWeak   = sapp;
-		ui::Log("sapp={}", (intptr_t)sapp.get());
+		ui::Log("sapp=%lld", (intptr_t)sapp.get());
 		ui::ListWindows();
 		ui::UpdateTheme();
 	}
@@ -288,9 +288,9 @@ int App::InitializeScene()
 
 	// 6) print scene children
 	{
-		ui::Log("Scene.children={}", scene->children.size());
+		ui::Log("Scene.children=%lld", scene->children.size());
 		for (int i = -1; const auto& child : scene->children)
-			ui::Log(" {:2}: {}", ++i, child->name);
+			ui::Log(" %2d: %s", ++i, Cstr(child->name));
 	}
 	return 1;
 }
@@ -409,7 +409,7 @@ void App::SynchronizeEvents(uint32_t _screenX, uint32_t _screenY)
 {
 	if (screenX != _screenX || screenY != _screenY)
 	{
-		ui::Log("SynchronizeEvents: {}x{} => {}x{}", screenX, screenY, _screenX, _screenY);
+		ui::Log("SynchronizeEvents: %dx%d => %dx%d", screenX, screenY, _screenX, _screenY);
 		screenX = _screenX;
 		screenY = _screenY;
 	}
@@ -550,8 +550,8 @@ public:
 			init.resolution.reset  = xsettings.reset;
 			init.callback          = &callback;
 
-			ui::Log("renderer={} vendor={} => type={} vendorId={}", renderer, vendor, (int)init.type, init.vendorId);
-			ui::Log("App/init: {}x{}x{} => {}x{}", iwidth, iheight, xsettings.dpr, fwidth, fheight);
+			ui::Log("renderer=%s vendor=%s => type=%d vendorId=%d", Cstr(renderer), Cstr(vendor), (int)init.type, init.vendorId);
+			ui::Log("App/init: %dx%dx%d => %dx%d", iwidth, iheight, xsettings.dpr, fwidth, fheight);
 			bgfx::init(init);
 			isInit = true;
 

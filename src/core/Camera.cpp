@@ -1,6 +1,6 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "core/Camera.h"
@@ -31,7 +31,7 @@ void Camera::ConsumeOrbit(float amount)
 	orbit[0] -= consume[0];
 	orbit[1] -= consume[1];
 
-	// ui::Log("orbit={:7.3} {:7.3}", orbit[0], orbit[1]);
+	// ui::Log("orbit=%7.3f %7.3f", orbit[0], orbit[1]);
 	if (bx::abs(orbit[0]) < 1e-5f && bx::abs(orbit[1]) < 1e-5f) return;
 
 	const bx::Vec3 toPos       = bx::sub(pos, target);

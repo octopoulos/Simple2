@@ -1,6 +1,6 @@
 // FbxLoader.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -44,7 +44,7 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 				ofbx::DataView filename = texture->getFileName();
 				char           textureCpath[256];
 				filename.toString(textureCpath);
-				ui::Log("TEX: {}={} for {}", typeName, textureCpath, materialName);
+				ui::Log("TEX: %s=%s for %s", Cstr(typeName), textureCpath, Cstr(materialName));
 
 				TextureData texData = { type, "" };
 				if (textureCpath[0])
@@ -64,9 +64,9 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 					// tryPath        = RelativeName(tryPath, { "runtime/textures" });
 					texData.handle = GetTextureManager().LoadTexture(tryPath.string());
 					if (bgfx::isValid(texData.handle))
-						ui::Log("CreateMaterialFromFbx: loaded {} texture {} for {}", typeName, texData.name, materialName);
+						ui::Log("CreateMaterialFromFbx: loaded %s texture %s for %s", Cstr(typeName), Cstr(texData.name), Cstr(materialName));
 					else
-						ui::LogError("CreateMaterialFromFbx: failed {} file: {} for {}", typeName, tryPath, materialName);
+						ui::LogError("CreateMaterialFromFbx: failed %s file: %s for %s", Cstr(typeName), PathStr(tryPath), Cstr(materialName));
 					textures.push_back(texData);
 				}
 
@@ -79,9 +79,9 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 						texData.name   = Format("embedded_%d_%s", fbxMaterial->id, Cstr(typeName));
 						texData.handle = GetTextureManager().AddRawTexture(texData.name, embeddedData.begin, TO_UINT32(embeddedData.end - embeddedData.begin));
 						if (bgfx::isValid(texData.handle))
-							ui::Log("CreateMaterialFromFbx: loaded embedded {} texture {} for {}", typeName, texData.name, materialName);
+							ui::Log("CreateMaterialFromFbx: loaded embedded %s texture %s for %s", Cstr(typeName), Cstr(texData.name), Cstr(materialName));
 						else
-							ui::LogError("CreateMaterialFromFbx: failed embedded {} for {}", typeName, materialName);
+							ui::LogError("CreateMaterialFromFbx: failed embedded %s for %s", Cstr(typeName), Cstr(materialName));
 						textures.push_back(texData);
 					}
 				}
@@ -147,7 +147,7 @@ static sMesh CreateNodeMesh(const ofbx::Object* node)
 	mesh->sphere = { { 0.0f, 0.0f, 0.0f }, 0.0f };
 	// clang-format on
 
-	ui::Log("CreateNodeMesh: {}", nodeName);
+	ui::Log("CreateNodeMesh: %s", Cstr(nodeName));
 	return mesh;
 }
 
@@ -158,7 +158,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 	sMesh      mesh     = CreateNodeMesh(fbxMesh);
 	const auto nodeName = mesh->name;
 
-	ui::Log("ProcessMesh: {}", nodeName);
+	ui::Log("ProcessMesh: %s", Cstr(nodeName));
 
 	// 2) process geometry
 	const ofbx::GeometryData&  geom      = fbxMesh->getGeometryData();
@@ -207,7 +207,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 		group.material       = CreateMaterialFromFbx(scene, material, fbxPath, texPath);
 		if (!group.material)
 		{
-			ui::LogError("ProcessMesh: Cannot create material for mesh {} partition {}", nodeName, partitionId);
+			ui::LogError("ProcessMesh: Cannot create material for mesh %s partition %d", Cstr(nodeName), partitionId);
 			continue;
 		}
 
@@ -227,10 +227,10 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 			const auto& polygon = partition.polygons[polygonId];
 			int         triIndices[128];
 			const int   triCount = ofbx::triangulate(geom, polygon, triIndices);
-			// ui::Log("Mesh {} partition {} polygon {}: {} indices", nodeName, partitionId, polygonId, triCount);
+			// ui::Log("Mesh %s partition %d polygon %d: %d indices", Cstr(nodeName), partitionId, polygonId, triCount);
 			if (triCount % 3 != 0)
 			{
-				ui::LogError("ProcessMesh: Invalid triangulation for mesh {} partition {} polygon {}: {} indices", nodeName, partitionId, polygonId, triCount);
+				ui::LogError("ProcessMesh: Invalid triangulation for mesh %s partition %d polygon %d: %d indices", Cstr(nodeName), partitionId, polygonId, triCount);
 				continue;
 			}
 
@@ -239,7 +239,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 				int vertexId = triIndices[i];
 				if (vertexId < 0 || vertexId >= positions.count)
 				{
-					ui::LogError("ProcessMesh: Invalid vertex index {} for mesh {} partition {} polygon {}", vertexId, nodeName, partitionId, polygonId);
+					ui::LogError("ProcessMesh: Invalid vertex index %d for mesh %s partition %d polygon %d", vertexId, Cstr(nodeName), partitionId, polygonId);
 					continue;
 				}
 
@@ -278,7 +278,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 		}
 		else
 		{
-			ui::LogError("ProcessMesh: No vertices for mesh {} partition {}", nodeName, partitionId);
+			ui::LogError("ProcessMesh: No vertices for mesh %s partition %d", Cstr(nodeName), partitionId);
 			continue;
 		}
 
@@ -301,11 +301,11 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 			memcpy(group.vertices, vertices.data(), vertices.size() * sizeof(Vertex));
 			group.numVertices = TO_UINT32(vertices.size());
 			group.vbh         = bgfx::createVertexBuffer(bgfx::makeRef(group.vertices, vertices.size() * sizeof(Vertex)), layout, BGFX_BUFFER_NONE);
-			ui::Log("ProcessMesh: mesh {} partition {}: {} vertices", nodeName, partitionId, vertices.size());
+			ui::Log("ProcessMesh: mesh %s partition %d: %lld vertices", Cstr(nodeName), partitionId, vertices.size());
 		}
 		else
 		{
-			ui::LogError("ProcessMesh: No vertices for mesh {} partition {}", nodeName, partitionId);
+			ui::LogError("ProcessMesh: No vertices for mesh %s partition %d", Cstr(nodeName), partitionId);
 			continue;
 		}
 
@@ -315,11 +315,11 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 			memcpy(group.indices, indices.data(), indices.size() * sizeof(uint32_t));
 			group.numIndices = TO_UINT32(indices.size());
 			group.ibh        = bgfx::createIndexBuffer(bgfx::makeRef(group.indices, indices.size() * sizeof(uint32_t)), BGFX_BUFFER_INDEX32);
-			ui::Log("ProcessMesh: mesh {} partition {}: {} indices", nodeName, partitionId, indices.size());
+			ui::Log("ProcessMesh: mesh %s partition %d: %lld indices", Cstr(nodeName), partitionId, indices.size());
 		}
 		else
 		{
-			ui::LogError("ProcessMesh: No indices for mesh {} partition {}", nodeName, partitionId);
+			ui::LogError("ProcessMesh: No indices for mesh %s partition %d", Cstr(nodeName), partitionId);
 			continue;
 		}
 
@@ -384,17 +384,17 @@ sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy, std::string_view 
 {
 	if (!std::filesystem::exists(path))
 	{
-		ui::LogError("LoadFbx: File not found {}", path.string());
+		ui::LogError("LoadFbx: File not found %s", PathStr(path));
 		return nullptr;
 	}
 
-	ui::Log("LoadFbx: {}", path.string());
+	ui::Log("LoadFbx: %s", PathStr(path));
 
 	// load FBX file in binary
 	std::string content = ReadData(path);
 	if (content.empty())
 	{
-		ui::LogError("LoadFbx: Failed to read file {}", path.string());
+		ui::LogError("LoadFbx: Failed to read file %s", PathStr(path));
 		return nullptr;
 	}
 
@@ -414,7 +414,7 @@ sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy, std::string_view 
 	ofbx::IScene* scene = ofbx::load(reinterpret_cast<const ofbx::u8*>(content.data()), content.size(), static_cast<ofbx::u16>(flags));
 	if (!scene)
 	{
-		ui::LogError("LoadFbx: Failed to load scene {}: {}", path, ofbx::getError());
+		ui::LogError("LoadFbx: Failed to load scene %s: %s", PathStr(path), ofbx::getError());
 		return nullptr;
 	}
 
@@ -432,7 +432,7 @@ sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy, std::string_view 
 		sMesh             mesh    = ProcessMesh(*scene, fbxMesh, path, texPath);
 		meshMap[fbxMesh->id]      = mesh;
 
-		ui::Log("LoadFbx: {}/{} name={}", i, meshCount, mesh->name);
+		ui::Log("LoadFbx: %d/%d name=%s", i, meshCount, Cstr(mesh->name));
 
 		// find parent mesh
 		sMesh               parentMesh = rootMesh;
@@ -456,13 +456,13 @@ sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy, std::string_view 
 						grandParentMesh = grandIt->second;
 				}
 				grandParentMesh->AddChild(parentMesh);
-				ui::Log("LoadFbx: parent node {} for mesh {}", parentMesh->name, mesh->name);
+				ui::Log("LoadFbx: parent node %s for mesh %s", Cstr(parentMesh->name), Cstr(mesh->name));
 			}
 		}
 
 		// add mesh to parent
 		parentMesh->AddChild(mesh);
-		ui::Log("LoadFbx: add mesh {} to parent {}", mesh->name, parentMesh->name);
+		ui::Log("LoadFbx: add mesh %s to parent %s", Cstr(mesh->name), Cstr(parentMesh->name));
 
 		// update parent AABBs up the hierarchy
 		sMesh current = mesh;
@@ -470,7 +470,7 @@ sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy, std::string_view 
 		{
 			if (current->aabb.min.x >= current->aabb.max.x)
 			{
-				ui::LogError("LoadFbx: Invalid AABB for mesh {}", current->name);
+				ui::LogError("LoadFbx: Invalid AABB for mesh %s", Cstr(current->name));
 				break;
 			}
 
@@ -486,7 +486,7 @@ sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy, std::string_view 
 				for (auto& group : parent->groups)
 					group.aabb = parent->aabb;
 
-			ui::Log("LoadFbx: updated parent {}: AABB min=({:.2f}, {:.2f}, {:.2f}), max=({:.2f}, {:.2f}, {:.2f})", parent->name, parent->aabb.min.x, parent->aabb.min.y, parent->aabb.min.z, parent->aabb.max.x, parent->aabb.max.y, parent->aabb.max.z);
+			ui::Log("LoadFbx: updated parent %s: AABB min=(%.2f %.2f %.2f), max=(%.2f %.2f %.2f)", Cstr(parent->name), parent->aabb.min.x, parent->aabb.min.y, parent->aabb.min.z, parent->aabb.max.x, parent->aabb.max.y, parent->aabb.max.z);
 
 			current = parent;
 		}
@@ -496,7 +496,7 @@ sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy, std::string_view 
 	for (const auto& child : rootMesh->children)
 	{
 		const auto sparent = child->parent.lock();
-		ui::Log("LoadFbx: child {}: parent={} groups={} children={}", child->name, sparent ? sparent->name : "none", Mesh::SharedPtr(child)->groups.size(), child->children.size());
+		ui::Log("LoadFbx: child %s: parent=%s groups=%lld children=%lld", Cstr(child->name), sparent ? Cstr(sparent->name) : "none", Mesh::SharedPtr(child)->groups.size(), child->children.size());
 	}
 
 	// clean up

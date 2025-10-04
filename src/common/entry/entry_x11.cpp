@@ -1,4 +1,4 @@
-// @version 2025-07-30
+// @version 2025-09-29
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -519,7 +519,7 @@ struct Context
 							m_eventQueue.postKeyEvent(handle, key, m_modifiers, KeyPress == event.type);
 							oldModifers = m_modifiers;
 						}
-						else ui::Log("X11: Unknown code: {}", keysym);
+						else ui::Log("X11: Unknown code: %d", keysym);
 					}
 				}
 				break;

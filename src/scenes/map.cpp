@@ -40,7 +40,7 @@ void App::AddObject(std::string_view modelName)
 	const auto  coord = glm::vec3(cursor->position.x, cursor->position.y - 1.0f, cursor->position.z);
 	const auto& irot  = cursor->irot;
 
-	ui::Log("AddObject: {} @ {} {} {}", modelName, coord.x, coord.y, coord.z);
+	ui::Log("AddObject: %s @ %f %f %f", Cstr(modelName), coord.x, coord.y, coord.z);
 	sMesh mesh = nullptr;
 	if (modelName.front() == ':')
 	{
@@ -139,7 +139,7 @@ void App::RescanAssets()
 		const auto relPath     = std::filesystem::relative(path, MODEL_SRC_DIR);
 		const auto firstFolder = (relPath.empty() || relPath.parent_path().empty()) ? "" : *relPath.begin();
 
-		ui::Log("       path={}\n    relPath={}\nfirstFolder={}", path, relPath, firstFolder);
+		ui::Log("       path=%s\n    relPath=%s\nfirstFolder=%s", PathStr(path), PathStr(relPath), Cstr(firstFolder));
 
 		const auto modelOut = firstFolder.empty()
 		    ? (MODEL_OUT_DIR / (modelName + ".bin"))
@@ -170,14 +170,14 @@ void App::RescanAssets()
 
 		if (!IsFile(modelOut))
 		{
-			ui::Log("Need to convert: {}", relPath.string());
-			ui::Log("Convert: {} => {}", path.string(), modelOut.string());
+			ui::Log("Need to convert: %s", PathStr(relPath));
+			ui::Log("Convert: %s => %s", PathStr(path), PathStr(modelOut));
 
 			CreateDirectories(modelOut.parent_path());
 
 			const char* cmd    = Format(R"(geometryc -f "%s" -o "%s")", PathStr(path), PathStr(modelOut));
 			const int   result = std::system(cmd);
-			if (result != 0) ui::Log("ERROR: geometryc failed with code {}", result);
+			if (result != 0) ui::Log("ERROR: geometryc failed with code %d", result);
 		}
 
 		modelOuts.push_back(modelOut);
@@ -204,7 +204,7 @@ void App::RescanAssets()
 					CreateDirectories(texOut.parent_path());
 					if (CopyFileX(texPath, texOut, false))
 					{
-						ui::Log("Copy: {} -> {}", texPath, texOut);
+						ui::Log("Copy: %s -> %s", PathStr(texPath), PathStr(texOut));
 						textureOuts.push_back(texOut);
 					}
 				}
@@ -212,7 +212,7 @@ void App::RescanAssets()
 		}
 	}
 
-	ui::Log("Models: {}  Textures: {}", modelSrcs.size(), textureOuts.size());
+	ui::Log("Models: %lld  Textures: %lld", modelSrcs.size(), textureOuts.size());
 }
 
 void App::ScanModels(const std::filesystem::path& folder, const std::filesystem::path& folderPrev, int depth, const std::string& relative)
@@ -239,7 +239,7 @@ void App::ScanModels(const std::filesystem::path& folder, const std::filesystem:
 
 			if (IsDirectory(path)) [[unlikely]]
 			{
-				//ui::Log(" {} / [{}]", relative, path);
+				//ui::Log(" %s / [%s]", Cstr(relative), PathStr(path));
 				subFolders.emplace_back(filename);
 			}
 			else if (IsFile(path))
@@ -255,7 +255,7 @@ void App::ScanModels(const std::filesystem::path& folder, const std::filesystem:
 					if (!IsFile(preview) && IsFile(preview2))
 						std::filesystem::copy_file(preview2, preview);
 
-					//ui::Log(" {} / - {} - {} - {}", relative, filename, preview, IsFile(preview));
+					//ui::Log(" %s / - %s - %s - %d", PathStr(relative), PathStr(filename), PathStr(preview), IsFile(preview));
 					models.insert({ stem, IsFile(preview) ? 1 : 0 });
 				}
 			}
@@ -273,9 +273,9 @@ void App::ScanModels(const std::filesystem::path& folder, const std::filesystem:
 	{
 		for (const auto& [kit, models] : kitModels)
 		{
-			ui::Log("{}: {}", kit, models.size());
+			ui::Log("%s: %lld", Cstr(kit), models.size());
 			for (const auto& [name, flag] : models)
-				ui::Log("  - {} : {}", name, flag);
+				ui::Log("  - %s : %d", Cstr(name), flag);
 		}
 	}
 }

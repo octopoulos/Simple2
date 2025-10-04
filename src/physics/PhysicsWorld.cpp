@@ -33,7 +33,7 @@ void BulletDebugDraw::FlushLines()
 	const uint32_t numVertices = lines.size();
 	if (bgfx::getAvailTransientVertexBuffer(numVertices, PosColorVertex::ms_layout) < numVertices)
 	{
-		ui::Log("flushLines: Not enough transient buffer space for {} vertices", numVertices);
+		ui::Log("FlushLines: Not enough transient buffer space for %d vertices", numVertices);
 		lines.clear();
 		return;
 	}

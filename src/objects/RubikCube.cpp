@@ -1,6 +1,6 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
@@ -121,9 +121,9 @@ void RubikCube::AiControls(const sCamera& camera, int modifier, const bool* down
 
 	if (DEV_rubik)
 	{
-		ui::Log("FRONT: maxDot={:5.2f} ({:6}) {:5.2f} : minDot={:5.2f} ({:6}) {:5.2f}", frontMaxDot, frontMaxFace->name, frontVis, frontMinDot, frontMinFace->name, glm::dot(frontMinFace->normalWorld, backward));
-		ui::Log("RIGHT: maxDot={:5.2f} ({:6}) {:5.2f} : minDot={:5.2f} ({:6}) {:5.2f}", rightMaxDot, rightMaxFace->name, rightVis, rightMinDot, rightMinFace->name, glm::dot(rightMinFace->normalWorld, backward));
-		ui::Log("UP   : maxDot={:5.2f} ({:6}) {:5.2f} : minDot={:5.2f} ({:6}) {:5.2f}", upMaxDot   , upMaxFace->name   , upVis   , upMinDot   , upMinFace->name   , glm::dot(upMinFace->normalWorld   , backward));
+		ui::Log("FRONT: maxDot=%5.2f (%s) %5.2f : minDot=%5.2f (%s) %5.2f", frontMaxDot, Cstr(frontMaxFace->name), frontVis, frontMinDot, Cstr(frontMinFace->name), glm::dot(frontMinFace->normalWorld, backward));
+		ui::Log("RIGHT: maxDot=%5.2f (%s) %5.2f : minDot=%5.2f (%s) %5.2f", rightMaxDot, Cstr(rightMaxFace->name), rightVis, rightMinDot, Cstr(rightMinFace->name), glm::dot(rightMinFace->normalWorld, backward));
+		ui::Log("UP   : maxDot=%5.2f (%s) %5.2f : minDot=%5.2f (%s) %5.2f", upMaxDot   , Cstr(upMaxFace->name)   , upVis   , upMinDot   , Cstr(upMinFace->name)   , glm::dot(upMinFace->normalWorld   , backward));
 	}
 
 	// 2) whole cube rotation
@@ -281,7 +281,7 @@ void RubikCube::Initialize()
 		}
 	}
 
-	ui::Log("RubikCube: Created {} cubies for {}x{}x{} cube", cubeSize * cubeSize * cubeSize, cubeSize, cubeSize, cubeSize);
+	ui::Log("RubikCube: Created %d cubies for %dx%dx%d cube", cubeSize * cubeSize * cubeSize, cubeSize, cubeSize, cubeSize);
 
 	// update world matrices for all children
 	UpdateWorldMatrix(true);
@@ -291,7 +291,7 @@ void RubikCube::RotateCube(const RubikFace* face, int angle, int key, bool isQue
 {
 	// 1) handle non completed interpolation
 	const int change = CompleteInterpolation(false, "RotateCube");
-	ui::Log("RotateCube: {}", change);
+	ui::Log("RotateCube: %d", change);
 	if (change)
 	{
 		QueueKey(key, isQueue);
@@ -315,7 +315,7 @@ void RubikCube::RotateLayer(const RubikFace* face, int angle, int key, bool isQu
 {
 	// 1) stop current interpolation
 	const int change = CompleteInterpolation(false, "RotateLayer");
-	ui::Log("RotateLayer: {}", change);
+	ui::Log("RotateLayer: %d", change);
 	if (change)
 	{
 		QueueKey(key, isQueue);
@@ -364,7 +364,7 @@ void RubikCube::RotateLayer(const RubikFace* face, int angle, int key, bool isQu
 		}
 		isDirty = true;
 	}
-	else ui::Log("\ncubies={}\n", cubies.size());
+	else ui::Log("\ncubies=%lld\n", cubies.size());
 }
 
 void RubikCube::Scramble(const sCamera& camera, int steps)
@@ -398,7 +398,7 @@ void RubikCube::Scramble(const sCamera& camera, int steps)
 		if (MerseneInt32() & 1) modifier |= Modifier_Shift;
 		if ((MerseneInt32() & 3) == 0) modifier |= Modifier_Meta;
 
-		// ui::Log("Scramble: id={} key={} modifier={} repeat={}", id, key, modifier, repeat);
+		// ui::Log("Scramble: id=%d key=%d modifier=%d repeat=%d", id, key, modifier, repeat);
 		AiControls(camera, modifier, downs, false);
 	}
 }

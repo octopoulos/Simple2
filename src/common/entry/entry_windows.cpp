@@ -1,4 +1,4 @@
-// @version 2025-07-30
+// @version 2025-09-29
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -808,7 +808,7 @@ struct Context
 			{
 				uint8_t   modifiers = translateKeyModifiers();
 				Key::Enum key       = translateKey(_wparam);
-				if (!key) ui::Log("Win32: Unknown code: {}", TO_INT(_wparam));
+				if (!key) ui::Log("Win32: Unknown code: %d", TO_INT(_wparam));
 
 				WindowHandle handle = findHandle(_hwnd);
 

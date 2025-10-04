@@ -1,4 +1,4 @@
-// @version 2025-09-15
+// @version 2025-09-29
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -350,7 +350,7 @@ void GlobalInput::KeyDownUp(int key, bool down)
 			keyDowns[key] = true;
 			lastAscii     = KeyToAscii(key);
 			lastKey       = key;
-			//ui::Log("KeyDownUp: {} {} : {} {}", key, down, lastKey, lastAscii);
+			//ui::Log("KeyDownUp: %d %d : %d %d", key, down, lastKey, lastAscii);
 		}
 		else
 		{
@@ -445,7 +445,7 @@ void GlobalInput::PrintKeys()
 	if (DEV_inputKeys)
 	{
 		for (int id = 0; id < entry::Key::Count; ++id)
-			if (keyDowns[id]) ui::Log("Controls: {} {:3} {:5} {}", keyTimes[id], id, keys[id], getName((entry::Key::Enum)id));
+			if (keyDowns[id]) ui::Log("Controls: %lld %3d %5d %s", keyTimes[id], id, keys[id], getName((entry::Key::Enum)id));
 	}
 }
 

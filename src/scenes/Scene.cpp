@@ -218,10 +218,10 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 				if (!obj["mass"].get_double().get(mass)) {}
 				if (!obj["shapeType"].get_string().get(tempString)) shapeType = ShapeType(tempString);
 
-				ui::Log("XX name={} type={}", name, type);
-				ui::Log("XX dims={} {} {} {} => {} {} {} {}", tempFloat4[0], tempFloat4[1], tempFloat4[2], tempFloat4[3], dims.x(), dims.y(), dims.z(), dims.w());
-				ui::Log("XX mass={}", mass);
-				ui::Log("XX shapeType={} ({})", shapeType, tempString);
+				ui::Log("XX name=%s type=%d", Cstr(name), type);
+				ui::Log("XX dims=%f %f %f %f => %f %f %f %f", tempFloat4[0], tempFloat4[1], tempFloat4[2], tempFloat4[3], dims.x(), dims.y(), dims.z(), dims.w());
+				ui::Log("XX mass=%f", mass);
+				ui::Log("XX shapeType=%d (%s)", shapeType, Cstr(tempString));
 			}
 
 			mesh->ScaleIrotPosition(scale, irot, position);
@@ -229,7 +229,7 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 			mesh->CreateShapeBody((PhysicsWorld*)physics, shapeType, TO_FLOAT(mass), dims);
 			mesh->body->enabled = enabled;
 		}
-		ui::Log(" -->4 type={}/{} {}", type, object->type, name);
+		ui::Log(" -->4 type=%d/%d %s", type, object->type, Cstr(name));
 
 		// extras
 		// if (type & ObjectType_RubikCube)
@@ -253,7 +253,7 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 	}
 
 	// 6) connect node
-	if (DEV_scene) ui::Log("ParseObject: {} {}/{} {}", depth, type, object->type, object->name);
+	if (DEV_scene) ui::Log("ParseObject: %d %d/%d %s", depth, type, object->type, Cstr(object->name));
 	if (object && !exist)
 		parent->AddChild(object);
 
@@ -286,7 +286,7 @@ bool App::OpenScene(const std::filesystem::path& filename)
 	if (simdjson::ondemand::object obj; !doc.get_object().get(obj))
 	{
 		AddRecent(filename);
-		ui::Log("Parsing JSON object from file: {}", filename.string());
+		ui::Log("Parsing JSON object from file: %s", PathStr(filename));
 		Scene::SharedPtr(scene)->Clear();
 		ParseObject(obj, scene, scene, GetPhysics(), 0);
 
@@ -303,7 +303,7 @@ bool App::SaveScene(const std::filesystem::path& filename)
 
 	fmt::memory_buffer outString;
 	scene->Serialize(outString, 0);
-	ui::Log("SaveScene: {}", OUTSTRING_VIEW);
+	ui::Log("SaveScene: %s", Cstr(OUTSTRING_VIEW));
 	WriteData(output, OUTSTRING_VIEW);
 	AddRecent(output);
 	return true;
@@ -331,21 +331,21 @@ void Scene::Clear()
 void App::PickObject(int mouseX, int mouseY)
 {
 	if (!xsettings.picking) return;
-	ui::Log("PickObject: Mouse ({}, {})", mouseX, mouseY);
+	ui::Log("PickObject: Mouse (%d, %d)", mouseX, mouseY);
 
 	// Get screen dimensions from xsettings
 	const float screenX = static_cast<float>(xsettings.windowSize[0]);
 	const float screenY = static_cast<float>(xsettings.windowSize[1]);
 	if (screenX <= 0 || screenY <= 0)
 	{
-		ui::LogError("PickObject: Invalid window size ({}, {})", screenX, screenY);
+		ui::LogError("PickObject: Invalid window size (%d, %d)", screenX, screenY);
 		return;
 	}
 
 	// 1) Convert mouse coords to normalized device coordinates (NDC: [-1, 1])
 	const float ndcX = (2.0f * mouseX) / screenX - 1.0f;
 	const float ndcY = 1.0f - (2.0f * mouseY) / screenY; // Flip Y (screen Y=0 is top)
-	ui::Log("PickObject: NDC ({:.2f}, {:.2f})", ndcX, ndcY);
+	ui::Log("PickObject: NDC (%.2f %.2f)", ndcX, ndcY);
 
 	// 2) Get view and projection matrices from camera
 	float view[16];
@@ -377,13 +377,13 @@ void App::PickObject(int mouseX, int mouseY)
 
 	glm::vec3 rayOrigin = glm::vec3(nearPoint);
 	glm::vec3 rayDir    = glm::normalize(glm::vec3(farPoint - nearPoint));
-	ui::Log("PickObject: Ray from ({:.2f}, {:.2f}, {:.2f}) dir ({:.2f}, {:.2f}, {:.2f})", rayOrigin.x, rayOrigin.y, rayOrigin.z, rayDir.x, rayDir.y, rayDir.z);
+	ui::Log("PickObject: Ray from (%.2f %.2f %.2f) dir (%.2f %.2f %.2f)", rayOrigin.x, rayOrigin.y, rayOrigin.z, rayDir.x, rayDir.y, rayDir.z);
 
 	// 5) Perform Bullet raycast
 	btVector3 from  = GlmToBullet(rayOrigin);
 	btVector3 to    = GlmToBullet(rayOrigin + rayDir * xsettings.rayLength); // Configurable distance
 	auto*     world = GetPhysics()->GetWorld();
-	ui::Log("PickObject: Physics world has {} objects", world->getNumCollisionObjects());
+	ui::Log("PickObject: Physics world has %d objects", world->getNumCollisionObjects());
 
 	// Update AABBs and pairs (like RaytestDemo)
 	world->updateAabbs();
@@ -408,12 +408,12 @@ void App::PickObject(int mouseX, int mouseY)
 	if (rayCallback.hasHit())
 	{
 		const btCollisionObject* hitObject = rayCallback.m_collisionObject;
-		ui::Log("PickObject: Hit at ({:.2f}, {:.2f}, {:.2f})", rayCallback.m_hitPointWorld.x(), rayCallback.m_hitPointWorld.y(), rayCallback.m_hitPointWorld.z());
+		ui::Log("PickObject: Hit at (%.2f %.2f %.2f)", rayCallback.m_hitPointWorld.x(), rayCallback.m_hitPointWorld.y(), rayCallback.m_hitPointWorld.z());
 
 		if (void* userPtr = hitObject->getUserPointer())
 		{
 			Mesh* hitMesh = static_cast<Mesh*>(userPtr);
-			ui::Log("PickObject: userPointer = {}, type = {}, name = '{}'", (void*)hitMesh, hitMesh->type, hitMesh->name);
+			ui::Log("PickObject: userPointer=%p type=%d name=%s", (void*)hitMesh, hitMesh->type, Cstr(hitMesh->name));
 
 			if (hitMesh && (hitMesh->type & ObjectType_Mesh))
 			{
@@ -423,13 +423,13 @@ void App::PickObject(int mouseX, int mouseY)
 					SelectObject(hitObj);
 					camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(hitMesh->position));
 					camera->Zoom();
-					ui::Log("PickObject: Selected mesh '{}' at position ({:.2f}, {:.2f}, {:.2f})", hitMesh->name, hitMesh->position.x, hitMesh->position.y, hitMesh->position.z);
-					ui::Log("PickObject: Camera target2 = ({:.2f}, {:.2f}, {:.2f})", camera->target2.x, camera->target2.y, camera->target2.z);
+					ui::Log("PickObject: Selected mesh %s at position %.2f %.2f %.2f", Cstr(hitMesh->name), hitMesh->position.x, hitMesh->position.y, hitMesh->position.z);
+					ui::Log("PickObject: Camera target2=%.2f %.2f %.2f", camera->target2.x, camera->target2.y, camera->target2.z);
 					return;
 				}
 				catch (const std::bad_weak_ptr& e)
 				{
-					ui::LogError("PickObject: shared_from_this failed for mesh '{}'", hitMesh->name);
+					ui::LogError("PickObject: shared_from_this failed for mesh '%s'", Cstr(hitMesh->name));
 				}
 			}
 			else

@@ -1,6 +1,6 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-30
 
 #include "stdafx.h"
 #include "textures/TextureManager.h"
@@ -102,7 +102,7 @@ bgfx::TextureHandle TextureManager::AddRawTexture(std::string_view name, const v
 	bx::Error            err;
 	if (!bimg::imageParse(imageContainer, data, size, &err))
 	{
-		ui::LogError("AddRawTexture: Cannot parse {}: {}", name, err.getMessage().getCPtr());
+		ui::LogError("AddRawTexture: Cannot parse %s: %s", Cstr(name), err.getMessage().getCPtr());
 		return BGFX_INVALID_HANDLE;
 	}
 
@@ -128,7 +128,7 @@ bgfx::TextureHandle TextureManager::AddRawTexture(std::string_view name, const v
 
 	if (!bgfx::isValid(handle))
 	{
-		ui::LogError("AddRawTexture: Cannot create {}", name);
+		ui::LogError("AddRawTexture: Cannot create %s", Cstr(name));
 		bimg::imageFree(&imageContainer);
 		return BGFX_INVALID_HANDLE;
 	}
@@ -173,7 +173,7 @@ bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 
 	auto TryPath = [&](const std::filesystem::path& cand) -> bool
 	{
-		ui::Log("LoadTexture/{}: Trying {}", ++step, cand.string());
+		ui::Log("LoadTexture/%d: Trying %s", ++step, PathStr(cand));
 		if (IsFile(cand))
 		{
 			path = cand;
@@ -201,7 +201,7 @@ bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 		}
 		else
 		{
-			ui::LogError("LoadTexture: Cannot find: {}", clean);
+			ui::LogError("LoadTexture: Cannot find: %s", Cstr(clean));
 			return BGFX_INVALID_HANDLE;
 		}
 	}
@@ -211,7 +211,7 @@ bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
 	bgfx::TextureHandle texture = LoadTexture_(bx::FilePath(PathStr(path)), 0, 0, &info);
 	if (!bgfx::isValid(texture))
 	{
-		ui::LogError("LoadTexture: Cannot load: {}", clean);
+		ui::LogError("LoadTexture: Cannot load: %s", Cstr(clean));
 		return BGFX_INVALID_HANDLE;
 	}
 

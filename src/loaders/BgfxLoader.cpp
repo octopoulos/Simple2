@@ -1,6 +1,6 @@
 // BgfxLoader.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -14,7 +14,7 @@ namespace bgfx
 
 sMesh LoadBgfx(const std::filesystem::path& path, bool ramcopy, std::string_view texPath)
 {
-	const bx::FilePath filePath = Cstr(path);
+	const bx::FilePath filePath = PathStr(path);
 
 	bx::FileReaderI* reader = entry::getFileReader();
 	if (!bx::open(reader, filePath)) return nullptr;
@@ -189,7 +189,7 @@ sMesh LoadBgfx(const std::filesystem::path& path, bool ramcopy, std::string_view
 		break;
 
 		default:
-			ui::LogWarning("{:08x} at {}", chunk, bx::skip(reader, 0));
+			ui::LogWarning("%08x at %p", chunk, bx::skip(reader, 0));
 			break;
 		}
 	}

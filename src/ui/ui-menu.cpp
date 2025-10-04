@@ -76,7 +76,7 @@ int App::MainUi()
 
 void App::OpenedFile(int action, int param, const std::filesystem::path& path)
 {
-	ui::Log("App/OpenedFile: {} action={} param={} folder={}", path, action, param, openFolder);
+	ui::Log("App/OpenedFile: %s action=%d param=%d folder=%s", PathStr(path), action, param, Cstr(openFolder));
 	if (path.empty()) return;
 
 	switch (action)
@@ -86,9 +86,9 @@ void App::OpenedFile(int action, int param, const std::filesystem::path& path)
 		{
 			if (target->type & ObjectType_Mesh)
 			{
-				ui::Log("current_path={}", std::filesystem::current_path());
-				ui::Log("relative={}", std::filesystem::relative(path, "mnt/d"));
-				ui::Log("proximate={}", std::filesystem::proximate(path, "mnt/d"));
+				ui::Log("current_path=%s", PathStr(std::filesystem::current_path()));
+				ui::Log("relative=%s", PathStr(std::filesystem::relative(path, "mnt/d")));
+				ui::Log("proximate=%s", PathStr(std::filesystem::proximate(path, "mnt/d")));
 				Mesh::SharedPtr(target)->material->LoadTexture(param, path.string());
 			}
 		}
@@ -96,7 +96,7 @@ void App::OpenedFile(int action, int param, const std::filesystem::path& path)
 	case OpenAction_OpenScene: OpenScene(path); break;
 	case OpenAction_SaveScene: SaveScene(path); break;
 	default:
-		ui::Log("OpenedFile: Unknown action: {} {} {}", action, param, path);
+		ui::Log("OpenedFile: Unknown action: %d %d %s", action, param, PathStr(path));
 	}
 
 	FocusScreen();
@@ -205,9 +205,9 @@ void App::PopupsUi()
 				ImGui::Separator();
 				for (int type = GeometryType_None + 1; type < GeometryType_Count; ++type)
 				{
-					if (ImGui::MenuItem(GeometryName(type).c_str()))
+					if (ImGui::MenuItem(Cstr(GeometryName(type))))
 					{
-						ui::Log("Add geometry: {} {}", type, GeometryName(type));
+						ui::Log("Add geometry: %d %s", type, Cstr(GeometryName(type)));
 						auto geometry = CreateAnyGeometry(type);
 						AddGeometry(std::move(geometry));
 					}

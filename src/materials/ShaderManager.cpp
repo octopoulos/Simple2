@@ -43,7 +43,7 @@ static bgfx::ShaderHandle LoadShader_(bx::FileReaderI* reader, std::string_view 
 	bgfx::ShaderHandle handle = bgfx::createShader(BgfxLoadMemory(reader, PathStr(path)));
 	bgfx::setName(handle, name.data(), name.size());
 
-	if (DEV_shader) ui::Log("LoadShader_: {} : {}", path, (void*)&handle);
+	if (DEV_shader) ui::Log("LoadShader_: %s : %p", PathStr(path), (void*)&handle);
 	return handle;
 }
 
@@ -114,7 +114,7 @@ bgfx::ProgramHandle ShaderManager::LoadProgram(std::string_view vsName, std::str
 	bgfx::ShaderHandle fs = LoadShader(fsName);
 	if (!bgfx::isValid(vs) || !bgfx::isValid(fs))
 	{
-		ui::LogError("Failed to load shaders for program: {}", key);
+		ui::LogError("Failed to load shaders for program: %s", Cstr(key));
 		return BGFX_INVALID_HANDLE;
 	}
 
@@ -122,7 +122,7 @@ bgfx::ProgramHandle ShaderManager::LoadProgram(std::string_view vsName, std::str
 	bgfx::ProgramHandle program = bgfx::createProgram(vs, fs);
 	if (!bgfx::isValid(program))
 	{
-		ui::LogError("Failed to create program: {}", key);
+		ui::LogError("Failed to create program: %s", Cstr(key));
 		return BGFX_INVALID_HANDLE;
 	}
 
@@ -141,7 +141,7 @@ bgfx::ShaderHandle ShaderManager::LoadShader(std::string_view name)
 	bgfx::ShaderHandle shader = LoadShader_(name);
 	if (!bgfx::isValid(shader))
 	{
-		ui::LogError("Failed to load shader: {}", name);
+		ui::LogError("Failed to load shader: %s", Cstr(name));
 		return BGFX_INVALID_HANDLE;
 	}
 

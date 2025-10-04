@@ -1,4 +1,4 @@
-// @version 2025-08-10
+// @version 2025-09-29
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -414,7 +414,7 @@ struct Context
 
 		float xscale, yscale;
 		glfwGetWindowContentScale(m_window[0], &xscale, &yscale);
-		ui::Log("xscale={} yscale={}", xscale, yscale);
+		ui::Log("xscale=%f yscale=%f", xscale, yscale);
 
 		int fbWidth, fbHeight;
 		glfwGetFramebufferSize(m_window[0], &fbWidth, &fbHeight);
@@ -621,7 +621,7 @@ void Context::keyCb(GLFWwindow* _window, int32_t _key, int32_t _scancode, int32_
 	BX_UNUSED(_scancode);
 	if (_key == GLFW_KEY_UNKNOWN)
 	{
-		ui::Log("GLFW: Unknown code: {}", _key);
+		ui::Log("GLFW: Unknown code: %d", _key);
 		return;
 	}
 	WindowHandle handle = s_ctx.findHandle(_window);

@@ -1,7 +1,7 @@
 // version.cpp
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-29
 
 #include "stdafx.h"
 
-std::string VERSION = "Simple 20250919";
+std::string VERSION = "Simple 20250929";

@@ -1,4 +1,4 @@
-// @version 2025-08-13
+// @version 2025-09-29
 /*
  * Copyright 2014-2015 Daniel Collin. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -67,7 +67,7 @@ struct OcornutImguiContext
 	void updateTexture(ImTextureData* tex)
 	{
 		auto ref = tex->GetTexRef();
-		//ui::Log("tex={} {} {} status={}", (intptr_t)tex, (int64_t)&ref, (int64_t)ref._TexID, (int64_t)tex->Status);
+		//ui::Log("tex=%lld %lld %lld status=%lld", (intptr_t)tex, (int64_t)&ref, (int64_t)ref._TexID, (int64_t)tex->Status);
 
 		if (tex->Status == ImTextureStatus_WantCreate)
 		{

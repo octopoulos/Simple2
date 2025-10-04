@@ -25,12 +25,12 @@ static std::string SaveEmbeddedImage(const fastgltf::sources::Vector& data, std:
 		std::ofstream out(tempPath, std::ios::binary);
 		if (!out)
 		{
-			ui::LogError("Failed to create temporary file for embedded image: {}", tempPath.string());
+			ui::LogError("Failed to create temporary file for embedded image: %s", PathStr(tempPath));
 			return "";
 		}
 		out.write(reinterpret_cast<const char*>(data.bytes.data()), data.bytes.size());
 		out.close();
-		ui::Log("Saved embedded image to: {}", tempPath.string());
+		ui::Log("Saved embedded image to: %s", PathStr(tempPath));
 		return tempPath.string();
 	}
 	return "";
@@ -39,7 +39,7 @@ static std::string SaveEmbeddedImage(const fastgltf::sources::Vector& data, std:
 /// Handle image data variant
 static std::string ProcessImageData(const fastgltf::DataSource& data, std::string_view name, const std::filesystem::path& gltfPath)
 {
-	ui::Log("ProcessImageData: {} {}", name, gltfPath);
+	ui::Log("ProcessImageData: %s %s", Cstr(name), PathStr(gltfPath));
 	return std::visit(
 	    [&](const auto& source) -> std::string {
 		    using T = std::decay_t<decltype(source)>;
@@ -116,7 +116,7 @@ static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optio
 			}
 		}
 
-		ui::Log("{} textures", numTexture);
+		ui::Log("%d textures", numTexture);
 		if (!numTexture)
 		{
 			fsName = "fs_cube";
@@ -182,23 +182,23 @@ sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy, std::string_view
 	auto result = fastgltf::GltfDataBuffer::FromPath(path);
 	if (result.error() != fastgltf::Error::None)
 	{
-		ui::LogError("LoadGltf: Buffer error {}", path.string());
+		ui::LogError("LoadGltf: Buffer error %s", PathStr(path));
 		return nullptr;
 	}
 
 	auto& data = result.get();
-	ui::Log("data.totalSize={}", data.totalSize());
+	ui::Log("data.totalSize=%d", data.totalSize());
 
 	// 2) parse the GLTF asset
 	auto gasset = parser.loadGltf(data, path.parent_path(), fastgltf::Options::LoadExternalBuffers | fastgltf::Options::DontRequireValidAssetMember);
 	if (const auto error = gasset.error(); error != fastgltf::Error::None)
 	{
-		ui::LogError("LoadGltf: Parse error {} {}", path.string(), TO_INT(error));
+		ui::LogError("LoadGltf: Parse error %s %d", PathStr(path), TO_INT(error));
 		return nullptr;
 	}
 
 	fastgltf::Asset& asset = gasset.get();
-	ui::Log("LoadGltf: {}", path.string());
+	ui::Log("LoadGltf: %s", PathStr(path));
 
 	// 3) initialize sMesh
 	sMesh mesh = std::make_shared<Mesh>(path.filename().string(), 0);
@@ -226,12 +226,12 @@ sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy, std::string_view
 
 	// log buffers
 	for (const auto& buffer : asset.buffers)
-		ui::Log("Buffer: {:7} {}", buffer.byteLength, buffer.name);
+		ui::Log("Buffer: %7d %s", buffer.byteLength, Cstr(buffer.name));
 
 	// 6) iterate meshes
 	for (const auto& gltfMesh : asset.meshes)
 	{
-		ui::Log("Mesh: {}", gltfMesh.name);
+		ui::Log("Mesh: %s", Cstr(gltfMesh.name));
 
 		for (const auto& primitive : gltfMesh.primitives)
 		{
@@ -248,7 +248,7 @@ sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy, std::string_view
 				indices.reserve(accessor.count);
 				fastgltf::iterateAccessor<uint32_t>(asset, accessor, [&](uint32_t idx) { indices.push_back(idx); });
 				group.numIndices = static_cast<uint32_t>(indices.size());
-				ui::Log("{} indices", indices.size());
+				ui::Log("%lld indices", indices.size());
 			}
 
 			// === vertex count from POSITION ===
@@ -267,14 +267,14 @@ sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy, std::string_view
 				const auto& accessor = asset.accessors[attr.accessorIndex];
 				if (accessor.count != vertexCount)
 				{
-					ui::LogError("Accessor count mismatch for attribute {}", attr.name);
+					ui::LogError("Accessor count mismatch for attribute %s", Cstr(attr.name));
 					continue; // Skip invalid primitives
 				}
 			}
 
 			// === vertices ===
 			std::vector<Vertex> vertices(vertexCount);
-			ui::Log("{} vertices", vertices.size());
+			ui::Log("%lld vertices", vertices.size());
 
 			// POSITION
 			if (auto it = primitive.findAttribute("POSITION"); it != primitive.attributes.end())

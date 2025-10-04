@@ -1,6 +1,6 @@
 // loader.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "loaders/loader.h"
@@ -16,7 +16,7 @@ void* BgfxLoad(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const bx::F
 		if (_size) *_size = size;
 		return data;
 	}
-	else ui::LogWarning("Failed to open: {}", _filePath.getCPtr());
+	else ui::LogWarning("Failed to open: %s", _filePath.getCPtr());
 
 	if (_size) *_size = 0;
 	return nullptr;
@@ -39,7 +39,7 @@ const bgfx::Memory* BgfxLoadMemory(bx::FileReaderI* _reader, const bx::FilePath&
 		return mem;
 	}
 
-	ui::LogWarning("Failed to load {}", _filePath.getCPtr());
+	ui::LogWarning("Failed to load %s", _filePath.getCPtr());
 	return nullptr;
 }
 
@@ -56,7 +56,7 @@ void* BgfxLoadMemory(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const
 		return data;
 	}
 
-	ui::LogWarning("Failed to load {}", _filePath.getCPtr());
+	ui::LogWarning("Failed to load %s", _filePath.getCPtr());
 	return nullptr;
 }
 

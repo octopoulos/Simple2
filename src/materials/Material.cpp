@@ -76,7 +76,7 @@ void Material::FindModelTextures(std::string_view modelName, const VEC_STR& texF
 						texNames[id] = texFile;
 						textures[id] = texture;
 					}
-					ui::Log("=> {} {} {}", id, texFile, bgfx::isValid(texture));
+					ui::Log("=> %d %s %d", id, Cstr(texFile), bgfx::isValid(texture));
 				}
 			}
 		}
@@ -194,14 +194,14 @@ void Material::ShowSettings(bool isPopup, int show)
 		ImGui::SameLine();
 		if (ImGui::Button(Format("...##vert%s", Cstr(vsName))))
 		{
-			ui::Log("Vertex{}", vsName);
+			ui::Log("Vertex%s", Cstr(vsName));
 			app->OpenFile(OpenAction_ShaderVert);
 		}
 		ui::AddInputText(mode | 32, ".fsName", "Fragment Shader", 256, 0, &fsName);
 		ImGui::SameLine();
 		if (ImGui::Button(Format("...##frag%s", Cstr(fsName))))
 		{
-			ui::Log("Fragment{}", fsName);
+			ui::Log("Fragment%s", Cstr(fsName));
 			app->OpenFile(OpenAction_ShaderFrag);
 		}
 	}
@@ -215,7 +215,7 @@ void Material::ShowSettings(bool isPopup, int show)
 			ImGui::SameLine();
 			if (ImGui::Button(Format("...##Tex%d", id)))
 			{
-				ui::Log("Tex{} {}", id, TextureName(id));
+				ui::Log("Tex%d %s", id, Cstr(TextureName(id)));
 				app->OpenFile(OpenAction_Image, id);
 			}
 		}

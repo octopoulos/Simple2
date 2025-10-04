@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-09-19
+// @version 2025-09-29
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -41,7 +41,7 @@ void Object3d::AddChild(sObject3d child)
 	if (child->name.size())
 	{
 		const auto& [it, inserted] = names.try_emplace(child->name, child);
-		if (!inserted) ui::LogWarning("AddChild: {} already exists", child->name);
+		if (!inserted) ui::LogWarning("AddChild: %s already exists", Cstr(child->name));
 	}
 
 	child->id         = childInc;
@@ -60,13 +60,13 @@ void Object3d::ClearDeads(bool force)
 	}
 
 	// 2) remove
-	ui::Log("ClearDeads: removes={} ({})", removes.size(), name);
+	ui::Log("ClearDeads: removes=%lld (%s)", removes.size(), Cstr(name));
 	for (auto& remove : removes) RemoveChild(remove);
 }
 
 int Object3d::CompleteInterpolation(bool warp, std::string_view origin)
 {
-	if (DEV_interpolate) ui::Log("CompleteInterpolation/{}: axisTs={} posTs={} quatTs={}", origin, axisTs, posTs, quatTs ? Nowd() - quatTs : 0);
+	if (DEV_interpolate) ui::Log("CompleteInterpolation/%s: axisTs=%f posTs=%f quatTs=%f", Cstr(origin), axisTs, posTs, quatTs ? Nowd() - quatTs : 0);
 
 	int change = 0;
 	if (axisTs > 0.0 || posTs > 0.0)
@@ -197,7 +197,7 @@ void Object3d::Render(uint8_t viewId, int renderFlags)
 
 void Object3d::RotationFromIrot(bool instant)
 {
-	if (DEV_rotate) ui::Log("RotationFromIrot: {} {} : {} {} {}", name, instant, irot[0], irot[1], irot[2]);
+	if (DEV_rotate) ui::Log("RotationFromIrot: %s %d : %d %d %d", Cstr(name), instant, irot[0], irot[1], irot[2]);
 	// normalize irot to [-180, 180] degrees
 	const int snap = xsettings.angleInc;
 	for (int i = 0; i < 3; ++i)
@@ -377,7 +377,7 @@ int Object3d::SynchronizePhysics()
 
 		if (changes)
 		{
-			ui::Log("SynchronizePhysics: changes={}", changes);
+			ui::Log("SynchronizePhysics: changes=%d", changes);
 			ClearDeads(false);
 		}
 	}
@@ -400,7 +400,7 @@ void Object3d::UpdateLocalMatrix(std::string_view origin)
 	UpdateWorldMatrix(true);
 	if (DEV_matrix)
 	{
-		ui::Log("UpdateLocalMatrix/{}: {} {} {} {} : {} {} {}", origin, name, position.x, position.y, position.z, irot[0], irot[1], irot[2]);
+		ui::Log("UpdateLocalMatrix/%s: %s %f %f %f : %d %d %d", Cstr(origin), Cstr(name), position.x, position.y, position.z, irot[0], irot[1], irot[2]);
 		PrintMatrix(matrixWorld, name);
 	}
 }

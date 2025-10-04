@@ -1,6 +1,6 @@
 // ffmpeg-pipe.h
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-09-29
 
 #pragma once
 
@@ -44,7 +44,7 @@ struct FfmpegPipe
 		if (!pipe)
 		{
 			perror("popen failed");
-			ui::LogError("FfmpegPipe/Open: no pipe:\n{}", cmd);
+			ui::LogError("FfmpegPipe/Open: no pipe:\n%s", cmd);
 			return false;
 		}
 		return true;
@@ -55,7 +55,7 @@ struct FfmpegPipe
 		const size_t written = fwrite(data, 1, size, pipe);
 		if (written != size)
 		{
-			ui::LogWarning("FfmpegPipe/WriteFrame: {} != {}", written, size);
+			ui::LogWarning("FfmpegPipe/WriteFrame: %d != %d", written, size);
 			return false;
 		}
 		return true;
