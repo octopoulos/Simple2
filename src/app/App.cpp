@@ -508,6 +508,7 @@ public:
 		CLI_OPTION(renderer, std::string, "", "" , 0, "Renderer (d3d11, d3d12, gl, mtl, vk)");
 		CLI_OPTION(tests   , int        , 0 , "1", 0, "Run tests");
 		CLI_OPTION(vendor  , std::string, "", "" , 0, "Vendor (amd, intel, nvidia)");
+		CLI_OPTION(vsync   , int        , 0 , "1", 0, "Use vsync");
 		// clang-format on
 
 		if (argc && argv) CLI11_PARSE(cli, argc, argv);
@@ -538,6 +539,10 @@ public:
 				xsettings.reset |= BGFX_RESET_CAPTURE;
 			else
 				xsettings.reset &= ~BGFX_RESET_CAPTURE;
+			if (xsettings.vsync)
+				xsettings.reset |= BGFX_RESET_VSYNC;
+			else
+				xsettings.reset &= ~BGFX_RESET_VSYNC;
 
 			bgfx::Init init;
 			init.type              = RendererId(renderer);
