@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-09-30
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -56,7 +56,7 @@ void Object3d::ClearDeads(bool force)
 	std::vector<sObject3d> removes;
 	for (auto& child : children)
 	{
-		if (child->dead & Dead_Remove) removes.push_back(child);
+		if (force || (child->dead & Dead_Remove)) removes.push_back(child);
 	}
 
 	// 2) remove
