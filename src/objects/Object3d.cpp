@@ -45,7 +45,14 @@ void Object3d::AddChild(sObject3d child)
 	}
 
 	child->id         = childInc;
-	// child->parent     = Object3d::shared_from_this(); // BUG HERE FROM CUBIE (RubikCube::Initialize)
+	ui::Log("name=%s %d", Cstr(name), child->type);
+	// BUG HERE FROM CUBIE (RubikCube::Initialize)
+	if (child->type & ObjectType_RubikNode)
+	{
+
+	}
+	else child->parent = Object3d::shared_from_this();
+
 	child->parentLink = !(type & (ObjectType_Container | ObjectType_Instance));
 	children.push_back(std::move(child));
 }
