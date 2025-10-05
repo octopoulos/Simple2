@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-10-01
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -548,7 +548,7 @@ TEST_CASE("GeometryShape")
 	// clang-format on
 	for (int i = -1; const auto& [geometryType, hasMass, detail, answer] : vectors)
 	{
-		SUBCASE_FMT("{}_{}_{}_{}", ++i, geometryType, hasMass, detail)
+		SUBCASE_FMT("%d_%d_%d_%d", ++i, geometryType, hasMass, detail)
 		CHECK(GeometryShape(geometryType, hasMass, detail) == answer);
 	}
 }

@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-09-30
+// @version 2025-10-01
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -108,7 +108,7 @@ TEST_CASE("NodeName")
 	// clang-format on
 	for (int i = -1; const auto& [modelName, answer] : vectors)
 	{
-		SUBCASE_FMT("{}_{}", ++i, modelName)
+		SUBCASE_FMT("%d_%s", ++i, Cstr(modelName))
 		CHECK(App::NodeName(modelName) == answer);
 	}
 }

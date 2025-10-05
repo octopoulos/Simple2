@@ -1,4 +1,4 @@
-// @version 2025-09-29
+// @version 2025-10-01
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -279,7 +279,7 @@ TEST_CASE("DecodeKey")
 	// clang-format on
 	for (int i = -1; const auto& [keyMod, answerKey, answerModified] : vectors)
 	{
-		SUBCASE_FMT("{}_{}", ++i, keyMod)
+		SUBCASE_FMT("%d_%d", ++i, keyMod)
 		{
 			const auto& [key, modified] = GlobalInput::DecodeKey(keyMod);
 			CHECK(key == answerKey);
@@ -307,7 +307,7 @@ TEST_CASE("EncodeKey")
 	// clang-format on
 	for (int i = -1; const auto& [key, modifier, answer] : vectors)
 	{
-		SUBCASE_FMT("{}_{}_{}", ++i, key, modifier)
+		SUBCASE_FMT("%d_%d_%d", ++i, key, modifier)
 		CHECK(GlobalInput::EncodeKey(key, modifier) == answer);
 	}
 }
