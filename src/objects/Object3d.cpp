@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-09-30
+// @version 2025-10-02
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -366,7 +366,7 @@ void Object3d::ShowSettings(bool isPopup, int show)
 			}
 		}
 		ui::AddCombo(mode | (isPopup ? 16 : 0), "rotateMode", "Mode");
-		if (ui::AddDragFloat(mode, ".scale", "Scale", glm::value_ptr(scale), 3))
+		if (ui::AddDragFloat(mode | 64, ".scale", "Scale", glm::value_ptr(scale), 4))
 		{
 			scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
 			UpdateLocalMatrix("Scale");

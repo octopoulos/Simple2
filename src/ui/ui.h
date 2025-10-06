@@ -1,6 +1,6 @@
 // ui.h
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-10-02
 
 #pragma once
 
@@ -53,31 +53,31 @@ public:
 CommonWindow& GetCommonWindow();
 
 /// Add a combo with label left/right + special Blender support
-/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width, &32: label spaceRight
 bool AddCheckbox(int mode, std::string_view name, const char* labelLeft, const char* labelRight, bool* dataPtr = nullptr);
 
 /// Add a combo with label left/right + special Blender support
-/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width, &32: label spaceRight
 bool AddCombo(int mode, std::string_view name, const char* label);
 
 /// Add a combo with label left/right + special Blender support
-/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width, &32: label spaceRight
 bool AddCombo(int mode, std::string_view name, const char* label, const char* texts[], const VEC_INT values);
 
 /// Add a drag float with label left/right
-/// @param mode: 0: slider, &1: drag, &2: new line, &4: popup, &8: empty label, &16: no label + span all width
+/// @param mode: 0: slider, &1: drag, &2: new line, &4: popup, &8: empty label, &16: no label + span all width, &32: label spaceRight, &64: XYZ
 bool AddDragFloat(int mode, std::string_view name, const char* text, float* dataPtr = nullptr, int count = 1, float speed = 0.0005f, const char* format = "%.3f");
 
 /// Add a drag int with label left/right
-/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width, &32: label spaceRight
 bool AddDragInt(int mode, std::string_view name, const char* text, int* dataPtr = nullptr, int count = 1, float speed = 1.0f, const char* format = "%d");
 
 /// Add an input int with label left/right
-/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width, &32: label spaceRight
 void AddInputInt(int mode, std::string_view name, const char* label, int flags = 0, int* pint = nullptr);
 
 /// Add an input text input with label left/right + special Blender support
-/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width, &32: label spaceRight
 /// @param pstring: if used, then overrides config
 void AddInputText(int mode, std::string_view name, const char* label, size_t size = 256, int flags = 0, std::string* pstring = nullptr);
 
@@ -85,16 +85,16 @@ void AddInputText(int mode, std::string_view name, const char* label, size_t siz
 bool AddMenuFlag(std::string_view label, uint32_t& value, uint32_t flag);
 
 /// Add a slider bool with label left/right
-/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width, &32: label spaceRight
 bool AddSliderBool(int mode, std::string_view name, const char* text, const char* format = "%d", bool vertical = false, const ImVec2& size = { 30, 120 });
 
 /// Create an horizontal or vertical slider, with label left/right
-/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width, &32: label spaceRight
 /// @param format: nullptr => slider enum, to use instead of AddCombo
 bool AddSliderInt(int mode, std::string_view name, const char* text, const char* format = "%d", bool vertical = false, const ImVec2& size = { 30, 120 }, bool isBool = false);
 
 /// Create an horizontal or vertical slider, with label left/right
-/// @param mode: &4: popup, &8: empty label, &16: no label + span all width
+/// @param mode: &4: popup, &8: empty label, &16: no label + span all width, &32: label spaceRight
 /// @param format: nullptr => slider enum, to use instead of AddCombo
 bool AddSliderInt(int mode, std::string_view name, const char* text, int* value, int count, int min, int max, const char* format = "%d");
 

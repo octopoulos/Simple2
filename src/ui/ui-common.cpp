@@ -1,6 +1,6 @@
 // ui-common.cpp
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-10-02
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -15,7 +15,7 @@ namespace ui
 //////////
 
 /// Label on the left
-/// @param mode: &4: popup mode, &8: empty label but aligned, &16: skip
+/// @param mode: &4: popup mode, &8: empty label but aligned, &16: skip, &32: label spaceRight
 static void LabelLeft(int mode, const char* label, int components, float spaceRight = 0.0f, float widthRatio = 0.4f, float forceLeft = -1.0f)
 {
 	if (mode & 16)
@@ -181,7 +181,7 @@ bool AddCombo(int mode, std::string_view name, const char* label, const char* te
 }
 
 /// Same as DraggScalarN but can be reset with right click
-/// @param mode: 0: slider, &1: drag, &2: vertical (new line), &4: popup (label above)
+/// @param mode: 0: slider, &1: drag, &2: vertical (new line), &4: popup (label above), &32: label spaceRight, &64: XYZ
 static bool AddDragScalarN(int mode, std::string_view name, const char* label, ImGuiDataType data_type, size_t type_size, void* p_data, int components, float v_speed, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags = 0)
 {
 	const bool  isHori       = !(mode & 2);
@@ -202,9 +202,13 @@ static bool AddDragScalarN(int mode, std::string_view name, const char* label, I
 	else if (isHori)
 		LabelLeft(mode, label, components);
 
+	const void* p_data0   = p_data;
+	float       tempFloat = *(float*)p_data;
+
 	for (int i = 0; i < components; ++i)
 	{
-		const char* subLabel = (components > 1) ? subLabels[i] : "";
+		const bool  isXyz    = (i == 3 && (mode & 64));
+		const char* subLabel = (components > 1) ? (isXyz ? "All" : subLabels[i]) : "";
 		if (isPopup)
 			LabelLeft(mode, subLabel, 1, 0.1f);
 		else if (!isHori)
@@ -214,12 +218,27 @@ static bool AddDragScalarN(int mode, std::string_view name, const char* label, I
 		if (isHori && i > 0)
 			ImGui::SameLine(0, spacingX);
 
-		if (!(mode & 1))
-			valueChanged |= ImGui::SliderScalar(Format("##%s%d", Cstr(name), i), data_type, p_data, p_min, p_max, format, flags);
-		else
-			valueChanged |= ImGui::DragScalar(Format("##%s%d", Cstr(name), i), data_type, p_data, v_speed, p_min, p_max, format, flags);
+		bool  changed   = false;
+		void* itemData  = isXyz ? &tempFloat : p_data;
 
-		valueChanged |= ItemEvent(name, i);
+		if (!(mode & 1))
+			changed = ImGui::SliderScalar(Format("##%s%d", Cstr(name), i), data_type, itemData, p_min, p_max, format, flags);
+		else
+			changed = ImGui::DragScalar(Format("##%s%d", Cstr(name), i), data_type, itemData, v_speed, p_min, p_max, format, flags);
+
+		changed |= ItemEvent(name, i);
+		valueChanged |= changed;
+
+		// XYZ => change x, y and z
+		if (isXyz && changed)
+		{
+			auto* q_data = p_data0;
+			for (int j = 0; j < 3; ++j)
+			{
+				*(float*)q_data = tempFloat;
+				q_data = (void*)((char*)q_data + type_size);
+			}
+		}
 
 		if (isHori) ImGui::SameLine();
 		ImGui::PopID();
