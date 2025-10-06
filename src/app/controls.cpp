@@ -507,11 +507,11 @@ void App::ThrowGeometry(int action, int geometryType, const VEC_STR& texFiles)
 	const char* name      = Format("geom-%d", geometryType);
 	const char* groupName = Format("%s-group", name);
 
-	Mesh* parent = nullptr;
+	sMesh parent = nullptr;
 	if (auto parentObj = Scene::SharedPtr(scene)->GetObjectByName(groupName))
 	{
 		if (parentObj->type & ObjectType_Mesh)
-			parent = static_cast<Mesh*>(parentObj.get());
+			parent = Mesh::SharedPtr(parentObj);
 	}
 	else if (auto mesh = std::make_shared<Mesh>(groupName, ObjectType_Group | ObjectType_Instance))
 	{
@@ -519,7 +519,7 @@ void App::ThrowGeometry(int action, int geometryType, const VEC_STR& texFiles)
 		mesh->material = GetMaterialManager().LoadMaterial(Format("model-inst:%s", ArrayJoin(texFiles, '-').c_str()), "vs_model_texture_instance", "fs_model_texture_instance", texFiles);
 		scene->AddChild(mesh);
 
-		parent = mesh.get();
+		parent = mesh;
 		ui::Log("ThrowGeometry: new parent: %s", Cstr(name));
 	}
 	if (!parent) return;
@@ -554,11 +554,11 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, const VEC_
 	// 1) get/create the parent
 	const char* groupName = Format("%s-group", Cstr(name));
 
-	Mesh* parent = nullptr;
+	sMesh parent = nullptr;
 	if (auto parentObj = Scene::SharedPtr(scene)->GetObjectByName(groupName))
 	{
 		if (parentObj->type & ObjectType_Mesh)
-			parent = static_cast<Mesh*>(parentObj.get());
+			parent = Mesh::SharedPtr(parentObj);
 	}
 	else if (auto mesh = MeshLoader::LoadModelFull(groupName, name, texFiles))
 	{
@@ -566,7 +566,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, const VEC_
 		mesh->material->LoadProgram("vs_model_texture_instance", "fs_model_texture_instance");
 		scene->AddChild(mesh);
 
-		parent = mesh.get();
+		parent = mesh;
 		ui::Log("ThrowMesh: new parent: %s", Cstr(name));
 	}
 	if (!parent) return;

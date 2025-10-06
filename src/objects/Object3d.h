@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-10-02
 
 #pragma once
 
@@ -54,7 +54,8 @@ enum RenderFlags_ : int
 	RenderFlag_Instancing = 1 << 0,
 };
 
-class Object3d : public std::enable_shared_from_this<Object3d>
+class Object3d
+	: public std::enable_shared_from_this<Object3d>
 {
 public:
 	glm::quat              axis1       = glm::identity<glm::quat>(); ///< quaternion: axis origin

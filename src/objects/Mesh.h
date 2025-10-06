@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-10-02
 
 #pragma once
 
@@ -77,9 +77,7 @@ struct MeshState
 
 using sMesh = std::shared_ptr<class Mesh>;
 
-class Mesh
-    : public Object3d
-    , public std::enable_shared_from_this<Mesh>
+class Mesh: public Object3d
 {
 public:
 	bx::Aabb                  aabb      = {};            ///< AABB around the whole mesh

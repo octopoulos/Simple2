@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-10-02
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -123,7 +123,7 @@ int App::InitializeScene()
 {
 	// 1) create a new scene + add default objects
 	{
-		scene = std::make_unique<Scene>();
+		scene = std::make_shared<Scene>();
 
 		// camera
 		{
