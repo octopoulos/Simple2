@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-09-17
+// @version 2025-10-02
 
 #pragma once
 
@@ -83,11 +83,14 @@ struct XSettings
 	bool  captureVideo; ///< allow video capture
 	bool  nvidiaEnc;    ///< use nVidia encoding
 
-	// [input]
-	float cameraSpeed;  ///< camera movement speed
+	// [cursor]
 	int   cursorEase;   ///< easing function
 	int   cursorInit;   ///< Ms wait for cursor repeat to kick in
 	int   cursorRepeat; ///< Ms cursor repeat interval
+	float cursorStep;   ///< move cursor/object by that amount
+
+	// [input]
+	float cameraSpeed;  ///< camera movement speed
 	int   keyInit;      ///< Ms wait for key repeat to kick in
 	int   keyRepeat;    ///< Ms key repeat interval
 	float zoomKb;       ///< zoom speed with the keyboard

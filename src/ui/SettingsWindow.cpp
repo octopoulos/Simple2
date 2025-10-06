@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-10-02
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -86,11 +86,16 @@ public:
 		// CURSOR
 		/////////
 
-		BEGIN_COLLAPSE("Cursor", Show_Cursor, 8)
+		BEGIN_COLLAPSE("Cursor", Show_Cursor, 4)
 		{
 			AddCombo(0, "cursorEase", "Easing");
 			AddSliderInt(0, "cursorInit", "Initial");
 			AddSliderInt(0, "cursorRepeat", "Repeat");
+			if (AddDragFloat(0, "cursorStep", "Step By", nullptr))
+			{
+				const float invStep = bx::max(1.0f, bx::round(1.0f / xsettings.cursorStep));
+				xsettings.cursorStep = 1.0f / invStep;
+			}
 			END_COLLAPSE();
 		}
 

@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-10-02
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -40,15 +40,18 @@ static std::vector<Config> configs = {
 	X_BOOL   (XSETTINGS, capture, 1, captureVideo, false),
 	X_BOOL   (XSETTINGS, capture, 0, nvidiaEnc   , false),
 
+	// [cursor]
+	X_INT    (XSETTINGS, cursor, 0, cursorInit  , 500, 0, 5000),
+	X_ENUM   (XSETTINGS, cursor, 0, cursorEase  , Ease_None, sEases),
+	X_INT    (XSETTINGS, cursor, 0, cursorRepeat, 50 , 0, 500),
+	X_FLOAT  (XSETTINGS, cursor, 0, cursorStep  , 0.5f, 0.1f, 1.0f),
+
 	// [input]
-	X_FLOAT  (XSETTINGS, input, 0, cameraSpeed , 10.0f, 1.0f, 100.0f),
-	X_INT    (XSETTINGS, input, 0, cursorInit  , 500, 0, 5000),
-	X_ENUM   (XSETTINGS, input, 0, cursorEase  , Ease_None, sEases),
-	X_INT    (XSETTINGS, input, 0, cursorRepeat, 50 , 0, 500),
-	X_INT    (XSETTINGS, input, 0, keyInit     , 500, 0, 5000),
-	X_INT    (XSETTINGS, input, 0, keyRepeat   , 50 , 0, 500),
-	X_FLOAT  (XSETTINGS, input, 0, zoomKb      , 10.0f, 1.0f, 100.0f),
-	X_FLOAT  (XSETTINGS, input, 0, zoomWheel   , 10.0f, 1.0f, 100.0f),
+	X_FLOAT  (XSETTINGS, input, 0, cameraSpeed, 10.0f, 1.0f, 100.0f),
+	X_INT    (XSETTINGS, input, 0, keyInit    , 500, 0, 5000),
+	X_INT    (XSETTINGS, input, 0, keyRepeat  , 50 , 0, 500),
+	X_FLOAT  (XSETTINGS, input, 0, zoomKb     , 10.0f, 1.0f, 100.0f),
+	X_FLOAT  (XSETTINGS, input, 0, zoomWheel  , 10.0f, 1.0f, 100.0f),
 
 	// [map]
 	X_INT    (XSETTINGS, map, 0, angleInc  , 90, 1, 180),

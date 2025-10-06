@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-10-02
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -387,6 +387,9 @@ void App::MoveSelected(bool force)
 				}
 				auto& result = xsettings.smoothPos ? target->position2 : target->position;
 
+				const float step    = xsettings.cursorStep;
+				const float invStep = 1.0f / step;
+
 				if (flag & (1 | 8))
 				{
 					const float dir = (flag & 8) ? 1.0f : -1.0f;
@@ -394,9 +397,9 @@ void App::MoveSelected(bool force)
 					const float fz  = cacheForward.z;
 
 					if (bx::abs(fx) > bx::abs(fz))
-						result.x = bx::floor(target->position.x * 2.0f + dir * SignNonZero(fx)) * 0.5f;
+						result.x = bx::floor(target->position.x * invStep + dir * SignNonZero(fx)) * step;
 					else
-						result.z = bx::floor(target->position.z * 2.0f + dir * SignNonZero(fz)) * 0.5f;
+						result.z = bx::floor(target->position.z * invStep + dir * SignNonZero(fz)) * step;
 				}
 				if (flag & (2 | 4))
 				{
@@ -405,15 +408,15 @@ void App::MoveSelected(bool force)
 					const float fz  = cacheRight.z;
 
 					if (bx::abs(fx) > bx::abs(fz))
-						result.x = bx::floor(target->position.x * 2.0f + dir * SignNonZero(fx)) * 0.5f;
+						result.x = bx::floor(target->position.x * invStep + dir * SignNonZero(fx)) * step;
 					else
-						result.z = bx::floor(target->position.z * 2.0f + dir * SignNonZero(fz)) * 0.5f;
+						result.z = bx::floor(target->position.z * invStep + dir * SignNonZero(fz)) * step;
 				}
 				if (flag & (16 | 32))
 				{
 					const float dir = (flag & 32) ? 1.0f : -1.0f;
 
-					result.y = bx::floor(target->position.y * 2.0f + dir) * 0.5f;
+					result.y = bx::floor(target->position.y * invStep + dir) * step;
 				}
 
 				if (xsettings.smoothPos)
