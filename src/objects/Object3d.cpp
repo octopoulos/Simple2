@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-10-02
+// @version 2025-10-03
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -99,9 +99,10 @@ int Object3d::CompleteInterpolation(bool warp, std::string_view origin)
 	return change;
 }
 
-void Object3d::DecomposeMatrix()
+void Object3d::DecomposeMatrix(float scaleRatio)
 {
-	::DecomposeMatrix(matrix, position, quaternion, scale);
+	::DecomposeMatrix(matrix, position, quaternion, scale, scaleRatio);
+	UpdateScaleMatrix();
 	RotationFromQuaternion();
 }
 
@@ -233,34 +234,30 @@ void Object3d::RotationFromQuaternion()
 void Object3d::ScaleIrotPosition(const glm::vec3& _scale, const std::array<int, 3>& _irot, const glm::vec3& _position)
 {
 	memcpy(irot, _irot.data(), sizeof(irot));
+	position = _position;
 
-	position    = _position;
-	scale       = _scale;
-	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
-
+	UpdateScaleMatrix(&_scale);
 	RotationFromIrot(true);
 	UpdateLocalMatrix("ScaleIrotPosition");
 }
 
 void Object3d::ScaleRotationPosition(const glm::vec3& _scale, const glm::vec3& _rotation, const glm::vec3& _position)
 {
-	position    = _position;
-	rotation    = _rotation;
-	scale       = _scale;
-	quaternion  = glm::quat(rotation);
-	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+	position   = _position;
+	rotation   = _rotation;
+	quaternion = glm::quat(rotation);
 
+	UpdateScaleMatrix(&_scale);
 	IrotFromRotation();
 	UpdateLocalMatrix("ScaleRotationPosition");
 }
 
 void Object3d::ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat& _quaternion, const glm::vec3& _position)
 {
-	position    = _position;
-	quaternion  = _quaternion;
-	scale       = _scale;
-	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+	position   = _position;
+	quaternion = _quaternion;
 
+	UpdateScaleMatrix(&_scale);
 	RotationFromQuaternion();
 	UpdateLocalMatrix("ScaleQuaternionPosition");
 }
@@ -362,7 +359,7 @@ void Object3d::ShowSettings(bool isPopup, int show)
 		ui::AddCombo(mode | (isPopup ? 16 : 0), "rotateMode", "Mode");
 		if (ui::AddDragFloat(mode | 64, ".scale", "Scale", glm::value_ptr(scale), 4))
 		{
-			scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+			UpdateScaleMatrix();
 			UpdateLocalMatrix("Scale");
 		}
 	}
@@ -404,6 +401,12 @@ void Object3d::UpdateLocalMatrix(std::string_view origin)
 		ui::Log("UpdateLocalMatrix/%s: %s %f %f %f : %d %d %d", Cstr(origin), Cstr(name), position.x, position.y, position.z, irot[0], irot[1], irot[2]);
 		PrintMatrix(matrixWorld, name);
 	}
+}
+
+void Object3d::UpdateScaleMatrix(const glm::vec3* pscale)
+{
+	if (pscale) scale = *pscale;
+	scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
 }
 
 void Object3d::UpdateWorldMatrix(bool force)

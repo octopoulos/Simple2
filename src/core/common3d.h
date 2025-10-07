@@ -1,6 +1,6 @@
 // common3d.h
 // @author octopoulos
-// @version 2025-09-15
+// @version 2025-10-03
 
 #pragma once
 
@@ -14,7 +14,7 @@ inline btQuaternion GlmToBullet(const glm::quat& quat) { return btQuaternion(qua
 // clang-format on
 
 /// Convert matrix to position, quaternion, scale
-void DecomposeMatrix(const glm::mat4& matrix, glm::vec3& position, glm::quat& quaternion, glm::vec3& scale);
+void DecomposeMatrix(const glm::mat4& matrix, glm::vec3& position, glm::quat& quaternion, glm::vec3& scale, float scaleRatio = 1.0f);
 
 /// Easing function: cubic in-out for sharper start and end
 inline float EaseInOutCubic(float t)

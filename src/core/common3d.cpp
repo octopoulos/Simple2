@@ -1,19 +1,19 @@
 // common3d.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-10-03
 
 #include "stdafx.h"
 #include "core/common3d.h"
 
-void DecomposeMatrix(const glm::mat4& matrix, glm::vec3& position, glm::quat& quaternion, glm::vec3& scale)
+void DecomposeMatrix(const glm::mat4& matrix, glm::vec3& position, glm::quat& quaternion, glm::vec3& scale, float scaleRatio)
 {
 	// extract position (translation)
 	position = glm::vec3(matrix[3]);
 
 	// extract scale from basis vectors
-	scale.x = glm::length(glm::vec3(matrix[0]));
-	scale.y = glm::length(glm::vec3(matrix[1]));
-	scale.z = glm::length(glm::vec3(matrix[2]));
+	scale.x = glm::length(glm::vec3(matrix[0])) * scaleRatio;
+	scale.y = glm::length(glm::vec3(matrix[1])) * scaleRatio;
+	scale.z = glm::length(glm::vec3(matrix[2])) * scaleRatio;
 
 	// avoid division by zero
 	if (scale.x == 0.0f) scale.x = 1.0f;

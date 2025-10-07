@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-10-02
+// @version 2025-10-03
 
 #pragma once
 
@@ -110,7 +110,7 @@ public:
 	int CompleteInterpolation(bool warp, std::string_view origin);
 
 	/// Convert matrix to position, rotation/quaternion, scale + irot
-	void DecomposeMatrix();
+	void DecomposeMatrix(float scaleRatio = 1.0f);
 
 	/// Apply the easing function
 	float EaseFunction(double td);
@@ -170,6 +170,9 @@ public:
 
 	/// Update local matrix from scale * quaternion * position
 	void UpdateLocalMatrix(std::string_view origin = "");
+
+	/// Update scale matrix
+	void UpdateScaleMatrix(const glm::vec3* pscale = nullptr);
 
 	/// Calculate world matrix + recursively for all children
 	/// - if HasBody => matrixWorld is left untouched because it comes from bullet3

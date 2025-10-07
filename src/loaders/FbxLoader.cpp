@@ -1,6 +1,6 @@
 // FbxLoader.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-10-03
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -134,12 +134,10 @@ static sMesh CreateNodeMesh(const ofbx::Object* node)
 
 	// set local transform
 	auto      fbxMatrix = node->getLocalTransform();
-	glm::mat4 glmMatrix;
-	for (int i = 0; i < 16; ++i)
-		glmMatrix[i / 4][i % 4] = TO_FLOAT(fbxMatrix.m[i]);
+	glm::mat4 glmMatrix = glm::transpose(glm::make_mat4(fbxMatrix.m));
 
 	mesh->matrix = glmMatrix;
-	mesh->DecomposeMatrix();
+	mesh->DecomposeMatrix(0.01f);
 	mesh->UpdateLocalMatrix("CreateNodeMesh");
 
 	// clang-format off
@@ -197,18 +195,22 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 	};
 
 	// 5) process partitions (materials)
+	const int numMaterial = fbxMesh->getMaterialCount();
 	for (int partitionId = 0; partitionId < geom.getPartitionCount(); ++partitionId)
 	{
 		Group       group;
 		const auto& partition = geom.getPartition(partitionId);
 
 		// material
-		const auto* material = fbxMesh->getMaterial(partitionId);
-		group.material       = CreateMaterialFromFbx(scene, material, fbxPath, texPath);
-		if (!group.material)
+		if (partitionId < numMaterial)
 		{
-			ui::LogError("ProcessMesh: Cannot create material for mesh %s partition %d", Cstr(nodeName), partitionId);
-			continue;
+			const auto* material = fbxMesh->getMaterial(partitionId);
+			group.material       = CreateMaterialFromFbx(scene, material, fbxPath, texPath);
+			if (!group.material)
+			{
+				ui::LogError("ProcessMesh: Cannot create material for mesh %s partition %d", Cstr(nodeName), partitionId);
+				continue;
+			}
 		}
 
 		// vertices and indices + positions (for AABB)
@@ -217,7 +219,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 		std::vector<bx::Vec3> vpositions;
 
 		// clang-format off
-		bx::Aabb groupAabb = { { FLT_MAX, FLT_MAX, FLT_MAX  }, { -FLT_MAX, -FLT_MAX, -FLT_MAX } };
+		bx::Aabb   groupAabb   = { { FLT_MAX, FLT_MAX, FLT_MAX  }, { -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 		bx::Sphere groupSphere = { { 0.0f, 0.0f, 0.0f }, 0.0f };
 		// clang-format on
 

@@ -66,7 +66,7 @@ void Camera::GetViewProjection(float fscreenX, float fscreenY, float* outView, f
 		const float zoomY = fscreenY * xsettings.orthoZoom;
 		bx::mtxOrtho(outProj, -zoomX, zoomX, -zoomY, zoomY, -1000.0f, 1000.0f, 0.0f, homoDepth);
 	}
-	else bx::mtxProj(outProj, xsettings.fov, fscreenX / fscreenY, 0.1f, 2000.0f, homoDepth);
+	else bx::mtxProj(outProj, xsettings.fov, fscreenX / fscreenY, 0.01f, 2000.0f, homoDepth);
 }
 
 void Camera::GetViewMatrix(float* viewMtx) const
