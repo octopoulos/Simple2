@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-09-30
+// @version 2025-10-03
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -346,43 +346,31 @@ void App::PickObject(int mouseX, int mouseY)
 	if (!xsettings.picking) return;
 	ui::Log("PickObject: Mouse (%d, %d)", mouseX, mouseY);
 
-	// Get screen dimensions from xsettings
-	const float screenX = static_cast<float>(xsettings.windowSize[0]);
-	const float screenY = static_cast<float>(xsettings.windowSize[1]);
+	// 1) get screen dimensions from xsettings
+	const float screenX = xsettings.windowSize[0] * xsettings.dpr;
+	const float screenY = xsettings.windowSize[1] * xsettings.dpr;
 	if (screenX <= 0 || screenY <= 0)
 	{
 		ui::LogError("PickObject: Invalid window size (%d, %d)", screenX, screenY);
 		return;
 	}
 
-	// 1) Convert mouse coords to normalized device coordinates (NDC: [-1, 1])
+	// 2) convert mouse coords to normalized device coordinates (NDC: [-1, 1])
 	const float ndcX = (2.0f * mouseX) / screenX - 1.0f;
 	const float ndcY = 1.0f - (2.0f * mouseY) / screenY; // Flip Y (screen Y=0 is top)
 	ui::Log("PickObject: NDC (%.2f %.2f)", ndcX, ndcY);
 
-	// 2) Get view and projection matrices from camera
+	// 3) get view and projection matrices from camera
+	float proj[16];
 	float view[16];
-	camera->GetViewMatrix(view);
+	camera->GetViewProjection(screenX, screenY, view, proj);
 	glm::mat4 viewMtx = glm::make_mat4(view);
-
-	float      proj[16];
-	const bool homoDepth = bgfx::getCaps()->homogeneousDepth;
-	if (xsettings.projection == Projection_Orthographic)
-	{
-		const float zoomX = screenX * xsettings.orthoZoom;
-		const float zoomY = screenY * xsettings.orthoZoom;
-		bx::mtxOrtho(proj, -zoomX, zoomX, -zoomY, zoomY, -1000.0f, 1000.0f, 0.0f, homoDepth);
-	}
-	else
-	{
-		bx::mtxProj(proj, xsettings.fov, screenX / screenY, 0.1f, 2000.0f, homoDepth);
-	}
 	glm::mat4 projMtx = glm::make_mat4(proj);
 
-	// 3) Compute inverse view-projection matrix
+	// 4) compute inverse view-projection matrix
 	glm::mat4 invViewProj = glm::inverse(projMtx * viewMtx);
 
-	// 4) Ray origin and direction in world space
+	// 5) ray origin and direction in world space
 	glm::vec4 nearPoint = invViewProj * glm::vec4(ndcX, ndcY, -1.0f, 1.0f);
 	glm::vec4 farPoint  = invViewProj * glm::vec4(ndcX, ndcY, 1.0f, 1.0f);
 	nearPoint /= nearPoint.w;
@@ -392,7 +380,7 @@ void App::PickObject(int mouseX, int mouseY)
 	glm::vec3 rayDir    = glm::normalize(glm::vec3(farPoint - nearPoint));
 	ui::Log("PickObject: Ray from (%.2f %.2f %.2f) dir (%.2f %.2f %.2f)", rayOrigin.x, rayOrigin.y, rayOrigin.z, rayDir.x, rayDir.y, rayDir.z);
 
-	// 5) Perform Bullet raycast
+	// 6) perform Bullet raycast
 	btVector3 from  = GlmToBullet(rayOrigin);
 	btVector3 to    = GlmToBullet(rayOrigin + rayDir * xsettings.rayLength); // Configurable distance
 	auto*     world = GetPhysics()->GetWorld();
@@ -407,17 +395,7 @@ void App::PickObject(int mouseX, int mouseY)
 	rayCallback.m_flags |= btTriangleRaycastCallback::kF_UseSubSimplexConvexCastRaytest; // More accurate raycast
 	world->rayTest(from, to, rayCallback);
 
-	// Visualize ray (red if no hit, green if hit)
-	btVector3 color = rayCallback.hasHit() ? btVector3(0, 1, 0) : btVector3(1, 0, 0);
-	world->getDebugDrawer()->drawLine(from, to, color);
-	if (rayCallback.hasHit())
-	{
-		btVector3 hitPoint = from.lerp(to, rayCallback.m_closestHitFraction);
-		world->getDebugDrawer()->drawSphere(hitPoint, 0.1f, btVector3(0, 1, 0));
-		world->getDebugDrawer()->drawLine(hitPoint, hitPoint + rayCallback.m_hitNormalWorld, btVector3(0, 1, 0));
-	}
-
-	// 6) Process hit
+	// 7) process hit
 	if (rayCallback.hasHit())
 	{
 		const btCollisionObject* hitObject = rayCallback.m_collisionObject;
@@ -445,22 +423,13 @@ void App::PickObject(int mouseX, int mouseY)
 					ui::LogError("PickObject: shared_from_this failed for mesh '%s'", Cstr(hitMesh->name));
 				}
 			}
-			else
-			{
-				ui::Log("PickObject: Invalid mesh or type");
-			}
+			else ui::Log("PickObject: Invalid mesh or type");
 		}
-		else
-		{
-			ui::Log("PickObject: No userPointer set");
-		}
+		else ui::Log("PickObject: No userPointer set");
 	}
-	else
-	{
-		ui::Log("PickObject: No hit");
-	}
+	else ui::Log("PickObject: No hit");
 
-	// No valid hit, deselect
+	// 8) no valid hit, deselect
 	SelectObject(nullptr);
 }
 

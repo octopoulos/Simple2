@@ -1,4 +1,4 @@
-// @version 2025-09-14
+// @version 2025-10-03
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -112,6 +112,7 @@ struct KeyState
 
 struct GlobalInput
 {
+	bool     buttonClicks[8] = {};                          ///< mouse button was released shortly after being pushed
 	bool     buttonDowns[8]  = {};                          ///< mouse buttons pushed this frame
 	uint8_t  buttons[8]      = {};                          ///< mouse buttons pushed
 	int64_t  buttonTimes[8]  = {};                          ///< when the button was pushed last time (in ms)

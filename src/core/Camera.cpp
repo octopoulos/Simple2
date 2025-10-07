@@ -1,6 +1,6 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-10-03
 
 #include "stdafx.h"
 #include "core/Camera.h"
@@ -52,7 +52,24 @@ void Camera::ConsumeOrbit(float amount)
 	pos2 = bx::add(pos2, diff);
 }
 
-void Camera::GetViewMatrix(float* viewMtx)
+void Camera::GetViewProjection(float fscreenX, float fscreenY, float* outView, float* outProj) const
+{
+	// view
+	float view[16];
+	GetViewMatrix(outView);
+
+	// projection
+	const bool homoDepth = bgfx::getCaps()->homogeneousDepth;
+	if (xsettings.projection == Projection_Orthographic)
+	{
+		const float zoomX = fscreenX * xsettings.orthoZoom;
+		const float zoomY = fscreenY * xsettings.orthoZoom;
+		bx::mtxOrtho(outProj, -zoomX, zoomX, -zoomY, zoomY, -1000.0f, 1000.0f, 0.0f, homoDepth);
+	}
+	else bx::mtxProj(outProj, xsettings.fov, fscreenX / fscreenY, 0.1f, 2000.0f, homoDepth);
+}
+
+void Camera::GetViewMatrix(float* viewMtx) const
 {
 	bx::mtxLookAt(viewMtx, pos, target, up);
 }
@@ -139,21 +156,9 @@ void Camera::Update(float delta)
 
 void Camera::UpdateViewProjection(uint8_t viewId, float fscreenX, float fscreenY)
 {
-	// view
+	float proj[16];
 	float view[16];
-	GetViewMatrix(view);
-
-	// projection
-	const bool homoDepth = bgfx::getCaps()->homogeneousDepth;
-	float      proj[16];
-
-	if (xsettings.projection == Projection_Orthographic)
-	{
-		const float zoomX = fscreenX * xsettings.orthoZoom;
-		const float zoomY = fscreenY * xsettings.orthoZoom;
-		bx::mtxOrtho(proj, -zoomX, zoomX, -zoomY, zoomY, -1000.0f, 1000.0f, 0.0f, homoDepth);
-	}
-	else bx::mtxProj(proj, xsettings.fov, fscreenX / fscreenY, 0.1f, 2000.0f, homoDepth);
+	GetViewProjection(fscreenX, fscreenY, view, proj);
 
 	bgfx::setViewTransform(0, view, proj);
 }

@@ -1,4 +1,4 @@
-// @version 2025-10-01
+// @version 2025-10-03
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -379,13 +379,18 @@ void GlobalInput::MouseButton(int button, uint8_t state)
 	if (button >= 0 && button < 8 && buttons[button] != state)
 	{
 		const int64_t nowMs = NowMs();
-
-		buttons[button]     = state;
-		buttonTimes[button] = nowMs;
 		if (state)
 			buttonDowns[button] = true;
 		else
+		{
 			buttonUps[button] = true;
+			const float dist = bx::distance(bx::load<bx::Vec3>(mouseRels), bx::load<bx::Vec3>(mouseRels0)) * 100.0f;
+			if (dist < xsettings.clickDist && nowMs < buttonTimes[button] + xsettings.clickTime)
+				buttonClicks[button] = true;
+		}
+
+		buttons[button]     = state;
+		buttonTimes[button] = nowMs;
 
 		// reset initial position when clicking
 		mouseRels0[0] = mouseRels[0];
@@ -534,10 +539,11 @@ void GlobalInput::ResetAscii()
 void GlobalInput::ResetFixed()
 {
 	// clang-format off
-	memset(buttonDowns, 0, sizeof(buttonDowns));
-	memset(buttonUps  , 0, sizeof(buttonUps  ));
-	memset(keyDowns   , 0, sizeof(keyDowns   ));
-	memset(keyUps     , 0, sizeof(keyUps     ));
+	memset(buttonClicks, 0, sizeof(buttonClicks));
+	memset(buttonDowns , 0, sizeof(buttonDowns ));
+	memset(buttonUps   , 0, sizeof(buttonUps   ));
+	memset(keyDowns    , 0, sizeof(keyDowns    ));
+	memset(keyUps      , 0, sizeof(keyUps      ));
 	// clang-format on
 }
 

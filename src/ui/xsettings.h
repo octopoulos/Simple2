@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-10-02
+// @version 2025-10-03
 
 #pragma once
 
@@ -91,6 +91,8 @@ struct XSettings
 
 	// [input]
 	float cameraSpeed;  ///< camera movement speed
+	float clickDist;    ///< max % distance for a click
+	int   clickTime;    ///< Ms max elapsed time for a click
 	int   keyInit;      ///< Ms wait for key repeat to kick in
 	int   keyRepeat;    ///< Ms key repeat interval
 	float zoomKb;       ///< zoom speed with the keyboard

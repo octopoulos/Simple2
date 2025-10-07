@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-10-02
+// @version 2025-10-03
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -294,8 +294,8 @@ void App::FluidControls()
 	if (!io.WantCaptureMouse)
 	{
 		// mouse clicks
-		if (ginput.buttonDowns[1]) PickObject(ginput.mouseAbs[0], ginput.mouseAbs[1]);
-		if (ginput.buttonDowns[3]) ShowPopup(Popup_Add);
+		if (ginput.buttonClicks[1]) PickObject(ginput.mouseAbs[0], ginput.mouseAbs[1]);
+		if (ginput.buttonClicks[3]) ShowPopup(Popup_Add);
 
 		// holding key down
 		if (const auto& keys = ginput.keys)

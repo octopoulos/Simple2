@@ -1,6 +1,6 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-10-03
 
 #pragma once
 
@@ -59,8 +59,11 @@ public:
 	/// Apply orbit deltas over time
 	void ConsumeOrbit(float amount);
 
+	/// Compute view + projection matrices
+	void GetViewProjection(float fscreenX, float fscreenY, float* outView, float* outProj) const;
+
 	/// Compute look-at view matrix
-	void GetViewMatrix(float* viewMtx);
+	void GetViewMatrix(float* viewMtx) const;
 
 	/// Move the camera to a direction
 	void Move(int cameraDir, float speed);
@@ -89,7 +92,7 @@ public:
 	/// Update smoothed camera state
 	void Update(float delta);
 
-	/// Compute view + projection matrices
+	/// Update bgfx projection after computing view + projection matrices
 	void UpdateViewProjection(uint8_t viewId, float fscreenX, float fscreenY);
 
 	/// Adjust zoom + distance
