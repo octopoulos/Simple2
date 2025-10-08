@@ -1,6 +1,6 @@
 // SceneWindow.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-10-04
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -52,7 +52,7 @@ public:
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
 		{
 			if (auto app = App::GetApp())
-				app->SelectObject(node, true);
+				app->SelectObject(3, node, true);
 		}
 
 		ImGui::TableNextColumn();

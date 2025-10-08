@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-10-02
+// @version 2025-10-04
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -102,9 +102,11 @@ public:
 		// INPUT
 		////////
 
-		BEGIN_COLLAPSE("Input", Show_Input, 5)
+		BEGIN_COLLAPSE("Input", Show_Input, 7)
 		{
 			AddDragFloat(0, "cameraSpeed", "Camera Speed", nullptr);
+			AddSliderInt(0, "clickOne", "Click One");
+			AddSliderInt(0, "clickTwo", "Click Two");
 			AddSliderInt(0, "keyInit", "Key Initial");
 			AddSliderInt(0, "keyRepeat", "Key Repeat");
 			AddDragFloat(0, "zoomKb", "Zoom Keyboard", nullptr);

@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-10-04
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -292,14 +292,14 @@ void Mesh::ShowInfoTable(bool showTitle) const
 
 	// clang-format off
 	ui::ShowTable({
-		{ "aabb.max"     , Format("%.2f:%.2f:%.2f", aabb.max.x, aabb.max.y, aabb.max.z)                },
-		{ "aabb.min"     , Format("%.2f:%.2f:%.2f", aabb.min.x, aabb.min.y, aabb.min.z)                },
-		{ "groups.size"  , std::to_string(groups.size())                                               },
-		{ "load"         , std::to_string(load)                                                        },
-		{ "modelName"    , modelName                                                                   },
-		{ "nextKeys"     , std::to_string(nextKeys.size())                                             },
-		{ "sphere.center", Format("%.2f:%.2f:%.2f", sphere.center.x, sphere.center.y, sphere.center.z) },
-		{ "sphere.radius", Format("%.2f", sphere.radius)                                               },
+		{ "aabb.max"     , FormatStr("%.2f %.2f %.2f", aabb.max.x, aabb.max.y, aabb.max.z)                },
+		{ "aabb.min"     , FormatStr("%.2f %.2f %.2f", aabb.min.x, aabb.min.y, aabb.min.z)                },
+		{ "groups.size"  , std::to_string(groups.size())                                                  },
+		{ "load"         , std::to_string(load)                                                           },
+		{ "modelName"    , modelName                                                                      },
+		{ "nextKeys"     , std::to_string(nextKeys.size())                                                },
+		{ "sphere.center", FormatStr("%.2f %.2f %.2f", sphere.center.x, sphere.center.y, sphere.center.z) },
+		{ "sphere.radius", FormatStr("%.2f", sphere.radius)                                               },
 	});
 	// clang-format on
 

@@ -1,6 +1,6 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-10-03
+// @version 2025-10-04
 
 #include "stdafx.h"
 #include "core/Camera.h"
@@ -123,16 +123,16 @@ void Camera::ShowInfoTable(bool showTitle) const
 
 	// clang-format off
 	ui::ShowTable({
-		{ "follow"  , std::to_string(follow)                                       },
-		{ "forward" , Format("%.2f:%.2f:%.2f", forward.x, forward.y, forward.z)    },
-		{ "pos"     , Format("%.2f:%.2f:%.2f", pos.x, pos.y, pos.z)                },
-		{ "pos2"    , Format("%.2f:%.2f:%.2f", pos2.x, pos2.y, pos2.z)             },
-		{ "position", Format("%.2f:%.2f:%.2f", position.x, position.y, position.z) },
-		{ "right"   , Format("%.2f:%.2f:%.2f", right.x, right.y, right.z)          },
-		{ "target"  , Format("%.2f:%.2f:%.2f", target.x, target.y, target.z)       },
-		{ "target2" , Format("%.2f:%.2f:%.2f", target2.x, target2.y, target2.z)    },
-		{ "up"      , Format("%.2f:%.2f:%.2f", up.x, up.y, up.z)                   },
-		{ "worldUp" , Format("%.2f:%.2f:%.2f", worldUp.x, worldUp.y, worldUp.z)    },
+		{ "follow"  , std::to_string(follow)                                          },
+		{ "forward" , FormatStr("%.2f %.2f %.2f", forward.x, forward.y, forward.z)    },
+		{ "pos"     , FormatStr("%.2f %.2f %.2f", pos.x, pos.y, pos.z)                },
+		{ "pos2"    , FormatStr("%.2f %.2f %.2f", pos2.x, pos2.y, pos2.z)             },
+		{ "position", FormatStr("%.2f %.2f %.2f", position.x, position.y, position.z) },
+		{ "right"   , FormatStr("%.2f %.2f %.2f", right.x, right.y, right.z)          },
+		{ "target"  , FormatStr("%.2f %.2f %.2f", target.x, target.y, target.z)       },
+		{ "target2" , FormatStr("%.2f %.2f %.2f", target2.x, target2.y, target2.z)    },
+		{ "up"      , FormatStr("%.2f %.2f %.2f", up.x, up.y, up.z)                   },
+		{ "worldUp" , FormatStr("%.2f %.2f %.2f", worldUp.x, worldUp.y, worldUp.z)    },
 	});
 	// clang-format on
 }

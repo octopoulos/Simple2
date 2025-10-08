@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-10-03
+// @version 2025-10-04
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -88,7 +88,7 @@ void App::DeleteSelected()
 				if (parent->type & ObjectType_Map)
 				{
 					AutoSave();
-					SelectObject(nullptr);
+					SelectObject(0, nullptr);
 				}
 			}
 		}
@@ -182,7 +182,7 @@ void App::FixedControls()
 			}
 		}
 
-		if (GI_DOWN(Key::Return)) SelectObject(nullptr);
+		if (GI_DOWN(Key::Return)) SelectObject(0, nullptr);
 		if (GI_DOWN(Key::Esc))
 		{
 			// object is being placed => cancel
@@ -205,12 +205,12 @@ void App::FixedControls()
 					if (GI_REPEAT(Key::LeftBracket))
 					{
 						parent->childId = (parent->childId + numChild - 1) % numChild;
-						SelectObject(children[parent->childId]);
+						SelectObject(3, children[parent->childId]);
 					}
 					if (GI_REPEAT(Key::RightBracket))
 					{
 						parent->childId = (parent->childId + 1) % numChild;
-						SelectObject(children[parent->childId]);
+						SelectObject(3, children[parent->childId]);
 					}
 				}
 			}
@@ -293,9 +293,22 @@ void App::FluidControls()
 	// ignore inputs when using the GUI?
 	if (!io.WantCaptureMouse)
 	{
+		static bool clicked;
+
 		// mouse clicks
-		if (ginput.buttonClicks[1]) PickObject(ginput.mouseAbs[0], ginput.mouseAbs[1]);
-		if (ginput.buttonClicks[3]) ShowPopup(Popup_Add);
+		if (ginput.buttonTwos[1])
+			PickObject(2);
+		else if (ginput.buttonClicks[1])
+		{
+			if (!clicked)
+			{
+				PickObject(1);
+				clicked = true;
+			}
+		}
+		else clicked = false;
+
+		if (ginput.buttonOnes[3]) ShowPopup(Popup_Add);
 
 		// holding key down
 		if (const auto& keys = ginput.keys)

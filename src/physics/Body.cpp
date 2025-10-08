@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-10-01
+// @version 2025-10-04
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -477,9 +477,9 @@ void Body::ShowInfoTable(bool showTitle) const
 
 	// clang-format off
 	ui::ShowTable({
-		{ "enabled"  , BoolString(enabled)                                       },
-		{ "mass"     , std::to_string(mass)                                      },
-		{ "shapeType", Format("%d: %s", shapeType, ShapeName(shapeType).c_str()) },
+		{ "enabled"  , BoolString(enabled)                                          },
+		{ "mass"     , std::to_string(mass)                                         },
+		{ "shapeType", FormatStr("%d: %s", shapeType, ShapeName(shapeType).c_str()) },
 	});
 	// clang-format on
 }

@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-10-03
+// @version 2025-10-04
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -8,6 +8,7 @@
 //
 #include "common/config.h"             // DEV_matrix
 #include "core/common3d.h"             // PrintMatrix
+#include "entry/input.h"               // GetGlobalInput
 #include "loaders/MeshLoader.h"        // MeshLoader::
 #include "materials/MaterialManager.h" // GetMaterialManager
 #include "objects/RubikCube.h"         // RubikCube
@@ -341,10 +342,18 @@ void Scene::Clear()
 	ClearDeads(false);
 }
 
-void App::PickObject(int mouseX, int mouseY)
+void App::PickObject(int numClick, int mouseX, int mouseY)
 {
 	if (!xsettings.picking) return;
-	ui::Log("PickObject: Mouse (%d, %d)", mouseX, mouseY);
+
+	if (mouseX == -9999 && mouseY == -9999)
+	{
+		const auto& ginput = GetGlobalInput();
+
+		mouseX = ginput.mouseAbs[0];
+		mouseY = ginput.mouseAbs[1];
+	}
+	ui::Log("PickObject/%d: Mouse (%d, %d)", numClick, mouseX, mouseY);
 
 	// 1) get screen dimensions from xsettings
 	const float screenX = xsettings.windowSize[0] * xsettings.dpr;
@@ -411,9 +420,12 @@ void App::PickObject(int mouseX, int mouseY)
 				try
 				{
 					sObject3d hitObj = hitMesh->Object3d::shared_from_this();
-					SelectObject(hitObj);
-					camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(hitMesh->position));
-					camera->Zoom();
+					SelectObject((numClick > 1) ? 3 : 1, hitObj);
+					// if (numClick == 2)
+					// {
+					// 	camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(hitMesh->position));
+					// 	camera->Zoom();
+					// }
 					ui::Log("PickObject: Selected mesh %s at position %.2f %.2f %.2f", Cstr(hitMesh->name), hitMesh->position.x, hitMesh->position.y, hitMesh->position.z);
 					ui::Log("PickObject: Camera target2=%.2f %.2f %.2f", camera->target2.x, camera->target2.y, camera->target2.z);
 					return;
@@ -430,10 +442,10 @@ void App::PickObject(int mouseX, int mouseY)
 	else ui::Log("PickObject: No hit");
 
 	// 8) no valid hit, deselect
-	SelectObject(nullptr);
+	SelectObject(0, nullptr);
 }
 
-void App::SelectObject(const sObject3d& obj, bool countIndex)
+void App::SelectObject(int action, const sObject3d& obj, bool countIndex)
 {
 	// 1) place + restore material
 	if (const auto temp = selectWeak.lock())
@@ -488,10 +500,13 @@ void App::SelectObject(const sObject3d& obj, bool countIndex)
 	// 3) camera on target
 	if (const sObject3d target = obj ? obj : cursor)
 	{
-		camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(target->position));
-		camera->Zoom();
+		if (action & 2)
+		{
+			camera->target2 = bx::load<bx::Vec3>(glm::value_ptr(target->position));
+			camera->Zoom();
+			MoveSelected(true);
+		}
 
-		MoveSelected(true);
 		if (DEV_matrix) PrintMatrix(target->matrixWorld, target->name);
 		FocusScreen();
 	}

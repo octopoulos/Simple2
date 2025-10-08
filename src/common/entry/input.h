@@ -1,4 +1,4 @@
-// @version 2025-10-03
+// @version 2025-10-04
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -112,10 +112,13 @@ struct KeyState
 
 struct GlobalInput
 {
-	bool     buttonClicks[8] = {};                          ///< mouse button was released shortly after being pushed
+	int64_t  buttonClicks[8] = {};                          ///< mouse click times
+	int      buttonCounts[8] = {};                          ///< how many times the button was pushed
 	bool     buttonDowns[8]  = {};                          ///< mouse buttons pushed this frame
+	bool     buttonOnes[8]   = {};                          ///< mouse single clicks
 	uint8_t  buttons[8]      = {};                          ///< mouse buttons pushed
 	int64_t  buttonTimes[8]  = {};                          ///< when the button was pushed last time (in ms)
+	bool     buttonTwos[8]   = {};                          ///< mouse double clicks
 	bool     buttonUps[8]    = {};                          ///< mouse buttons released this frame
 	int      keyChangeId     = 0;                           ///< index of current history
 	KeyState keyChanges[128] = {};                          ///< history of key changes
@@ -145,6 +148,11 @@ struct GlobalInput
 	GlobalInput(): ring(BX_COUNTOF(chars) - 4)
 	{
 	}
+
+	/// Check if the last ascii must be repeated, if not then reset it
+	/// + reset keyIgnores
+	/// + executed every frame
+	void BeginFrame();
 
 	/// Decode encoded to key, modifier
 	static std::pair<int, int> DecodeKey(int keyMod);
@@ -193,10 +201,6 @@ struct GlobalInput
 
 	/// Reset data to initial state
 	void Reset();
-
-	/// Check if the last ascii must be repeated, if not then reset it
-	/// + reset keyIgnores
-	void ResetAscii();
 
 	/// Reset the keyNews only, must do this every frame
 	void ResetFixed();

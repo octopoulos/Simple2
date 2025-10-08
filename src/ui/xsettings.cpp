@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-10-03
+// @version 2025-10-04
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -49,7 +49,8 @@ static std::vector<Config> configs = {
 	// [input]
 	X_FLOAT  (XSETTINGS, input, 0, cameraSpeed, 10.0f, 1.0f, 100.0f),
 	X_FLOAT  (XSETTINGS, input, 0, clickDist  , 1.0f, 0, 100.0f),
-	X_INT    (XSETTINGS, input, 0, clickTime  , 300, 0, 3000),
+	X_INT    (XSETTINGS, input, 0, clickOne   , 360, 0, 3600),
+	X_INT    (XSETTINGS, input, 0, clickTwo   , 180, 0, 1800),
 	X_INT    (XSETTINGS, input, 0, keyInit    , 500, 0, 5000),
 	X_INT    (XSETTINGS, input, 0, keyRepeat  , 50 , 0, 500),
 	X_FLOAT  (XSETTINGS, input, 0, zoomKb     , 10.0f, 1.0f, 100.0f),

@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-10-01
+// @version 2025-10-04
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -29,7 +29,7 @@ void App::AddGeometry(uGeometry geometry)
 
 		mapNode->AddChild(object);
 		AutoSave();
-		SelectObject(object);
+		SelectObject(3, object);
 	}
 
 	FocusScreen();
@@ -64,7 +64,7 @@ void App::AddObject(std::string_view modelName)
 
 		mesh->placing = true;
 		mapNode->AddChild(mesh);
-		SelectObject(mesh);
+		SelectObject(3, mesh);
 	}
 
 	FocusScreen();

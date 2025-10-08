@@ -1,4 +1,4 @@
-// @version 2025-10-03
+// @version 2025-10-04
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -260,6 +260,31 @@ static UMAP_INT_INT MODIFIER_KEYS = {
 	{ entry::Key::RightShift, Modifier_Shift },
 };
 
+void GlobalInput::BeginFrame()
+{
+	// 1) ascii
+	if (lastKey > 0 && RepeatingKey(lastKey))
+		lastAscii = KeyToAscii(lastKey);
+	else
+		lastAscii = -1;
+
+	// 2) ignores
+	memset(keyIgnores, 0, sizeof(keyIgnores));
+
+	// 3) check mouse clicks
+	const int64_t nowMs = NowMs();
+	for (int i = 0; i < 8; ++i)
+	{
+		const int64_t click = buttonClicks[i];
+		if (click && nowMs > click + xsettings.clickTwo)
+		{
+			ui::Log("BeginFrame: CLICK: %lld", nowMs - click);
+			buttonClicks[i] = 0;
+			buttonOnes[i]   = true;
+		}
+	}
+}
+
 std::pair<int, int> GlobalInput::DecodeKey(int keyMod)
 {
 	return { keyMod & 4095, keyMod >> 12 };
@@ -380,13 +405,31 @@ void GlobalInput::MouseButton(int button, uint8_t state)
 	{
 		const int64_t nowMs = NowMs();
 		if (state)
+		{
 			buttonDowns[button] = true;
+			// dblClick
+			if (const int64_t click = buttonClicks[button]; nowMs < click + xsettings.clickTwo)
+			{
+				ui::Log("DOUBLE CLICK: %d", button);
+				buttonClicks[button] = 0;
+				buttonTwos[button]   = true;
+				return;
+			}
+		}
+		// click
 		else
 		{
 			buttonUps[button] = true;
 			const float dist = bx::distance(bx::load<bx::Vec3>(mouseRels), bx::load<bx::Vec3>(mouseRels0)) * 100.0f;
-			if (dist < xsettings.clickDist && nowMs < buttonTimes[button] + xsettings.clickTime)
-				buttonClicks[button] = true;
+			if (xsettings.clickDist <= 0 || dist < xsettings.clickDist)
+			{
+				if (nowMs < buttonTimes[button] + xsettings.clickOne)
+				{
+					ui::Log("ONE CLICK? %d", button);
+					buttonClicks[button] = nowMs;
+					// buttonOnes[button]   = true;
+				}
+			}
 		}
 
 		buttons[button]     = state;
@@ -506,44 +549,37 @@ bool GlobalInput::RepeatingKey(int key, int64_t keyInit, int64_t keyRepeat)
 void GlobalInput::Reset()
 {
 	// clang-format off
-	memset(buttons   , 0, sizeof(buttons   ));
-	memset(keyChanges, 0, sizeof(keyChanges));
-	memset(keyRepeats, 0, sizeof(keyRepeats));
-	memset(keys      , 0, sizeof(keys      ));
-	memset(keyTimes  , 0, sizeof(keyTimes  ));
-	memset(mouseAbs  , 0, sizeof(mouseAbs  ));
-	memset(mouseAbs2 , 0, sizeof(mouseAbs2 ));
-	memset(mouseRels , 0, sizeof(mouseRels ));
-	memset(mouseRels0, 0, sizeof(mouseRels0));
-	memset(mouseRels2, 0, sizeof(mouseRels2));
+	memset(buttons     , 0, sizeof(buttons     ));
+	memset(buttonClicks, 0, sizeof(buttonClicks));
+	memset(buttonTimes , 0, sizeof(buttonTimes ));
+	memset(keyChanges  , 0, sizeof(keyChanges  ));
+	memset(keyRepeats  , 0, sizeof(keyRepeats  ));
+	memset(keys        , 0, sizeof(keys        ));
+	memset(keyTimes    , 0, sizeof(keyTimes    ));
+	memset(mouseAbs    , 0, sizeof(mouseAbs    ));
+	memset(mouseAbs2   , 0, sizeof(mouseAbs2   ));
+	memset(mouseRels   , 0, sizeof(mouseRels   ));
+	memset(mouseRels0  , 0, sizeof(mouseRels0  ));
+	memset(mouseRels2  , 0, sizeof(mouseRels2  ));
 	// clang-format on
 
 	keyChangeId = 0;
 	mouseFrame  = 0;
 	mouseLock   = false;
 
-	ResetAscii();
+	BeginFrame();
 	ResetFixed();
-}
-
-void GlobalInput::ResetAscii()
-{
-	if (lastKey > 0 && RepeatingKey(lastKey))
-		lastAscii = KeyToAscii(lastKey);
-	else
-		lastAscii = -1;
-
-	memset(keyIgnores, 0, sizeof(keyIgnores));
 }
 
 void GlobalInput::ResetFixed()
 {
 	// clang-format off
-	memset(buttonClicks, 0, sizeof(buttonClicks));
-	memset(buttonDowns , 0, sizeof(buttonDowns ));
-	memset(buttonUps   , 0, sizeof(buttonUps   ));
-	memset(keyDowns    , 0, sizeof(keyDowns    ));
-	memset(keyUps      , 0, sizeof(keyUps      ));
+	memset(buttonOnes , 0, sizeof(buttonOnes ));
+	memset(buttonDowns, 0, sizeof(buttonDowns));
+	memset(buttonTwos , 0, sizeof(buttonTwos ));
+	memset(buttonUps  , 0, sizeof(buttonUps  ));
+	memset(keyDowns   , 0, sizeof(keyDowns   ));
+	memset(keyUps     , 0, sizeof(keyUps     ));
 	// clang-format on
 }
 

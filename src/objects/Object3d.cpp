@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-10-03
+// @version 2025-10-04
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -304,33 +304,33 @@ void Object3d::ShowInfoTable(bool showTitle) const
 
 	// clang-format off
 	ui::ShowTable({
-		{ "id"           , std::to_string(id)                                                                                        },
-		{ "irot"         , Format("%d:%d:%d", irot[0], irot[1], irot[2])                                                             },
-		{ "matrix.0"     , Format("%.2f:%.2f:%.2f:%.2f", matrix[0][0], matrix[0][1], matrix[0][2], matrix[0][3])                     },
-		{ "matrix.1"     , Format("%.2f:%.2f:%.2f:%.2f", matrix[1][0], matrix[1][1], matrix[1][2], matrix[0][3])                     },
-		{ "matrix.2"     , Format("%.2f:%.2f:%.2f:%.2f", matrix[2][0], matrix[2][1], matrix[2][2], matrix[0][3])                     },
-		{ "matrix.3"     , Format("%.2f:%.2f:%.2f:%.2f", matrix[3][0], matrix[3][1], matrix[3][2], matrix[0][3])                     },
-		{ "matrixWorld.0", Format("%.2f:%.2f:%.2f:%.2f", matrixWorld[0][0], matrixWorld[0][1], matrixWorld[0][2], matrixWorld[0][3]) },
-		{ "matrixWorld.1", Format("%.2f:%.2f:%.2f:%.2f", matrixWorld[1][0], matrixWorld[1][1], matrixWorld[1][2], matrixWorld[1][3]) },
-		{ "matrixWorld.2", Format("%.2f:%.2f:%.2f:%.2f", matrixWorld[2][0], matrixWorld[2][1], matrixWorld[2][2], matrixWorld[2][3]) },
-		{ "matrixWorld.3", Format("%.2f:%.2f:%.2f:%.2f", matrixWorld[3][0], matrixWorld[3][1], matrixWorld[3][2], matrixWorld[3][3]) },
-		{ "name"         , name                                                                                                      },
-		{ "names"        , std::to_string(names.size())                                                                              },
-		{ "parent"       , sparent ? sparent->name : ""                                                                              },
-		{ "parentLink"   , BoolString(parentLink)                                                                                    },
-		{ "position"     , Format("%.2f:%.2f:%.2f", position.x, position.y, position.z)                                              },
-		{ "position1"    , Format("%.2f:%.2f:%.2f", position1.x, position1.y, position1.z)                                           },
-		{ "position2"    , Format("%.2f:%.2f:%.2f", position2.x, position2.y, position2.z)                                           },
-		{ "posTs"        , std::to_string(posTs)                                                                                     },
-		{ "quaternion"   , Format("%.2f:%.2f:%.2f:%.2f", quaternion.x, quaternion.y, quaternion.z, quaternion.w)                     },
-		{ "quaternion1"  , Format("%.2f:%.2f:%.2f:%.2f", quaternion1.x, quaternion1.y, quaternion1.z, quaternion1.w)                 },
-		{ "quaternion2"  , Format("%.2f:%.2f:%.2f:%.2f", quaternion2.x, quaternion2.y, quaternion2.z, quaternion2.w)                 },
-		{ "quatTs"       , std::to_string(quatTs)                                                                                    },
-		{ "rotation"     , Format("%.2f:%.2f:%.2f", rotation.x, rotation.y, rotation.z)                                              },
-		{ "scale"        , Format("%.2f:%.2f:%.2f", scale.x, scale.y, scale.z)                                                       },
-		{ "type"         , std::to_string(type)                                                                                      },
-		{ "type:name"    , ObjectName(type)                                                                                          },
-		{ "visible"      , std::to_string(visible)                                                                                   },
+		{ "id"           , std::to_string(id)                                                                                           },
+		{ "irot"         , FormatStr("%d %d %d", irot[0], irot[1], irot[2])                                                             },
+		{ "matrix.0"     , FormatStr("%.2f %.2f %.2f %.2f", matrix[0][0], matrix[0][1], matrix[0][2], matrix[0][3])                     },
+		{ "matrix.1"     , FormatStr("%.2f %.2f %.2f %.2f", matrix[1][0], matrix[1][1], matrix[1][2], matrix[0][3])                     },
+		{ "matrix.2"     , FormatStr("%.2f %.2f %.2f %.2f", matrix[2][0], matrix[2][1], matrix[2][2], matrix[0][3])                     },
+		{ "matrix.3"     , FormatStr("%.2f %.2f %.2f %.2f", matrix[3][0], matrix[3][1], matrix[3][2], matrix[0][3])                     },
+		{ "matrixWorld.0", FormatStr("%.2f %.2f %.2f %.2f", matrixWorld[0][0], matrixWorld[0][1], matrixWorld[0][2], matrixWorld[0][3]) },
+		{ "matrixWorld.1", FormatStr("%.2f %.2f %.2f %.2f", matrixWorld[1][0], matrixWorld[1][1], matrixWorld[1][2], matrixWorld[1][3]) },
+		{ "matrixWorld.2", FormatStr("%.2f %.2f %.2f %.2f", matrixWorld[2][0], matrixWorld[2][1], matrixWorld[2][2], matrixWorld[2][3]) },
+		{ "matrixWorld.3", FormatStr("%.2f %.2f %.2f %.2f", matrixWorld[3][0], matrixWorld[3][1], matrixWorld[3][2], matrixWorld[3][3]) },
+		{ "name"         , name                                                                                                         },
+		{ "names"        , std::to_string(names.size())                                                                                 },
+		{ "parent"       , sparent ? sparent->name : ""                                                                                 },
+		{ "parentLink"   , BoolString(parentLink)                                                                                       },
+		{ "position"     , FormatStr("%.2f %.2f %.2f", position.x, position.y, position.z)                                              },
+		{ "position1"    , FormatStr("%.2f %.2f %.2f", position1.x, position1.y, position1.z)                                           },
+		{ "position2"    , FormatStr("%.2f %.2f %.2f", position2.x, position2.y, position2.z)                                           },
+		{ "posTs"        , std::to_string(posTs)                                                                                        },
+		{ "quaternion"   , FormatStr("%.2f %.2f %.2f %.2f", quaternion.x, quaternion.y, quaternion.z, quaternion.w)                     },
+		{ "quaternion1"  , FormatStr("%.2f %.2f %.2f %.2f", quaternion1.x, quaternion1.y, quaternion1.z, quaternion1.w)                 },
+		{ "quaternion2"  , FormatStr("%.2f %.2f %.2f %.2f", quaternion2.x, quaternion2.y, quaternion2.z, quaternion2.w)                 },
+		{ "quatTs"       , std::to_string(quatTs)                                                                                       },
+		{ "rotation"     , FormatStr("%.2f %.2f %.2f", rotation.x, rotation.y, rotation.z)                                              },
+		{ "scale"        , FormatStr("%.2f %.2f %.2f", scale.x, scale.y, scale.z)                                                       },
+		{ "type"         , std::to_string(type)                                                                                         },
+		{ "type:name"    , ObjectName(type)                                                                                             },
+		{ "visible"      , std::to_string(visible)                                                                                      },
 	});
 	// clang-format on
 }

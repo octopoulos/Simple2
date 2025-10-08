@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-10-02
+// @version 2025-10-04
 
 #pragma once
 
@@ -180,7 +180,7 @@ private:
 	bool OpenScene(const std::filesystem::path& filename);
 
 	/// Pick an object with the mouse
-	void PickObject(int mouseX, int mouseY);
+	void PickObject(int numClick, int mouseX = -9999, int mouseY = -9999);
 
 	/// Save the scene to a file
 	bool SaveScene(const std::filesystem::path& filename = {});
@@ -191,7 +191,7 @@ public:
 
 	/// Select the object to follow
 	/// @param countIndex: calculate the parent's childId
-	void SelectObject(const sObject3d& obj, bool countIndex = false);
+	void SelectObject(int action, const sObject3d& obj, bool countIndex = false);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// SETTINGS

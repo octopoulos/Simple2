@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-10-02
+// @version 2025-10-04
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -603,7 +603,7 @@ public:
 		// 1) events
 		{
 			callback.wantVideo = app->wantVideo;
-			ginput.ResetAscii();
+			ginput.BeginFrame();
 
 			if (entry::processEvents(fwidth, fheight, xsettings.debug, xsettings.reset)) return false;
 
