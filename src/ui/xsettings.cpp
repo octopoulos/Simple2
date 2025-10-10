@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-10-04
+// @version 2025-10-06
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -47,6 +47,8 @@ static std::vector<Config> configs = {
 	X_FLOAT  (XSETTINGS, cursor, 0, cursorStep  , 0.5f, 0.1f, 1.0f),
 
 	// [input]
+	X_FLOAT  (XSETTINGS, input, 0, boostCtrl  , 0.02f, 0.001f, 10.0f),
+	X_FLOAT  (XSETTINGS, input, 0, boostShift , 2.0f, 0.001f, 10.0f),
 	X_FLOAT  (XSETTINGS, input, 0, cameraSpeed, 10.0f, 1.0f, 100.0f),
 	X_FLOAT  (XSETTINGS, input, 0, clickDist  , 1.0f, 0, 100.0f),
 	X_INT    (XSETTINGS, input, 0, clickOne   , 360, 0, 3600),

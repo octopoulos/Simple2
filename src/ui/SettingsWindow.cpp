@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-10-04
+// @version 2025-10-06
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -102,8 +102,10 @@ public:
 		// INPUT
 		////////
 
-		BEGIN_COLLAPSE("Input", Show_Input, 7)
+		BEGIN_COLLAPSE("Input", Show_Input, 9)
 		{
+			AddDragFloat(1, "boostCtrl", "Boost Ctrl", nullptr);
+			AddDragFloat(1, "boostShift", "Boost Shift", nullptr);
 			AddDragFloat(0, "cameraSpeed", "Camera Speed", nullptr);
 			AddSliderInt(0, "clickOne", "Click One");
 			AddSliderInt(0, "clickTwo", "Click Two");

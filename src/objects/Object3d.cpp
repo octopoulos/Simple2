@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-10-04
+// @version 2025-10-06
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -161,6 +161,16 @@ void Object3d::IrotFromRotation()
 	irot[0] = TO_INT(bx::toDeg(rotation.x));
 	irot[1] = TO_INT(bx::toDeg(rotation.y));
 	irot[2] = TO_INT(bx::toDeg(rotation.z));
+}
+
+int Object3d::NextChildId()
+{
+	if (children.empty()) return 1;
+	const auto& child  = children.back();
+	if (const auto splits = SplitString(child->name, ':'); splits.size() > 1)
+		return FastAtoi32i(splits[0]) + 1;
+	else
+		return 1;
 }
 
 bool Object3d::RemoveChild(const sObject3d& child)

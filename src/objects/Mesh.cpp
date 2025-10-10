@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-10-04
+// @version 2025-10-06
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -21,12 +21,7 @@ constexpr uint64_t defaultState = 0
 void Mesh::ActivatePhysics(bool activate)
 {
 	// 1) itself
-	body->enabled = activate;
-	if (auto& sbody = body->body)
-	{
-		sbody->setActivationState(activate ? ACTIVE_TAG : DISABLE_SIMULATION);
-		sbody->activate(activate);
-	}
+	body->Activate(activate);
 
 	// 2) children
 	for (auto& child : children)
@@ -56,7 +51,8 @@ void Mesh::CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, con
 {
 	// 1) create shape
 	body = std::make_unique<Body>(physics);
-	body->CreateShape(shapeType, this, newDims);
+	body->mesh = Mesh::SharedPtr(shared_from_this());
+	body->CreateShape(shapeType, newDims);
 
 	// 2) create physical body
 	// child => get the position and rotation from the matrix

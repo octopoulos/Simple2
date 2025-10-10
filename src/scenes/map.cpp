@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-10-04
+// @version 2025-10-06
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -14,7 +14,7 @@ void App::AddGeometry(uGeometry geometry)
 	const auto& coord = cursor->position;
 	const auto& irot  = cursor->irot;
 
-	if (auto object = std::make_shared<Mesh>(Format("%d:%s", mapNode->children.size(), GeometryName(geometry->type).c_str())))
+	if (auto object = std::make_shared<Mesh>(Format("%d:%s", mapNode->NextChildId(), GeometryName(geometry->type).c_str())))
 	{
 		object->geometry = geometry;
 		object->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
@@ -51,7 +51,7 @@ void App::AddObject(std::string_view modelName)
 			mesh->SetPhysics(GetPhysics());
 		}
 	}
-	else mesh = MeshLoader::LoadModelFull(FormatStr("%d:%s", mapNode->children.size(), NodeName(modelName).c_str()), modelName);
+	else mesh = MeshLoader::LoadModelFull(FormatStr("%d:%s", mapNode->NextChildId(), NodeName(modelName).c_str()), modelName);
 
 	if (mesh)
 	{

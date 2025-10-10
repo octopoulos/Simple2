@@ -1,6 +1,6 @@
 // Body.h
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-10-06
 
 #pragma once
 
@@ -31,20 +31,21 @@ enum ShapeTypes_ : int
 ///////
 
 class Mesh;
+using sMesh = std::shared_ptr<Mesh>;
 
 class Body
 {
 public:
-	btRigidBody*             body    = nullptr;                    ///< rigid body
-	btVector4                dims    = { 0.0f, 0.0f, 0.0f, 0.0f }; ///< shape dims()
-	bool                     enabled = true;                       ///< physics enabled
-	PhysicsWorld*            physics = nullptr;                    ///< physics reference
-	btCollisionShape*        shape   = nullptr;                    ///< shape
-	btDiscreteDynamicsWorld* world   = nullptr;                    ///< physical world
-
-	btVector3 inertia   = { 0.0f, 0.0f, 0.0f }; ///
-	float     mass      = 0.0f;                 ///
-	int       shapeType = ShapeType_None;       ///
+	btRigidBody*             body      = nullptr;                    ///< rigid body
+	btVector4                dims      = { 0.0f, 0.0f, 0.0f, 0.0f }; ///< shape dims()
+	bool                     enabled   = true;                       ///< physics enabled
+	btVector3                inertia   = { 0.0f, 0.0f, 0.0f };       ///< inertia
+	float                    mass      = 0.0f;                       ///< mass
+	sMesh                    mesh      = nullptr;                    ///< parent mesh
+	PhysicsWorld*            physics   = nullptr;                    ///< physics reference
+	btCollisionShape*        shape     = nullptr;                    ///< shape
+	int                      shapeType = ShapeType_None;             ///< ShapeTypes_
+	btDiscreteDynamicsWorld* world     = nullptr;                    ///< physical world
 
 public:
 	Body(PhysicsWorld* physics)
@@ -55,11 +56,14 @@ public:
 
 	~Body() { Destroy(); }
 
+	/// Activate/deactivate physical body
+	void Activate(bool activate);
+
 	/// Create a body after a shape has been created
 	void CreateBody(float _mass, const btVector3& pos, const btQuaternion& quat);
 
 	/// Create a collision shape, before the body
-	void CreateShape(int type, Mesh* mesh = nullptr, const btVector4& newDims = { 0.0f, 0.0f, 0.0f, 0.0f });
+	void CreateShape(int type, const btVector4& newDims = { 0.0f, 0.0f, 0.0f, 0.0f });
 
 	/// Destroy shape then body
 	void Destroy();

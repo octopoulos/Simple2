@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-10-04
+// @version 2025-10-06
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -327,8 +327,8 @@ void App::FluidControls()
 			}
 
 			float speed = deltaTime * xsettings.cameraSpeed;
-			if (modifier & Modifier_Ctrl) speed *= 0.2f;
-			if (modifier & Modifier_Shift) speed *= 2.0f;
+			if (modifier & Modifier_Ctrl) speed *= xsettings.boostCtrl;
+			if (modifier & Modifier_Shift) speed *= xsettings.boostShift;
 
 			const bool isOrtho = (xsettings.projection == Projection_Orthographic);
 			const int  keyQS   = isOrtho ? Key::KeyS : Key::KeyQ;

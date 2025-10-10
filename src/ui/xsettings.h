@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-10-04
+// @version 2025-10-06
 
 #pragma once
 
@@ -90,6 +90,8 @@ struct XSettings
 	float cursorStep;   ///< move cursor/object by that amount
 
 	// [input]
+	float boostCtrl;    ///< camera speed multiplier with Ctrl
+	float boostShift;   ///< camera speed multiplier with Shift
 	float cameraSpeed;  ///< camera movement speed
 	float clickDist;    ///< max % distance for a click
 	int   clickOne;     ///< Ms max elapsed time for a click

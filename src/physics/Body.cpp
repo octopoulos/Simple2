@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-10-04
+// @version 2025-10-06
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -93,6 +93,16 @@ static std::pair<btVector3, btVector3> ComputeAabbVectorDims(const Group& group,
 // BODY
 ///////
 
+void Body::Activate(bool activate)
+{
+	enabled = activate;
+	if (body)
+	{
+		body->setMassProps(activate ? mass : 0.0f, activate ? inertia : btVector3(0.0f, 0.0f, 0.0f));
+		body->activate(activate);
+	}
+}
+
 void Body::CreateBody(float _mass, const btVector3& pos, const btQuaternion& quat)
 {
 	DestroyBody();
@@ -122,7 +132,7 @@ void Body::CreateBody(float _mass, const btVector3& pos, const btQuaternion& qua
 	if (world) world->addRigidBody(body);
 }
 
-void Body::CreateShape(int type, Mesh* mesh, const btVector4& newDims)
+void Body::CreateShape(int type, const btVector4& newDims)
 {
 	shapeType = type;
 
@@ -489,7 +499,11 @@ void Body::ShowSettings(bool isPopup, int show)
 	int mode = 3;
 	if (isPopup) mode |= 4;
 
-	ui::AddCheckbox(mode, ".enabled", "", "Enabled", &enabled);
+	if (ui::AddCheckbox(mode, ".enabled", "", "Enabled", &enabled))
+	{
+		ui::Log("ENABLED=%d", enabled);
+		if (mesh) mesh->ActivatePhysics(enabled);
+	}
 	ui::AddDragFloat(mode, ".mass", "Mass", &mass);
 }
 

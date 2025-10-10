@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-10-03
+// @version 2025-10-06
 
 #pragma once
 
@@ -129,6 +129,9 @@ public:
 
 	/// Calculate Irot from Rotation
 	void IrotFromRotation();
+
+	/// Get the next child id
+	int NextChildId();
 
 	/// Remove a child from the object
 	bool RemoveChild(const sObject3d& child);

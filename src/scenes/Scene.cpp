@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-10-04
+// @version 2025-10-06
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -239,7 +239,8 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 			mesh->ScaleIrotPosition(scale, irot, position);
 			positioned = true;
 			mesh->CreateShapeBody((PhysicsWorld*)physics, shapeType, TO_FLOAT(mass), dims);
-			mesh->body->enabled = enabled;
+			mesh->ActivatePhysics(enabled);
+			// mesh->body->enabled = enabled;
 		}
 		ui::Log(" -->4 type=%d/%d %s", type, object->type, Cstr(name));
 
