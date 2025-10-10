@@ -1,6 +1,6 @@
 // FbxLoader.cpp
 // @author octopoulos
-// @version 2025-10-03
+// @version 2025-10-06
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -61,10 +61,9 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 							tryPath = fbxPath.filename().stem() / filename;
 					}
 
-					// tryPath        = RelativeName(tryPath, { "runtime/textures" });
 					texData.handle = GetTextureManager().LoadTexture(tryPath.string());
 					if (bgfx::isValid(texData.handle))
-						ui::Log("CreateMaterialFromFbx: loaded %s texture %s for %s", Cstr(typeName), Cstr(texData.name), Cstr(materialName));
+						ui::Log("CreateMaterialFromFbx: loaded %s texture %s for %s: %s", Cstr(typeName), Cstr(texData.name), Cstr(materialName), PathStr(tryPath));
 					else
 						ui::LogError("CreateMaterialFromFbx: failed %s file: %s for %s", Cstr(typeName), PathStr(tryPath), Cstr(materialName));
 					textures.push_back(texData);
@@ -90,6 +89,7 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 
 		// load material with texture names
 		material = GetMaterialManager().LoadMaterial(materialName, vsName, fsName, {}, textures);
+		ui::Log("material: %s %s %s %lld", Cstr(materialName), Cstr(vsName), Cstr(fsName), textures.size());
 
 		// PBR-like properties
 		ofbx::Color diffuse   = fbxMaterial->getDiffuseColor();

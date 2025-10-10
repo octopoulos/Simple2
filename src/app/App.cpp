@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-10-04
+// @version 2025-10-06
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -181,7 +181,7 @@ int App::InitializeScene()
 					{ 180, -45, 0 },
 					{ 0.0f, 7.0f, 0.0f }
 				);
-				cubeMesh->CreateShapeBody(GetPhysics(), ShapeType_Sphere, 8.0f);
+				cubeMesh->CreateShapeBody(ShapeType_Sphere, 8.0f);
 
 				scene->AddChild(std::move(cubeMesh));
 			}
@@ -197,7 +197,7 @@ int App::InitializeScene()
 					{ 0, 0, 0 },
 					{ 0.0f, -1.0f, 0.0f }
 				);
-				cubeMesh->CreateShapeBody(GetPhysics(), ShapeType_Box, 0.0f);
+				cubeMesh->CreateShapeBody(ShapeType_Box, 0.0f);
 
 				scene->AddChild(std::move(cubeMesh));
 			}
@@ -217,7 +217,7 @@ int App::InitializeScene()
 						{ 0, 0, 0 },
 						{ i ? -0.5f : 0.5f, 3.0f, i ? -19.5f : 19.5f }
 					);
-					cubeMesh->CreateShapeBody(GetPhysics(), ShapeType_Box, 0.0f);
+					cubeMesh->CreateShapeBody(ShapeType_Box, 0.0f);
 
 					parent->AddChild(std::move(cubeMesh));
 				}
@@ -232,7 +232,7 @@ int App::InitializeScene()
 						{ 0, 0, 0 },
 						{ i ? 19.5f : -19.5f, 3.0f, i ? -0.5f : 0.5f }
 					);
-					cubeMesh->CreateShapeBody(GetPhysics(), ShapeType_Box, 0.0f);
+					cubeMesh->CreateShapeBody(ShapeType_Box, 0.0f);
 
 					parent->AddChild(std::move(cubeMesh));
 				}
@@ -249,7 +249,7 @@ int App::InitializeScene()
 				{ -0.3f, 2.5f, 0.0f },
 				{ 0.0f, 1.0f, 0.0f }
 			);
-			object->CreateShapeBody(GetPhysics(), ShapeType_ConvexHull, 3.0f);
+			object->CreateShapeBody(ShapeType_ConvexHull, 3.0f);
 			scene->AddChild(object);
 		}
 		if (auto object = MeshLoader::LoadModelFull("building", "kenney_city-kit-commercial_20/building-n"))
@@ -259,7 +259,7 @@ int App::InitializeScene()
 				{ 0, 90, 0 },
 				{ 4.0f, 0.0f, -2.0f }
 			);
-			object->CreateShapeBody(GetPhysics(), ShapeType_TriangleMesh);
+			object->CreateShapeBody(ShapeType_TriangleMesh);
 			scene->AddChild(object);
 		}
 		if (auto object = MeshLoader::LoadModel("bunny", "bunny_decimated", true))
@@ -270,7 +270,7 @@ int App::InitializeScene()
 				{ 0, 90, 0 },
 				{ -3.0f, 5.0f, 0.0f }
 			);
-			object->CreateShapeBody(GetPhysics(), ShapeType_Cylinder, 3.0f);
+			object->CreateShapeBody(ShapeType_Cylinder, 3.0f);
 			scene->AddChild(object);
 		}
 		if (auto object = MeshLoader::LoadModel("donut", "donut"))
@@ -281,7 +281,7 @@ int App::InitializeScene()
 				{ 0, 180, 0 },
 				{ 0.0f, 1.0f, -2.0f }
 			);
-			object->CreateShapeBody(GetPhysics(), ShapeType_Box, 1.0f);
+			object->CreateShapeBody(ShapeType_Box, 1.0f);
 			scene->AddChild(object);
 		}
 	}

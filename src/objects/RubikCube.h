@@ -1,6 +1,6 @@
 // RubikCube.h
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-10-06
 
 #pragma once
 
@@ -53,7 +53,7 @@ public:
 	void Initialize();
 
 	/// Pass the physics object for possible initialization
-	virtual void SetPhysics(PhysicsWorld* physics) override;
+	virtual void SetPhysics() override;
 
 	/// Serialize for JSON output
 	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3, bool addChildren = true) const override;

@@ -47,11 +47,11 @@ void Mesh::Controls(const sCamera& camera, int modifier, const bool* downs, bool
 {
 }
 
-void Mesh::CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass, const btVector4& newDims)
+void Mesh::CreateShapeBody(int shapeType, float mass, const btVector4& newDims)
 {
 	// 1) create shape
-	body = std::make_unique<Body>(physics);
-	body->mesh = Mesh::SharedPtr(shared_from_this());
+	body           = std::make_unique<Body>();
+	body->meshWeak = Mesh::SharedPtr(shared_from_this());
 	body->CreateShape(shapeType, newDims);
 
 	// 2) create physical body
@@ -98,6 +98,7 @@ void Mesh::Explode()
 	ActivatePhysics(true);
 	for (auto& child : children)
 	{
+		child->parentLink = false;
 	}
 }
 
@@ -277,7 +278,7 @@ void Mesh::SetBodyTransform()
 	}
 }
 
-void Mesh::SetPhysics(PhysicsWorld* physics)
+void Mesh::SetPhysics()
 {
 }
 
@@ -305,6 +306,13 @@ void Mesh::ShowInfoTable(bool showTitle) const
 		material0->ShowInfoTable();
 	else if (material)
 		material->ShowInfoTable();
+
+	// show groups
+	for (int gid = -1; const auto& group : groups)
+	{
+		if (showTitle) ImGui::Text("Group.%d", ++gid);
+		if (group.material) group.material->ShowInfoTable();
+	}
 }
 
 void Mesh::ShowSettings(bool isPopup, int show)

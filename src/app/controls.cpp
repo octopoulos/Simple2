@@ -549,7 +549,7 @@ void App::ThrowGeometry(int action, int geometryType, const VEC_STR& texFiles)
 		    { scale, scale, scale },
 		    { 0, 0, 0 },
 		    { pos.x, pos.y, pos.z });
-		object->CreateShapeBody(GetPhysics(), GeometryShape(geometryType), 1.0f);
+		object->CreateShapeBody(GeometryShape(geometryType), 1.0f);
 
 		if (action == ThrowAction_Throw)
 		{
@@ -622,7 +622,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, const VEC_
 		    { rot.x, rot.y, rot.z },
 		    { pos.x, pos.y, pos.z }
 		);
-		object->CreateShapeBody(GetPhysics(), shapeType, 1.0f);
+		object->CreateShapeBody(shapeType, 1.0f);
 
 		if (action == ThrowAction_Throw)
 		{

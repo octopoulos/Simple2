@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "physics/PhysicsWorld.h"
-
 enum ShapeTypes_ : int
 {
 	ShapeType_None         = 0,  ///< btEmptyShape
@@ -30,29 +28,22 @@ enum ShapeTypes_ : int
 // BODY
 ///////
 
-class Mesh;
-using sMesh = std::shared_ptr<Mesh>;
+using wMesh = std::weak_ptr<class Mesh>;
 
 class Body
 {
 public:
-	btRigidBody*             body      = nullptr;                    ///< rigid body
-	btVector4                dims      = { 0.0f, 0.0f, 0.0f, 0.0f }; ///< shape dims()
-	bool                     enabled   = true;                       ///< physics enabled
-	btVector3                inertia   = { 0.0f, 0.0f, 0.0f };       ///< inertia
-	float                    mass      = 0.0f;                       ///< mass
-	sMesh                    mesh      = nullptr;                    ///< parent mesh
-	PhysicsWorld*            physics   = nullptr;                    ///< physics reference
-	btCollisionShape*        shape     = nullptr;                    ///< shape
-	int                      shapeType = ShapeType_None;             ///< ShapeTypes_
-	btDiscreteDynamicsWorld* world     = nullptr;                    ///< physical world
+	btRigidBody*      body      = nullptr;                    ///< rigid body
+	btVector4         dims      = { 0.0f, 0.0f, 0.0f, 0.0f }; ///< shape dims()
+	bool              enabled   = true;                       ///< physics enabled
+	btVector3         inertia   = { 0.0f, 0.0f, 0.0f };       ///< inertia
+	float             mass      = 0.0f;                       ///< mass
+	wMesh             meshWeak  = {};                         ///< parent mesh
+	btCollisionShape* shape     = nullptr;                    ///< shape
+	int               shapeType = ShapeType_None;             ///< ShapeTypes_
 
 public:
-	Body(PhysicsWorld* physics)
-	    : physics(physics)
-	{
-		world = physics ? physics->GetWorld() : nullptr;
-	}
+	Body() = default;
 
 	~Body() { Destroy(); }
 

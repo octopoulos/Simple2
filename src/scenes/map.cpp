@@ -25,7 +25,7 @@ void App::AddGeometry(uGeometry geometry)
 			{ irot[0], irot[1], irot[2] },
 			{ coord.x, coord.y, coord.z }
 		);
-		object->CreateShapeBody(GetPhysics(), GeometryShape(geometry->type, false));
+		object->CreateShapeBody(GeometryShape(geometry->type, false));
 
 		mapNode->AddChild(object);
 		AutoSave();
@@ -48,7 +48,7 @@ void App::AddObject(std::string_view modelName)
 		{
 			mesh = std::make_shared<RubikCube>("Rubik", 3);
 			RubikCube::SharedPtr(mesh)->Initialize();
-			mesh->SetPhysics(GetPhysics());
+			mesh->SetPhysics();
 		}
 	}
 	else mesh = MeshLoader::LoadModelFull(FormatStr("%d:%s", mapNode->NextChildId(), NodeName(modelName).c_str()), modelName);
@@ -60,7 +60,7 @@ void App::AddObject(std::string_view modelName)
 		    { irot[0], irot[1], irot[2] },
 		    { coord.x, coord.y, coord.z }
 		);
-		mesh->CreateShapeBody(GetPhysics(), ShapeType_TriangleMesh);
+		mesh->CreateShapeBody(ShapeType_TriangleMesh);
 
 		mesh->placing = true;
 		mapNode->AddChild(mesh);

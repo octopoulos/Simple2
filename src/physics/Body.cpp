@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "physics/Body.h"
 //
+#include "app/App.h"        // GetApp
 #include "core/common3d.h"  // BulletToGlm, BxToBullet, GlmToBullet
 #include "loaders/writer.h" // WRITE_INIT, WRITE_KEY_xxx
 #include "objects/Mesh.h"   // Group, Mesh
@@ -129,7 +130,8 @@ void Body::CreateBody(float _mass, const btVector3& pos, const btQuaternion& qua
 	body->setSpinningFriction(0.02f);
 	body->setSleepingThresholds(1.2f, 1.5f);
 
-	if (world) world->addRigidBody(body);
+	if (auto world = App::GetApp()->GetPhysics()->GetWorld())
+		world->addRigidBody(body);
 }
 
 void Body::CreateShape(int type, const btVector4& newDims)
@@ -139,6 +141,8 @@ void Body::CreateShape(int type, const btVector4& newDims)
 	// override dims
 	if (newDims.x() > 0.0f || newDims.y() > 0.0f || newDims.z() > 0.0f)
 		dims = newDims;
+
+	auto mesh = meshWeak.lock();
 
 	// 1) compound rules:
 	// - if multiple groups or center is not (0, 0, 0) => use a compound
@@ -438,6 +442,7 @@ void Body::CreateShape(int type, const btVector4& newDims)
 
 void Body::Destroy()
 {
+	ui::Log("Body::Destroy");
 	DestroyShape();
 	DestroyBody();
 }
@@ -446,7 +451,9 @@ void Body::DestroyBody()
 {
 	if (body)
 	{
-		if (world) world->removeRigidBody(body);
+		if (auto world = App::GetApp()->GetPhysics()->GetWorld())
+			world->removeRigidBody(body);
+
 		const auto& motionState = body->getMotionState();
 		if (motionState) delete motionState;
 		delete body;
@@ -502,7 +509,8 @@ void Body::ShowSettings(bool isPopup, int show)
 	if (ui::AddCheckbox(mode, ".enabled", "", "Enabled", &enabled))
 	{
 		ui::Log("ENABLED=%d", enabled);
-		if (mesh) mesh->ActivatePhysics(enabled);
+		if (auto mesh = meshWeak.lock())
+			mesh->ActivatePhysics(enabled);
 	}
 	ui::AddDragFloat(mode, ".mass", "Mass", &mass);
 }

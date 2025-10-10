@@ -238,7 +238,7 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 
 			mesh->ScaleIrotPosition(scale, irot, position);
 			positioned = true;
-			mesh->CreateShapeBody((PhysicsWorld*)physics, shapeType, TO_FLOAT(mass), dims);
+			mesh->CreateShapeBody(shapeType, TO_FLOAT(mass), dims);
 			mesh->ActivatePhysics(enabled);
 			// mesh->body->enabled = enabled;
 		}
@@ -248,7 +248,7 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 		// if (type & ObjectType_RubikCube)
 		// {
 		// 	RubikCube::SharedPtr(mesh)->Initialize();
-		// 	mesh->SetPhysics((PhysicsWorld*)physics);
+		// 	mesh->SetPhysics();
 		// }
 	}
 	else if (type & ObjectType_Scene)
@@ -274,7 +274,7 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 	if (rubik)
 	{
 		rubik->Initialize();
-		rubik->SetPhysics((PhysicsWorld*)physics);
+		rubik->SetPhysics();
 	}
 
 	// 8) check children

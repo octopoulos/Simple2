@@ -1,6 +1,6 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-10-06
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
@@ -414,15 +414,15 @@ int RubikCube::Serialize(fmt::memory_buffer& outString, const int depth, const i
 	return keyId;
 }
 
-void RubikCube::SetPhysics(PhysicsWorld* physics)
+void RubikCube::SetPhysics()
 {
-	if (!body) CreateShapeBody(physics, ShapeType_Box, 1.0f);
+	if (!body) CreateShapeBody(ShapeType_Box, 1.0f);
 
 	for (auto& cubie : children)
 	{
 		if (auto mesh = Mesh::SharedPtr(cubie); !mesh->body)
 		{
-			mesh->CreateShapeBody(physics, ShapeType_Box, 1.0f);
+			mesh->CreateShapeBody(ShapeType_Box, 1.0f);
 			mesh->ActivatePhysics(false);
 		}
 	}

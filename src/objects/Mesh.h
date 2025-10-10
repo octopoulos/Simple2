@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-10-02
+// @version 2025-10-06
 
 #pragma once
 
@@ -112,7 +112,7 @@ public:
 	virtual void Controls(const sCamera& camera, int modifier, const bool* downs, bool* ignores, const bool* keys);
 
 	/// Utility to create a shape then a body
-	void CreateShapeBody(PhysicsWorld* physics, int shapeType, float mass = 0.0f, const btVector4& newDims = { 0.0f, 0.0f, 0.0f, 0.0f });
+	void CreateShapeBody(int shapeType, float mass = 0.0f, const btVector4& newDims = { 0.0f, 0.0f, 0.0f, 0.0f });
 
 	/// Delete all groups including indices + vertices
 	void Destroy();
@@ -147,7 +147,7 @@ public:
 	}
 
 	/// Pass the physics object for possible initialization
-	virtual void SetPhysics(PhysicsWorld* physics);
+	virtual void SetPhysics();
 
 	/// Show info table in ImGui
 	virtual void ShowInfoTable(bool showTitle = true) const override;

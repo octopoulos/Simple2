@@ -1,6 +1,6 @@
 // Material.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-10-06
 
 #include "stdafx.h"
 #include "materials/Material.h"
@@ -85,7 +85,7 @@ void Material::FindModelTextures(std::string_view modelName, const VEC_STR& texF
 
 void Material::Initialize()
 {
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < TextureType_Count; ++i)
 		textures[i] = BGFX_INVALID_HANDLE;
 
 	// create uniforms
@@ -172,10 +172,18 @@ void Material::ShowInfoTable(bool showTitle) const
 	if (showTitle) ImGui::TextUnformatted("Material");
 
 	// clang-format off
-	ui::ShowTable({
+	std::vector<std::tuple<std::string, std::string>> stats = {
 		{ "state", std::to_string(state) },
-	});
+	};
 	// clang-format on
+
+	for (int i = 0; i < TextureType_Count; ++i)
+	{
+		if (texNames[i].size()) stats.push_back({ Format("texNames.%d", i), texNames[i] });
+		if (bgfx::isValid(textures[i])) stats.push_back({ Format("textures.%d", i), Format("%p", textures[i]) });
+	}
+
+	ui::ShowTable(stats);
 }
 
 void Material::ShowSettings(bool isPopup, int show)
