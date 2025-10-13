@@ -1,6 +1,6 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-09-30
+// @version 2025-10-07
 
 #include "stdafx.h"
 #include "textures/TextureManager.h"
@@ -157,7 +157,7 @@ const bgfx::TextureInfo* TextureManager::GetTextureInfo(std::string_view name) c
 	return nullptr;
 }
 
-bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name)
+bgfx::TextureHandle TextureManager::LoadTexture(std::string_view name, const std::filesystem::path& startDir)
 {
 	std::lock_guard<std::mutex> lock(textureMutex);
 

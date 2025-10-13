@@ -1,6 +1,6 @@
 // TextureManager.h
 // @author octopoulos
-// @version 2025-09-16
+// @version 2025-10-07
 
 #pragma once
 
@@ -51,7 +51,7 @@ public:
 
 	/// Load or retrieve a texture by name
 	/// @returns valid texture handle or BGFX_INVALID_HANDLE.
-	bgfx::TextureHandle LoadTexture(std::string_view name);
+	bgfx::TextureHandle LoadTexture(std::string_view name, const std::filesystem::path& startDir = {});
 
 	/// Show textures in ImGui
 	void ShowInfoTable(bool showTitle = true) const;

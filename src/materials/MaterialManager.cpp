@@ -1,6 +1,6 @@
 // MaterialManager.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-10-07
 
 #include "stdafx.h"
 #include "materials/MaterialManager.h"
@@ -31,15 +31,32 @@ sMaterial MaterialManager::GetMaterial(std::string_view name) const
 sMaterial MaterialManager::LoadMaterial(std::string_view name, std::string_view vsName, std::string_view fsName, const VEC_STR& texFiles, const VEC<TextureData>& texDatas)
 {
 	// 1) check cache
-	if (const auto exist = GetMaterial(name)) return exist;
+	if (const auto exist = GetMaterial(name))
+	{
+		ui::Log("LoadMaterial: Cached %s", Cstr(name));
+		return exist;
+	}
 
 	// 2) create material
 	auto material = std::make_shared<Material>(vsName, fsName);
-	if (!material) return nullptr;
+	if (!material)
+	{
+		ui::LogError("LoadMaterial: Cannot created %s", Cstr(name));
+		return nullptr;
+	}
 
 	// 3) add texture
+	ui::Log("LoadMaterial: texFiles=%lld texDatas=%lld", texFiles.size(), texDatas.size());
 	if (texFiles.size()) material->LoadTextures(texFiles);
-	if (texDatas.size()) {}
+	if (texDatas.size())
+	{
+
+		for (auto& texData : texDatas)
+		{
+			ui::Log("texData: %d %d %s", texData.type, bgfx::isValid(texData.handle), Cstr(texData.name));
+			material->LoadTexture(texData.type, texData.name);
+		}
+	}
 
 	std::lock_guard<std::mutex> lock(materialMutex);
 	materials.emplace(name, material);

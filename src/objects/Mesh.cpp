@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-10-06
+// @version 2025-10-07
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -188,13 +188,14 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 					{
 						for (const auto& group : groups)
 						{
+							const auto& gmaterial = group.material ? group.material : material;
+
 							bgfx::setIndexBuffer(group.ibh);
 							bgfx::setVertexBuffer(0, group.vbh);
 							bgfx::setInstanceDataBuffer(&idb);
-							material->Apply();
-							bgfx::setState(material->state ? material->state : defaultState);
-							bgfx::submit(0, material->program);
-							break;
+							gmaterial->Apply();
+							bgfx::setState(gmaterial->state ? gmaterial->state : defaultState);
+							bgfx::submit(viewId, gmaterial->program);
 						}
 					}
 				}
@@ -219,7 +220,21 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 		}
 		else if (bgfx::isValid(material->program))
 		{
-			Submit(viewId, material->program, glm::value_ptr(matrixWorld), material->state ? material->state : defaultState);
+			for (const auto& group : groups)
+			{
+				const auto& gmaterial = group.material ? group.material : material;
+
+				bgfx::setTransform(glm::value_ptr(matrixWorld));
+				bgfx::setIndexBuffer(group.ibh);
+				bgfx::setVertexBuffer(0, group.vbh);
+				// bgfx::setInstanceDataBuffer(&idb);
+				gmaterial->Apply();
+				bgfx::setState(gmaterial->state ? gmaterial->state : defaultState);
+				bgfx::submit(viewId, gmaterial->program, BGFX_DISCARD_INDEX_BUFFER | BGFX_DISCARD_VERTEX_STREAMS);
+			}
+
+			// Submit(viewId, material->program, glm::value_ptr(matrixWorld), material->state ? material->state : defaultState);
+			// bgfx::discard();
 		}
 	}
 }

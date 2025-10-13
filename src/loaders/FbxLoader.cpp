@@ -1,6 +1,6 @@
 // FbxLoader.cpp
 // @author octopoulos
-// @version 2025-10-06
+// @version 2025-10-07
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -13,6 +13,26 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // HELPERS
 //////////
+
+// Converts an FBX (Blender) matrix to engine-space matrix
+// Blender: X=Right, Y=Forward, Z=Up (Left-handed)
+// Engine:  X=Right, Y=Up, Z=Forward (Right-handed)
+static glm::mat4 FbxToEngineMatrix(const ofbx::DMatrix& fbxMat)
+{
+	glm::mat4 matrix = glm::make_mat4(fbxMat.m);
+
+	static const glm::mat4 coord = glm::mat4(
+	    1.0f, 0.0f, 0.0f, 0.0f,  // X stays X (right)
+	    0.0f, 0.0f, 1.0f, 0.0f,  // Z -> Y (up)
+	    0.0f, -1.0f, 0.0f, 0.0f, // Y -> -Z (forward)
+	    0.0f, 0.0f, 0.0f, 1.0f);
+
+	return matrix * coord;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// MAIN
+///////
 
 /// Create material from FBX
 static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Material* fbxMaterial, const std::filesystem::path& fbxPath, std::string_view texPath)
@@ -58,12 +78,15 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 						if (texPath.size())
 							tryPath = std::filesystem::path(texPath) / filename;
 						else
-							tryPath = fbxPath.filename().stem() / filename;
+							tryPath = std::filesystem::path(SplitString(fbxPath.filename().stem().string(), '-')[0]) / filename;
 					}
 
 					texData.handle = GetTextureManager().LoadTexture(tryPath.string());
 					if (bgfx::isValid(texData.handle))
+					{
 						ui::Log("CreateMaterialFromFbx: loaded %s texture %s for %s: %s", Cstr(typeName), Cstr(texData.name), Cstr(materialName), PathStr(tryPath));
+						texData.name = tryPath.string();
+					}
 					else
 						ui::LogError("CreateMaterialFromFbx: failed %s file: %s for %s", Cstr(typeName), PathStr(tryPath), Cstr(materialName));
 					textures.push_back(texData);
@@ -134,7 +157,8 @@ static sMesh CreateNodeMesh(const ofbx::Object* node)
 
 	// set local transform
 	auto      fbxMatrix = node->getLocalTransform();
-	glm::mat4 glmMatrix = glm::transpose(glm::make_mat4(fbxMatrix.m));
+	// glm::mat4 glmMatrix = glm::transpose(glm::make_mat4(fbxMatrix.m));
+	glm::mat4 glmMatrix = FbxToEngineMatrix(fbxMatrix);
 
 	mesh->matrix = glmMatrix;
 	mesh->DecomposeMatrix(0.01f);
@@ -194,6 +218,14 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 		}
 	};
 
+	// Z-up to Y-up conversion matrix for vertices and normals
+	// const glm::mat4 coordTransform = glm::mat4(
+	//     1.0f, 0.0f, 0.0f, 0.0f,  // X stays X (right)
+	//     0.0f, 0.0f, 1.0f, 0.0f,  // Z becomes Y (up)
+	//     0.0f, -1.0f, 0.0f, 0.0f, // Y becomes -Z (forward)
+	//     0.0f, 0.0f, 0.0f, 1.0f   // Homogeneous coordinate
+	// );
+
 	// 5) process partitions (materials)
 	const int numMaterial = fbxMesh->getMaterialCount();
 	for (int partitionId = 0; partitionId < geom.getPartitionCount(); ++partitionId)
@@ -211,6 +243,14 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 				ui::LogError("ProcessMesh: Cannot create material for mesh %s partition %d", Cstr(nodeName), partitionId);
 				continue;
 			}
+			else
+			{
+				ui::Log("ProcessMesh: partitionId=%d:", partitionId);
+				for (int id = 0; id < TextureType_Count; ++id)
+				{
+					if (group.material->texNames[id].size()) ui::Log("  %d: %s : %d", id, Cstr(group.material->texNames[id]), bgfx::isValid(group.material->textures[id]));
+				}
+			}
 		}
 
 		// vertices and indices + positions (for AABB)
@@ -219,7 +259,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 		std::vector<bx::Vec3> vpositions;
 
 		// clang-format off
-		bx::Aabb   groupAabb   = { { FLT_MAX, FLT_MAX, FLT_MAX  }, { -FLT_MAX, -FLT_MAX, -FLT_MAX } };
+		bx::Aabb   groupAabb   = { { FLT_MAX, FLT_MAX, FLT_MAX }, { -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 		bx::Sphere groupSphere = { { 0.0f, 0.0f, 0.0f }, 0.0f };
 		// clang-format on
 
@@ -247,7 +287,12 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 
 				Vertex     vertex;
 				ofbx::Vec3 pos  = positions.get(vertexId);
+
+				// transform vertex position to Y-up
+				// glm::vec4 transformedPos = coordTransform * glm::vec4(TO_FLOAT(pos.x), TO_FLOAT(pos.y), TO_FLOAT(pos.z), 1.0f);
+
 				vertex.position = glm::vec3(TO_FLOAT(pos.x), TO_FLOAT(pos.y), TO_FLOAT(pos.z));
+				// vertex.position = glm::vec3(transformedPos);
 				vpositions.push_back({ vertex.position.x, vertex.position.y, vertex.position.z });
 
 				if (normals.values && vertexId < normals.count)
@@ -258,7 +303,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 				if (uvs.values && vertexId < uvs.count)
 				{
 					ofbx::Vec2 uv = uvs.get(vertexId);
-					vertex.uv     = glm::vec2(TO_FLOAT(uv.x), TO_FLOAT(uv.y));
+					vertex.uv     = glm::vec2(TO_FLOAT(uv.x), 1.0f - TO_FLOAT(uv.y));
 				}
 				if (colors.values && vertexId < colors.count)
 				{
@@ -347,7 +392,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 
 static bx::Aabb TransformAabb(const bx::Aabb& aabb, const glm::mat4& matrix)
 {
-	bx::Aabb transformedAabb = { { FLT_MAX, FLT_MAX, FLT_MAX  }, { -FLT_MAX, -FLT_MAX, -FLT_MAX } };
+	bx::Aabb transformedAabb = { { FLT_MAX, FLT_MAX, FLT_MAX }, { -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 	if (aabb.min.x >= aabb.max.x)
 	{
 		ui::LogError("TransformAabb: Invalid input AABB");
@@ -379,8 +424,8 @@ static bx::Aabb TransformAabb(const bx::Aabb& aabb, const glm::mat4& matrix)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// MAIN
-///////
+// INTERFACE
+////////////
 
 sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy, std::string_view texPath)
 {

@@ -1,6 +1,6 @@
 // Mesh.h
 // @author octopoulos
-// @version 2025-10-06
+// @version 2025-10-07
 
 #pragma once
 
@@ -48,6 +48,7 @@ struct Group
 	bx::Aabb                 aabb        = {};                  ///
 	bgfx::IndexBufferHandle  ibh         = BGFX_INVALID_HANDLE; ///
 	uint32_t*                indices     = nullptr;             ///
+	sMaterial                material    = nullptr;             ///
 	uint32_t                 numIndices  = 0;                   ///
 	uint32_t                 numVertices = 0;                   ///
 	bx::Obb                  obb         = {};                  ///
@@ -55,7 +56,6 @@ struct Group
 	bx::Sphere               sphere      = {};                  ///
 	bgfx::VertexBufferHandle vbh         = BGFX_INVALID_HANDLE; ///
 	uint8_t*                 vertices    = nullptr;             ///
-	sMaterial                material    = nullptr;             ///
 };
 
 struct MeshState

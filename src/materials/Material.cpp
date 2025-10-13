@@ -1,6 +1,6 @@
 // Material.cpp
 // @author octopoulos
-// @version 2025-10-06
+// @version 2025-10-07
 
 #include "stdafx.h"
 #include "materials/Material.h"
@@ -85,8 +85,8 @@ void Material::FindModelTextures(std::string_view modelName, const VEC_STR& texF
 
 void Material::Initialize()
 {
-	for (int i = 0; i < TextureType_Count; ++i)
-		textures[i] = BGFX_INVALID_HANDLE;
+	for (int id = 0; id < TextureType_Count; ++id)
+		textures[id] = BGFX_INVALID_HANDLE;
 
 	// create uniforms
 	// clang-format off
@@ -107,16 +107,19 @@ void Material::LoadProgram(std::string_view vsName, std::string_view fsName)
 
 void Material::LoadTexture(int texId, std::string_view name)
 {
+	ui::Log("Material::LoadTexture %d %s", texId, Cstr(name));
 	if (name.size())
 	{
 		const auto proxy = RelativeName(name, { "runtime/textures" });
 		texNames[texId]  = proxy;
 		textures[texId]  = GetTextureManager().LoadTexture(proxy);
+		ui::Log("LoadTexture: %d name=%s %s", texId, Cstr(name), Cstr(proxy));
 	}
 }
 
 void Material::LoadTextures(const VEC_STR& texFiles)
 {
+	ui::Log("LoadTextures: %lld", texFiles.size());
 	for (int id = -1; const auto& texFile : texFiles)
 		LoadTexture(++id, texFile);
 }
@@ -173,14 +176,16 @@ void Material::ShowInfoTable(bool showTitle) const
 
 	// clang-format off
 	std::vector<std::tuple<std::string, std::string>> stats = {
+		{ "vsName", vsName               },
+		{ "fsName", fsName               },
 		{ "state", std::to_string(state) },
 	};
 	// clang-format on
 
-	for (int i = 0; i < TextureType_Count; ++i)
+	for (int id = 0; id < TextureType_Count; ++id)
 	{
-		if (texNames[i].size()) stats.push_back({ Format("texNames.%d", i), texNames[i] });
-		if (bgfx::isValid(textures[i])) stats.push_back({ Format("textures.%d", i), Format("%p", textures[i]) });
+		if (texNames[id].size()) stats.push_back({ Format("texNames.%d", id), texNames[id] });
+		if (bgfx::isValid(textures[id])) stats.push_back({ Format("textures.%d", id), Format("%d", textures[id].idx) });
 	}
 
 	ui::ShowTable(stats);
