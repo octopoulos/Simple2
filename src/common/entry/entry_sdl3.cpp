@@ -751,8 +751,6 @@ struct Context
 				case SDL_EVENT_FINGER_MOTION:
 				case SDL_EVENT_FINGER_UP:
 				{
-					static USET_INT64 fingers;
-
 					const auto& fevent   = event.tfinger;
 					float       pressure = fevent.pressure;
 					switch (event.type)
@@ -760,19 +758,14 @@ struct Context
 					case SDL_EVENT_FINGER_CANCELED:
 					case SDL_EVENT_FINGER_UP:
 						pressure = -1.0f;
-						if (auto it = fingers.find(fevent.fingerID); it != fingers.end())
-							fingers.erase(it);
-						break;
-					case SDL_EVENT_FINGER_DOWN:
-						fingers.insert(fevent.fingerID);
 						break;
 					}
 
 					WindowHandle handle = findHandle(fevent.windowID);
 					// if (isValid(handle))
 					{
-						// ui::Log("FINGER/%lld: %d tid=%lld fid=%lld x=%f y=%f dx=%f dy=%f p=%f", fingers.size(), fevent.type, fevent.touchID, fevent.fingerID, fevent.x, fevent.y, fevent.dx, fevent.dy, pressure);
-						m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz, true, TO_INT(fevent.dx * xsettings.windowSize[0]), TO_INT(fevent.dy * xsettings.windowSize[1]), pressure, fevent.touchID, fevent.fingerID);
+						// ui::Log("FINGER %d tid=%x fid=%x x=%f y=%f dx=%f dy=%f p=%f", fevent.type, fevent.touchID, fevent.fingerID, fevent.x, fevent.y, fevent.dx, fevent.dy, pressure);
+						m_eventQueue.postMouseEvent(handle, 0, 0, 0, true, TO_INT(fevent.dx * xsettings.windowSize[0]), TO_INT(fevent.dy * xsettings.windowSize[1]), pressure, fevent.touchID, fevent.fingerID);
 					}
 
 					useFinger = true;

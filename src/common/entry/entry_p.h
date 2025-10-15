@@ -153,18 +153,18 @@ struct MouseEvent : public Event
 {
 	ENTRY_IMPLEMENT_EVENT(MouseEvent, Event::Mouse);
 
-	uint64_t          device;   ///< device ID
-	uint64_t          finger;   ///< finger ID
-	bool              hasDelta; ///
-	int32_t           m_dx;     ///
-	int32_t           m_dy;     ///
-	int32_t           m_mx;     ///
-	int32_t           m_my;     ///
-	int32_t           m_mz;     ///
-	MouseButton::Enum m_button; ///
-	bool              m_down;   ///
-	bool              m_move;   ///
-	float             pressure; ///< finger pressure
+	uint64_t          device   = 0;                       ///< device ID
+	uint64_t          finger   = 0;                       ///< finger ID
+	bool              hasDelta = false;                   ///
+	int32_t           m_dx     = 0;                       ///
+	int32_t           m_dy     = 0;                       ///
+	int32_t           m_mx     = 0;                       ///
+	int32_t           m_my     = 0;                       ///
+	int32_t           m_mz     = 0;                       ///
+	MouseButton::Enum m_button = MouseButton::Enum::None; ///
+	bool              m_down   = false;                   ///
+	bool              m_move   = false;                   ///
+	float             pressure = 0.0f;                    ///< finger pressure
 };
 
 struct SizeEvent : public Event

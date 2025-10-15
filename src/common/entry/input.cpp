@@ -9,6 +9,7 @@
 //
 #include "common/config.h" // DEV_inputKeys
 #include "entry_p.h"       // entry::
+#include "ui/ui.h"         // ui::
 #include "ui/xsettings.h"  // xsettings
 
 struct Gamepad
@@ -112,6 +113,18 @@ void Finger::Update(int mx, int my, int mz, bool hasDelta, int dx, int dy, float
 
 	if (!frame) memcpy(rels0, rels, sizeof(rels));
 	++frame;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// DEVICE
+/////////
+
+void Device::RemoveFinger(uint64_t fingerId)
+{
+	if (auto it = fingers.find(fingerId); it != fingers.end())
+		fingers.erase(it);
+	else
+		ui::Log("RemoveFingers: Cannot find %lld", fingerId);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -448,10 +461,17 @@ void GlobalInput::MouseLock(bool lock)
 void GlobalInput::MouseMove(uint64_t deviceId, uint64_t fingerId, int mx, int my, int mz, bool hasDelta, int dx, int dy, float pressure)
 {
 	Device& device = devices[deviceId];
-	Finger& finger = device.fingers[fingerId];
-	finger.Update(mx, my, mz, hasDelta, dx, dy, pressure, resolution);
 
-	ui::Log("MouseMove: %lld/%lld/%lld %d,%d,%d %d %d,%d,%f", deviceId, fingerId, device.fingers.size(), mx, my, mz, hasDelta, dx, dy, pressure);
+	// remove finger?
+	if (pressure < 0)
+		device.RemoveFinger(fingerId);
+	else
+	{
+		Finger& finger = device.fingers[fingerId];
+		finger.Update(mx, my, mz, hasDelta, dx, dy, pressure, resolution);
+	}
+
+	ui::Log("MouseMove: %x/%x/%lld %d,%d,%d %d %d,%d,%f", deviceId, fingerId, device.fingers.size(), mx, my, mz, hasDelta, dx, dy, pressure);
 
 }
 
@@ -561,6 +581,33 @@ void GlobalInput::SetResolution(int width, int height, int wheelDelta)
 	if (width > 0) resolution[0] = TO_FLOAT(width);
 	if (height > 0) resolution[1] = TO_FLOAT(height);
 	if (wheelDelta > 0) resolution[2] = TO_FLOAT(wheelDelta);
+}
+
+void GlobalInput::ShowInfoTable(bool showTitle) const
+{
+	if (showTitle) ImGui::TextUnformatted("GlobalInput");
+
+	// clang-format off
+	std::vector<std::tuple<std::string, std::string>> stats = {
+		{ "lastAscii", std::to_string(lastAscii) },
+		{ "lastKey"  , std::to_string(lastKey)   },
+		{ "mouseLock", BoolString(mouseLock)     },
+	};
+	// clang-format on
+
+	for (int i = -1; const auto& [did, device] : devices)
+	{
+		++i;
+		stats.push_back({ Format("device.%d", i), Format("%x (%lld)", did, device.fingers.size()) });
+		for (int j = -1; const auto& [fid, finger] : device.fingers)
+		{
+			++j;
+			stats.push_back({ Format(" - finger.%d", j), Format("%x/%s : %.0f %.0f", fid, Cstr(TrimDouble(finger.pressure)), finger.rels2[0] * 1000, finger.rels2[1] * 1000) });
+		}
+	}
+
+	ui::ShowTable(stats);
+
 }
 
 GlobalInput& GetGlobalInput()

@@ -1,6 +1,6 @@
 // ui-menu.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-10-11
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -19,10 +19,11 @@ enum ShowVarFlags : int
 {
 	Show_Camera      = 1 << 0,
 	Show_Cursor      = 1 << 1,
-	Show_Materials   = 1 << 2,
-	Show_SelectedObj = 1 << 3,
-	Show_Textures    = 1 << 4,
-	Show_Vars        = 1 << 5,
+	Show_Input       = 1 << 2,
+	Show_Materials   = 1 << 3,
+	Show_SelectedObj = 1 << 4,
+	Show_Textures    = 1 << 5,
+	Show_Vars        = 1 << 6,
 };
 
 static const std::string SIMAGE_EXTS = "Textures{.bmp,.dds,.exr,.gif,.hdr,.jpg,.ktx,.pic,.pgm,.png,.ppm,.psd,.tga}";
@@ -462,7 +463,7 @@ void App::VarsUi()
 	if (ImGui::Begin("Vars", &xsettings.showVars))
 	{
 		const int showTree = xsettings.varTree;
-		int       tree     = showTree & ~(Show_Camera | Show_Cursor | Show_Materials | Show_SelectedObj | Show_Textures | Show_Vars);
+		int       tree     = showTree & ~(Show_Camera | Show_Cursor | Show_Input | Show_Materials | Show_SelectedObj | Show_Textures | Show_Vars);
 
 		BEGIN_PADDING();
 
@@ -478,6 +479,13 @@ void App::VarsUi()
 		{
 			tree |= Show_Cursor;
 			cursor->ShowInfoTable(false);
+		}
+
+		// input
+		if (ImGui::CollapsingHeader("Input", SHOW_TREE(Show_Input)))
+		{
+			tree |= Show_Input;
+			GetGlobalInput().ShowInfoTable(false);
 		}
 
 		// materials
