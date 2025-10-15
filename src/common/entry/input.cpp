@@ -1,4 +1,4 @@
-// @version 2025-10-04
+// @version 2025-10-11
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -69,55 +69,6 @@ void inputInit()
 void inputShutdown()
 {
 	bx::deleteObject(entry::getAllocator(), s_input);
-}
-
-void inputSetMouseResolution(uint16_t _width, uint16_t _height)
-{
-	GetGlobalInput().SetResolution(_width, _height, 0);
-}
-
-void inputSetKeyState(entry::Key::Enum _key, uint8_t _modifiers, bool _down)
-{
-	GetGlobalInput().KeyDownUp(TO_INT(_key), _down);
-}
-
-void inputChar(uint8_t _len, const uint8_t _char[4])
-{
-	GetGlobalInput().PushChar(_len, _char);
-}
-
-const uint8_t* inputGetChar()
-{
-	return GetGlobalInput().PopChar();
-}
-
-void inputCharFlush()
-{
-	GetGlobalInput().FlushChar();
-}
-
-void inputSetMousePos(int32_t _mx, int32_t _my, int32_t _mz, bool hasDelta, int32_t _dx, int32_t _dy)
-{
-	GetGlobalInput().MouseMove(_mx, _my, _mz, hasDelta, _dx, _dy);
-}
-
-void inputSetMouseButtonState(entry::MouseButton::Enum _button, uint8_t _state)
-{
-	GetGlobalInput().MouseButton(_button, _state);
-}
-
-bool inputIsMouseLocked()
-{
-	return GetGlobalInput().mouseLock;
-}
-
-void inputSetMouseLock(bool _lock)
-{
-	if (GetGlobalInput().mouseLock != _lock)
-		entry::setMouseLock(entry::kDefaultWindowHandle, _lock);
-
-	// !NEW
-	GetGlobalInput().MouseLock(_lock);
 }
 
 void inputSetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::Enum _axis, int32_t _value)
@@ -454,10 +405,14 @@ void GlobalInput::MouseDeltas()
 
 void GlobalInput::MouseLock(bool lock)
 {
-	if (mouseLock != lock) mouseLock = lock;
+	if (mouseLock != lock)
+	{
+		entry::setMouseLock(entry::kDefaultWindowHandle, lock);
+		mouseLock = lock;
+	}
 }
 
-void GlobalInput::MouseMove(int mx, int my, int mz, bool hasDelta, int dx, int dy)
+void GlobalInput::MouseMove(int mx, int my, int mz, bool hasDelta, int dx, int dy, int finger)
 {
 	mouseAbs[0]  = mx;
 	mouseAbs[1]  = my;

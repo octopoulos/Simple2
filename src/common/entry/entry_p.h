@@ -1,4 +1,4 @@
-// @version 2025-09-15
+// @version 2025-10-11
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -153,6 +153,7 @@ struct MouseEvent : public Event
 {
 	ENTRY_IMPLEMENT_EVENT(MouseEvent, Event::Mouse);
 
+	int               finger;
 	bool              hasDelta;
 	int32_t           m_dx;
 	int32_t           m_dy;
@@ -251,9 +252,10 @@ public:
 		m_queue.push(ev);
 	}
 
-	void postMouseEvent(WindowHandle _handle, int32_t _mx, int32_t _my, int32_t _mz, bool hasDelta, int32_t _dx, int32_t _dy)
+	void postMouseEvent(WindowHandle _handle, int32_t _mx, int32_t _my, int32_t _mz, bool hasDelta, int32_t _dx, int32_t _dy, int finger = -1)
 	{
 		MouseEvent* ev = BX_NEW(getAllocator(), MouseEvent)(_handle);
+		ev->finger     = finger;
 		ev->hasDelta   = hasDelta;
 		ev->m_dx       = _dx;
 		ev->m_dy       = _dy;
@@ -266,9 +268,10 @@ public:
 		m_queue.push(ev);
 	}
 
-	void postMouseEvent(WindowHandle _handle, int32_t _mx, int32_t _my, int32_t _mz, MouseButton::Enum _button, bool _down)
+	void postMouseEvent(WindowHandle _handle, int32_t _mx, int32_t _my, int32_t _mz, MouseButton::Enum _button, bool _down, int finger = -1)
 	{
 		MouseEvent* ev = BX_NEW(getAllocator(), MouseEvent)(_handle);
+		ev->finger     = finger;
 		ev->m_mx       = _mx;
 		ev->m_my       = _my;
 		ev->m_mz       = _mz;

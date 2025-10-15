@@ -1,4 +1,4 @@
-// @version 2025-09-29
+// @version 2025-10-11
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -590,7 +590,7 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 
 	WindowHandle handle = { UINT16_MAX };
 
-	bool mouseLock = inputIsMouseLocked();
+	const bool mouseLock = GetGlobalInput().mouseLock;
 
 	const Event* ev;
 	do
@@ -626,7 +626,7 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 			case Event::Char:
 			{
 				const CharEvent* chev = static_cast<const CharEvent*>(ev);
-				inputChar(chev->m_len, chev->m_char);
+				GetGlobalInput().PushChar(chev->m_len, chev->m_char);
 				if (DEV_char) ui::Log("char=%d %d %d %d %d", chev->m_len, chev->m_char[0], chev->m_char[1], chev->m_char[2], chev->m_char[3]);
 			}
 			break;
@@ -645,17 +645,16 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 				const MouseEvent* mouse = static_cast<const MouseEvent*>(ev);
 				handle                  = mouse->m_handle;
 
-				inputSetMousePos(mouse->m_mx, mouse->m_my, mouse->m_mz, mouse->hasDelta, mouse->m_dx, mouse->m_dy);
+				GetGlobalInput().MouseMove(mouse->m_mx, mouse->m_my, mouse->m_mz, mouse->hasDelta, mouse->m_dx, mouse->m_dy, mouse->finger);
 				if (!mouse->m_move)
-					inputSetMouseButtonState(mouse->m_button, mouse->m_down);
+					GetGlobalInput().MouseButton(mouse->m_button, mouse->m_down);
 
 				if (_mouse && !mouseLock)
 				{
 					_mouse->m_mx = mouse->m_mx;
 					_mouse->m_my = mouse->m_my;
 					_mouse->m_mz = mouse->m_mz;
-					if (!mouse->m_move)
-						_mouse->m_buttons[mouse->m_button] = mouse->m_down;
+					if (!mouse->m_move) _mouse->m_buttons[mouse->m_button] = mouse->m_down;
 				}
 			}
 			break;
@@ -665,7 +664,7 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 				const KeyEvent* key = static_cast<const KeyEvent*>(ev);
 				handle              = key->m_handle;
 
-				inputSetKeyState(key->m_key, key->m_modifiers, key->m_down);
+				GetGlobalInput().KeyDownUp(TO_INT(key->m_key), key->m_down);
 			}
 			break;
 
@@ -715,7 +714,7 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 		_reset = s_reset;
 		BX_TRACE("bgfx::reset(%d, %d, 0x%x)", _width, _height, _reset)
 		bgfx::reset(_width, _height, _reset);
-		inputSetMouseResolution(uint16_t(_width), uint16_t(_height));
+		GetGlobalInput().SetResolution(uint16_t(_width), uint16_t(_height), 0);
 	}
 
 	_debug = s_debug;
@@ -731,8 +730,8 @@ bool processWindowEvents(WindowState& _state, uint32_t& _debug, uint32_t& _reset
 
 	WindowHandle handle = { UINT16_MAX };
 
-	bool mouseLock     = inputIsMouseLocked();
-	bool clearDropFile = true;
+	const bool mouseLock     = GetGlobalInput().mouseLock;
+	bool       clearDropFile = true;
 
 	const Event* ev;
 	do
@@ -773,7 +772,7 @@ bool processWindowEvents(WindowState& _state, uint32_t& _debug, uint32_t& _reset
 			{
 				const CharEvent* chev = static_cast<const CharEvent*>(ev);
 				win.m_handle          = chev->m_handle;
-				inputChar(chev->m_len, chev->m_char);
+				GetGlobalInput().PushChar(chev->m_len, chev->m_char);
 			}
 			break;
 
@@ -792,9 +791,9 @@ bool processWindowEvents(WindowState& _state, uint32_t& _debug, uint32_t& _reset
 				win.m_handle            = mouse->m_handle;
 
 				if (mouse->m_move)
-					inputSetMousePos(mouse->m_mx, mouse->m_my, mouse->m_mz, mouse->hasDelta, mouse->m_dx, mouse->m_dy);
+					GetGlobalInput().MouseMove(mouse->m_mx, mouse->m_my, mouse->m_mz, mouse->hasDelta, mouse->m_dx, mouse->m_dy, mouse->finger);
 				else
-					inputSetMouseButtonState(mouse->m_button, mouse->m_down);
+					GetGlobalInput().MouseButton(mouse->m_button, mouse->m_down);
 
 				if (!mouseLock)
 				{
@@ -817,7 +816,7 @@ bool processWindowEvents(WindowState& _state, uint32_t& _debug, uint32_t& _reset
 				const KeyEvent* key = static_cast<const KeyEvent*>(ev);
 				win.m_handle        = key->m_handle;
 
-				inputSetKeyState(key->m_key, key->m_modifiers, key->m_down);
+				GetGlobalInput().KeyDownUp(TO_INT(key->m_key), key->m_down);
 			}
 			break;
 
@@ -866,7 +865,7 @@ bool processWindowEvents(WindowState& _state, uint32_t& _debug, uint32_t& _reset
 		_state = win;
 
 		if (handle.idx == 0)
-			inputSetMouseResolution(uint16_t(win.m_width), uint16_t(win.m_height));
+			GetGlobalInput().SetResolution(uint16_t(win.m_width), uint16_t(win.m_height), 0);
 	}
 
 	needReset |= _reset != s_reset;
@@ -876,7 +875,7 @@ bool processWindowEvents(WindowState& _state, uint32_t& _debug, uint32_t& _reset
 		_reset = s_reset;
 		BX_TRACE("bgfx::reset(%d, %d, 0x%x)", s_window[0].m_width, s_window[0].m_height, _reset)
 		bgfx::reset(s_window[0].m_width, s_window[0].m_height, _reset);
-		inputSetMouseResolution(uint16_t(s_window[0].m_width), uint16_t(s_window[0].m_height));
+		GetGlobalInput().SetResolution(uint16_t(s_window[0].m_width), uint16_t(s_window[0].m_height), 0);
 	}
 
 	_debug = s_debug;

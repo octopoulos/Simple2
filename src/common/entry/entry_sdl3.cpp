@@ -1,6 +1,6 @@
 // entry_sdl3.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-10-11
 
 #include "stdafx.h"
 #include "entry_p.h"
@@ -451,14 +451,16 @@ struct Context
 	{
 		EntryBegin("SDL3");
 		ui::Log("SDL3/run: %dx%d", xsettings.windowSize[0], xsettings.windowSize[1]);
+		ui::Log("SDL version: %d.%d.%d", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
 
 		m_mte.m_argc = _argc;
 		m_mte.m_argv = _argv;
 
 		SDL_Init(SDL_INIT_GAMEPAD);
+		SDL_SetHint(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, "1");
 
 		m_windowAlloc.alloc();
-		m_window[0] = SDL_CreateWindow("Loading ...", xsettings.windowSize[0], xsettings.windowSize[1], SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_RESIZABLE);
+		m_window[0] = SDL_CreateWindow("Loading ...", xsettings.windowSize[0], xsettings.windowSize[1], SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE);
 
 		int fbWidth, fbHeight;
 		SDL_GetWindowSizeInPixels(m_window[0], &fbWidth, &fbHeight);
@@ -502,8 +504,10 @@ struct Context
 			bx::free(allocator, data);
 		}
 
-		bool      exit = false;
-		SDL_Event event;
+		bool      exit      = false;
+		SDL_Event event     = {};
+		bool      useFinger = false;
+
 		while (!exit)
 		{
 			bgfx::renderFrame();
@@ -520,10 +524,13 @@ struct Context
 				case SDL_EVENT_MOUSE_MOTION:
 				{
 					const SDL_MouseMotionEvent& mev = event.motion;
+					if (mev.which == SDL_TOUCH_MOUSEID)
 					{
-						m_mx = mev.x * xsettings.dpr;
-						m_my = mev.y * xsettings.dpr;
+						ui::Log("Skipping touch-emulated mouse event");
+						break;
 					}
+					m_mx = mev.x * xsettings.dpr;
+					m_my = mev.y * xsettings.dpr;
 
 					WindowHandle handle = findHandle(mev.windowID);
 					if (isValid(handle))
@@ -553,13 +560,13 @@ struct Context
 				break;
 
 				case SDL_EVENT_MOUSE_WHEEL:
+				if (!useFinger)
 				{
 					const SDL_MouseWheelEvent& mev = event.wheel;
 					m_mz += mev.y;
 
 					WindowHandle handle = findHandle(mev.windowID);
-					if (isValid(handle))
-						m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz, false, 0, 0);
+					if (isValid(handle)) m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz, false, 0, 0);
 				}
 				break;
 
@@ -567,8 +574,7 @@ struct Context
 				{
 					const SDL_TextInputEvent& tev    = event.text;
 					WindowHandle              handle = findHandle(tev.windowID);
-					if (isValid(handle))
-						m_eventQueue.postCharEvent(handle, 1, (const uint8_t*)tev.text);
+					if (isValid(handle)) m_eventQueue.postCharEvent(handle, 1, (const uint8_t*)tev.text);
 				}
 				break;
 
@@ -740,6 +746,34 @@ struct Context
 				}
 				break;
 
+				case SDL_EVENT_FINGER_CANCELED:
+				case SDL_EVENT_FINGER_DOWN:
+				case SDL_EVENT_FINGER_MOTION:
+				case SDL_EVENT_FINGER_UP:
+				{
+					static USET_INT64 fingers;
+
+					const auto& fevent = event.tfinger;
+					switch (event.type)
+					{
+					case SDL_EVENT_FINGER_CANCELED:
+					case SDL_EVENT_FINGER_UP:
+						if (auto it = fingers.find(fevent.fingerID); it != fingers.end())
+							fingers.erase(it);
+						break;
+					case SDL_EVENT_FINGER_DOWN:
+						fingers.insert(fevent.fingerID);
+						break;
+					}
+
+					ui::Log("FINGER/%lld: %d tid=%lld fid=%lld x=%f y=%f dx=%f dy=%f p=%f", fingers.size(), fevent.type, fevent.touchID, fevent.fingerID, fevent.x, fevent.y, fevent.dx, fevent.dy, fevent.pressure);
+					useFinger = true;
+
+					WindowHandle handle = findHandle(fevent.windowID);
+					if (isValid(handle)) m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz, false, 0, 0, 1);
+					break;
+				}
+
 				default:
 				{
 					const SDL_UserEvent& uev = event.user;
@@ -750,7 +784,7 @@ struct Context
 						WindowHandle handle = getWindowHandle(uev);
 						Msg*         msg    = (Msg*)uev.data2;
 
-						m_window[handle.idx] = SDL_CreateWindow(msg->m_title.c_str(), msg->m_width, msg->m_height, SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_RESIZABLE);
+						m_window[handle.idx] = SDL_CreateWindow(msg->m_title.c_str(), msg->m_width, msg->m_height, SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE);
 
 						m_flags[handle.idx] = msg->m_flags;
 

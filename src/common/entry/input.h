@@ -1,4 +1,4 @@
-// @version 2025-10-04
+// @version 2025-10-11
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -50,33 +50,6 @@ void inputInit();
 
 ///
 void inputShutdown();
-
-///
-void inputSetKeyState(entry::Key::Enum _key, uint8_t _modifiers, bool _down);
-
-/// Adds single UTF-8 encoded character into input buffer.
-void inputChar(uint8_t _len, const uint8_t _char[4]);
-
-/// Returns single UTF-8 encoded character from input buffer.
-const uint8_t* inputGetChar();
-
-/// Flush internal input buffer.
-void inputCharFlush();
-
-///
-void inputSetMouseResolution(uint16_t _width, uint16_t _height);
-
-///
-void inputSetMousePos(int32_t _mx, int32_t _my, int32_t _mz, bool hasDelta, int32_t _dx, int32_t _dy);
-
-///
-void inputSetMouseButtonState(entry::MouseButton::Enum _button, uint8_t _state);
-
-///
-void inputSetMouseLock(bool _lock);
-
-///
-bool inputIsMouseLocked();
 
 ///
 void inputSetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::Enum _axis, int32_t _value);
@@ -185,7 +158,7 @@ struct GlobalInput
 	void MouseLock(bool lock);
 
 	/// Mouse motion
-	void MouseMove(int mx, int my, int mz, bool hasDelta, int dx, int dy);
+	void MouseMove(int mx, int my, int mz, bool hasDelta, int dx, int dy, int finger);
 
 	/// Pop a char from the ring
 	const uint8_t* PopChar();
