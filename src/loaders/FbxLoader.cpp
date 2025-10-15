@@ -1,6 +1,6 @@
 // FbxLoader.cpp
 // @author octopoulos
-// @version 2025-10-07
+// @version 2025-10-10
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -14,21 +14,28 @@
 // HELPERS
 //////////
 
-// Converts an FBX (Blender) matrix to engine-space matrix
-// Blender: X=Right, Y=Forward, Z=Up (Left-handed)
-// Engine:  X=Right, Y=Up, Z=Forward (Right-handed)
-static glm::mat4 FbxToEngineMatrix(const ofbx::DMatrix& fbxMat)
+/// Converts an FBX (Blender) matrix to engine-space matrix
+/// Blender: X=Right, Y=Forward, Z=Up (Left-handed)
+/// Engine:  X=Right, Y=Up, Z=Forward (Right-handed)
+static glm::mat4 FbxToMatrix(const ofbx::DMatrix& fbxMat)
 {
 	glm::mat4 matrix = glm::make_mat4(fbxMat.m);
 
 	static const glm::mat4 coord = glm::mat4(
-	    1.0f, 0.0f, 0.0f, 0.0f,  // X stays X (right)
-	    0.0f, 0.0f, 1.0f, 0.0f,  // Z -> Y (up)
-	    0.0f, -1.0f, 0.0f, 0.0f, // Y -> -Z (forward)
-	    0.0f, 0.0f, 0.0f, 1.0f);
+		1.0f, 0.0f, 0.0f, 0.0f,  // X stays X (right)
+		0.0f, 0.0f, 1.0f, 0.0f,  // Z -> Y (up)
+		0.0f, -1.0f, 0.0f, 0.0f, // Y -> -Z (forward)
+		0.0f, 0.0f, 0.0f, 1.0f
+	);
 
 	return matrix * coord;
 }
+
+/// Y -> -Z, Z -> Y
+inline glm::vec3 FbxToNormal(const ofbx::Vec3& n) { return glm::normalize(glm::vec3(TO_FLOAT(n.x), TO_FLOAT(n.z), -TO_FLOAT(n.y))); }
+
+/// Y -> -Z, Z -> Y
+inline glm::vec3 FbxToPosition(const ofbx::Vec3& v) { return glm::vec3(TO_FLOAT(v.x), TO_FLOAT(v.z), -TO_FLOAT(v.y)); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // MAIN
@@ -157,8 +164,7 @@ static sMesh CreateNodeMesh(const ofbx::Object* node)
 
 	// set local transform
 	auto      fbxMatrix = node->getLocalTransform();
-	// glm::mat4 glmMatrix = glm::transpose(glm::make_mat4(fbxMatrix.m));
-	glm::mat4 glmMatrix = FbxToEngineMatrix(fbxMatrix);
+	glm::mat4 glmMatrix = FbxToMatrix(fbxMatrix);
 
 	mesh->matrix = glmMatrix;
 	mesh->DecomposeMatrix(0.01f);
@@ -291,14 +297,14 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 				// transform vertex position to Y-up
 				// glm::vec4 transformedPos = coordTransform * glm::vec4(TO_FLOAT(pos.x), TO_FLOAT(pos.y), TO_FLOAT(pos.z), 1.0f);
 
-				vertex.position = glm::vec3(TO_FLOAT(pos.x), TO_FLOAT(pos.y), TO_FLOAT(pos.z));
+				vertex.position = FbxToPosition(pos);
 				// vertex.position = glm::vec3(transformedPos);
 				vpositions.push_back({ vertex.position.x, vertex.position.y, vertex.position.z });
 
 				if (normals.values && vertexId < normals.count)
 				{
 					ofbx::Vec3 norm = normals.get(vertexId);
-					vertex.normal   = glm::vec3(TO_FLOAT(norm.x), TO_FLOAT(norm.y), TO_FLOAT(norm.z));
+					vertex.normal   = FbxToNormal(norm);
 				}
 				if (uvs.values && vertexId < uvs.count)
 				{

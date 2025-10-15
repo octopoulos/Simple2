@@ -1,20 +1,22 @@
 // common3d.cpp
 // @author octopoulos
-// @version 2025-10-04
+// @version 2025-10-10
 
 #include "stdafx.h"
 #include "core/common3d.h"
 
 void DecomposeMatrix(const glm::mat4& matrix, glm::vec3& position, glm::quat& quaternion, glm::vec3& scale, float scaleRatio)
 {
+	// 1) scale matrix
+	glm::mat4 scaled = (scaleRatio != 1.0f) ? glm::scale(glm::mat4(1.0f), glm::vec3(scaleRatio)) * matrix : matrix;
+
 	// extract position (translation)
-	position = glm::vec3(matrix[3]);
+	position = glm::vec3(scaled[3]);
 
 	// extract scale from basis vectors
-	scale.x = glm::length(glm::vec3(matrix[0]));
-	scale.y = glm::length(glm::vec3(matrix[1]));
-	scale.z = glm::length(glm::vec3(matrix[2]));
-	scale *= scaleRatio;
+	scale.x = glm::length(glm::vec3(scaled[0]));
+	scale.y = glm::length(glm::vec3(scaled[1]));
+	scale.z = glm::length(glm::vec3(scaled[2]));
 
 	// avoid division by zero
 	if (scale.x == 0.0f) scale.x = 1.0f;
@@ -23,9 +25,9 @@ void DecomposeMatrix(const glm::mat4& matrix, glm::vec3& position, glm::quat& qu
 
 	// extract rotation matrix by removing scale
 	glm::mat3 rotationMatrix(
-	    glm::vec3(matrix[0]) / scale.x,
-	    glm::vec3(matrix[1]) / scale.y,
-	    glm::vec3(matrix[2]) / scale.z);
+	    glm::vec3(scaled[0]) / scale.x,
+	    glm::vec3(scaled[1]) / scale.y,
+	    glm::vec3(scaled[2]) / scale.z);
 
 	// convert to quaternion
 	quaternion = glm::normalize(glm::quat_cast(rotationMatrix));
