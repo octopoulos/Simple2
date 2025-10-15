@@ -645,7 +645,7 @@ bool processEvents(uint32_t& _width, uint32_t& _height, uint32_t& _debug, uint32
 				const MouseEvent* mouse = static_cast<const MouseEvent*>(ev);
 				handle                  = mouse->m_handle;
 
-				GetGlobalInput().MouseMove(mouse->m_mx, mouse->m_my, mouse->m_mz, mouse->hasDelta, mouse->m_dx, mouse->m_dy, mouse->finger);
+				GetGlobalInput().MouseMove(mouse->device, mouse->finger, mouse->m_mx, mouse->m_my, mouse->m_mz, mouse->hasDelta, mouse->m_dx, mouse->m_dy, 1.0f);
 				if (!mouse->m_move)
 					GetGlobalInput().MouseButton(mouse->m_button, mouse->m_down);
 
@@ -791,7 +791,7 @@ bool processWindowEvents(WindowState& _state, uint32_t& _debug, uint32_t& _reset
 				win.m_handle            = mouse->m_handle;
 
 				if (mouse->m_move)
-					GetGlobalInput().MouseMove(mouse->m_mx, mouse->m_my, mouse->m_mz, mouse->hasDelta, mouse->m_dx, mouse->m_dy, mouse->finger);
+					GetGlobalInput().MouseMove(mouse->device, mouse->finger, mouse->m_mx, mouse->m_my, mouse->m_mz, mouse->hasDelta, mouse->m_dx, mouse->m_dy, 1.0f);
 				else
 					GetGlobalInput().MouseButton(mouse->m_button, mouse->m_down);
 

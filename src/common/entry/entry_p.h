@@ -153,16 +153,18 @@ struct MouseEvent : public Event
 {
 	ENTRY_IMPLEMENT_EVENT(MouseEvent, Event::Mouse);
 
-	int               finger;
-	bool              hasDelta;
-	int32_t           m_dx;
-	int32_t           m_dy;
-	int32_t           m_mx;
-	int32_t           m_my;
-	int32_t           m_mz;
-	MouseButton::Enum m_button;
-	bool              m_down;
-	bool              m_move;
+	uint64_t          device;   ///< device ID
+	uint64_t          finger;   ///< finger ID
+	bool              hasDelta; ///
+	int32_t           m_dx;     ///
+	int32_t           m_dy;     ///
+	int32_t           m_mx;     ///
+	int32_t           m_my;     ///
+	int32_t           m_mz;     ///
+	MouseButton::Enum m_button; ///
+	bool              m_down;   ///
+	bool              m_move;   ///
+	float             pressure; ///< finger pressure
 };
 
 struct SizeEvent : public Event
@@ -252,9 +254,10 @@ public:
 		m_queue.push(ev);
 	}
 
-	void postMouseEvent(WindowHandle _handle, int32_t _mx, int32_t _my, int32_t _mz, bool hasDelta, int32_t _dx, int32_t _dy, int finger = -1)
+	void postMouseEvent(WindowHandle _handle, int32_t _mx, int32_t _my, int32_t _mz, bool hasDelta, int32_t _dx, int32_t _dy, float pressure = 1.0f, uint64_t device = 0, uint64_t finger = 0)
 	{
 		MouseEvent* ev = BX_NEW(getAllocator(), MouseEvent)(_handle);
+		ev->device     = device;
 		ev->finger     = finger;
 		ev->hasDelta   = hasDelta;
 		ev->m_dx       = _dx;
@@ -265,13 +268,13 @@ public:
 		ev->m_button   = MouseButton::None;
 		ev->m_down     = false;
 		ev->m_move     = true;
+		ev->pressure   = pressure;
 		m_queue.push(ev);
 	}
 
-	void postMouseEvent(WindowHandle _handle, int32_t _mx, int32_t _my, int32_t _mz, MouseButton::Enum _button, bool _down, int finger = -1)
+	void postMouseEvent(WindowHandle _handle, int32_t _mx, int32_t _my, int32_t _mz, MouseButton::Enum _button, bool _down)
 	{
 		MouseEvent* ev = BX_NEW(getAllocator(), MouseEvent)(_handle);
-		ev->finger     = finger;
 		ev->m_mx       = _mx;
 		ev->m_my       = _my;
 		ev->m_mz       = _mz;

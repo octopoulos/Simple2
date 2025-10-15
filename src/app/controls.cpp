@@ -264,7 +264,7 @@ void App::FixedControls()
 void App::FluidControls()
 {
 	auto& ginput = GetGlobalInput();
-	ginput.MouseDeltas();
+	ginput.ComputeDeltas();
 
 	const auto&    ignores  = ginput.keyIgnores;
 	const ImGuiIO& io       = ImGui::GetIO();
@@ -274,11 +274,13 @@ void App::FluidControls()
 	{
 		if (!io.WantCaptureMouse)
 		{
+			const Finger& mouse = ginput.GetMouse();
+
 			if ((ginput.buttons[1] || ginput.buttons[2]) || ginput.mouseLock)
-				camera->Orbit(ginput.mouseRels2[0], ginput.mouseRels2[1]);
+				camera->Orbit(mouse.rels2[0], mouse.rels2[1]);
 
 			// typical value: 0.008333325
-			if (float wheel = ginput.mouseRels2[2])
+			if (float wheel = mouse.rels2[2])
 			{
 				wheel *= xsettings.zoomWheel;
 				if (wheel > 0)

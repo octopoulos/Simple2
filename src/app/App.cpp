@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-10-06
+// @version 2025-10-11
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -616,7 +616,7 @@ public:
 		{
 			const auto& buttons  = ginput.buttons;
 			const auto  imButton = (buttons[1] ? IMGUI_MBUT_LEFT : 0) | (buttons[3] ? IMGUI_MBUT_RIGHT : 0) | (buttons[2] ? IMGUI_MBUT_MIDDLE : 0);
-			const auto& mouseAbs = ginput.mouseAbs;
+			const auto& mouseAbs = ginput.GetMouse().abs;
 
 			imguiBeginFrame(mouseAbs[0], mouseAbs[1], imButton, mouseAbs[2], uint16_t(fwidth), uint16_t(fheight), ginput.lastAscii);
 			{

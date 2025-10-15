@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-10-06
+// @version 2025-10-11
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -349,10 +349,10 @@ void App::PickObject(int numClick, int mouseX, int mouseY)
 
 	if (mouseX == -9999 && mouseY == -9999)
 	{
-		const auto& ginput = GetGlobalInput();
+		const Finger& mouse = GetGlobalInput().GetMouse();
 
-		mouseX = ginput.mouseAbs[0];
-		mouseY = ginput.mouseAbs[1];
+		mouseX = mouse.abs[0];
+		mouseY = mouse.abs[1];
 	}
 	ui::Log("PickObject/%d: Mouse (%d, %d)", numClick, mouseX, mouseY);
 

@@ -82,6 +82,39 @@ int32_t inputGetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::En
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FINGER
+/////////
+
+void Finger::ComputeDeltas()
+{
+	rels2[0] = rels[0] - rels0[0];
+	rels2[1] = rels[1] - rels0[1];
+	rels2[2] = rels[2] - rels0[2];
+	memcpy(rels0, rels, sizeof(rels));
+}
+
+void Finger::Update(int mx, int my, int mz, bool hasDelta, int dx, int dy, float pressure_, const float* resolution)
+{
+	abs[0]   = mx;
+	abs[1]   = my;
+	abs[2]   = mz;
+	pressure = pressure_;
+	rels[0]  = TO_FLOAT(mx) / resolution[0];
+	rels[1]  = TO_FLOAT(my) / resolution[1];
+	rels[2]  = TO_FLOAT(mz) / resolution[2];
+
+	// relative motion?
+	if (hasDelta)
+	{
+		rels0[0] = TO_FLOAT(mx - dx) / resolution[0];
+		rels0[1] = TO_FLOAT(my - dy) / resolution[1];
+	}
+
+	if (!frame) memcpy(rels0, rels, sizeof(rels));
+	++frame;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // GlobalInput
 //////////////
 
@@ -236,6 +269,15 @@ void GlobalInput::BeginFrame()
 	}
 }
 
+void GlobalInput::ComputeDeltas()
+{
+	for (auto& [did, device] : devices)
+	{
+		for (auto& [fid, finger] : device.fingers)
+			finger.ComputeDeltas();
+	}
+}
+
 std::pair<int, int> GlobalInput::DecodeKey(int keyMod)
 {
 	return { keyMod & 4095, keyMod >> 12 };
@@ -354,6 +396,7 @@ void GlobalInput::MouseButton(int button, uint8_t state)
 {
 	if (button >= 0 && button < 8 && buttons[button] != state)
 	{
+		Finger&       mouse = GetMouse();
 		const int64_t nowMs = NowMs();
 		if (state)
 		{
@@ -371,7 +414,7 @@ void GlobalInput::MouseButton(int button, uint8_t state)
 		else
 		{
 			buttonUps[button] = true;
-			const float dist = bx::distance(bx::load<bx::Vec3>(mouseRels), bx::load<bx::Vec3>(mouseRels0)) * 100.0f;
+			const float dist = bx::distance(bx::load<bx::Vec3>(mouse.rels), bx::load<bx::Vec3>(mouse.rels0)) * 100.0f;
 			if (xsettings.clickDist <= 0 || dist < xsettings.clickDist)
 			{
 				if (nowMs < buttonTimes[button] + xsettings.clickOne)
@@ -387,20 +430,10 @@ void GlobalInput::MouseButton(int button, uint8_t state)
 		buttonTimes[button] = nowMs;
 
 		// reset initial position when clicking
-		mouseRels0[0] = mouseRels[0];
-		mouseRels0[1] = mouseRels[1];
-		mouseRels0[2] = mouseRels[2];
+		mouse.rels0[0] = mouse.rels[0];
+		mouse.rels0[1] = mouse.rels[1];
+		mouse.rels0[2] = mouse.rels[2];
 	}
-}
-
-void GlobalInput::MouseDeltas()
-{
-	mouseRels2[0] = mouseRels[0] - mouseRels0[0];
-	mouseRels2[1] = mouseRels[1] - mouseRels0[1];
-	mouseRels2[2] = mouseRels[2] - mouseRels0[2];
-	mouseRels0[0] = mouseRels[0];
-	mouseRels0[1] = mouseRels[1];
-	mouseRels0[2] = mouseRels[2];
 }
 
 void GlobalInput::MouseLock(bool lock)
@@ -412,24 +445,14 @@ void GlobalInput::MouseLock(bool lock)
 	}
 }
 
-void GlobalInput::MouseMove(int mx, int my, int mz, bool hasDelta, int dx, int dy, int finger)
+void GlobalInput::MouseMove(uint64_t deviceId, uint64_t fingerId, int mx, int my, int mz, bool hasDelta, int dx, int dy, float pressure)
 {
-	mouseAbs[0]  = mx;
-	mouseAbs[1]  = my;
-	mouseAbs[2]  = mz;
-	mouseRels[0] = TO_FLOAT(mx) / resolution[0];
-	mouseRels[1] = TO_FLOAT(my) / resolution[1];
-	mouseRels[2] = TO_FLOAT(mz) / resolution[2];
+	Device& device = devices[deviceId];
+	Finger& finger = device.fingers[fingerId];
+	finger.Update(mx, my, mz, hasDelta, dx, dy, pressure, resolution);
 
-	// relative motion?
-	if (hasDelta)
-	{
-		mouseRels0[0] = TO_FLOAT(mx - dx) / resolution[0];
-		mouseRels0[1] = TO_FLOAT(my - dy) / resolution[1];
-	}
+	ui::Log("MouseMove: %lld/%lld/%lld %d,%d,%d %d %d,%d,%f", deviceId, fingerId, device.fingers.size(), mx, my, mz, hasDelta, dx, dy, pressure);
 
-	if (!mouseFrame) memcpy(mouseRels0, mouseRels, sizeof(mouseRels));
-	++mouseFrame;
 }
 
 const uint8_t* GlobalInput::PopChar()
@@ -511,15 +534,10 @@ void GlobalInput::Reset()
 	memset(keyRepeats  , 0, sizeof(keyRepeats  ));
 	memset(keys        , 0, sizeof(keys        ));
 	memset(keyTimes    , 0, sizeof(keyTimes    ));
-	memset(mouseAbs    , 0, sizeof(mouseAbs    ));
-	memset(mouseAbs2   , 0, sizeof(mouseAbs2   ));
-	memset(mouseRels   , 0, sizeof(mouseRels   ));
-	memset(mouseRels0  , 0, sizeof(mouseRels0  ));
-	memset(mouseRels2  , 0, sizeof(mouseRels2  ));
 	// clang-format on
 
+	devices.clear();
 	keyChangeId = 0;
-	mouseFrame  = 0;
 	mouseLock   = false;
 
 	BeginFrame();

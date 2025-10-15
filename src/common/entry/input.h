@@ -58,6 +58,35 @@ void inputSetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::Enum 
 int32_t inputGetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::Enum _axis);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FINGER
+/////////
+
+struct Finger
+{
+	int     abs[3]   = {};    ///< x, y, z/pressure - direct access
+	bool    down     = false; ///< pushed down?
+	int64_t downTime = 0;     ///< when was it pushed
+	int     frame    = 0;     ///< used to initialize rels0 on the first frame
+	float   pressure = 0.0f;  ///< finger pressure
+	float   rels[3]  = {};    ///< normalized x, y, z
+	float   rels0[3] = {};    ///< previous frame normalized
+	float   rels2[3] = {};    ///< deltas between frames
+
+	/// Compute finger deltas
+	/// - call this every frame
+	void ComputeDeltas();
+
+	/// Finger/mouse action
+	void Update(int mx, int my, int mz, bool hasDelta, int dx, int dy, float pressure = 0.0f, const float* resolution = nullptr);
+};
+
+struct Device
+{
+	uint64_t               id      = 0;  ///< 0: mouse, 1+: other devices
+	UMAP<uint64_t, Finger> fingers = {}; ///< fingers (trackpad)
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // GlobalInput
 //////////////
 
@@ -85,34 +114,28 @@ struct KeyState
 
 struct GlobalInput
 {
-	int64_t  buttonClicks[8] = {};                          ///< mouse click times
-	int      buttonCounts[8] = {};                          ///< how many times the button was pushed
-	bool     buttonDowns[8]  = {};                          ///< mouse buttons pushed this frame
-	bool     buttonOnes[8]   = {};                          ///< mouse single clicks
-	uint8_t  buttons[8]      = {};                          ///< mouse buttons pushed
-	int64_t  buttonTimes[8]  = {};                          ///< when the button was pushed last time (in ms)
-	bool     buttonTwos[8]   = {};                          ///< mouse double clicks
-	bool     buttonUps[8]    = {};                          ///< mouse buttons released this frame
-	int      keyChangeId     = 0;                           ///< index of current history
-	KeyState keyChanges[128] = {};                          ///< history of key changes
-	bool     keyDowns[256]   = {};                          ///< keys pushed this frame
-	bool     keyIgnores[256] = {};                          ///< keys to ignore (ex: already handled by RubikCube)
-	int64_t  keyRepeats[256] = {};                          ///< last repeat time (in ms)
-	bool     keys[256]       = {};                          ///< keys pushed
-	int64_t  keyTimes[256]   = {};                          ///< when the key was pushed last time (in ms)
-	bool     keyUps[256]     = {};                          ///< keys released this frame
-	int      lastAscii       = -1;                          ///< last ascii char pushed
-	int      lastKey         = 0;                           ///< last key pushed
-	int      mouseAbs[3]     = {};                          ///< mouse absolute coordinates
-	int      mouseAbs2[3]    = {};                          ///< mouse absolute coordinates: deltas
-	int      mouseFrame      = 0;                           ///< mouse input frame
-	bool     mouseLock       = false;                       ///< mouse is locked?
-	float    mouseDeltas[3]  = {};                          ///< mouse changes
-	float    mouseRels[3]    = {};                          ///< mouse relative coordinates
-	float    mouseRels0[3]   = {};                          ///< mouse relative coordinates: previous
-	float    mouseRels2[3]   = {};                          ///< mouse relative coordinates: deltas
-	int64_t  nowMs           = 0;                           ///< current timestamp (in ms)
-	float    resolution[3]   = { 1280.0f, 720.0f, 120.0f }; ///< used to normalize mouse coords
+	int64_t                buttonClicks[8] = {};                          ///< mouse click times
+	int                    buttonCounts[8] = {};                          ///< how many times the button was pushed
+	bool                   buttonDowns[8]  = {};                          ///< mouse buttons pushed this frame
+	bool                   buttonOnes[8]   = {};                          ///< mouse single clicks
+	uint8_t                buttons[8]      = {};                          ///< mouse buttons pushed
+	int64_t                buttonTimes[8]  = {};                          ///< when the button was pushed last time (in ms)
+	bool                   buttonTwos[8]   = {};                          ///< mouse double clicks
+	bool                   buttonUps[8]    = {};                          ///< mouse buttons released this frame
+	UMAP<uint64_t, Device> devices         = {};                          ///< devices, 0: mouse, 1+: others
+	int                    keyChangeId     = 0;                           ///< index of current history
+	KeyState               keyChanges[128] = {};                          ///< history of key changes
+	bool                   keyDowns[256]   = {};                          ///< keys pushed this frame
+	bool                   keyIgnores[256] = {};                          ///< keys to ignore (ex: already handled by RubikCube)
+	int64_t                keyRepeats[256] = {};                          ///< last repeat time (in ms)
+	bool                   keys[256]       = {};                          ///< keys pushed
+	int64_t                keyTimes[256]   = {};                          ///< when the key was pushed last time (in ms)
+	bool                   keyUps[256]     = {};                          ///< keys released this frame
+	int                    lastAscii       = -1;                          ///< last ascii char pushed
+	int                    lastKey         = 0;                           ///< last key pushed
+	bool                   mouseLock       = false;                       ///< mouse is locked?
+	int64_t                nowMs           = 0;                           ///< current timestamp (in ms)
+	float                  resolution[3]   = { 1280.0f, 720.0f, 120.0f }; ///< used to normalize mouse coords
 
 	// char ring
 	uint8_t               chars[256] = {};
@@ -127,6 +150,10 @@ struct GlobalInput
 	/// + executed every frame
 	void BeginFrame();
 
+	/// Compute all finger deltas
+	/// - call this every frame
+	void ComputeDeltas();
+
 	/// Decode encoded to key, modifier
 	static std::pair<int, int> DecodeKey(int keyMod);
 
@@ -135,6 +162,9 @@ struct GlobalInput
 
 	/// Reset the char ring
 	void FlushChar();
+
+	/// Get the mouse (device 0, finger 0)
+	Finger& GetMouse() { return devices[0].fingers[0]; }
 
 	/// Check the global modifier, or if the key is a modifier
 	/// @param key: 0 for global modifier
@@ -150,15 +180,11 @@ struct GlobalInput
 	/// Mouse button change
 	void MouseButton(int button, uint8_t state);
 
-	/// Compute mouse deltas
-	/// - call this every frame
-	void MouseDeltas();
-
 	/// Mouse locked or unlocked
 	void MouseLock(bool lock);
 
-	/// Mouse motion
-	void MouseMove(int mx, int my, int mz, bool hasDelta, int dx, int dy, int finger);
+	/// Mouse motion / trackpad action
+	void MouseMove(uint64_t deviceId, uint64_t fingerId, int mx, int my, int mz, bool hasDelta, int dx, int dy, float pressure);
 
 	/// Pop a char from the ring
 	const uint8_t* PopChar();
