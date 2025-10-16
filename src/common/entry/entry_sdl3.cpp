@@ -457,6 +457,8 @@ struct Context
 		m_mte.m_argv = _argv;
 
 		SDL_Init(SDL_INIT_GAMEPAD);
+		SDL_SetHint(SDL_HINT_MOUSE_TOUCH_EVENTS, "0");
+		SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
 		SDL_SetHint(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, "1");
 
 		m_windowAlloc.alloc();
