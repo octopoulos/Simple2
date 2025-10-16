@@ -1,4 +1,4 @@
-// @version 2025-10-11
+// @version 2025-10-12
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -11,6 +11,15 @@
 #include <bx/ringbuffer.h>
 
 typedef void (*InputBindingFn)(const void* _userData);
+
+enum Gestures_ : int
+{
+	Gesture_None     = 0,
+	Gesture_Parallel = 1,
+	Gesture_Zoom     = 2,
+	Gesture_ZoomIn   = 4 | Gesture_Zoom,
+	Gesture_ZoomOut  = 8 | Gesture_Zoom,
+};
 
 struct InputBinding
 {
@@ -82,7 +91,14 @@ struct Finger
 
 struct Device
 {
-	MAP<uint64_t, Finger> fingers = {}; ///< fingers (trackpad)
+	MAP<uint64_t, Finger> fingers   = {}; ///< fingers (trackpad)
+	int                   gesture   = 0;  ///< Gestures_
+	float                 motion[3] = {}; ///< average motion vector
+
+	/// Calculate average motion
+	/// + check if all fingers move in the same direction
+	/// + check if (2) fingers go in opposite directions
+	void CalculateMotion();
 
 	/// Remove a finger
 	void RemoveFinger(uint64_t fingerId);
@@ -134,6 +150,7 @@ struct GlobalInput
 	int64_t               keyTimes[256]   = {};                          ///< when the key was pushed last time (in ms)
 	bool                  keyUps[256]     = {};                          ///< keys released this frame
 	int                   lastAscii       = -1;                          ///< last ascii char pushed
+	uint64_t              lastDevice      = 0;                           ///< last used device other than mouse
 	int                   lastKey         = 0;                           ///< last key pushed
 	bool                  mouseLock       = false;                       ///< mouse is locked?
 	int64_t               nowMs           = 0;                           ///< current timestamp (in ms)

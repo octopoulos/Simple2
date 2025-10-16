@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-10-11
+// @version 2025-10-12
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -278,6 +278,41 @@ void App::FluidControls()
 
 			if ((ginput.buttons[1] || ginput.buttons[2]) || ginput.mouseLock)
 				camera->Orbit(mouse.rels2[0], mouse.rels2[1]);
+
+			if (ginput.lastDevice)
+			{
+				if (const auto device = ginput.devices[ginput.lastDevice]; device.fingers.size() >= 2)
+				{
+					const auto& motion = device.motion;
+
+					switch (device.gesture)
+					{
+					case Gesture_Parallel:
+						// left/down = zoom in
+						// right/up  = zoom out
+						if (modifier & Modifier_Ctrl)
+						{
+							const int sign = (bx::abs(motion[0]) > bx::abs(motion[1])) ? -bx::sign(motion[0]) : bx::sign(motion[1]);
+							camera->ZoomSigned(bx::length(bx::load<bx::Vec3>(motion)) * xsettings.zoomWheel * sign);
+						}
+						else if (modifier & Modifier_Shift)
+						{
+							camera->Move(CameraDir_Right, -motion[0] * xsettings.panTrack);
+							camera->Move(CameraDir_Up, motion[1] * xsettings.panTrack);
+						}
+						else camera->Orbit(motion[0], motion[1]);
+						break;
+					case Gesture_ZoomIn:
+					case Gesture_ZoomOut:
+					{
+						const int sign = (device.gesture == Gesture_ZoomOut) ? -1 : 1;
+						camera->ZoomSigned(bx::length(bx::load<bx::Vec3>(motion)) * xsettings.zoomTrack * sign);
+						break;
+					}
+					default: break;
+					}
+				}
+			}
 
 			// typical value: 0.008333325
 			if (float wheel = mouse.rels2[2])

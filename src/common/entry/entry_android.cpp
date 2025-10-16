@@ -1,4 +1,4 @@
-// @version 2025-07-25
+// @version 2025-10-12
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -368,12 +368,12 @@ struct Context
 					{
 					case AMOTION_EVENT_ACTION_DOWN:
 					case AMOTION_EVENT_ACTION_POINTER_DOWN:
-						m_eventQueue.postMouseEvent(defaultWindow, (int32_t)mx, (int32_t)my, 0, action == AMOTION_EVENT_ACTION_DOWN ? MouseButton::Left : MouseButton::Right, true);
+						m_eventQueue.postMouseEvent(defaultWindow, mx, my, 0, action == AMOTION_EVENT_ACTION_DOWN ? MouseButton::Left : MouseButton::Right, true);
 						break;
 
 					case AMOTION_EVENT_ACTION_UP:
 					case AMOTION_EVENT_ACTION_POINTER_UP:
-						m_eventQueue.postMouseEvent(defaultWindow, (int32_t)mx, (int32_t)my, 0, action == AMOTION_EVENT_ACTION_UP ? MouseButton::Left : MouseButton::Right, false);
+						m_eventQueue.postMouseEvent(defaultWindow, mx, my, 0, action == AMOTION_EVENT_ACTION_UP ? MouseButton::Left : MouseButton::Right, false);
 						break;
 
 					default:
@@ -385,7 +385,7 @@ struct Context
 				{
 				case AMOTION_EVENT_ACTION_MOVE:
 					if (0 == index)
-						m_eventQueue.postMouseEvent(defaultWindow, (int32_t)mx, (int32_t)my, 0, false, 0, 0);
+						m_eventQueue.postMouseEvent(defaultWindow, mx, my, 0, false, 0, 0);
 					break;
 
 				default: break;

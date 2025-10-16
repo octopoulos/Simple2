@@ -1,4 +1,4 @@
-// @version 2025-10-11
+// @version 2025-10-12
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -156,11 +156,11 @@ struct MouseEvent : public Event
 	uint64_t          device   = 0;                       ///< device ID
 	uint64_t          finger   = 0;                       ///< finger ID
 	bool              hasDelta = false;                   ///
-	int32_t           m_dx     = 0;                       ///
-	int32_t           m_dy     = 0;                       ///
-	int32_t           m_mx     = 0;                       ///
-	int32_t           m_my     = 0;                       ///
-	int32_t           m_mz     = 0;                       ///
+	float             m_dx     = 0;                       ///
+	float             m_dy     = 0;                       ///
+	float             m_mx     = 0;                       ///
+	float             m_my     = 0;                       ///
+	float             m_mz     = 0;                       ///
 	MouseButton::Enum m_button = MouseButton::Enum::None; ///
 	bool              m_down   = false;                   ///
 	bool              m_move   = false;                   ///
@@ -254,7 +254,7 @@ public:
 		m_queue.push(ev);
 	}
 
-	void postMouseEvent(WindowHandle _handle, int32_t _mx, int32_t _my, int32_t _mz, bool hasDelta, int32_t _dx, int32_t _dy, float pressure = 1.0f, uint64_t device = 0, uint64_t finger = 0)
+	void postMouseEvent(WindowHandle _handle, float _mx, float _my, float _mz, bool hasDelta, float _dx, float _dy, float pressure = 1.0f, uint64_t device = 0, uint64_t finger = 0)
 	{
 		MouseEvent* ev = BX_NEW(getAllocator(), MouseEvent)(_handle);
 		ev->device     = device;
@@ -272,7 +272,7 @@ public:
 		m_queue.push(ev);
 	}
 
-	void postMouseEvent(WindowHandle _handle, int32_t _mx, int32_t _my, int32_t _mz, MouseButton::Enum _button, bool _down)
+	void postMouseEvent(WindowHandle _handle, float _mx, float _my, float _mz, MouseButton::Enum _button, bool _down)
 	{
 		MouseEvent* ev = BX_NEW(getAllocator(), MouseEvent)(_handle);
 		ev->m_mx       = _mx;

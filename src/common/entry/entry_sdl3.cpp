@@ -1,6 +1,6 @@
 // entry_sdl3.cpp
 // @author octopoulos
-// @version 2025-10-11
+// @version 2025-10-12
 
 #include "stdafx.h"
 #include "entry_p.h"
@@ -765,7 +765,7 @@ struct Context
 					// if (isValid(handle))
 					{
 						// ui::Log("FINGER %d tid=%x fid=%x x=%f y=%f dx=%f dy=%f p=%f", fevent.type, fevent.touchID, fevent.fingerID, fevent.x, fevent.y, fevent.dx, fevent.dy, pressure);
-						m_eventQueue.postMouseEvent(handle, 0, 0, 0, true, TO_INT(fevent.dx * xsettings.windowSize[0]), TO_INT(fevent.dy * xsettings.windowSize[1]), pressure, fevent.touchID, fevent.fingerID);
+						m_eventQueue.postMouseEvent(handle, fevent.x * xsettings.windowSize[0], fevent.y * xsettings.windowSize[1], 0, true, fevent.dx * xsettings.windowSize[0], fevent.dy * xsettings.windowSize[1], pressure, fevent.touchID, fevent.fingerID);
 					}
 
 					useFinger = true;

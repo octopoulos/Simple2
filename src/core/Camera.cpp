@@ -1,6 +1,6 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-10-04
+// @version 2025-10-12
 
 #include "stdafx.h"
 #include "core/Camera.h"
@@ -173,4 +173,12 @@ void Camera::Zoom(float ratio)
 	distance = xsettings.distance;
 	pos2     = bx::mad(forward2, -distance, target2);
 	follow |= CameraFollow_Active;
+}
+
+void Camera::ZoomSigned(float amount)
+{
+	if (amount > 0)
+		Zoom(1.0f / (1.0f + amount));
+	else
+		Zoom(1.0f - amount);
 }

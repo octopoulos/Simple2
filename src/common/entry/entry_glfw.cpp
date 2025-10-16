@@ -1,4 +1,4 @@
-// @version 2025-09-29
+// @version 2025-10-12
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -648,13 +648,13 @@ void Context::scrollCb(GLFWwindow* _window, double _dx, double _dy)
 	double       mx, my;
 	glfwGetCursorPos(_window, &mx, &my);
 	s_ctx.m_scrollPos += _dy;
-	s_ctx.m_eventQueue.postMouseEvent(handle, (int32_t)(mx * xsettings.dpr), (int32_t)(my * xsettings.dpr), (int32_t)s_ctx.m_scrollPos, false, 0, 0);
+	s_ctx.m_eventQueue.postMouseEvent(handle, mx * xsettings.dpr, my * xsettings.dpr, s_ctx.m_scrollPos, false, 0, 0);
 }
 
 void Context::cursorPosCb(GLFWwindow* _window, double _mx, double _my)
 {
 	WindowHandle handle = s_ctx.findHandle(_window);
-	s_ctx.m_eventQueue.postMouseEvent(handle, (int32_t)(_mx * xsettings.dpr), (int32_t)(_my * xsettings.dpr), (int32_t)s_ctx.m_scrollPos, false, 0, 0);
+	s_ctx.m_eventQueue.postMouseEvent(handle, _mx * xsettings.dpr, _my * xsettings.dpr, s_ctx.m_scrollPos, false, 0, 0);
 }
 
 void Context::mouseButtonCb(GLFWwindow* _window, int32_t _button, int32_t _action, int32_t _mods)
@@ -664,7 +664,7 @@ void Context::mouseButtonCb(GLFWwindow* _window, int32_t _button, int32_t _actio
 	bool         down   = _action == GLFW_PRESS;
 	double       mx, my;
 	glfwGetCursorPos(_window, &mx, &my);
-	s_ctx.m_eventQueue.postMouseEvent(handle, (int32_t)(mx * xsettings.dpr), (int32_t)(my * xsettings.dpr), (int32_t)s_ctx.m_scrollPos, translateMouseButton(_button), down);
+	s_ctx.m_eventQueue.postMouseEvent(handle, mx * xsettings.dpr, my * xsettings.dpr, s_ctx.m_scrollPos, translateMouseButton(_button), down);
 }
 
 void Context::windowSizeCb(GLFWwindow* _window, int32_t _width, int32_t _height)

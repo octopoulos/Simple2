@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-10-06
+// @version 2025-10-12
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -111,7 +111,9 @@ public:
 			AddSliderInt(0, "clickTwo", "Click Two");
 			AddSliderInt(0, "keyInit", "Key Initial");
 			AddSliderInt(0, "keyRepeat", "Key Repeat");
+			AddDragFloat(0, "panTrack", "Pan Track", nullptr);
 			AddDragFloat(0, "zoomKb", "Zoom Keyboard", nullptr);
+			AddDragFloat(0, "zoomTrack", "Zoom Track", nullptr);
 			AddDragFloat(0, "zoomWheel", "Zoom Wheel", nullptr);
 			END_COLLAPSE();
 		}

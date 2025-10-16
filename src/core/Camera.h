@@ -1,6 +1,6 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-10-03
+// @version 2025-10-12
 
 #pragma once
 
@@ -97,4 +97,7 @@ public:
 
 	/// Adjust zoom + distance
 	void Zoom(float ratio = 1.0f);
+
+	/// Zoom by a signed amount
+	void ZoomSigned(float amount);
 };

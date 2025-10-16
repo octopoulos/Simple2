@@ -1,4 +1,4 @@
-// @version 2025-10-11
+// @version 2025-10-12
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -118,6 +118,79 @@ void Finger::Update(int mx, int my, int mz, bool hasDelta, int dx, int dy, float
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DEVICE
 /////////
+
+void Device::CalculateMotion()
+{
+	gesture   = Gesture_None;
+	motion[0] = 0.0f;
+	motion[1] = 0.0f;
+	motion[2] = 0.0f;
+
+	int count = 0;
+
+	if (fingers.size())
+	{
+		float ax0 = 0.0f;
+		float ay0 = 0.0f;
+		float x0  = 0.0f;
+		float y0  = 0.0f;
+
+		for (int id = -1; const auto& [fid, finger] : fingers)
+		{
+			++id;
+			const float x1 = finger.rels2[0];
+			const float y1 = finger.rels2[1];
+			motion[0] += x1;
+			motion[1] += y1;
+
+			// ignore fingers not moving
+			if (x1 == 0.0f && y1 == 0.0f) continue;
+			++count;
+
+			// 1st finger
+			if (count == 1)
+			{
+				ax0 = finger.rels0[0];
+				ay0 = finger.rels0[1];
+				x0  = x1;
+				y0  = y1;
+			}
+			// other fingers are compared to the 1st finger
+			else
+			{
+				const float dotX = x0 * x1;
+				const float dotY = y0 * y1;
+				if (dotX >=0 || dotY >= 0)
+				{
+					if ((dotX >= 0 && dotY >= 0) || (dotX >= 0 && dotX > bx::abs(dotY) * 5.0f) || (dotY >= 0 && dotY > bx::abs(dotX) * 5.0f))
+						gesture = Gesture_Parallel;
+				}
+				else if (dotX <= 0 && dotY <= 0)
+				{
+					gesture = Gesture_Zoom;
+					const float ax1 = finger.rels0[0];
+					const float ay1 = finger.rels0[1];
+
+					// distance before/after
+					const float dist0 = bx::distanceSq(bx::Vec3(ax0     , ay0     , 0.0f), bx::Vec3(ax1     , ay1     , 0.0f));
+					const float dist1 = bx::distanceSq(bx::Vec3(ax0 + x0, ay0 + y0, 0.0f), bx::Vec3(ax1 + x1, ay1 + y1, 0.0f));
+
+					if (dist1 > dist0)
+						gesture |= Gesture_ZoomIn;
+					else if (dist1 < dist0)
+						gesture |= Gesture_ZoomOut;
+				}
+			}
+		}
+
+		// normalize motion
+		if (count > 1)
+		{
+			motion[0] /= count;
+			motion[1] /= count;
+		}
+	}
+}
 
 void Device::RemoveFinger(uint64_t fingerId)
 {
@@ -469,6 +542,9 @@ void GlobalInput::MouseMove(uint64_t deviceId, uint64_t fingerId, int mx, int my
 	{
 		Finger& finger = device.fingers[fingerId];
 		finger.Update(mx, my, mz, hasDelta, dx, dy, pressure, resolution);
+
+		if (deviceId) lastDevice = deviceId;
+		device.CalculateMotion();
 	}
 
 	ui::Log("MouseMove: %x/%x/%lld %d,%d,%d %d %d,%d,%f", deviceId, fingerId, device.fingers.size(), mx, my, mz, hasDelta, dx, dy, pressure);
@@ -598,11 +674,15 @@ void GlobalInput::ShowInfoTable(bool showTitle) const
 	for (int i = -1; const auto& [did, device] : devices)
 	{
 		++i;
-		stats.push_back({ Format("device.%d", i), Format("%x (%lld)", did, device.fingers.size()) });
+		stats.push_back({ Format("device.%d", i), Format("%x %d (%lld)", did, device.gesture, device.fingers.size()) });
+		stats.push_back({ " - motion", Format("%d %d", TO_INT(device.motion[0] * 1000), TO_INT(device.motion[1] * 1000)) });
 		for (int j = -1; const auto& [fid, finger] : device.fingers)
 		{
 			++j;
-			stats.push_back({ Format(" - finger.%d", j), Format("%x/%s : %.0f %.0f", fid, Cstr(TrimDouble(finger.pressure)), finger.rels2[0] * 1000, finger.rels2[1] * 1000) });
+			stats.push_back({ Format(" - finger.%d", j), Cstr(TrimDouble(finger.pressure)) });
+			stats.push_back({ "   - abs", Format("%d %d", finger.abs[0], finger.abs[1]) });
+			stats.push_back({ "   - rel0", Format("%d %d", TO_INT(finger.rels0[0] * 1000), TO_INT(finger.rels0[1] * 1000)) });
+			stats.push_back({ "   - rel2", Format("%d %d", TO_INT(finger.rels2[0] * 1000), TO_INT(finger.rels2[1] * 1000)) });
 		}
 	}
 
