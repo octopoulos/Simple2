@@ -1,6 +1,6 @@
 // RubikCube.h
 // @author octopoulos
-// @version 2025-10-06
+// @version 2025-10-13
 
 #pragma once
 
@@ -56,7 +56,7 @@ public:
 	virtual void SetPhysics() override;
 
 	/// Serialize for JSON output
-	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3, bool addChildren = true) const override;
+	virtual int Serialize(std::string& outString, int depth, int bounds = 3, bool addChildren = true) const override;
 
 	/// Get an Object3d as a Mesh
 	static sRubikCube SharedPtr(const sObject3d& object)

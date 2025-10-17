@@ -1,6 +1,6 @@
 // writer.h
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-10-13
 
 #pragma once
 
@@ -11,7 +11,7 @@
 	do                                    \
 	{                                     \
 		if (++keyId > 1) WRITE_CHAR(','); \
-		WRITE(R"("{}":)", name);          \
+		WRITE(R"("%s":)", Cstr(name));    \
 	}                                     \
 	while (0)
 

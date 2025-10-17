@@ -1,6 +1,6 @@
 // Material.cpp
 // @author octopoulos
-// @version 2025-10-07
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "materials/Material.h"
@@ -119,12 +119,12 @@ void Material::LoadTexture(int texId, std::string_view name)
 
 void Material::LoadTextures(const VEC_STR& texFiles)
 {
-	ui::Log("LoadTextures: %lld", texFiles.size());
+	ui::Log("LoadTextures: %zu", texFiles.size());
 	for (int id = -1; const auto& texFile : texFiles)
 		LoadTexture(++id, texFile);
 }
 
-int Material::Serialize(fmt::memory_buffer& outString, int depth, int bounds)
+int Material::Serialize(std::string& outString, int depth, int bounds)
 {
 	if (bounds & 1) WRITE_CHAR('{');
 	WRITE_INIT();
@@ -224,7 +224,7 @@ void Material::ShowSettings(bool isPopup, int show)
 	{
 		for (int id = 0; id < TextureType_Count; ++id)
 		{
-			ui::AddInputText(mode | 32, Format(".textName:%d", id), TextureName(id).c_str(), 256, 0, &texNames[id]);
+			ui::AddInputText(mode | 32, Format(".textName:%d", id), Cstr(TextureName(id)), 256, 0, &texNames[id]);
 			ImGui::SameLine();
 			if (ImGui::Button(Format("...##Tex%d", id)))
 			{

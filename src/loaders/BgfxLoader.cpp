@@ -1,6 +1,6 @@
 // BgfxLoader.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -156,7 +156,7 @@ sMesh LoadBgfx(const std::filesystem::path& path, bool ramcopy, std::string_view
 
 			std::string material;
 			material.resize(len);
-			read(reader, const_cast<char*>(material.c_str()), len, &err);
+			read(reader, const_cast<char*>(Cstr(material)), len, &err);
 
 			uint16_t num;
 			read(reader, num, &err);
@@ -167,7 +167,7 @@ sMesh LoadBgfx(const std::filesystem::path& path, bool ramcopy, std::string_view
 
 				std::string name;
 				name.resize(len);
-				read(reader, const_cast<char*>(name.c_str()), len, &err);
+				read(reader, const_cast<char*>(Cstr(name)), len, &err);
 
 				Primitive prim;
 				// clang-format off

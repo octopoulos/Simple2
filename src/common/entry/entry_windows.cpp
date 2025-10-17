@@ -1,4 +1,4 @@
-// @version 2025-09-29
+// @version 2025-10-13
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -311,13 +311,13 @@ struct Msg
 	{
 	}
 
-	int32_t         m_x;
-	int32_t         m_y;
-	uint32_t        m_width;
-	uint32_t        m_height;
-	uint32_t        m_flags;
-	tinystl::string m_title;
-	bool            m_flagsEnabled;
+	int32_t     m_x;
+	int32_t     m_y;
+	uint32_t    m_width;
+	uint32_t    m_height;
+	uint32_t    m_flags;
+	std::string m_title;
+	bool        m_flagsEnabled;
 };
 
 static void mouseCapture(HWND _hwnd, bool _capture)
@@ -559,7 +559,7 @@ struct Context
 			case WM_USER_WINDOW_CREATE:
 			{
 				Msg* msg  = (Msg*)_lparam;
-				HWND hwnd = CreateWindowW(L"Loading ...", UTF8ToUTF16(msg->m_title.c_str()).data(), WS_OVERLAPPEDWINDOW | WS_VISIBLE, msg->m_x, msg->m_y, msg->m_width, msg->m_height, NULL, NULL, (HINSTANCE)GetModuleHandle(NULL), 0);
+				HWND hwnd = CreateWindowW(L"Loading ...", UTF8ToUTF16(Cstr(msg->m_title)).data(), WS_OVERLAPPEDWINDOW | WS_VISIBLE, msg->m_x, msg->m_y, msg->m_width, msg->m_height, NULL, NULL, (HINSTANCE)GetModuleHandle(NULL), 0);
 
 				adjust(hwnd, msg->m_width, msg->m_height, true);
 				clear(hwnd);
@@ -592,7 +592,7 @@ struct Context
 			case WM_USER_WINDOW_SET_TITLE:
 			{
 				Msg* msg = (Msg*)_lparam;
-				SetWindowTextW(m_hwnd[_wparam], UTF8ToUTF16(msg->m_title.c_str()).data());
+				SetWindowTextW(m_hwnd[_wparam], UTF8ToUTF16(Cstr(msg->m_title)).data());
 				delete msg;
 			}
 			break;

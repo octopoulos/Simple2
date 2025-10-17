@@ -1,6 +1,6 @@
 // LogWindow.cpp
 // @author octopoulos
-// @version 2025-09-18
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -94,7 +94,7 @@ public:
 			if (ImGui::BeginTabBar("Log#tabs"))
 			{
 				for (int i = 0; i < numTab; ++i)
-					if (ImGui::BeginTabItem(colorNames[i].c_str()))
+					if (ImGui::BeginTabItem(Cstr(colorNames[i])))
 					{
 						active = i - offset;
 						ImGui::EndTabItem();
@@ -117,7 +117,7 @@ public:
 				{
 					auto color = lines[i].color;
 					if (color) ImGui::PushStyleColor(ImGuiCol_Text, colorValues[color]);
-					ImGui::TextUnformatted(lines[i].text.c_str());
+					ImGui::TextUnformatted(Cstr(lines[i]));
 					if (color) ImGui::PopStyleColor();
 				}
 			}

@@ -1,6 +1,6 @@
 // GltfLoader.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -248,7 +248,7 @@ sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy, std::string_view
 				indices.reserve(accessor.count);
 				fastgltf::iterateAccessor<uint32_t>(asset, accessor, [&](uint32_t idx) { indices.push_back(idx); });
 				group.numIndices = static_cast<uint32_t>(indices.size());
-				ui::Log("%lld indices", indices.size());
+				ui::Log("%zu indices", indices.size());
 			}
 
 			// === vertex count from POSITION ===
@@ -274,7 +274,7 @@ sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy, std::string_view
 
 			// === vertices ===
 			std::vector<Vertex> vertices(vertexCount);
-			ui::Log("%lld vertices", vertices.size());
+			ui::Log("%zu vertices", vertices.size());
 
 			// POSITION
 			if (auto it = primitive.findAttribute("POSITION"); it != primitive.attributes.end())

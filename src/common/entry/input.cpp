@@ -1,4 +1,4 @@
-// @version 2025-10-12
+// @version 2025-10-13
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -348,7 +348,7 @@ void GlobalInput::BeginFrame()
 		const int64_t click = buttonClicks[i];
 		if (click && nowMs > click + xsettings.clickTwo)
 		{
-			ui::Log("BeginFrame: CLICK: %lld", nowMs - click);
+			if (DEV_inputMouse) ui::Log("BeginFrame: CLICK: %lld", nowMs - click);
 			buttonClicks[i] = 0;
 			buttonOnes[i]   = true;
 		}
@@ -490,7 +490,7 @@ void GlobalInput::MouseButton(int button, uint8_t state)
 			// dblClick
 			if (const int64_t click = buttonClicks[button]; nowMs < click + xsettings.clickTwo)
 			{
-				ui::Log("DOUBLE CLICK: %d", button);
+				if (DEV_inputMouse) ui::Log("DOUBLE CLICK: %d", button);
 				buttonClicks[button] = 0;
 				buttonTwos[button]   = true;
 				return;
@@ -505,7 +505,7 @@ void GlobalInput::MouseButton(int button, uint8_t state)
 			{
 				if (nowMs < buttonTimes[button] + xsettings.clickOne)
 				{
-					ui::Log("ONE CLICK? %d", button);
+					if (DEV_inputMouse) ui::Log("ONE CLICK? %d", button);
 					buttonClicks[button] = nowMs;
 					// buttonOnes[button]   = true;
 				}
@@ -547,8 +547,7 @@ void GlobalInput::MouseMove(uint64_t deviceId, uint64_t fingerId, int mx, int my
 		device.CalculateMotion();
 	}
 
-	ui::Log("MouseMove: %x/%x/%lld %d,%d,%d %d %d,%d,%f", deviceId, fingerId, device.fingers.size(), mx, my, mz, hasDelta, dx, dy, pressure);
-
+	if (DEV_inputMouse) ui::Log("MouseMove: %x/%x/%zu %d,%d,%d %d %d,%d,%f", deviceId, fingerId, device.fingers.size(), mx, my, mz, hasDelta, dx, dy, pressure);
 }
 
 const uint8_t* GlobalInput::PopChar()
@@ -674,7 +673,7 @@ void GlobalInput::ShowInfoTable(bool showTitle) const
 	for (int i = -1; const auto& [did, device] : devices)
 	{
 		++i;
-		stats.push_back({ Format("device.%d", i), Format("%x %d (%lld)", did, device.gesture, device.fingers.size()) });
+		stats.push_back({ Format("device.%d", i), Format("%x %d (%zu)", did, device.gesture, device.fingers.size()) });
 		stats.push_back({ " - motion", Format("%d %d", TO_INT(device.motion[0] * 1000), TO_INT(device.motion[1] * 1000)) });
 		for (int j = -1; const auto& [fid, finger] : device.fingers)
 		{

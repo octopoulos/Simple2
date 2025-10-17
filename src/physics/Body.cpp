@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-10-06
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -470,7 +470,7 @@ void Body::DestroyShape()
 	}
 }
 
-int Body::Serialize(fmt::memory_buffer& outString, int depth, int bounds) const
+int Body::Serialize(std::string& outString, int depth, int bounds) const
 {
 	if (bounds & 1) WRITE_CHAR('{');
 	WRITE_INIT();
@@ -494,9 +494,9 @@ void Body::ShowInfoTable(bool showTitle) const
 
 	// clang-format off
 	ui::ShowTable({
-		{ "enabled"  , BoolString(enabled)                                          },
-		{ "mass"     , std::to_string(mass)                                         },
-		{ "shapeType", FormatStr("%d: %s", shapeType, ShapeName(shapeType).c_str()) },
+		{ "enabled"  , BoolString(enabled)                                        },
+		{ "mass"     , std::to_string(mass)                                       },
+		{ "shapeType", FormatStr("%d: %s", shapeType, Cstr(ShapeName(shapeType))) },
 	});
 	// clang-format on
 }

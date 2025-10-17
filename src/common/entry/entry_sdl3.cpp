@@ -1,6 +1,6 @@
 // entry_sdl3.cpp
 // @author octopoulos
-// @version 2025-10-12
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "entry_p.h"
@@ -11,7 +11,7 @@
 #	if BX_PLATFORM_LINUX
 #	elif BX_PLATFORM_WINDOWS
 #		define SDL_MAIN_HANDLED
-#	endif
+#	endif // BX_PLATFORM_*
 
 #	include <SDL3/SDL.h>
 
@@ -275,6 +275,105 @@ static WindowHandle getWindowHandle(const SDL_UserEvent& _uev)
 	return cast.h;
 }
 
+#	if BX_PLATFORM_WINDOWS
+#		include <windows.h>
+
+#		pragma comment(lib, "User32.lib")
+
+struct PointerData
+{
+	bool  active = false;
+	POINT last   = {};
+};
+
+// store original WndProc
+static HWND                      winHwnd        = nullptr;
+static UMAP<UINT32, PointerData> winPointers    = {};
+static WNDPROC                   winPrevWndProc = nullptr;
+
+// optional normalization helper
+static void NormalizeToClient(HWND hwnd, int& x, int& y)
+{
+	POINT pt = { x, y };
+	ScreenToClient(hwnd, &pt);
+	x = pt.x;
+	y = pt.y;
+}
+
+LRESULT CALLBACK CustomWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
+	{
+	case WM_POINTERDOWN:
+	case WM_POINTERUP:
+	case WM_POINTERUPDATE:
+	{
+		POINTER_INFO pi {};
+		if (!GetPointerInfo(GET_POINTERID_WPARAM(wParam), &pi)) break;
+
+		const UINT32 pointerId = pi.pointerId;
+		PointerData& pd        = winPointers[pointerId];
+
+		if (msg == WM_POINTERDOWN)
+			pd.active = true;
+		else if (msg == WM_POINTERUP)
+			pd.active = false;
+
+		int x = pi.ptPixelLocation.x;
+		int y = pi.ptPixelLocation.y;
+		NormalizeToClient(hwnd, x, y);
+
+		int dx = 0;
+		int dy = 0;
+		if (pd.active)
+		{
+			dx = x - pd.last.x;
+			dy = y - pd.last.y;
+		}
+		pd.last = { x, y };
+
+		// optional: skip mouse pointers
+		if (pi.pointerType == PT_MOUSE) break;
+
+		// get normalized pressure (touch only)
+		float pressure = 0.0f;
+		if (pi.pointerType == PT_TOUCH)
+		{
+			POINTER_TOUCH_INFO ti {};
+			if (GetPointerTouchInfo(pointerId, &ti))
+				pressure = ti.pressure / 1024.0f;
+		}
+		if (msg == WM_POINTERUP) pressure = -pressure - 1.0f;
+
+		const uint64_t deviceId = (pi.pointerType == PT_TOUCH) ? 1 : 2;
+		ginput.MouseMove(deviceId, pointerId, x, y, 0, true, dx, dy, pressure);
+		break;
+	}
+	case WM_POINTERLEAVE:
+	{
+		const UINT32 id = GET_POINTERID_WPARAM(wParam);
+		winPointers.erase(id);
+		break;
+	}
+	default: break;
+	}
+
+	return CallWindowProc(winPrevWndProc, hwnd, msg, wParam, lParam);
+}
+
+void HookWin32PointerEvents(SDL_Window* window)
+{
+	winHwnd = (HWND)sdlNativeWindowHandle(window);
+	if (!winHwnd) return;
+
+	// register touch input (optional, helps some devices)
+	RegisterPointerInputTarget(winHwnd, PT_TOUCH | PT_PEN);
+
+	// subclass SDL window proc
+	winPrevWndProc = (WNDPROC)SetWindowLongPtr(winHwnd, GWLP_WNDPROC, (LONG_PTR)CustomWndProc);
+}
+#	endif // BX_PLATFORM_WINDOWS
+
 struct Context
 {
 	Context()
@@ -457,12 +556,20 @@ struct Context
 		m_mte.m_argv = _argv;
 
 		SDL_Init(SDL_INIT_GAMEPAD);
+#	if BX_PLATFORM_WINDOWS
 		SDL_SetHint(SDL_HINT_MOUSE_TOUCH_EVENTS, "0");
 		SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
+		SDL_SetHint(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, "0");
+#	else
 		SDL_SetHint(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, "1");
+#	endif // BX_PLATFORM_*
 
 		m_windowAlloc.alloc();
 		m_window[0] = SDL_CreateWindow("Loading ...", xsettings.windowSize[0], xsettings.windowSize[1], SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE);
+
+#	if BX_PLATFORM_WINDOWS
+		HookWin32PointerEvents(m_window[0]);
+#	endif // BX_PLATFORM_WINDOWS
 
 		int fbWidth, fbHeight;
 		SDL_GetWindowSizeInPixels(m_window[0], &fbWidth, &fbHeight);
@@ -534,8 +641,7 @@ struct Context
 					m_mx = mev.x * xsettings.dpr;
 					m_my = mev.y * xsettings.dpr;
 
-					WindowHandle handle = findHandle(mev.windowID);
-					if (isValid(handle))
+					if (const WindowHandle handle = findHandle(mev.windowID); isValid(handle))
 						m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz, true, mev.xrel * 2, mev.yrel * 2);
 				}
 				break;
@@ -544,7 +650,7 @@ struct Context
 				case SDL_EVENT_MOUSE_BUTTON_UP:
 				{
 					const SDL_MouseButtonEvent& mev    = event.button;
-					WindowHandle                handle = findHandle(mev.windowID);
+					const WindowHandle          handle = findHandle(mev.windowID);
 					if (isValid(handle))
 					{
 						MouseButton::Enum button;
@@ -567,27 +673,26 @@ struct Context
 					const SDL_MouseWheelEvent& mev = event.wheel;
 					m_mz += mev.y;
 
-					WindowHandle handle = findHandle(mev.windowID);
-					if (isValid(handle)) m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz, false, 0, 0);
+					if (const WindowHandle handle = findHandle(mev.windowID); isValid(handle))
+						m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz, false, 0, 0);
 				}
 				break;
 
 				case SDL_EVENT_TEXT_INPUT:
 				{
-					const SDL_TextInputEvent& tev    = event.text;
-					WindowHandle              handle = findHandle(tev.windowID);
-					if (isValid(handle)) m_eventQueue.postCharEvent(handle, 1, (const uint8_t*)tev.text);
+					const SDL_TextInputEvent& tev = event.text;
+					if (const WindowHandle handle = findHandle(tev.windowID); isValid(handle))
+						m_eventQueue.postCharEvent(handle, 1, (const uint8_t*)tev.text);
 				}
 				break;
 
 				case SDL_EVENT_KEY_DOWN:
 				{
-					const SDL_KeyboardEvent& kev    = event.key;
-					WindowHandle             handle = findHandle(kev.windowID);
-					if (isValid(handle))
+					const SDL_KeyboardEvent& kev = event.key;
+					if (const WindowHandle handle = findHandle(kev.windowID); isValid(handle))
 					{
-						uint8_t   modifiers = translateKeyModifiers(kev.mod);
-						Key::Enum key       = translateKey(kev.scancode);
+						uint8_t         modifiers = translateKeyModifiers(kev.mod);
+						const Key::Enum key       = translateKey(kev.scancode);
 						if (!key) ui::Log("SDL3: Unknown code: %d %s", TO_INT(kev.scancode), SDL_GetScancodeName(kev.scancode));
 
 						/// If you only press (e.g.) 'shift' and nothing else, then key == 'shift', modifier == 0.
@@ -597,20 +702,17 @@ struct Context
 
 						if (Key::Esc == key)
 						{
-							uint8_t pressedChar[4];
-							pressedChar[0] = 0x1b;
+							const uint8_t pressedChar[4] = { 0x1b, 0, 0, 0 };
 							m_eventQueue.postCharEvent(handle, 1, pressedChar);
 						}
 						else if (Key::Return == key)
 						{
-							uint8_t pressedChar[4];
-							pressedChar[0] = 0x0d;
+							const uint8_t pressedChar[4] = { 0x0d, 0, 0, 0 };
 							m_eventQueue.postCharEvent(handle, 1, pressedChar);
 						}
 						else if (Key::Backspace == key)
 						{
-							uint8_t pressedChar[4];
-							pressedChar[0] = 0x08;
+							const uint8_t pressedChar[4] = { 0x08, 0, 0, 0 };
 							m_eventQueue.postCharEvent(handle, 1, pressedChar);
 						}
 
@@ -621,12 +723,11 @@ struct Context
 
 				case SDL_EVENT_KEY_UP:
 				{
-					const SDL_KeyboardEvent& kev    = event.key;
-					WindowHandle             handle = findHandle(kev.windowID);
-					if (isValid(handle))
+					const SDL_KeyboardEvent& kev = event.key;
+					if (const WindowHandle handle = findHandle(kev.windowID); isValid(handle))
 					{
-						uint8_t   modifiers = translateKeyModifiers(kev.mod);
-						Key::Enum key       = translateKey(kev.scancode);
+						const uint8_t   modifiers = translateKeyModifiers(kev.mod);
+						const Key::Enum key       = translateKey(kev.scancode);
 						m_eventQueue.postKeyEvent(handle, key, modifiers, kev.down);
 					}
 				}
@@ -636,10 +737,10 @@ struct Context
 				case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 				case SDL_EVENT_WINDOW_METAL_VIEW_RESIZED:
 				{
-					const auto&  wev    = event.window;
-					WindowHandle handle = findHandle(wev.windowID);
-					uint32_t     width  = wev.data1;
-					uint32_t     height = wev.data2;
+					const auto&        wev    = event.window;
+					const WindowHandle handle = findHandle(wev.windowID);
+					const uint32_t     height = wev.data2;
+					const uint32_t     width  = wev.data1;
 					if (width != xsettings.windowSize[0] * xsettings.dpr || height != xsettings.windowSize[1] * xsettings.dpr)
 						m_eventQueue.postSizeEvent(handle, width, height);
 				}
@@ -660,9 +761,8 @@ struct Context
 
 				case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
 				{
-					const auto&  wev    = event.window;
-					WindowHandle handle = findHandle(wev.windowID);
-					if (0 == handle.idx)
+					const auto& wev = event.window;
+					if (const WindowHandle handle = findHandle(wev.windowID); handle.idx == 0)
 					{
 						m_eventQueue.postExitEvent();
 						exit = true;
@@ -738,9 +838,8 @@ struct Context
 
 				case SDL_EVENT_DROP_FILE:
 				{
-					const SDL_DropEvent& dev    = event.drop;
-					WindowHandle         handle = defaultWindow; // findHandle(dev.windowID);
-					if (isValid(handle))
+					const SDL_DropEvent& dev = event.drop;
+					if (const WindowHandle handle = defaultWindow; isValid(handle))
 					{
 						m_eventQueue.postDropFileEvent(handle, dev.data);
 						SDL_free((void*)dev.data);
@@ -759,12 +858,11 @@ struct Context
 					{
 					case SDL_EVENT_FINGER_CANCELED:
 					case SDL_EVENT_FINGER_UP:
-						pressure = -1.0f;
+						pressure = -pressure - 1.0f;
 						break;
 					}
 
-					WindowHandle handle = findHandle(fevent.windowID);
-					// if (isValid(handle))
+					const WindowHandle handle = findHandle(fevent.windowID);
 					{
 						// ui::Log("FINGER %d tid=%x fid=%x x=%f y=%f dx=%f dy=%f p=%f", fevent.type, fevent.touchID, fevent.fingerID, fevent.x, fevent.y, fevent.dx, fevent.dy, pressure);
 						m_eventQueue.postMouseEvent(handle, fevent.x * xsettings.windowSize[0], fevent.y * xsettings.windowSize[1], 0, true, fevent.dx * xsettings.windowSize[0], fevent.dy * xsettings.windowSize[1], pressure, fevent.touchID, fevent.fingerID);
@@ -781,10 +879,10 @@ struct Context
 					{
 					case SDL_USER_WINDOW_CREATE:
 					{
-						WindowHandle handle = getWindowHandle(uev);
-						Msg*         msg    = (Msg*)uev.data2;
+						const WindowHandle handle = getWindowHandle(uev);
+						Msg*               msg    = (Msg*)uev.data2;
 
-						m_window[handle.idx] = SDL_CreateWindow(msg->m_title.c_str(), msg->m_width, msg->m_height, SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE);
+						m_window[handle.idx] = SDL_CreateWindow(Cstr(msg->m_title), msg->m_width, msg->m_height, SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE);
 
 						m_flags[handle.idx] = msg->m_flags;
 
@@ -801,9 +899,20 @@ struct Context
 
 					case SDL_USER_WINDOW_DESTROY:
 					{
-						WindowHandle handle = getWindowHandle(uev);
-						if (isValid(handle))
+						if (const WindowHandle handle = getWindowHandle(uev); isValid(handle))
 						{
+#	if BX_PLATFORM_WINDOWS
+							if (winHwnd == (HWND)sdlNativeWindowHandle(m_window[handle.idx]))
+							{
+								// unregister and restore original WndProc
+								UnregisterPointerInputTarget(winHwnd, PT_TOUCH);
+								if (winPrevWndProc)
+								{
+									SetWindowLongPtr(winHwnd, GWLP_WNDPROC, (LONG_PTR)winPrevWndProc);
+									winPrevWndProc = nullptr;
+								}
+							}
+#	endif // BX_PLATFORM_WINDOWS
 							m_eventQueue.postWindowEvent(handle);
 							SDL_DestroyWindow(m_window[handle.idx]);
 							m_window[handle.idx] = nullptr;
@@ -813,18 +922,17 @@ struct Context
 
 					case SDL_USER_WINDOW_SET_TITLE:
 					{
-						WindowHandle handle = getWindowHandle(uev);
-						Msg*         msg    = (Msg*)uev.data2;
-						if (isValid(handle))
-							SDL_SetWindowTitle(m_window[handle.idx], msg->m_title.c_str());
+						Msg* msg = (Msg*)uev.data2;
+						if (const WindowHandle handle = getWindowHandle(uev); isValid(handle))
+							SDL_SetWindowTitle(m_window[handle.idx], Cstr(msg->m_title));
 						delete msg;
 					}
 					break;
 
 					case SDL_USER_WINDOW_SET_FLAGS:
 					{
-						WindowHandle handle = getWindowHandle(uev);
-						Msg*         msg    = (Msg*)uev.data2;
+						const WindowHandle handle = getWindowHandle(uev);
+						Msg*               msg    = (Msg*)uev.data2;
 
 						if (msg->m_flagsEnabled)
 							m_flags[handle.idx] |= msg->m_flags;
@@ -837,8 +945,8 @@ struct Context
 
 					case SDL_USER_WINDOW_SET_POS:
 					{
-						WindowHandle handle = getWindowHandle(uev);
-						Msg*         msg    = (Msg*)uev.data2;
+						const WindowHandle handle = getWindowHandle(uev);
+						Msg*               msg    = (Msg*)uev.data2;
 						SDL_SetWindowPosition(m_window[handle.idx], msg->m_x, msg->m_y);
 						delete msg;
 					}
@@ -846,9 +954,8 @@ struct Context
 
 					case SDL_USER_WINDOW_SET_SIZE:
 					{
-						WindowHandle handle = getWindowHandle(uev);
-						Msg*         msg    = (Msg*)uev.data2;
-						if (isValid(handle))
+						Msg* msg = (Msg*)uev.data2;
+						if (const WindowHandle handle = getWindowHandle(uev); isValid(handle))
 							SDL_SetWindowSize(m_window[handle.idx], msg->m_width, msg->m_height);
 						delete msg;
 					}
@@ -856,8 +963,7 @@ struct Context
 
 					case SDL_USER_WINDOW_TOGGLE_FRAME:
 					{
-						WindowHandle handle = getWindowHandle(uev);
-						if (isValid(handle))
+						if (const WindowHandle handle = getWindowHandle(uev); isValid(handle))
 						{
 							m_flags[handle.idx] ^= ENTRY_WINDOW_FLAG_FRAME;
 							SDL_SetWindowBordered(m_window[handle.idx], !!(m_flags[handle.idx] & ENTRY_WINDOW_FLAG_FRAME));
@@ -867,16 +973,15 @@ struct Context
 
 					case SDL_USER_WINDOW_TOGGLE_FULL_SCREEN:
 					{
-						WindowHandle handle = getWindowHandle(uev);
-						m_fullscreen        = !m_fullscreen;
+						const WindowHandle handle = getWindowHandle(uev);
+						m_fullscreen              = !m_fullscreen;
 						SDL_SetWindowFullscreen(m_window[handle.idx], m_fullscreen);
 					}
 					break;
 
 					case SDL_USER_WINDOW_MOUSE_LOCK:
 					{
-						WindowHandle handle = getWindowHandle(uev);
-						if (isValid(handle))
+						if (const WindowHandle handle = getWindowHandle(uev); isValid(handle))
 						{
 							m_eventQueue.postWindowEvent(handle);
 							SDL_SetWindowRelativeMouseMode(m_window[handle.idx], !!uev.code);
@@ -1072,7 +1177,7 @@ void* getNativeDisplayHandle()
 		return SDL_GetWindowProperty(window, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, nullptr);
 	else if (SDL_strcmp(driver, "x11") == 0)
 		return SDL_GetWindowProperty(window, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, nullptr);
-#	endif
+#	endif // BX_PLATFORM_*
 
 	return nullptr;
 }

@@ -1,6 +1,6 @@
 // config.h
 // @author octopoulos
-// @version 2025-09-14
+// @version 2025-10-12
 
 #pragma once
 
@@ -13,6 +13,7 @@
 // DEV
 #define DEV_char        false  ///< processEvents
 #define DEV_inputKeys   true   ///< PrintKeys
+#define DEV_inputMouse  D_TRUE ///< MouseMove
 #define DEV_interpolate false  ///< CompleteInterpolation
 #define DEV_matrix      false  ///< UpdateLocalMatrix
 #define DEV_models      false  ///< ScanModels

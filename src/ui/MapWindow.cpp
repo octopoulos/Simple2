@@ -1,6 +1,6 @@
 // MapWindow.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -48,7 +48,7 @@ public:
 				{
 					bool       hasImage = false;
 					const auto kitName  = FormatStr("%s/%s", Cstr(kit), Cstr(name));
-					// ImGui::TextUnformatted(name.c_str());
+					// ImGui::TextUnformatted(Cstr(name));
 
 					// display previews here (png files)
 					if (hasPreview)
@@ -92,7 +92,7 @@ public:
 							ImGui::GetFontSize(),
 							textPos,
 							ImGui::GetColorU32(ImGuiCol_Text),
-							name.c_str(),
+							Cstr(name),
 							nullptr,
 							wrapWidth);
 					}

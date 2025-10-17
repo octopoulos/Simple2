@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-10-07
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -239,7 +239,7 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 	}
 }
 
-int Mesh::Serialize(fmt::memory_buffer& outString, int depth, int bounds, bool addChildren) const
+int Mesh::Serialize(std::string& outString, int depth, int bounds, bool addChildren) const
 {
 	// skip some objects
 	if (type & (ObjectType_Cursor)) return -1;

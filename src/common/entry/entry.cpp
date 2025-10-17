@@ -1,4 +1,4 @@
-// @version 2025-10-11
+// @version 2025-10-13
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -440,7 +440,7 @@ void ExitApp()
 	s_exit = true;
 }
 
-const char* GetEntryName() { return entryName.c_str(); }
+const char* GetEntryName() { return Cstr(entryName); }
 
 void RestartApp(int dir, const char* name)
 {

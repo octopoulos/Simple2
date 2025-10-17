@@ -1,6 +1,6 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-10-07
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "textures/TextureManager.h"
@@ -244,7 +244,7 @@ void TextureManager::ShowInfoTable(bool showTitle) const
 		{
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
-			ImGui::TextUnformatted(name.c_str());
+			ImGui::TextUnformatted(Cstr(name));
 			ImGui::TableNextColumn();
 			const auto& info = value.info;
 			ImGui::Text("%dx%d", info.width, info.height);

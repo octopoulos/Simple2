@@ -1,6 +1,6 @@
 // ui-menu.cpp
 // @author octopoulos
-// @version 2025-10-11
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -230,7 +230,7 @@ void App::PopupsUi()
 				if (auto target = selectWeak.lock())
 				{
 					ImGui::TextUnformatted("Delete selected object?");
-					ImGui::Text("(%s)", target->name.c_str());
+					ImGui::Text("(%s)", Cstr(target->name));
 					ImGui::Dummy(ImVec2(0.0f, 8.0f));
 					if (ImGui::Button("Cancel", ImVec2(160.0f, 0.0f))) hidePopup |= Popup_Delete;
 					ImGui::SameLine();

@@ -1,4 +1,4 @@
-// @version 2025-09-29
+// @version 2025-10-13
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -751,7 +751,7 @@ struct Context
 						WindowHandle handle = getWindowHandle(uev);
 						Msg*         msg    = (Msg*)uev.data2;
 
-						m_window[handle.idx] = SDL_CreateWindow(msg->m_title.c_str(), msg->m_x, msg->m_y, msg->m_width, msg->m_height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+						m_window[handle.idx] = SDL_CreateWindow(Cstr(msg->m_title), msg->m_x, msg->m_y, msg->m_width, msg->m_height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
 						m_flags[handle.idx] = msg->m_flags;
 
@@ -783,7 +783,7 @@ struct Context
 						WindowHandle handle = getWindowHandle(uev);
 						Msg*         msg    = (Msg*)uev.data2;
 						if (isValid(handle))
-							SDL_SetWindowTitle(m_window[handle.idx], msg->m_title.c_str());
+							SDL_SetWindowTitle(m_window[handle.idx], Cstr(msg->m_title));
 						delete msg;
 					}
 					break;

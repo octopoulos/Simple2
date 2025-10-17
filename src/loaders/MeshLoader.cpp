@@ -1,6 +1,6 @@
 // MeshLoader.cpp
 // @author octopoulos
-// @version 2025-09-29
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -68,7 +68,7 @@ sMesh MeshLoader::LoadModelFull(std::string_view name, std::string_view modelNam
 	// 1) load model
 	auto mesh = LoadModel(name, modelName, true, texPath);
 	if (!mesh) return nullptr;
-	ui::Log("LoadModelFull: %s %s groups=%lld", Cstr(name), Cstr(modelName), mesh->groups.size());
+	ui::Log("LoadModelFull: %s %s groups=%zu", Cstr(name), Cstr(modelName), mesh->groups.size());
 
 	// 2) create material
 	if (!mesh->material)

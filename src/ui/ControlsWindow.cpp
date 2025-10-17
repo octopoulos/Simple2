@@ -1,6 +1,6 @@
 // ControlsWindow.cpp
 // @author octopoulos
-// @version 2025-09-25
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -33,7 +33,7 @@ int DrawControlButton(uint32_t texId, const ImVec4& color, std::string name, con
 	const ImVec2 childDims(64.0f * scale, 64.0f * scale);
 	const ImVec2 offset(16.0f * scale, 4.0f * scale);
 
-	const auto  nameStr    = label ? label : name.c_str();
+	const auto  nameStr    = label ? label : Cstr(name);
 	const auto& style      = ImGui::GetStyle();
 	const auto  padding    = style.WindowPadding;
 	const auto& [uv0, uv1] = buttonNames[name];
@@ -111,7 +111,7 @@ public:
 	/// Image text button aligned on a row
 	int DrawButton(const ImVec4& color, std::string name, const char* label = nullptr)
 	{
-		return DrawControlButton(texId, color, name, label ? label : name.c_str(), xsettings.textButton, xsettings.uiScale);
+		return DrawControlButton(texId, color, name, label ? label : Cstr(name), xsettings.textButton, xsettings.uiScale);
 	}
 };
 

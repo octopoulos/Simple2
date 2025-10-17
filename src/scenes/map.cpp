@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-10-06
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -14,7 +14,7 @@ void App::AddGeometry(uGeometry geometry)
 	const auto& coord = cursor->position;
 	const auto& irot  = cursor->irot;
 
-	if (auto object = std::make_shared<Mesh>(Format("%d:%s", mapNode->NextChildId(), GeometryName(geometry->type).c_str())))
+	if (auto object = std::make_shared<Mesh>(FormatStr("%d:%s", mapNode->NextChildId(), Cstr(GeometryName(geometry->type)))))
 	{
 		object->geometry = geometry;
 		object->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
@@ -51,7 +51,7 @@ void App::AddObject(std::string_view modelName)
 			mesh->SetPhysics();
 		}
 	}
-	else mesh = MeshLoader::LoadModelFull(FormatStr("%d:%s", mapNode->NextChildId(), NodeName(modelName).c_str()), modelName);
+	else mesh = MeshLoader::LoadModelFull(FormatStr("%d:%s", mapNode->NextChildId(), Cstr(NodeName(modelName))), modelName);
 
 	if (mesh)
 	{
@@ -89,10 +89,10 @@ std::string App::NodeName(std::string_view modelName)
 	if (modelName.empty()) return "";
 
 	const auto path     = std::filesystem::path(NormalizeFilename(modelName));
-	const auto filename = path.filename().string();
-	const auto parent   = path.parent_path().string();
+	const auto filename = path.filename();
+	const auto parent   = path.parent_path();
 
-	return parent.empty() ? filename : FormatStr("%s (%s)", filename.c_str(), parent.c_str());
+	return parent.empty() ? filename.string() : FormatStr("%s (%s)", PathStr(filename), PathStr(parent));
 }
 
 TEST_CASE("NodeName")
@@ -212,7 +212,7 @@ void App::RescanAssets()
 		}
 	}
 
-	ui::Log("Models: %lld  Textures: %lld", modelSrcs.size(), textureOuts.size());
+	ui::Log("Models: %zu  Textures: %zu", modelSrcs.size(), textureOuts.size());
 }
 
 void App::ScanModels(const std::filesystem::path& folder, const std::filesystem::path& folderPrev, int depth, const std::string& relative)
@@ -273,7 +273,7 @@ void App::ScanModels(const std::filesystem::path& folder, const std::filesystem:
 	{
 		for (const auto& [kit, models] : kitModels)
 		{
-			ui::Log("%s: %lld", Cstr(kit), models.size());
+			ui::Log("%s: %zu", Cstr(kit), models.size());
 			for (const auto& [name, flag] : models)
 				ui::Log("  - %s : %d", Cstr(name), flag);
 		}

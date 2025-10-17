@@ -1,6 +1,6 @@
 // Material.h
 // @author octopoulos
-// @version 2025-10-06
+// @version 2025-10-13
 
 #pragma once
 
@@ -72,7 +72,7 @@ public:
 	void LoadTextures(const VEC_STR& texFiles);
 
 	/// Serialize for JSON output
-	int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3);
+	int Serialize(std::string& outString, int depth, int bounds = 3);
 
 	/// Set PBR properties
 	void SetPbrProperties(const glm::vec4& baseColor, float metallic, float roughness)

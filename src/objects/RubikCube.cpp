@@ -1,6 +1,6 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-10-06
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
@@ -364,7 +364,7 @@ void RubikCube::RotateLayer(const RubikFace* face, int angle, int key, bool isQu
 		}
 		isDirty = true;
 	}
-	else ui::Log("\ncubies=%lld\n", cubies.size());
+	else ui::Log("\ncubies=%zu\n", cubies.size());
 }
 
 void RubikCube::Scramble(const sCamera& camera, int steps)
@@ -403,7 +403,7 @@ void RubikCube::Scramble(const sCamera& camera, int steps)
 	}
 }
 
-int RubikCube::Serialize(fmt::memory_buffer& outString, const int depth, const int bounds, const bool addChildren) const
+int RubikCube::Serialize(std::string& outString, const int depth, const int bounds, const bool addChildren) const
 {
 	int keyId = Mesh::Serialize(outString, depth, bounds & 1, false);
 	if (keyId < 0) return keyId;

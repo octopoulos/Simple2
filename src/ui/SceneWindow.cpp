@@ -1,6 +1,6 @@
 // SceneWindow.cpp
 // @author octopoulos
-// @version 2025-10-04
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -56,7 +56,7 @@ public:
 		}
 
 		ImGui::TableNextColumn();
-		ImGui::PushID(node->name.c_str());
+		ImGui::PushID(Cstr(node->name));
 
 		if (node->visible)
 		{
@@ -128,7 +128,7 @@ public:
 		// draw node itself
 		else
 		{
-			ImGui::TreeNodeEx(node->name.c_str(), treeFlag | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+			ImGui::TreeNodeEx(Cstr(node->name), treeFlag | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
 			DrawCells(node);
 		}
 

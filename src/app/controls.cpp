@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-10-12
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -292,13 +292,15 @@ void App::FluidControls()
 						// right/up  = zoom out
 						if (modifier & Modifier_Ctrl)
 						{
-							const int sign = (bx::abs(motion[0]) > bx::abs(motion[1])) ? -bx::sign(motion[0]) : bx::sign(motion[1]);
+							const int sign = (bx::abs(motion[0]) > bx::abs(motion[1])) ? bx::sign(motion[0]) : bx::sign(motion[1]);
 							camera->ZoomSigned(bx::length(bx::load<bx::Vec3>(motion)) * xsettings.zoomWheel * sign);
 						}
 						else if (modifier & Modifier_Shift)
 						{
-							camera->Move(CameraDir_Right, -motion[0] * xsettings.panTrack);
-							camera->Move(CameraDir_Up, motion[1] * xsettings.panTrack);
+							// clang-format off
+							camera->Move(CameraDir_Right, -motion[0] * xsettings.panTrack, false);
+							camera->Move(CameraDir_Up   ,  motion[1] * xsettings.panTrack, false);
+							// clang-format on
 						}
 						else camera->Orbit(motion[0], motion[1]);
 						break;
@@ -372,7 +374,7 @@ void App::FluidControls()
 			const int  keyEW   = isOrtho ? Key::KeyW : Key::KeyE;
 
 			if (GI_KEY(Key::KeyA)) camera->Move(CameraDir_Right, -speed);
-			if (GI_KEY(Key::KeyD)) camera->Move(CameraDir_Right, speed);
+			if (GI_KEY(Key::KeyD)) camera->Move(CameraDir_Right,  speed);
 			if (GI_KEY(keyEW)) camera->Move(CameraDir_Up, speed);
 			if (GI_KEY(keyQS)) camera->Move(CameraDir_Up, -speed);
 			if (!isOrtho)
@@ -566,7 +568,7 @@ void App::ThrowGeometry(int action, int geometryType, const VEC_STR& texFiles)
 	else if (auto mesh = std::make_shared<Mesh>(groupName, ObjectType_Group | ObjectType_Instance))
 	{
 		mesh->geometry = CreateAnyGeometry(geometryType);
-		mesh->material = GetMaterialManager().LoadMaterial(Format("model-inst:%s", ArrayJoin(texFiles, '-').c_str()), "vs_model_texture_instance", "fs_model_texture_instance", texFiles);
+		mesh->material = GetMaterialManager().LoadMaterial(FormatStr("model-inst:%s", Cstr(ArrayJoin(texFiles, '-'))), "vs_model_texture_instance", "fs_model_texture_instance", texFiles);
 		scene->AddChild(mesh);
 
 		parent = mesh;
@@ -575,9 +577,9 @@ void App::ThrowGeometry(int action, int geometryType, const VEC_STR& texFiles)
 	if (!parent) return;
 
 	// 2) clone an instance
-	if (auto object = parent->CloneInstance(Format("%s:%d", name, parent->children.size())))
+	if (auto object = parent->CloneInstance(FormatStr("%s:%d", name, parent->children.size())))
 	{
-		object->material = GetMaterialManager().LoadMaterial(Format("model:%s", ArrayJoin(texFiles, '-').c_str()), "vs_model_texture", "fs_model_texture", texFiles);
+		object->material = GetMaterialManager().LoadMaterial(FormatStr("model:%s", Cstr(ArrayJoin(texFiles, '-'))), "vs_model_texture", "fs_model_texture", texFiles);
 
 		const auto  pos   = camera->pos2;
 		const float scale = bx::clamp(NormalFloat(1.0f, 0.2f), 0.25f, 1.5f);
@@ -622,9 +624,9 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, const VEC_
 	if (!parent) return;
 
 	// 2) clone an instance
-	if (auto object = parent->CloneInstance(Format("%s:%d", Cstr(name), parent->children.size())))
+	if (auto object = parent->CloneInstance(FormatStr("%s:%d", Cstr(name), parent->children.size())))
 	{
-		object->material = GetMaterialManager().LoadMaterial(Format("model:%s", ArrayJoin(texFiles, '-').c_str()), "vs_model_texture", "fs_model_texture", texFiles);
+		object->material = GetMaterialManager().LoadMaterial(FormatStr("model:%s", Cstr(ArrayJoin(texFiles, '-'))), "vs_model_texture", "fs_model_texture", texFiles);
 
 		bx::Vec3 pos = camera->pos2;
 		bx::Vec3 rot = bx::InitZero;

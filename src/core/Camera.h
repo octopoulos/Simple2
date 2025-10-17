@@ -1,6 +1,6 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-10-12
+// @version 2025-10-13
 
 #pragma once
 
@@ -66,7 +66,7 @@ public:
 	void GetViewMatrix(float* viewMtx) const;
 
 	/// Move the camera to a direction
-	void Move(int cameraDir, float speed);
+	void Move(int cameraDir, float speed, bool resetActive = true);
 
 	/// Accumulate orbit deltas
 	void Orbit(float dx, float dy);
@@ -75,7 +75,7 @@ public:
 	void RotateAroundAxis(const bx::Vec3& axis, float angle);
 
 	/// Serialize for JSON output
-	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3, bool addChildren = true) const override;
+	virtual int Serialize(std::string& outString, int depth, int bounds = 3, bool addChildren = true) const override;
 
 	/// Enable orthographic projection
 	void SetOrthographic(const bx::Vec3& axis);

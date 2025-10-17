@@ -1,6 +1,6 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-10-12
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "core/Camera.h"
@@ -74,14 +74,15 @@ void Camera::GetViewMatrix(float* viewMtx) const
 	bx::mtxLookAt(viewMtx, pos, target, up);
 }
 
-void Camera::Move(int cameraDir, float speed)
+void Camera::Move(int cameraDir, float speed, bool resetActive)
 {
 	const auto& dir = (cameraDir == CameraDir_Forward) ? forward : ((cameraDir == CameraDir_Right) ? right : up);
 
-	distance = 0.1f;
+	// distance = 0.1f;
 	pos2     = bx::mad(dir, speed, pos2);
 	target2  = bx::mad(forward, distance, pos2);
-	follow &= ~CameraFollow_Active;
+
+	if (resetActive) follow &= ~CameraFollow_Active;
 }
 
 void Camera::Orbit(float dx, float dy)
@@ -98,7 +99,7 @@ void Camera::RotateAroundAxis(const bx::Vec3& axis, float angle)
 	pos2 = bx::mad(rotated, -distance, target2);
 }
 
-int Camera::Serialize(fmt::memory_buffer& outString, int depth, int bounds, bool addChildren) const
+int Camera::Serialize(std::string& outString, int depth, int bounds, bool addChildren) const
 {
 	int keyId = Object3d::Serialize(outString, depth, (bounds & 1) ? 1 : 0, addChildren);
 	if (keyId < 0) return keyId;

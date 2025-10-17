@@ -5,6 +5,7 @@
 *.ini
 *.mp4
 *.zip
+anna.cpp
 assets/
 build*/
 build/

@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-10-11
+// @version 2025-10-13
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -208,7 +208,7 @@ int App::InitializeScene()
 
 				for (int i = 0; i < 2; ++i)
 				{
-					auto cubeMesh      = std::make_shared<Mesh>(Format("wall-%d", 1 + i));
+					auto cubeMesh      = std::make_shared<Mesh>(FormatStr("wall-%d", 1 + i));
 					cubeMesh->geometry = CreateBoxGeometry(39.0f, 6.0f, 1.0f, 4, 1, 4);
 					cubeMesh->material = GetMaterialManager().LoadMaterial("brick", "vs_model_texture", "fs_model_texture", { "brick_diffuse.jpg" });
 
@@ -223,7 +223,7 @@ int App::InitializeScene()
 				}
 				for (int i = 0; i < 2; ++i)
 				{
-					auto cubeMesh      = std::make_shared<Mesh>(Format("wall-%d", 3 + i));
+					auto cubeMesh      = std::make_shared<Mesh>(FormatStr("wall-%d", 3 + i));
 					cubeMesh->geometry = CreateBoxGeometry(1.0f, 6.0f, 39.0f, 4, 1, 4);
 					cubeMesh->material = GetMaterialManager().LoadMaterial("wood", "vs_model_texture", "fs_model_texture", { "hardwood2_diffuse.jpg" });
 
@@ -288,7 +288,7 @@ int App::InitializeScene()
 
 	// 6) print scene children
 	{
-		ui::Log("Scene.children=%lld", scene->children.size());
+		ui::Log("Scene.children=%zu", scene->children.size());
 		for (int i = -1; const auto& child : scene->children)
 			ui::Log(" %2d: %s", ++i, Cstr(child->name));
 	}
@@ -378,7 +378,7 @@ void App::Render()
 			if (CreateDirectories("temp"))
 			{
 				bgfx::FrameBufferHandle fbh = BGFX_INVALID_HANDLE;
-				bgfx::requestScreenShot(fbh, Format("temp/%s.png", FormatDateTime(2, true).c_str()));
+				bgfx::requestScreenShot(fbh, Format("temp/%s.png", Cstr(FormatDateTime(2, true))));
 			}
 		}
 	}
@@ -450,7 +450,7 @@ struct BgfxCallback : public bgfx::CallbackI
 		{
 			if (numFailure > 3)
 				wantVideo = false;
-			else if (!ffmpeg.Open(Format("temp/%s.mp4", FormatDateTime(2, true).c_str()), width, height, 60, yflip))
+			else if (!ffmpeg.Open(Format("temp/%s.mp4", Cstr(FormatDateTime(2, true))), width, height, 60, yflip))
 				++numFailure;
 		}
 		else ffmpeg.WriteFrame(data, size);
@@ -639,4 +639,4 @@ public:
 	}
 };
 
-ENTRY_IMPLEMENT_MAIN(EntryApp, "App", VERSION.c_str(), "https://shark-it.be");
+ENTRY_IMPLEMENT_MAIN(EntryApp, "App", Cstr(VERSION), "https://shark-it.be");

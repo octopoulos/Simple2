@@ -1,6 +1,6 @@
 // Body.h
 // @author octopoulos
-// @version 2025-10-06
+// @version 2025-10-13
 
 #pragma once
 
@@ -66,7 +66,7 @@ public:
 	void DestroyShape();
 
 	/// Serialize for JSON output
-	int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3) const;
+	int Serialize(std::string& outString, int depth, int bounds = 3) const;
 
 	/// Show info table in ImGui
 	void ShowInfoTable(bool showTitle = true) const;

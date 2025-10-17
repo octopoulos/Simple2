@@ -1,4 +1,4 @@
-// @version 2025-10-12
+// @version 2025-10-13
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -457,7 +457,7 @@ struct Context
 				{
 				case GLFW_WINDOW_CREATE:
 				{
-					GLFWwindow* window = glfwCreateWindow(msg->m_width, msg->m_height, msg->m_title.c_str(), NULL, NULL);
+					GLFWwindow* window = glfwCreateWindow(msg->m_width, msg->m_height, Cstr(msg->m_title), NULL, NULL);
 					if (!window) break;
 
 					glfwSetWindowPos(window, msg->m_x, msg->m_y);
@@ -493,7 +493,7 @@ struct Context
 				case GLFW_WINDOW_SET_TITLE:
 				{
 					GLFWwindow* window = m_window[msg->m_handle.idx];
-					glfwSetWindowTitle(window, msg->m_title.c_str());
+					glfwSetWindowTitle(window, Cstr(msg->m_title));
 				}
 				break;
 

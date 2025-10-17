@@ -1,6 +1,6 @@
 // Object3d.h
 // @author octopoulos
-// @version 2025-10-06
+// @version 2025-10-13
 
 #pragma once
 
@@ -156,7 +156,7 @@ public:
 	void ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat& _quaternion, const glm::vec3& _position);
 
 	/// Serialize for JSON output
-	virtual int Serialize(fmt::memory_buffer& outString, int depth, int bounds = 3, bool addChildren = true) const;
+	virtual int Serialize(std::string& outString, int depth, int bounds = 3, bool addChildren = true) const;
 
 	/// Show info table in ImGui
 	virtual void ShowInfoTable(bool showTitle = true) const;

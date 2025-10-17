@@ -1,4 +1,4 @@
-// @version 2025-09-29
+// @version 2025-10-13
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -574,10 +574,10 @@ struct Context
 		XSetWMProtocols(m_display, window, &wmDeleteWindow, 1);
 
 		XMapWindow(m_display, window);
-		XStoreName(m_display, window, msg->m_title.c_str());
+		XStoreName(m_display, window, Cstr(msg->m_title));
 
 		XClassHint* hint = XAllocClassHint();
-		hint->res_name   = (char*)msg->m_title.c_str();
+		hint->res_name   = (char*)Cstr(msg->m_title);
 		hint->res_class  = (char*)s_applicationClass;
 		XSetClassHint(m_display, window, hint);
 		XFree(hint);

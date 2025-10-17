@@ -203,21 +203,11 @@ endif()
 
 message(STATUS "VCPKG_ROOT=${VCPKG_ROOT}")
 
-# Use FetchContent for fmt to get the latest version
-include(FetchContent)
-FetchContent_Declare(
-	fmt
-	GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-	OVERRIDE_FIND_PACKAGE
-)
-FetchContent_MakeAvailable(fmt)
-
 # find_package(bgfx CONFIG REQUIRED)
 find_package(Bullet REQUIRED)
 find_package(CLI11 CONFIG REQUIRED)
 find_package(doctest CONFIG REQUIRED)
 find_package(fastgltf CONFIG REQUIRED)
-find_package(fmt CONFIG REQUIRED)
 #find_package(imgui CONFIG REQUIRED)
 find_package(meshoptimizer CONFIG REQUIRED)
 find_package(unofficial-openfbx CONFIG REQUIRED)
@@ -328,7 +318,6 @@ target_link_libraries(Simple PRIVATE
 	CLI11::CLI11
 	doctest::doctest
 	fastgltf::fastgltf
-	fmt::fmt-header-only
 	#imgui::imgui
 	meshoptimizer::meshoptimizer
 	unoffical::openfbx::openfbx

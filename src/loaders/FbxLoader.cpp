@@ -1,6 +1,6 @@
 // FbxLoader.cpp
 // @author octopoulos
-// @version 2025-10-10
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -22,7 +22,7 @@ static glm::mat4 FbxToMatrix(const ofbx::DMatrix& fbxMat)
 	glm::mat4 matrix = glm::make_mat4(fbxMat.m);
 
 	static const glm::mat4 coord = glm::mat4(
-		1.0f, 0.0f, 0.0f, 0.0f,  // X stays X (right)
+		-1.0f, 0.0f, 0.0f, 0.0f,  // X stays X (right)
 		0.0f, 0.0f, 1.0f, 0.0f,  // Z -> Y (up)
 		0.0f, -1.0f, 0.0f, 0.0f, // Y -> -Z (forward)
 		0.0f, 0.0f, 0.0f, 1.0f
@@ -32,10 +32,10 @@ static glm::mat4 FbxToMatrix(const ofbx::DMatrix& fbxMat)
 }
 
 /// Y -> -Z, Z -> Y
-inline glm::vec3 FbxToNormal(const ofbx::Vec3& n) { return glm::normalize(glm::vec3(TO_FLOAT(n.x), TO_FLOAT(n.z), -TO_FLOAT(n.y))); }
+inline glm::vec3 FbxToNormal(const ofbx::Vec3& n) { return glm::normalize(glm::vec3(TO_FLOAT(-n.x), TO_FLOAT(n.z), TO_FLOAT(-n.y))); }
 
 /// Y -> -Z, Z -> Y
-inline glm::vec3 FbxToPosition(const ofbx::Vec3& v) { return glm::vec3(TO_FLOAT(v.x), TO_FLOAT(v.z), -TO_FLOAT(v.y)); }
+inline glm::vec3 FbxToPosition(const ofbx::Vec3& v) { return glm::vec3(TO_FLOAT(-v.x), TO_FLOAT(v.z), TO_FLOAT(-v.y)); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // MAIN
@@ -119,7 +119,7 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 
 		// load material with texture names
 		material = GetMaterialManager().LoadMaterial(materialName, vsName, fsName, {}, textures);
-		ui::Log("material: %s %s %s %lld", Cstr(materialName), Cstr(vsName), Cstr(fsName), textures.size());
+		ui::Log("material: %s %s %s %zu", Cstr(materialName), Cstr(vsName), Cstr(fsName), textures.size());
 
 		// PBR-like properties
 		ofbx::Color diffuse   = fbxMaterial->getDiffuseColor();
@@ -143,7 +143,7 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 
 		uint64_t state = BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_MSAA | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_Z;
 		if (alphaMode == AlphaMode_Blend) state |= BGFX_STATE_BLEND_ALPHA;
-		if (!material->doubleSided) state |= BGFX_STATE_CULL_CCW;
+		if (!material->doubleSided) state |= BGFX_STATE_CULL_CW;
 		material->state = state;
 	}
 	else
@@ -354,7 +354,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 			memcpy(group.vertices, vertices.data(), vertices.size() * sizeof(Vertex));
 			group.numVertices = TO_UINT32(vertices.size());
 			group.vbh         = bgfx::createVertexBuffer(bgfx::makeRef(group.vertices, vertices.size() * sizeof(Vertex)), layout, BGFX_BUFFER_NONE);
-			ui::Log("ProcessMesh: mesh %s partition %d: %lld vertices", Cstr(nodeName), partitionId, vertices.size());
+			ui::Log("ProcessMesh: mesh %s partition %d: %zu vertices", Cstr(nodeName), partitionId, vertices.size());
 		}
 		else
 		{
@@ -368,7 +368,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 			memcpy(group.indices, indices.data(), indices.size() * sizeof(uint32_t));
 			group.numIndices = TO_UINT32(indices.size());
 			group.ibh        = bgfx::createIndexBuffer(bgfx::makeRef(group.indices, indices.size() * sizeof(uint32_t)), BGFX_BUFFER_INDEX32);
-			ui::Log("ProcessMesh: mesh %s partition %d: %lld indices", Cstr(nodeName), partitionId, indices.size());
+			ui::Log("ProcessMesh: mesh %s partition %d: %zu indices", Cstr(nodeName), partitionId, indices.size());
 		}
 		else
 		{
@@ -549,7 +549,7 @@ sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy, std::string_view 
 	for (const auto& child : rootMesh->children)
 	{
 		const auto sparent = child->parent.lock();
-		ui::Log("LoadFbx: child %s: parent=%s groups=%lld children=%lld", Cstr(child->name), sparent ? Cstr(sparent->name) : "none", Mesh::SharedPtr(child)->groups.size(), child->children.size());
+		ui::Log("LoadFbx: child %s: parent=%s groups=%zu children=%zu", Cstr(child->name), sparent ? Cstr(sparent->name) : "none", Mesh::SharedPtr(child)->groups.size(), child->children.size());
 	}
 
 	// clean up

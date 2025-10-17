@@ -1,6 +1,6 @@
 // MaterialManager.cpp
 // @author octopoulos
-// @version 2025-10-07
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "materials/MaterialManager.h"
@@ -46,7 +46,7 @@ sMaterial MaterialManager::LoadMaterial(std::string_view name, std::string_view 
 	}
 
 	// 3) add texture
-	ui::Log("LoadMaterial: texFiles=%lld texDatas=%lld", texFiles.size(), texDatas.size());
+	ui::Log("LoadMaterial: texFiles=%zu texDatas=%zu", texFiles.size(), texDatas.size());
 	if (texFiles.size()) material->LoadTextures(texFiles);
 	if (texDatas.size())
 	{
@@ -68,7 +68,7 @@ sMaterial MaterialManager::LoadMaterial(std::string_view name, std::string_view 
 
 void MaterialManager::PrintMaterials()
 {
-	ui::Log("Materials (%lld):", materials.size());
+	ui::Log("Materials (%zu):", materials.size());
 	for (int i = -1; const auto& [name, material] : materials)
 		ui::Log("%2d: %2d : %s", ++i, material.use_count(), Cstr(name));
 }
@@ -97,7 +97,7 @@ void MaterialManager::ShowInfoTable(bool showTitle) const
 		{
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
-			ImGui::TextUnformatted(name.c_str());
+			ImGui::TextUnformatted(Cstr(name));
 			ImGui::TableNextColumn();
 			ImGui::Text("%d", value.use_count());
 		}

@@ -1,6 +1,6 @@
 // learn.cpp
 // @author octopoulos
-// @version 2025-09-30
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -200,7 +200,7 @@ void App::TestUi()
 		if (ImGui::Button("Next"))
 			xsettings.testId = (xsettings.testId + 1) % numFunc;
 		ImGui::SameLine();
-		ImGui::TextUnformatted(name.c_str());
+		ImGui::TextUnformatted(Cstr(name));
 	}
 	ImGui::End();
 }

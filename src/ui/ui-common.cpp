@@ -1,6 +1,6 @@
 // ui-common.cpp
 // @author octopoulos
-// @version 2025-10-02
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -371,9 +371,9 @@ void ShowTable(const std::vector<std::tuple<std::string, std::string>>& stats)
 		{
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
-			ImGui::TextUnformatted(name.c_str());
+			ImGui::TextUnformatted(Cstr(name));
 			ImGui::TableNextColumn();
-			ImGui::TextUnformatted(value.c_str());
+			ImGui::TextUnformatted(Cstr(value));
 		}
 		ImGui::EndTable();
 	}
@@ -387,7 +387,7 @@ bool CommonWindow::BeginDraw(int flags)
 {
 	if (!isOpen || (hidden & 1)) return false;
 
-	if (!ImGui::Begin(name.c_str(), &isOpen, flags))
+	if (!ImGui::Begin(Cstr(name), &isOpen, flags))
 	{
 		ImGui::End();
 		return false;

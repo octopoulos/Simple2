@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-10-06
+// @version 2025-10-13
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -61,7 +61,7 @@ void Object3d::ClearDeads(bool force)
 	}
 
 	// 2) remove
-	ui::Log("ClearDeads: removes=%lld (%s)", removes.size(), Cstr(name));
+	ui::Log("ClearDeads: removes=%zu (%s)", removes.size(), Cstr(name));
 	for (auto& remove : removes) RemoveChild(remove);
 }
 
@@ -272,7 +272,7 @@ void Object3d::ScaleQuaternionPosition(const glm::vec3& _scale, const glm::quat&
 	UpdateLocalMatrix("ScaleQuaternionPosition");
 }
 
-int Object3d::Serialize(fmt::memory_buffer& outString, int depth, int bounds, bool addChildren) const
+int Object3d::Serialize(std::string& outString, int depth, int bounds, bool addChildren) const
 {
 	// skip Scene.groups except Map
 	if (depth == 1 && (type & ObjectType_Group) && !(type & ObjectType_Map)) return -1;
