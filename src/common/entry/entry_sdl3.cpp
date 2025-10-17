@@ -219,13 +219,13 @@ struct Msg
 	{
 	}
 
-	int32_t         m_x;
-	int32_t         m_y;
-	uint32_t        m_width;
-	uint32_t        m_height;
-	uint32_t        m_flags;
-	tinystl::string m_title;
-	bool            m_flagsEnabled;
+	int32_t     m_x;
+	int32_t     m_y;
+	uint32_t    m_width;
+	uint32_t    m_height;
+	uint32_t    m_flags;
+	std::string m_title;
+	bool        m_flagsEnabled;
 };
 
 static uint32_t s_userEventStart;

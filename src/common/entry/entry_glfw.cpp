@@ -211,15 +211,15 @@ struct Msg
 	{
 	}
 
-	MsgType         m_type;
-	int32_t         m_x;
-	int32_t         m_y;
-	uint32_t        m_width;
-	uint32_t        m_height;
-	uint32_t        m_flags;
-	bool            m_value;
-	tinystl::string m_title;
-	WindowHandle    m_handle;
+	MsgType      m_type;
+	int32_t      m_x;
+	int32_t      m_y;
+	uint32_t     m_width;
+	uint32_t     m_height;
+	uint32_t     m_flags;
+	bool         m_value;
+	std::string  m_title;
+	WindowHandle m_handle;
 };
 
 static void errorCb(int _error, const char* _description)

@@ -117,7 +117,7 @@ public:
 				{
 					auto color = lines[i].color;
 					if (color) ImGui::PushStyleColor(ImGuiCol_Text, colorValues[color]);
-					ImGui::TextUnformatted(Cstr(lines[i]));
+					ImGui::TextUnformatted(Cstr(lines[i].text));
 					if (color) ImGui::PopStyleColor();
 				}
 			}
