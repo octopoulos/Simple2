@@ -1,6 +1,6 @@
 // stdafx.h
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-10-13
 
 #pragma once
 
@@ -10,6 +10,11 @@
 
 #include <btBulletDynamicsCommon.h>
 #include <btBulletCollisionCommon.h>
+
+#ifdef _WIN32
+#	define _WIN32_WINNT 0x0602
+#	define WINVER       0x0602
+#endif // _WIN32
 
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
