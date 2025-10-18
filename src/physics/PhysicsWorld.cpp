@@ -1,6 +1,6 @@
 // PhysicsWorld.cpp
 // @author octopoulos
-// @version 2025-09-05
+// @version 2025-10-14
 
 #include "stdafx.h"
 #include "physics/PhysicsWorld.h"
@@ -79,6 +79,7 @@ PhysicsWorld::PhysicsWorld()
 
 PhysicsWorld::~PhysicsWorld()
 {
+	ui::Log("~PhysicsWorld");
 	if (world && debugDraw)
 		world->setDebugDrawer(nullptr);
 

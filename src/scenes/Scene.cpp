@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-14
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -77,7 +77,7 @@ static bool GetArrayInt(int count, simdjson::ondemand::object& doc, const char* 
 	return false;
 }
 
-static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObject3d scene, void* physics, int depth)
+static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObject3d scene, int depth)
 {
 	// 1) default values
 	std::array<int, 3> irot     = {};
@@ -281,7 +281,7 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 	if (!doc["children"].get_array().get(array))
 	{
 		for (simdjson::ondemand::object child : array)
-			ParseObject(child, object ? object : parent, scene, physics, depth + 1);
+			ParseObject(child, object ? object : parent, scene, depth + 1);
 	}
 }
 
@@ -301,7 +301,7 @@ bool App::OpenScene(const std::filesystem::path& filename)
 		AddRecent(filename);
 		ui::Log("Parsing JSON object from file: %s", PathStr(filename));
 		Scene::SharedPtr(scene)->Clear();
-		ParseObject(obj, scene, scene, GetPhysics(), 0);
+		ParseObject(obj, scene, scene, 0);
 
 		entry::setWindowTitle(entry::kDefaultWindowHandle, PathStr(filename.filename()));
 		return true;
@@ -393,7 +393,7 @@ void App::PickObject(int numClick, int mouseX, int mouseY)
 	// 6) perform Bullet raycast
 	btVector3 from  = GlmToBullet(rayOrigin);
 	btVector3 to    = GlmToBullet(rayOrigin + rayDir * xsettings.rayLength); // Configurable distance
-	auto*     world = GetPhysics()->GetWorld();
+	auto*     world = GetPhysicsWorld();
 	ui::Log("PickObject: Physics world has %d objects", world->getNumCollisionObjects());
 
 	// Update AABBs and pairs (like RaytestDemo)

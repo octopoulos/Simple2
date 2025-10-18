@@ -1,6 +1,6 @@
 // Scene.h
 // @author octopoulos
-// @version 2025-08-25
+// @version 2025-10-14
 
 #pragma once
 
@@ -14,7 +14,7 @@ public:
 	{
 	}
 
-	~Scene() = default;
+	~Scene() { ui::Log("~Scene"); }
 
 	/// Clear the scene, but keep: camera/cursor/map
 	void Clear();

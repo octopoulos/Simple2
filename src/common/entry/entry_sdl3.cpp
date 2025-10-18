@@ -1,9 +1,11 @@
 // entry_sdl3.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-14
 
 #include "stdafx.h"
 #include "entry_p.h"
+//
+#include "input.h"
 #include "ui/xsettings.h"
 
 #if ENTRY_CONFIG_USE_SDL3
@@ -346,7 +348,7 @@ LRESULT CALLBACK CustomWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 		if (msg == WM_POINTERUP) pressure = -pressure - 1.0f;
 
 		const uint64_t deviceId = (pi.pointerType == PT_TOUCH) ? 1 : 2;
-		ginput.MouseMove(deviceId, pointerId, x, y, 0, true, dx, dy, pressure);
+		GetGlobalInput().MouseMove(deviceId, pointerId, x, y, 0, true, dx, dy, pressure);
 		break;
 	}
 	case WM_POINTERLEAVE:

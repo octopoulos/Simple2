@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-10-04
+// @version 2025-10-14
 
 #pragma once
 
@@ -38,6 +38,9 @@ class App
 	// INIT
 	///////
 
+private:
+	std::unique_ptr<PhysicsWorld> physics = nullptr; ///< physics world
+
 public:
 	App() = default;
 
@@ -49,8 +52,12 @@ public:
 	/// Destroy objects
 	void Destroy();
 
-	/// Get a naked pointer to physics
-	PhysicsWorld* GetPhysics() { return physics.get(); }
+	/// Get a pointer to physics world
+	btDiscreteDynamicsWorld* GetPhysicsWorld()
+	{
+		ui::Log("GetPhysicsWorld");
+		return physics ? physics->GetWorld() : nullptr;
+	}
 
 	/// Get a shared pointer to self
 	static std::shared_ptr<App> GetApp();
@@ -159,16 +166,15 @@ public:
 	////////
 
 private:
-	sCamera                       camera       = nullptr; ///< camera
-	sMesh                         cursor       = nullptr; ///< current cursor for placing objects
-	float                         curTime      = 0.0f;    ///< current time
-	float                         deltaTime    = 0.0f;    ///< last delta (current - last)
-	float                         lastTime     = 0.0f;    ///< last rendered time
-	int64_t                       lastUs       = 0;       ///< microseconds
-	std::unique_ptr<PhysicsWorld> physics      = nullptr; ///< physics world
-	int                           physicsFrame = 0;       ///< current physics frame
-	wObject3d                     prevSelWeak  = {};      ///< previously selected object
-	int64_t                       startTime    = 0;       ///< initial time
+	sCamera   camera       = nullptr; ///< camera
+	sMesh     cursor       = nullptr; ///< current cursor for placing objects
+	float     curTime      = 0.0f;    ///< current time
+	float     deltaTime    = 0.0f;    ///< last delta (current - last)
+	float     lastTime     = 0.0f;    ///< last rendered time
+	int64_t   lastUs       = 0;       ///< microseconds
+	int       physicsFrame = 0;       ///< current physics frame
+	wObject3d prevSelWeak  = {};      ///< previously selected object
+	int64_t   startTime    = 0;       ///< initial time
 
 	/// Delete the selected object
 	void DeleteSelected();

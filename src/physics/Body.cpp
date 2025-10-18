@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-14
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -130,7 +130,7 @@ void Body::CreateBody(float _mass, const btVector3& pos, const btQuaternion& qua
 	body->setSpinningFriction(0.02f);
 	body->setSleepingThresholds(1.2f, 1.5f);
 
-	if (auto world = App::GetApp()->GetPhysics()->GetWorld())
+	if (auto world = App::GetApp()->GetPhysicsWorld())
 		world->addRigidBody(body);
 }
 
@@ -451,7 +451,7 @@ void Body::DestroyBody()
 {
 	if (body)
 	{
-		if (auto world = App::GetApp()->GetPhysics()->GetWorld())
+		if (auto world = App::GetApp()->GetPhysicsWorld())
 			world->removeRigidBody(body);
 
 		const auto& motionState = body->getMotionState();
