@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-16
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -258,6 +258,9 @@ void App::FixedControls()
 
 	// 6) reset fixed
 	GetGlobalInput().ResetFixed();
+
+	// start app with cursor focus
+	if (inputFrame < 1) MoveSelected(true);
 	++inputFrame;
 }
 
@@ -281,7 +284,9 @@ void App::FluidControls()
 
 			if (ginput.lastDevice)
 			{
-				if (const auto device = ginput.devices[ginput.lastDevice]; device.fingers.size() >= 2)
+				auto       device    = ginput.devices[ginput.lastDevice];
+				const auto numFinger = device.fingers.size();
+				if (numFinger >= 2)
 				{
 					const auto& motion = device.motion;
 
@@ -302,7 +307,7 @@ void App::FluidControls()
 							camera->Move(CameraDir_Up   ,  motion[1] * xsettings.panTrack, false);
 							// clang-format on
 						}
-						else camera->Orbit(motion[0], motion[1]);
+						else camera->Orbit(motion[0] * xsettings.rotateTrack, motion[1] * xsettings.rotateTrack);
 						break;
 					case Gesture_ZoomIn:
 					case Gesture_ZoomOut:
@@ -313,6 +318,9 @@ void App::FluidControls()
 					}
 					default: break;
 					}
+				}
+				else if (numFinger == 0)
+				{
 				}
 			}
 

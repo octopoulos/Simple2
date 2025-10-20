@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-10-12
+// @version 2025-10-15
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -102,7 +102,7 @@ public:
 		// INPUT
 		////////
 
-		BEGIN_COLLAPSE("Input", Show_Input, 9)
+		BEGIN_COLLAPSE("Input", Show_Input, 12)
 		{
 			AddDragFloat(1, "boostCtrl", "Boost Ctrl", nullptr);
 			AddDragFloat(1, "boostShift", "Boost Shift", nullptr);
@@ -112,6 +112,7 @@ public:
 			AddSliderInt(0, "keyInit", "Key Initial");
 			AddSliderInt(0, "keyRepeat", "Key Repeat");
 			AddDragFloat(0, "panTrack", "Pan Track", nullptr);
+			AddDragFloat(0, "rotateTrack", "Rotate Track", nullptr);
 			AddDragFloat(0, "zoomKb", "Zoom Keyboard", nullptr);
 			AddDragFloat(0, "zoomTrack", "Zoom Track", nullptr);
 			AddDragFloat(0, "zoomWheel", "Zoom Wheel", nullptr);

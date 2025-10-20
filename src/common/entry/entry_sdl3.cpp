@@ -1,6 +1,6 @@
 // entry_sdl3.cpp
 // @author octopoulos
-// @version 2025-10-14
+// @version 2025-10-16
 
 #include "stdafx.h"
 #include "entry_p.h"
@@ -1202,9 +1202,9 @@ int32_t MainThreadEntry::threadFunc(bx::Thread* _thread, void* _userData)
 	MainThreadEntry* self   = (MainThreadEntry*)_userData;
 	int32_t          result = main(self->m_argc, self->m_argv);
 
-	SDL_Event      event;
-	SDL_QuitEvent& qev = event.quit;
-	qev.type           = SDL_EVENT_QUIT;
+	SDL_Event      event = {};
+	SDL_QuitEvent& qev   = event.quit;
+	qev.type             = SDL_EVENT_QUIT;
 	SDL_PushEvent(&event);
 	return result;
 }

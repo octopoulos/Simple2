@@ -1,6 +1,6 @@
 // ui.h
 // @author octopoulos
-// @version 2025-10-02
+// @version 2025-10-16
 
 #pragma once
 
@@ -207,14 +207,6 @@ CommonWindow& GetControlsWindow();
 
 /// Image text button aligned on a row
 int DrawControlButton(uint32_t texId, const ImVec4& color, std::string name, const char* label, int textButton, float uiScale);
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FX
-/////
-
-using FxFunc = void(*)(ImDrawList* drawList, ImVec2 topLeft, ImVec2, ImVec2 size, ImVec4, float time);
-
-std::vector<std::pair<std::string, FxFunc>> GetFxFunctions();
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // LOG

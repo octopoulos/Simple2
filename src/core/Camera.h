@@ -1,10 +1,17 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-15
 
 #pragma once
 
 #include "objects/Object3d.h"
+
+enum CameraActions_ : int
+{
+	CameraAction_None  = 0,
+	CameraAction_Orbit = 1,
+	CameraAction_Pan   = 2
+};
 
 enum CameraDirs : int
 {
@@ -26,11 +33,17 @@ using sCamera = std::shared_ptr<class Camera>;
 class Camera : public Object3d
 {
 private:
-	float aspect    = 1.0f;           ///< aspect ratio (width / height)
-	float farPlane  = 100.0f;         ///< far clipping plane (perspective)
-	float fovY      = 60.0f;          ///< vertical field of view
-	float nearPlane = 0.1f;           ///< near clipping plane (perspective)
-	float orbit[2]  = { 0.0f, 0.0f }; ///< [azimuth, elevation]
+	int      action      = CameraAction_None;    ///< CameraActions_
+	float    angleDecay  = 0.997f;               ///< angular decay
+	float    angleVel[2] = { 0.0f, 0.0f };       ///< angular velocity
+	float    aspect      = 1.0f;                 ///< aspect ratio (width / height)
+	float    farPlane    = 100.0f;               ///< far clipping plane (perspective)
+	float    fovY        = 60.0f;                ///< vertical field of view
+	float    nearPlane   = 0.1f;                 ///< near clipping plane (perspective)
+	float    orbit[2]    = { 0.0f, 0.0f };       ///< [azimuth, elevation]
+	float    orbit0[2]   = { 0.0f, 0.0f };       ///< previous orbit values for orbiting speed
+	bx::Vec3 panVel      = { 0.0f, 0.0f, 0.0f }; ///< panning velocity (right, up)
+	bx::Vec3 pos0        = { 0.0f, 0.0f, 0.0f }; ///< previous position for panning speed
 
 public:
 	float    distance = 0.1f;                  ///< current distance to use between pos and target

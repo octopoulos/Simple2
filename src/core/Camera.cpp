@@ -1,6 +1,6 @@
 // Camera.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-15
 
 #include "stdafx.h"
 #include "core/Camera.h"
@@ -14,13 +14,11 @@ constexpr float orthoZoomMin = 0.0002f;
 
 void Camera::Initialize()
 {
-	distance = 0.1f;
-	orbit[0] = 0.0f;
-	orbit[1] = 0.0f;
-	pos      = bx::load<bx::Vec3>(xsettings.cameraEye);
-	pos2     = bx::load<bx::Vec3>(xsettings.cameraEye);
-	target   = bx::load<bx::Vec3>(xsettings.cameraAt);
-	target2  = bx::load<bx::Vec3>(xsettings.cameraAt);
+	angleDecay = 0.997f;
+	pos        = bx::load<bx::Vec3>(xsettings.cameraEye);
+	pos2       = bx::load<bx::Vec3>(xsettings.cameraEye);
+	target     = bx::load<bx::Vec3>(xsettings.cameraAt);
+	target2    = bx::load<bx::Vec3>(xsettings.cameraAt);
 }
 
 void Camera::ConsumeOrbit(float amount)
@@ -78,17 +76,18 @@ void Camera::Move(int cameraDir, float speed, bool resetActive)
 {
 	const auto& dir = (cameraDir == CameraDir_Forward) ? forward : ((cameraDir == CameraDir_Right) ? right : up);
 
-	// distance = 0.1f;
-	pos2     = bx::mad(dir, speed, pos2);
-	target2  = bx::mad(forward, distance, pos2);
+	pos2    = bx::mad(dir, speed, pos2);
+	target2 = bx::mad(forward, distance, pos2);
 
 	if (resetActive) follow &= ~CameraFollow_Active;
+	action = CameraAction_Pan;
 }
 
 void Camera::Orbit(float dx, float dy)
 {
 	orbit[0] += dx;
 	orbit[1] += dy;
+	action = CameraAction_Orbit;
 }
 
 void Camera::RotateAroundAxis(const bx::Vec3& axis, float angle)
@@ -124,8 +123,10 @@ void Camera::ShowInfoTable(bool showTitle) const
 
 	// clang-format off
 	ui::ShowTable({
+		{ "angleVel", FormatStr("%.5f %.5f", angleVel[0], angleVel[1])                },
 		{ "follow"  , std::to_string(follow)                                          },
 		{ "forward" , FormatStr("%.2f %.2f %.2f", forward.x, forward.y, forward.z)    },
+		{ "panVel"  , FormatStr("%.5f %.5f", panVel.x, panVel.y)                      },
 		{ "pos"     , FormatStr("%.2f %.2f %.2f", pos.x, pos.y, pos.z)                },
 		{ "pos2"    , FormatStr("%.2f %.2f %.2f", pos2.x, pos2.y, pos2.z)             },
 		{ "position", FormatStr("%.2f %.2f %.2f", position.x, position.y, position.z) },
@@ -141,6 +142,58 @@ void Camera::ShowInfoTable(bool showTitle) const
 void Camera::Update(float delta)
 {
 	const float amount = bx::min(delta * 20.0f, 1.0f);
+
+	// calculate velocities based on action
+	switch (action)
+	{
+	case CameraAction_None:
+	{
+		// apply velocities after release
+		orbit[0] += angleVel[0] * delta;
+		orbit[1] += angleVel[1] * delta;
+		angleVel[0] *= bx::pow(angleDecay, delta * 60.0f);
+		angleVel[1] *= bx::pow(angleDecay, delta * 60.0f);
+
+		// apply panning velocity
+		pos2    = bx::add(pos2, bx::mul(panVel, delta));
+		target2 = bx::mad(forward, distance, pos2);
+		panVel  = bx::mul(panVel, bx::pow(angleDecay, delta * 60.0f));
+
+		// stop if velocities are negligible
+		if (bx::abs(angleVel[0]) < 1e-5f && bx::abs(angleVel[1]) < 1e-5f)
+		{
+			angleVel[0] = 0.0f;
+			angleVel[1] = 0.0f;
+			orbit[0]    = 0.0f;
+			orbit[1]    = 0.0f;
+		}
+		if (bx::length(panVel) < 1e-5f)
+			panVel = bx::Vec3(0.0f, 0.0f, 0.0f);
+		break;
+	}
+	case CameraAction_Orbit:
+	{
+		const float deltaOrbit[2] = {
+			orbit[0] - orbit0[0],
+			orbit[1] - orbit0[1]
+		};
+		angleVel[0] = deltaOrbit[0] / (delta + bx::kFloatSmallest);
+		angleVel[1] = deltaOrbit[1] / (delta + bx::kFloatSmallest);
+		orbit0[0]   = orbit[0];
+		orbit0[1]   = orbit[1];
+		break;
+	}
+	case CameraAction_Pan:
+	{
+		const bx::Vec3 deltaPos = bx::sub(pos2, pos0);
+
+		panVel = bx::mul(deltaPos, 1.0f / (delta + bx::kFloatSmallest));
+		pos0   = pos2;
+		break;
+	}
+	default: break;
+	}
+
 	ConsumeOrbit(amount);
 
 	pos      = bx::lerp(pos, pos2, amount);

@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-10-12
+// @version 2025-10-15
 
 #pragma once
 
@@ -99,6 +99,7 @@ struct XSettings
 	int   keyInit;      ///< Ms wait for key repeat to kick in
 	int   keyRepeat;    ///< Ms key repeat interval
 	float panTrack;     ///< pan speed with trackpad
+	float rotateTrack;  ///< rotate speed with trackpad
 	float zoomKb;       ///< zoom speed with the keyboard
 	float zoomTrack;    ///< zoom speed with trackpad
 	float zoomWheel;    ///< zoom speed with the mouse wheel

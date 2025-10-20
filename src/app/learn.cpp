@@ -1,11 +1,12 @@
 // learn.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-16
 
 #include "stdafx.h"
 #include "app/App.h"
 //
-#include "ui/ui.h" // GetFxFunctions, ImGui::
+#include "ui/ui.h"    // ImGui::
+#include "ui/ui-fx.h" // GetFxFunction, GetFxNames
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // LEARN
@@ -160,9 +161,19 @@ void App::TestUi()
 		mouse.z = io.MouseDownDuration[0];
 		mouse.w = io.MouseDownDuration[1];
 
-		const auto functions    = ui::GetFxFunctions();
-		const auto numFunc      = functions.size();
-		const auto [name, func] = functions[xsettings.testId % numFunc];
+		// initialize fxNames
+		static bool initFx;
+		if (!initFx)
+		{
+			initFx = true;
+			ui::CreateFxNames();
+		}
+
+		const auto funcNames = ui::GetFxNames();
+		const auto numFunc   = funcNames.size();
+		const auto name      = numFunc ? funcNames[xsettings.testId % numFunc] : ""s;
+		const auto func      = ui::GetFxFunction(name);
+
 		func(drawList, bgPos, bgEnd, bgSize, mouse, TO_FLOAT(ImGui::GetTime()));
 
 		drawList->PopClipRect();
