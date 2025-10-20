@@ -10,18 +10,6 @@
 namespace ui
 {
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// FUNCTIONS
-////////////
-
-void Fx_NullFunc(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
-{
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// INTERFACE
-////////////
-
 // Singleton for fxFunctions and fxNames
 struct FxRegistry
 {
@@ -47,6 +35,10 @@ void CreateFxNames()
 	auto& registry = FxRegistry::Get();
 	registry.fxNames.clear();
 	for (const auto& it : registry.fxFunctions) registry.fxNames.push_back(it.first);
+}
+
+static void Fx_NullFunc(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
+{
 }
 
 FxFunc GetFxFunction(std::string_view name)
