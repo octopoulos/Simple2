@@ -1,4 +1,4 @@
-// vs_model.sc
+// vs_model_texture_normal.sc
 
 $input a_position, a_normal, a_texcoord0
 $output v_normal, v_texcoord0

@@ -1,4 +1,4 @@
-// fs_mesh
+// fs_mesh.sc
 
 $input v_position, v_view, v_normal, v_color0
 
