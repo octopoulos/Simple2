@@ -1,6 +1,6 @@
 // Material.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-17
 
 #include "stdafx.h"
 #include "materials/Material.h"
@@ -11,6 +11,11 @@
 #include "objects/Object3d.h"        // ShowObject_xxx
 #include "textures/TextureManager.h" // GetTextureManager
 #include "ui/ui.h"                   // ui::
+
+// static fallback textures
+static bgfx::TextureHandle sFallbackBlack  = BGFX_INVALID_HANDLE;
+static bgfx::TextureHandle sFallbackNormal = BGFX_INVALID_HANDLE;
+static bgfx::TextureHandle sFallbackWhite  = BGFX_INVALID_HANDLE;
 
 Material::Material(std::string_view vsName, std::string_view fsName)
 {
@@ -23,23 +28,44 @@ void Material::Apply() const
 	assert(bgfx::isValid(program));
 
 	// set textures
-	// clang-format off
-	if (bgfx::isValid(textures[0])) bgfx::setTexture(0, sTexColor            , textures[0]);
-	if (bgfx::isValid(textures[1])) bgfx::setTexture(1, sTexNormal           , textures[1]);
-	if (bgfx::isValid(textures[2])) bgfx::setTexture(2, sTexMetallicRoughness, textures[2]);
-	if (bgfx::isValid(textures[3])) bgfx::setTexture(3, sTexEmissive         , textures[3]);
-	if (bgfx::isValid(textures[4])) bgfx::setTexture(4, sTexOcclusion        , textures[4]);
-	// clang-format on
+	{
+		if (bgfx::isValid(textures[0]))
+			bgfx::setTexture(0, sTexColor, textures[0]);
+		else
+			bgfx::setTexture(0, sTexColor, sFallbackWhite);
+
+		if (bgfx::isValid(textures[1]))
+			bgfx::setTexture(1, sTexNormal, textures[1]);
+		else
+			bgfx::setTexture(1, sTexNormal, sFallbackNormal);
+
+		if (bgfx::isValid(textures[2]))
+			bgfx::setTexture(2, sTexMetallicRoughness, textures[2]);
+		else
+			bgfx::setTexture(2, sTexMetallicRoughness, sFallbackWhite);
+
+		if (bgfx::isValid(textures[3]))
+			bgfx::setTexture(3, sTexEmissive, textures[3]);
+		else
+			bgfx::setTexture(3, sTexEmissive, sFallbackBlack);
+
+		if (bgfx::isValid(textures[4]))
+			bgfx::setTexture(4, sTexOcclusion, textures[4]);
+		else
+			bgfx::setTexture(4, sTexOcclusion, sFallbackWhite);
+	}
 
 	// set PBR uniforms
-	const ShaderManager& shaderManager = GetShaderManager();
-	// clang-format off
-	bgfx::setUniform(shaderManager.uBaseColor        , VALUE_VEC4(baseColorFactor));
-	bgfx::setUniform(shaderManager.uEmissive         , VALUE_VEC4(emissiveFactor, 1.0f));
-	bgfx::setUniform(shaderManager.uMaterialFlags    , VALUE_VEC4(unlit ? 1.0f : 0.0f, TO_FLOAT(alphaMode), alphaCutoff, 0.0f));
-	bgfx::setUniform(shaderManager.uMetallicRoughness, VALUE_VEC4(metallicFactor, roughnessFactor, 0.0f, 0.0f));
-	bgfx::setUniform(shaderManager.uOcclusion        , VALUE_VEC4(occlusionStrength, 0.0f, 0.0f, 0.0f));
-	// clang-format on
+	{
+		const ShaderManager& shaderManager = GetShaderManager();
+		// clang-format off
+		bgfx::setUniform(shaderManager.uBaseColorFactor  , VALUE_VEC4(baseColorFactor));
+		bgfx::setUniform(shaderManager.uEmissiveFactor   , VALUE_VEC4(emissiveFactor, 1.0f));
+		bgfx::setUniform(shaderManager.uMaterialFlags    , VALUE_VEC4(unlit ? 1.0f : 0.0f, TO_FLOAT(alphaMode), alphaCutoff, 0.0f));
+		bgfx::setUniform(shaderManager.uMetallicRoughness, VALUE_VEC4(metallicFactor, roughnessFactor, 0.0f, 0.0f));
+		bgfx::setUniform(shaderManager.uOcclusion        , VALUE_VEC4(occlusionStrength, 0.0f, 0.0f, 0.0f));
+		// clang-format on
+	}
 }
 
 void Material::FindModelTextures(std::string_view modelName, const VEC_STR& texFiles)
@@ -88,13 +114,33 @@ void Material::Initialize()
 	for (int id = 0; id < TextureType_Count; ++id)
 		textures[id] = BGFX_INVALID_HANDLE;
 
+	// fallback textures
+	if (!bgfx::isValid(sFallbackBlack))
+	{
+		const uint32_t blackData = 0x00000000; // Solid black
+		sFallbackBlack           = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8, 0, bgfx::makeRef(&blackData, sizeof(blackData)));
+		ui::Log("Material::Initialize: Created fallback black texture (handle=%d)", sFallbackBlack.idx);
+	}
+	if (!bgfx::isValid(sFallbackNormal))
+	{
+		const uint32_t normalData = 0xFFFF7F7F; // Neutral normal (0.5, 0.5, 1.0)
+		sFallbackNormal           = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8, 0, bgfx::makeRef(&normalData, sizeof(normalData)));
+		ui::Log("Material::Initialize: Created fallback normal texture (handle=%d)", sFallbackNormal.idx);
+	}
+	if (!bgfx::isValid(sFallbackWhite))
+	{
+		const uint32_t whiteData = 0xFFFFFFFF; // Solid white
+		sFallbackWhite           = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8, 0, bgfx::makeRef(&whiteData, sizeof(whiteData)));
+		ui::Log("Material::Initialize: Created fallback white texture (handle=%d)", sFallbackWhite.idx);
+	}
+
 	// create uniforms
 	// clang-format off
-	sTexColor             = bgfx::createUniform("s_texColor" , bgfx::UniformType::Sampler);
-	sTexNormal            = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
-	sTexMetallicRoughness = bgfx::createUniform("s_texColor" , bgfx::UniformType::Sampler);
-	sTexEmissive          = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
-	sTexOcclusion         = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
+	sTexColor             = bgfx::createUniform("s_texColor"            , bgfx::UniformType::Sampler);
+	sTexNormal            = bgfx::createUniform("s_texNormal"           , bgfx::UniformType::Sampler);
+	sTexMetallicRoughness = bgfx::createUniform("s_texMetallicRoughness", bgfx::UniformType::Sampler);
+	sTexEmissive          = bgfx::createUniform("s_texEmissive"         , bgfx::UniformType::Sampler);
+	sTexOcclusion         = bgfx::createUniform("s_texOcclusion"        , bgfx::UniformType::Sampler);
 	// clang-format on
 }
 
@@ -176,9 +222,11 @@ void Material::ShowInfoTable(bool showTitle) const
 
 	// clang-format off
 	std::vector<std::tuple<std::string, std::string>> stats = {
-		{ "vsName", vsName               },
-		{ "fsName", fsName               },
-		{ "state", std::to_string(state) },
+		{ "baseColorFactor", FormatStr("%.2f %.2f %.2f %.2f", baseColorFactor.x, baseColorFactor.y, baseColorFactor.z, baseColorFactor.w) },
+		{ "emissiveFactor" , FormatStr("%.2f %.2f %.2f", emissiveFactor.x, emissiveFactor.y, emissiveFactor.z) },
+		{ "fsName"         , fsName               },
+		{ "state"          , std::to_string(state) },
+		{ "vsName"         , vsName               },
 	};
 	// clang-format on
 

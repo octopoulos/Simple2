@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-17
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -322,7 +322,7 @@ void App::Render()
 
 		//const auto lightDir = glm::normalize(glm::vec3(sinf(curTime), 1.0f, cosf(curTime)));
 		const auto lightDir = glm::normalize(glm::make_vec3(xsettings.lightDir));
-		bgfx::setUniform(uLightDir, VALUE_VEC4(lightDir, 0.0f));
+		bgfx::setUniform(uLightDir, VALUE_VEC4(lightDir, 1.0f));
 
 		bgfx::setUniform(uTime, VALUE_VEC4(curTime, 0.0f, 0.0f, 0.0f));
 	}

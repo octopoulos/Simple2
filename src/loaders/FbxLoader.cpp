@@ -1,6 +1,6 @@
 // FbxLoader.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-17
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -44,8 +44,8 @@ inline glm::vec3 FbxToPosition(const ofbx::Vec3& v) { return glm::vec3(TO_FLOAT(
 /// Create material from FBX
 static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Material* fbxMaterial, const std::filesystem::path& fbxPath, std::string_view texPath)
 {
-	std::string      vsName       = "vs_model_color"; // default to color-based lit shader
-	std::string      fsName       = "fs_model_color";
+	std::string      fsName       = "fs_pbr";
+	std::string      vsName       = "vs_pbr"; // default to color-based lit shader
 	sMaterial        material     = nullptr;
 	std::string      materialName = "DefaultMaterial";
 	int              numTexture   = 0;
@@ -53,19 +53,23 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 
 	if (fbxMaterial)
 	{
-		materialName = fbxMaterial->name[0] ? std::string(fbxMaterial->name) : Format("Material_%d", fbxMaterial->id);
+		materialName = fbxMaterial->name[0] ? std::string(fbxMaterial->name) : FormatStr("Material_%d", fbxMaterial->id);
 
 		// process textures
+		bool hasPbrTextures = false;
 		for (int type = 0; type < TextureType_Count; ++type)
 		{
 			if (const ofbx::Texture* texture = fbxMaterial->getTexture(ofbx::Texture::TextureType(type)))
 			{
 				const auto typeName = TextureName(type);
 
-				if (type == ofbx::Texture::DIFFUSE)
+				if (type == ofbx::Texture::DIFFUSE || type == ofbx::Texture::NORMAL || type == ofbx::Texture::SPECULAR)
 				{
-					vsName = "vs_model_texture_normal";
-					fsName = "fs_model_texture_normal";
+					vsName         = "vs_pbr";
+					fsName         = "fs_pbr";
+					hasPbrTextures = true;
+					// vsName         = "vs_model_texture_tangent";
+					// fsName         = "fs_model_texture_tangent";
 				}
 
 				ofbx::DataView filename = texture->getFileName();
@@ -124,28 +128,33 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 		// PBR-like properties
 		ofbx::Color diffuse   = fbxMaterial->getDiffuseColor();
 		ofbx::Color emissive  = fbxMaterial->getEmissiveColor();
-		float       metallic  = 0.0f;
-		float       roughness = 1.0f;
-		material->SetPbrProperties(
-		    glm::vec4(diffuse.r, diffuse.g, diffuse.b, 1.0f),
-		    metallic,
-		    roughness);
+		const float metallic  = fbxMaterial->getSpecularFactor();
+		const float shininess = fbxMaterial->getShininess();
+		const float roughness = (shininess > 0.0f) ? 1.0f - bx::sqrt(shininess / 100.0f) : 1.0f;
+		material->SetPbrProperties(glm::vec4(diffuse.r, diffuse.g, diffuse.b, 1.0f), metallic, roughness);
 		material->emissiveFactor = glm::vec3(emissive.r, emissive.g, emissive.b);
 
 		// alpha and rendering state
-		int alphaMode = AlphaMode_Opaque;
-		if (const float shininess = fbxMaterial->getShininess(); shininess < 1.0f)
-			alphaMode = AlphaMode_Blend;
+		const int alphaMode   = (shininess < 1.0f) ? AlphaMode_Blend : AlphaMode_Opaque;
 		material->alphaCutoff = 0.5f;
 		material->alphaMode   = alphaMode;
 		material->doubleSided = false;
-		material->unlit       = false;
+		material->unlit       = !hasPbrTextures;
 
-		uint64_t state = BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_MSAA | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_Z;
-		if (alphaMode == AlphaMode_Blend) state |= BGFX_STATE_BLEND_ALPHA;
-		if (!material->doubleSided) state |= BGFX_STATE_CULL_CW;
-		material->state = state;
+		// update render state based on alphaMode and doubleSided
+		{
+			uint64_t state = 0
+				| BGFX_STATE_DEPTH_TEST_LESS
+				| BGFX_STATE_MSAA
+				| BGFX_STATE_WRITE_A
+				| BGFX_STATE_WRITE_RGB
+				| BGFX_STATE_WRITE_Z;
+			if (alphaMode == AlphaMode_Blend || 1) state |= BGFX_STATE_BLEND_ALPHA; // COCKPIT HAS SOME ALPHA TEXTURE I GUESS => HOW TO DETECT THAT???
+			if (!material->doubleSided) state |= BGFX_STATE_CULL_CW;
+			material->state = state;
+		}
 	}
+	// default material
 	else
 	{
 		material = GetMaterialManager().LoadMaterial(materialName, "vs_model_color", "fs_model_color");
@@ -194,6 +203,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 	const ofbx::Vec3Attributes normals   = geom.getNormals();
 	const ofbx::Vec2Attributes uvs       = geom.getUVs();
 	const ofbx::Vec4Attributes colors    = geom.getColors();
+	const ofbx::Vec3Attributes tangents  = geom.getTangents();
 
 	// 3) vertex layout
 	// clang-format off
@@ -203,6 +213,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 		.add(bgfx::Attrib::Normal   , 3, bgfx::AttribType::Float, true)
 		.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 		.add(bgfx::Attrib::Color0   , 4, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Tangent  , 4, bgfx::AttribType::Float)
 		.end();
 	// clang-format on
 	mesh->layout = layout;
@@ -214,23 +225,17 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 		glm::vec3 normal;
 		glm::vec2 uv;
 		glm::vec4 color;
+		glm::vec4 tangent;
 
 		Vertex()
 		    : position(0.0f)
 		    , normal(0.0f, 0.0f, 1.0f)
 		    , uv(0.0f)
 		    , color(1.0f)
+			, tangent(1.0f, 0.0f, 0.0f, 1.0f)
 		{
 		}
 	};
-
-	// Z-up to Y-up conversion matrix for vertices and normals
-	// const glm::mat4 coordTransform = glm::mat4(
-	//     1.0f, 0.0f, 0.0f, 0.0f,  // X stays X (right)
-	//     0.0f, 0.0f, 1.0f, 0.0f,  // Z becomes Y (up)
-	//     0.0f, -1.0f, 0.0f, 0.0f, // Y becomes -Z (forward)
-	//     0.0f, 0.0f, 0.0f, 1.0f   // Homogeneous coordinate
-	// );
 
 	// 5) process partitions (materials)
 	const int numMaterial = fbxMesh->getMaterialCount();
@@ -254,7 +259,8 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 				ui::Log("ProcessMesh: partitionId=%d:", partitionId);
 				for (int id = 0; id < TextureType_Count; ++id)
 				{
-					if (group.material->texNames[id].size()) ui::Log("  %d: %s : %d", id, Cstr(group.material->texNames[id]), bgfx::isValid(group.material->textures[id]));
+					if (group.material->texNames[id].size())
+						ui::Log("  %d: %s : %d", id, Cstr(group.material->texNames[id]), bgfx::isValid(group.material->textures[id]));
 				}
 			}
 		}
@@ -284,27 +290,22 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 
 			for (int i = 0; i < triCount; ++i)
 			{
-				int vertexId = triIndices[i];
+				const int vertexId = triIndices[i];
 				if (vertexId < 0 || vertexId >= positions.count)
 				{
 					ui::LogError("ProcessMesh: Invalid vertex index %d for mesh %s partition %d polygon %d", vertexId, Cstr(nodeName), partitionId, polygonId);
 					continue;
 				}
 
-				Vertex     vertex;
-				ofbx::Vec3 pos  = positions.get(vertexId);
+				ofbx::Vec3 pos = positions.get(vertexId);
 
-				// transform vertex position to Y-up
-				// glm::vec4 transformedPos = coordTransform * glm::vec4(TO_FLOAT(pos.x), TO_FLOAT(pos.y), TO_FLOAT(pos.z), 1.0f);
-
+				Vertex vertex;
 				vertex.position = FbxToPosition(pos);
-				// vertex.position = glm::vec3(transformedPos);
-				vpositions.push_back({ vertex.position.x, vertex.position.y, vertex.position.z });
 
 				if (normals.values && vertexId < normals.count)
 				{
-					ofbx::Vec3 norm = normals.get(vertexId);
-					vertex.normal   = FbxToNormal(norm);
+					ofbx::Vec3 normal = normals.get(vertexId);
+					vertex.normal     = FbxToNormal(normal);
 				}
 				if (uvs.values && vertexId < uvs.count)
 				{
@@ -313,12 +314,61 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 				}
 				if (colors.values && vertexId < colors.count)
 				{
-					ofbx::Vec4 col = colors.get(vertexId);
-					vertex.color   = glm::vec4(TO_FLOAT(col.x), TO_FLOAT(col.y), TO_FLOAT(col.z), TO_FLOAT(col.w));
+					ofbx::Vec4 color = colors.get(vertexId);
+					vertex.color     = glm::vec4(TO_FLOAT(color.x), TO_FLOAT(color.y), TO_FLOAT(color.z), TO_FLOAT(color.w));
+				}
+				if (tangents.values && vertexId < tangents.count)
+				{
+					ofbx::Vec3 tangent = tangents.get(vertexId);
+					vertex.tangent     = glm::vec4(FbxToNormal(tangent), 1.0f);
+				}
+				else
+				{
+					// Compute tangent for triangle
+					ui::Log("Missing tangent: %d %d", i, triCount);
+					if (i % 3 == 0 && i + 2 < triCount)
+					{
+						const int  v0  = triIndices[i];
+						const int  v1  = triIndices[i + 1];
+						const int  v2  = triIndices[i + 2];
+						ofbx::Vec3 p0  = positions.get(v0);
+						ofbx::Vec3 p1  = positions.get(v1);
+						ofbx::Vec3 p2  = positions.get(v2);
+						ofbx::Vec2 uv0 = uvs.values ? uvs.get(v0) : ofbx::Vec2 { 0, 0 };
+						ofbx::Vec2 uv1 = uvs.values ? uvs.get(v1) : ofbx::Vec2 { 0, 0 };
+						ofbx::Vec2 uv2 = uvs.values ? uvs.get(v2) : ofbx::Vec2 { 0, 0 };
+
+						glm::vec3 pos0 = FbxToPosition(p0);
+						glm::vec3 pos1 = FbxToPosition(p1);
+						glm::vec3 pos2 = FbxToPosition(p2);
+						glm::vec2 duv1 = glm::vec2(TO_FLOAT(uv1.x), 1.0f - TO_FLOAT(uv1.y)) - glm::vec2(TO_FLOAT(uv0.x), 1.0f - TO_FLOAT(uv0.y));
+						glm::vec2 duv2 = glm::vec2(TO_FLOAT(uv2.x), 1.0f - TO_FLOAT(uv2.y)) - glm::vec2(TO_FLOAT(uv0.x), 1.0f - TO_FLOAT(uv0.y));
+
+						glm::vec3   edge1   = pos1 - pos0;
+						glm::vec3   edge2   = pos2 - pos0;
+						const float deltaU1 = duv1.x;
+						const float deltaV1 = duv1.y;
+						const float deltaU2 = duv2.x;
+						const float deltaV2 = duv2.y;
+
+						float f = deltaU1 * deltaV2 - deltaU2 * deltaV1;
+						if (fabs(f) > 1e-6) // Avoid division by zero
+						{
+							f                    = 1.0f / f;
+							glm::vec3 tangent    = f * (deltaV2 * edge1 - deltaV1 * edge2);
+							glm::vec3 normal     = glm::normalize(glm::cross(edge1, edge2));
+							glm::vec3 bitangent  = glm::cross(normal, tangent);
+							float     handedness = dot(bitangent, glm::cross(normal, tangent)) > 0.0f ? 1.0f : -1.0f;
+							vertex.tangent       = glm::vec4(glm::normalize(tangent), handedness);
+						}
+						else vertex.tangent = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+					}
+					else vertex.tangent = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 				}
 
 				vertices.push_back(vertex);
 				indices.push_back(TO_UINT32(vertices.size() - 1));
+				vpositions.push_back({ vertex.position.x, vertex.position.y, vertex.position.z });
 			}
 		}
 

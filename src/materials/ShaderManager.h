@@ -1,6 +1,6 @@
 // ShaderManager.h
 // @author octopoulos
-// @version 2025-08-27
+// @version 2025-10-17
 
 #pragma once
 
@@ -12,8 +12,8 @@ private:
 	UMAP_STR<bgfx::ShaderHandle>  shaders   = {};    ///< cached shaders
 
 public:
-	bgfx::UniformHandle uBaseColor         = BGFX_INVALID_HANDLE; ///< base color factor
-	bgfx::UniformHandle uEmissive          = BGFX_INVALID_HANDLE; ///< emissive factor
+	bgfx::UniformHandle uBaseColorFactor   = BGFX_INVALID_HANDLE; ///< base color factor
+	bgfx::UniformHandle uEmissiveFactor    = BGFX_INVALID_HANDLE; ///< emissive factor
 	bgfx::UniformHandle uMaterialFlags     = BGFX_INVALID_HANDLE; ///< material flags (unlit, alphaMode, alphaCutoff)
 	bgfx::UniformHandle uMetallicRoughness = BGFX_INVALID_HANDLE; ///< metallic/roughness
 	bgfx::UniformHandle uOcclusion         = BGFX_INVALID_HANDLE; ///< occlusion strength

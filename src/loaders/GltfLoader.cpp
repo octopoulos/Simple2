@@ -1,6 +1,6 @@
 // GltfLoader.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-17
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -61,12 +61,13 @@ static std::string ProcessImageData(const fastgltf::DataSource& data, std::strin
 static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optional<std::size_t> materialId, const std::filesystem::path& gltfPath, std::string_view texPath)
 {
 	// default shaders
-	std::string      fsName       = "fs_model_texture_normal";
-	std::string      vsName       = "vs_model_texture_normal";
+	std::string      fsName       = "fs_pbr";//model_texture_normal";
+	std::string      vsName       = "vs_pbr";//model_texture_normal";
 	sMaterial        material     = nullptr;
 	std::string      materialName = "DefaultMaterial";
 	int              numTexture   = 0;
 	VEC_STR          texNames     = {};
+	VEC<TextureData> textures     = {};
 
 	if (materialId.has_value() && materialId.value() < asset.materials.size())
 	{
@@ -76,8 +77,8 @@ static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optio
 		// select shaders based on material type
 		if (mat.unlit)
 		{
-			fsName = "fs_cube";
-			vsName = "vs_cube";
+			// fsName = "fs_cube";
+			// vsName = "vs_cube";
 		}
 
 		// PBR Base Color Texture
@@ -123,8 +124,17 @@ static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optio
 			vsName = "vs_cube";
 		}
 
-		material        = GetMaterialManager().LoadMaterial(materialName, vsName, fsName, texNames);
+		material = GetMaterialManager().LoadMaterial(materialName, vsName, fsName, texNames);
+
+		// PBR-like properties
 		const auto& pbr = mat.pbrData;
+		material->SetPbrProperties(
+		    glm::vec4(pbr.baseColorFactor[0], pbr.baseColorFactor[1], pbr.baseColorFactor[2], pbr.baseColorFactor[3]),
+		    pbr.metallicFactor,
+		    pbr.roughnessFactor
+		);
+		material->emissiveFactor = glm::vec3(mat.emissiveFactor[0], mat.emissiveFactor[1], mat.emissiveFactor[2]);
+		material->occlusionStrength = mat.occlusionTexture.has_value() ? mat.occlusionTexture->strength : 1.0f;
 
 		// modes
 		int alphaMode = AlphaMode_Opaque;
@@ -137,14 +147,6 @@ static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optio
 		material->alphaMode   = alphaMode;
 		material->doubleSided = mat.doubleSided;
 		material->unlit       = mat.unlit;
-
-		// PBR
-		material->SetPbrProperties(
-		    glm::vec4(pbr.baseColorFactor[0], pbr.baseColorFactor[1], pbr.baseColorFactor[2], pbr.baseColorFactor[3]),
-		    pbr.metallicFactor,
-		    pbr.roughnessFactor
-		);
-		material->emissiveFactor = glm::vec3(mat.emissiveFactor[0], mat.emissiveFactor[1], mat.emissiveFactor[2]);
 
 		// update render state based on alphaMode and doubleSided
 		{
@@ -162,9 +164,9 @@ static sMaterial CreateMaterialFromGltf(const fastgltf::Asset& asset, std::optio
 	// default material
 	else
 	{
-		fsName   = "fs_cube";
-		vsName   = "vs_cube";
-		material = GetMaterialManager().LoadMaterial(materialName, vsName, fsName);
+		material = GetMaterialManager().LoadMaterial(materialName, "vs_model_color", "fs_model_color");
+		material->SetPbrProperties(glm::vec4(0.8f, 0.8f, 0.8f, 1.0f), 0.0f, 1.0f);
+
 	}
 
 	return material;
@@ -211,6 +213,7 @@ sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy, std::string_view
 		.add(bgfx::Attrib::Normal   , 3, bgfx::AttribType::Float, true)
 		.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 		.add(bgfx::Attrib::Color0   , 4, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Tangent  , 4, bgfx::AttribType::Float)
 		.end();
 	// clang-format on
 	mesh->layout = layout;
@@ -222,6 +225,7 @@ sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy, std::string_view
 		glm::vec3 normal   = { 0.0f, 0.0f, 0.0f };
 		glm::vec2 uv       = { 0.0f, 0.0f };
 		glm::vec4 color    = { 1.0f, 1.0f, 1.0f, 1.0f };
+		glm::vec4 tangent  = { 1.0f, 0.0f, 0.0f, 1.0f };
 	};
 
 	// log buffers
@@ -330,6 +334,57 @@ sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy, std::string_view
 				}
 			}
 
+			// TANGENT
+			if (auto it = primitive.findAttribute("TANGENT"); it != primitive.attributes.end())
+			{
+				const auto& accessor = asset.accessors[it->accessorIndex];
+				fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec4>(asset, accessor, [&](fastgltf::math::fvec4 t, size_t i) {
+					vertices[i].tangent = glm::vec4(t.x(), t.y(), t.z(), t.w());
+				});
+			}
+			else
+			{
+				// Compute tangents for each triangle
+				ui::Log("Computing tangents for primitive in mesh %s", Cstr(gltfMesh.name));
+				for (size_t i = 0; i < indices.size(); i += 3)
+				{
+					if (i + 2 >= indices.size()) break;
+					size_t v0 = indices[i];
+					size_t v1 = indices[i + 1];
+					size_t v2 = indices[i + 2];
+					if (v0 >= vertices.size() || v1 >= vertices.size() || v2 >= vertices.size()) continue;
+
+					glm::vec3 pos0 = vertices[v0].position;
+					glm::vec3 pos1 = vertices[v1].position;
+					glm::vec3 pos2 = vertices[v2].position;
+					glm::vec2 uv0  = vertices[v0].uv;
+					glm::vec2 uv1  = vertices[v1].uv;
+					glm::vec2 uv2  = vertices[v2].uv;
+
+					glm::vec3 edge1   = pos1 - pos0;
+					glm::vec3 edge2   = pos2 - pos0;
+					float     deltaU1 = uv1.x - uv0.x;
+					float     deltaV1 = uv1.y - uv0.y;
+					float     deltaU2 = uv2.x - uv0.x;
+					float     deltaV2 = uv2.y - uv0.y;
+
+					float     f       = deltaU1 * deltaV2 - deltaU2 * deltaV1;
+					glm::vec4 tangent = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+					if (fabs(f) > 1e-6) // Avoid division by zero
+					{
+						f                    = 1.0f / f;
+						glm::vec3 tan        = f * (deltaV2 * edge1 - deltaV1 * edge2);
+						glm::vec3 normal     = glm::normalize(glm::cross(edge1, edge2));
+						glm::vec3 bitangent  = glm::cross(normal, tan);
+						float     handedness = dot(bitangent, glm::cross(normal, tan)) > 0.0f ? 1.0f : -1.0f;
+						tangent              = glm::vec4(glm::normalize(tan), handedness);
+					}
+					vertices[v0].tangent = tangent;
+					vertices[v1].tangent = tangent;
+					vertices[v2].tangent = tangent;
+				}
+			}
+
 			// === Create BGFX buffers ===
 			if (!vertices.empty())
 			{
@@ -341,7 +396,7 @@ sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy, std::string_view
 
 			if (!indices.empty())
 			{
-				group.indices = reinterpret_cast<uint32_t*>(bx::alloc(entry::getAllocator(), indices.size() * sizeof(uint16_t)));
+				group.indices = reinterpret_cast<uint32_t*>(bx::alloc(entry::getAllocator(), indices.size() * sizeof(uint32_t)));
 				for (size_t i = 0; i < indices.size(); ++i)
 					group.indices[i] = static_cast<uint32_t>(indices[i]);
 				group.numIndices = static_cast<uint32_t>(indices.size());
