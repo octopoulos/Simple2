@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-10-16
+// @version 2025-10-17
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -191,6 +191,20 @@ void LoadGameSettings(int gameId, std::string baseName, std::string_view suffix)
 	// game settings
 	if (gameId >= 0 && gameId < NUM_GAMES)
 		xsettings.gameId = gameId;
+
+	// fix recentFiles
+	auto& files = xsettings.recentFiles;
+	for (int i = 0; i < 6; ++i)
+	{
+		if (*files[i])
+		{
+			const auto normal = NormalizeFilename(files[i]);
+			if (IsFile(normal))
+				strcpy(files[i], Cstr(normal));
+			else
+				*files[i] = 0;
+		}
+	}
 
 	xsettings.windowSize[0] = (bx::max(32, xsettings.windowSize[0]) + 7) & ~15;
 	xsettings.windowSize[1] = (bx::max(32, xsettings.windowSize[1]) + 3) & ~7;

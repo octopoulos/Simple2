@@ -1,6 +1,6 @@
 // ui-menu.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-17
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -78,7 +78,7 @@ int App::MainUi()
 void App::OpenedFile(int action, int param, const std::filesystem::path& path)
 {
 	ui::Log("App/OpenedFile: %s action=%d param=%d folder=%s", PathStr(path), action, param, Cstr(openFolder));
-	if (path.empty()) return;
+	if (!IsFile(path)) return;
 
 	switch (action)
 	{
@@ -321,6 +321,7 @@ void App::ShowMainMenu(float alpha)
 			ImGui::MenuItem("Auto Save", nullptr, &xsettings.autoSave);
 			ImGui::Separator();
 			if (ImGui::MenuItem("Rescan Assets")) RescanAssets();
+			if (ImGui::MenuItem("Save Settings")) SaveGameSettings();
 			ImGui::Separator();
 			if (ImGui::MenuItem("Exit")) entry::ExitApp();
 

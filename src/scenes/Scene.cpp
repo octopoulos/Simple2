@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-10-14
+// @version 2025-10-17
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -26,7 +26,7 @@
 static void AddRecent(const std::filesystem::path& filename)
 {
 	str2k temp;
-	strcpy(temp, PathStr(filename));
+	strcpy(temp, Cstr(NormalizeFilename(filename.string())));
 
 	auto& files = xsettings.recentFiles;
 	int   id    = 0;
@@ -293,21 +293,43 @@ bool App::OpenScene(const std::filesystem::path& filename)
 {
 	simdjson::ondemand::parser parser;
 
-	auto json = simdjson::padded_string::load(filename.string());
-
-	simdjson::ondemand::document doc = parser.iterate(json);
-	if (simdjson::ondemand::object obj; !doc.get_object().get(obj))
+	simdjson::padded_string json;
+	if (const auto error = simdjson::padded_string::load(filename.string()).get(json))
 	{
-		AddRecent(filename);
-		ui::Log("Parsing JSON object from file: %s", PathStr(filename));
-		Scene::SharedPtr(scene)->Clear();
-		ParseObject(obj, scene, scene, 0);
-
-		entry::setWindowTitle(entry::kDefaultWindowHandle, PathStr(filename.filename()));
-		return true;
+		ui::LogError("OpenScene: Cannot open: %s", PathStr(filename));
+		return false;
 	}
 
-	return false;
+	simdjson::ondemand::document doc;
+	if (const auto error = parser.iterate(json).get(doc))
+	{
+		ui::LogError("OpenScene: Cannot parse: %s", PathStr(filename));
+		return false;
+	}
+
+	simdjson::ondemand::object obj;
+	if (const auto error = doc.get_object().get(obj))
+	{
+		ui::LogError("OpenScene: Invalid structure: %s", PathStr(filename));
+		return false;
+	}
+
+	ui::LogInfo("OpenScene: ParseObject: %s", PathStr(filename));
+	Scene::SharedPtr(scene)->Clear();
+
+	try
+	{
+		ParseObject(obj, scene, scene, 0);
+	}
+	catch(const std::exception& e)
+	{
+		ui::LogError("OpenScene: ParseObject error: %s", Cstr(e.what()));
+		return false;
+	}
+
+	AddRecent(filename);
+	entry::setWindowTitle(entry::kDefaultWindowHandle, PathStr(filename.filename()));
+	return true;
 }
 
 bool App::SaveScene(const std::filesystem::path& filename)

@@ -1,6 +1,6 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-10-15
+// @version 2025-10-17
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -63,9 +63,10 @@ public:
 		// APP
 		//////
 
-		BEGIN_COLLAPSE("App", Show_App, 3)
+		BEGIN_COLLAPSE("App", Show_App, 4)
 		{
 			AddSliderInt(0, "gameId", "Game Id", nullptr);
+			if (ImGui::Button("Sacve Settings")) SaveGameSettings();
 			if (ImGui::Button("Load Defaults")) LoadGameSettings(xsettings.gameId, "", "-def");
 			ImGui::SameLine();
 			if (ImGui::Button("Save Defaults")) SaveGameSettings("", true, "-def");
