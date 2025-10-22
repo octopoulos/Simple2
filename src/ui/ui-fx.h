@@ -1,6 +1,6 @@
-// ui.h
+// ui-fx.h
 // @author octopoulos
-// @version 2025-10-16
+// @version 2025-10-18
 
 #pragma once
 
@@ -13,20 +13,20 @@
 namespace ui
 {
 
-#define FX_REGISTER(name)                       \
-	namespace                                   \
-	{                                           \
-	struct FxRegistrar_##name                   \
-	{                                           \
-		FxRegistrar_##name()                    \
-		{                                       \
-			AddFxFunction(#name, Fx_##name);    \
-		}                                       \
-	};                                          \
-	static FxRegistrar_##name registrar_##name; \
+#define FX_REGISTER(name)                        \
+	namespace                                    \
+	{                                            \
+	struct FxRegistrar_##name                    \
+	{                                            \
+		FxRegistrar_##name()                     \
+		{                                        \
+			ui::AddFxFunction(#name, Fx_##name); \
+		}                                        \
+	};                                           \
+	static FxRegistrar_##name registrar_##name;  \
 	}
 
-using FxFunc = void(*)(ImDrawList* drawList, ImVec2 topLeft, ImVec2, ImVec2 size, ImVec4, float time);
+using FxFunc = void (*)(ImDrawList* drawList, ImVec2 topLeft, ImVec2, ImVec2 size, ImVec4, float time);
 
 /// Add a new FX function
 void AddFxFunction(const std::string& name, FxFunc func);

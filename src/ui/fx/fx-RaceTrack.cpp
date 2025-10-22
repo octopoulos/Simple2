@@ -1,14 +1,11 @@
 // fx-RaceTrack.cpp
 // @author octopoulos
-// @version 2025-10-16
+// @version 2025-10-18
 
 #include "stdafx.h"
 #include "ui/ui-fx.h"
 
-namespace ui
-{
-
-void Fx_RaceTrack(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
+static void Fx_RaceTrack(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
 	// virtual race track parameters
 	static float trackOffset = 0.0f;
@@ -73,5 +70,3 @@ void Fx_RaceTrack(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVe
 }
 
 FX_REGISTER(RaceTrack)
-
-} // namespace ui

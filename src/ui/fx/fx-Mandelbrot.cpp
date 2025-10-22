@@ -1,14 +1,11 @@
 // fx-Mandelbrot.cpp
 // @author octopoulos
-// @version 2025-10-16
+// @version 2025-10-18
 
 #include "stdafx.h"
 #include "ui/ui-fx.h"
 
-namespace ui
-{
-
-void Fx_Mandelbrot(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
+static void Fx_Mandelbrot(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
 	constexpr int    maxRects   = 64000;
 	constexpr size_t maxIter    = 32;
@@ -76,5 +73,3 @@ void Fx_Mandelbrot(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImV
 }
 
 FX_REGISTER(Mandelbrot)
-
-} // namespace ui

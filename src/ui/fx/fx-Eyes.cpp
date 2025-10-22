@@ -1,14 +1,11 @@
 // fx-Eyes.cpp
 // @author octopoulos
-// @version 2025-10-16
+// @version 2025-10-18
 
 #include "stdafx.h"
 #include "ui/ui-fx.h"
 
-namespace ui
-{
-
-void Fx_Eyes(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
+static void Fx_Eyes(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
 	auto DrawEllipse = [](ImDrawList* drawList, ImVec2 center, float rx, float ry, ImU32 color) {
 		drawList->PathClear();
@@ -68,5 +65,3 @@ void Fx_Eyes(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 si
 }
 
 FX_REGISTER(Eyes)
-
-} // namespace ui

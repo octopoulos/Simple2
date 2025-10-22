@@ -1,14 +1,11 @@
 // fx-RainDrops.cpp
 // @author octopoulos
-// @version 2025-10-16
+// @version 2025-10-18
 
 #include "stdafx.h"
 #include "ui/ui-fx.h"
 
-namespace ui
-{
-
-void Fx_RainDrops(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
+static void Fx_RainDrops(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
 	static float lastFlashTime = 0.0f;
 
@@ -62,5 +59,3 @@ void Fx_RainDrops(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVe
 }
 
 FX_REGISTER(RainDrops)
-
-} // namespace ui

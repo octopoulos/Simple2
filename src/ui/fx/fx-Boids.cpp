@@ -1,14 +1,11 @@
 // fx-Boids.cpp
 // @author octopoulos
-// @version 2025-10-16
+// @version 2025-10-18
 
 #include "stdafx.h"
 #include "ui/ui-fx.h"
 
-namespace ui
-{
-
-void Fx_Boids(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
+static void Fx_Boids(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
 	struct Boid
 	{
@@ -105,5 +102,3 @@ void Fx_Boids(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 s
 }
 
 FX_REGISTER(Boids)
-
-} // namespace ui

@@ -1,14 +1,11 @@
 // fx-Arkanoid.cpp
 // @author octopoulos
-// @version 2025-10-16
+// @version 2025-10-18
 
 #include "stdafx.h"
 #include "ui/ui-fx.h"
 
-namespace ui
-{
-
-void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
+static void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
 	struct Block
 	{
@@ -18,7 +15,7 @@ void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec
 
 		bool Contains(const ImVec2& p) const
 		{
-			return (p.x > min.x && p.x < max.x) && (p.y > min.y && p.y < max.y);
+			return (p.x > min.x && p.x < max.x && p.y > min.y && p.y < max.y);
 		}
 	};
 
@@ -31,7 +28,7 @@ void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec
 	static float  cy         = 0.0f; // ball center (px)
 	static ImVec2 lastSize   = ImVec2(0.0f, 0.0f);
 	static float  lastTime   = 0.0f;
-	static bool   needInit   = true;
+	static int    needInit   = 3;
 	static Block  paddle     = {};
 	static float  paddleH    = 5.0f;
 	static float  paddleW    = 40.0f;
@@ -39,8 +36,8 @@ void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec
 	static float  vy         = 0.0f; // ball velocity (px/sec)
 
 	// reset when user requests (mouse.w == 0) or when size changes
-	if (!mouse.w) needInit = true;
-	if (lastSize.x != size.x || lastSize.y != size.y) needInit = true;
+	if (!mouse.w) needInit = 3;
+	if (lastSize.x != size.x || lastSize.y != size.y) needInit = 3;
 
 	// initialize layout and state
 	if (needInit)
@@ -69,27 +66,27 @@ void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec
 		vy                  = vy_base * sy;
 
 		// fill blocks grid (10x6)
-		for (int r = 0; r < rows; ++r)
+		if (needInit & 2)
 		{
-			for (int c = 0; c < cols; ++c)
+			for (int r = 0; r < rows; ++r)
 			{
-				Block& b = blocks[c + r * cols];
-				b.active = true;
-				b.min    = ImVec2(topLeft.x + c * blockW, topLeft.y + r * blockH);
-				b.max    = ImVec2(topLeft.x + (c + 1) * blockW, topLeft.y + (r + 1) * blockH);
+				for (int c = 0; c < cols; ++c)
+				{
+					Block& b = blocks[c + r * cols];
+					b.active = true;
+					b.min    = ImVec2(topLeft.x + c * blockW, topLeft.y + r * blockH);
+					b.max    = ImVec2(topLeft.x + (c + 1) * blockW, topLeft.y + (r + 1) * blockH);
+				}
 			}
 		}
 
 		lastTime = time;
 		lastSize = size;
-		needInit = false;
+		needInit = 0;
 	}
 
 	// time step
-	float dt = time - lastTime;
-	if (dt < 0.0f) dt = 0.0f;
-	// clamp dt for stability (avoid huge jumps)
-	if (dt > 0.05f) dt = 0.05f;
+	const float dt = bx::clamp(time - lastTime, 0.0f, 0.05f);
 	lastTime = time;
 
 	// paddle follows mouse.x (mouse.x is expected normalized 0..1 within the region)
@@ -154,7 +151,7 @@ void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec
 	}
 
 	drawList->AddRect(paddle.min, paddle.max, IM_COL32(255, 255, 255, 255));
-	drawList->AddCircle(ImVec2(cx, cy), ballRadius, IM_COL32(255, 255, 255, 255));
+	drawList->AddCircleFilled(ImVec2(cx, cy), ballRadius, IM_COL32(255, 255, 255, 255));
 
 	// --- integrate position (pixels) ---
 	cx += vx * dt;
@@ -181,9 +178,7 @@ void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec
 
 	// ball falls below bottom => reset to initial state
 	if (cy - ballRadius > bottomRight.y)
-		needInit = true;
+		needInit = 1;
 }
 
 FX_REGISTER(Arkanoid)
-
-} // namespace ui

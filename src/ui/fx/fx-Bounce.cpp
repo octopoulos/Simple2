@@ -1,14 +1,11 @@
 // fx-Bounce.cpp
 // @author octopoulos
-// @version 2025-10-16
+// @version 2025-10-18
 
 #include "stdafx.h"
 #include "ui/ui-fx.h"
 
-namespace ui
-{
-
-void Fx_Bounce(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
+static void Fx_Bounce(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
 	// 1) state
 	static ImVec2 pos      = ImVec2(0.0f, 0.0f);
@@ -51,5 +48,3 @@ void Fx_Bounce(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 
 }
 
 FX_REGISTER(Bounce)
-
-} // namespace ui

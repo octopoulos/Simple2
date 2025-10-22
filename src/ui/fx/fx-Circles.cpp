@@ -1,14 +1,11 @@
 // fx-Circles.cpp
 // @author octopoulos
-// @version 2025-10-16
+// @version 2025-10-18
 
 #include "stdafx.h"
 #include "ui/ui-fx.h"
 
-namespace ui
-{
-
-void Fx_Circles(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
+static void Fx_Circles(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
 	// draw concentric circles in the center of the rectangle
 	const ImVec2 center(topLeft.x + size.x * 0.5f, topLeft.y + size.y * 0.5f);
@@ -25,5 +22,3 @@ void Fx_Circles(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2
 }
 
 FX_REGISTER(Circles)
-
-} // namespace ui

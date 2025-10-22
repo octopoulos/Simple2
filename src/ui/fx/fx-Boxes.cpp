@@ -1,14 +1,11 @@
 // fx-Boxes.cpp
 // @author octopoulos
-// @version 2025-10-16
+// @version 2025-10-18
 
 #include "stdafx.h"
 #include "ui/ui-fx.h"
 
-namespace ui
-{
-
-void Fx_Boxes(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
+static void Fx_Boxes(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
 	struct Box
 	{
@@ -86,5 +83,3 @@ void Fx_Boxes(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 s
 }
 
 FX_REGISTER(Boxes)
-
-} // namespace ui
