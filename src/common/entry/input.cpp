@@ -1,11 +1,11 @@
-// @version 2025-10-13
+// @version 2025-10-18
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
 #include "stdafx.h"
-#include "input.h"
+#include "entry/input.h"
 //
 #include "common/config.h" // DEV_inputKeys
 #include "entry_p.h"       // entry::

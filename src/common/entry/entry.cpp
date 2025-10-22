@@ -1,4 +1,4 @@
-// @version 2025-10-13
+// @version 2025-10-18
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -20,7 +20,7 @@
 #endif // BX_PLATFORM_EMSCRIPTEN
 
 #include "entry_p.h"
-#include "input.h"
+#include "entry/input.h"
 
 extern "C" int32_t _main_(int32_t _argc, char** _argv);
 

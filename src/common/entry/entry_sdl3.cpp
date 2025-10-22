@@ -1,11 +1,11 @@
 // entry_sdl3.cpp
 // @author octopoulos
-// @version 2025-10-16
+// @version 2025-10-18
 
 #include "stdafx.h"
 #include "entry_p.h"
 //
-#include "input.h"
+#include "entry/input.h"
 #include "ui/xsettings.h"
 
 #if ENTRY_CONFIG_USE_SDL3

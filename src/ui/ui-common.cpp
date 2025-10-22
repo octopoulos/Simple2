@@ -1,6 +1,6 @@
 // ui-common.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-18
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -44,8 +44,8 @@ static void LabelLeft(int mode, const char* label, int components, float spaceRi
 
 		if (auto labelEnd = ImGui::FindRenderedTextEnd(label))
 		{
-			const float posX = ImGui::GetCursorPosX();
-			const auto  size = ImGui::CalcTextSize(label);
+			const float  posX = ImGui::GetCursorPosX();
+			const ImVec2 size = ImGui::CalcTextSize(label);
 
 			ImGui::SetCursorPosX(posX + width * widthRatio - size.x - spacingX);
 			ImGui::TextEx(label, labelEnd);
@@ -61,10 +61,10 @@ static void LabelRight(const char* label, float forceRight = -1.0f)
 	if (!xsettings.labelLeft || forceRight >= 0.0f)
 	{
 		const float spacingX = (forceRight >= 0.0f) ? forceRight : 6.0f; //ImGui::GetStyle().ItemInnerSpacing.x;
-		if (auto label_end = ImGui::FindRenderedTextEnd(label); label != label_end)
+		if (auto labelEnd = ImGui::FindRenderedTextEnd(label); label != labelEnd)
 		{
 			ImGui::SameLine(0, spacingX);
-			ImGui::TextEx(label, label_end);
+			ImGui::TextEx(label, labelEnd);
 		}
 	}
 }
