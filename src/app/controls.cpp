@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-10-16
+// @version 2025-10-19
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -68,8 +68,9 @@ void App::Controls()
 		FluidControls();
 
 		inputLag += deltaTime;
-		while (inputLag >= inputDelta)
+		for (int i = 0; inputLag >= inputDelta; ++i)
 		{
+			// if (i > 0) GetGlobalInput().ResetFixed(); // TODO: FIX
 			FixedControls();
 			inputLag -= inputDelta;
 		}
@@ -108,6 +109,10 @@ void App::FixedControls()
 
 	// ignore inputs when focused on a text input
 	if (io.WantTextInput)
+	{
+	}
+	// ignore if TestUi is displayed
+	else if (showTest)
 	{
 	}
 	// 2) alt
@@ -257,7 +262,7 @@ void App::FixedControls()
 	}
 
 	// 6) reset fixed
-	GetGlobalInput().ResetFixed();
+	// GetGlobalInput().ResetFixed();
 
 	// start app with cursor focus
 	if (inputFrame < 1) MoveSelected(true);

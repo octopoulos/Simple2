@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-10-17
+// @version 2025-10-19
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -12,7 +12,7 @@
 static std::string settingsToml = "settings.ini";
 
 const char* sAspectRatios[] = { "1:1", "4:3", "3:2", "16:9", "Native", "Window" };
-const char* sEases[]        = { "None", "InOutCubic", "InOutQuad", "OutQuad" };
+const char* sEases[]        = { "None", "InOutCubic", "InOutQuad", "InOutSine", "OutQuad" };
 const char* sGames[]        = { "Custom1", "Custom2", "Custom3" };
 const char* sFullScreens[]  = { "Off", "Desktop", "Screen" };
 const char* sProjections[]  = { "Orthogonal", "Perspective" };

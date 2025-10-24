@@ -1,6 +1,6 @@
 // xsettings.h
 // @author octopoulos
-// @version 2025-10-15
+// @version 2025-10-19
 
 #pragma once
 
@@ -27,7 +27,8 @@ enum XEases_ : int
 	Ease_None       = 0,
 	Ease_InOutCubic = 1,
 	Ease_InOutQuad  = 2,
-	Ease_OutQuad    = 3,
+	Ease_InOutSine  = 3,
+	Ease_OutQuad    = 4,
 };
 
 enum XProjections_ : int

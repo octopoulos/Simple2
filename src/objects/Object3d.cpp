@@ -1,6 +1,6 @@
 // Object3d.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-19
 
 #include "stdafx.h"
 #include "objects/Object3d.h"
@@ -10,6 +10,8 @@
 #include "loaders/writer.h" // WRITE_INIT, WRITE_KEY_xxx
 #include "ui/ui.h"          // ui::
 #include "ui/xsettings.h"   // xsettings
+
+#include "bx/easing.h" // easeXxx
 
 // clang-format off
 static const MAP_INT_STR objectTypeNames = {
@@ -113,9 +115,10 @@ float Object3d::EaseFunction(double td)
 	// clang-format off
 	switch (GetEase())
 	{
-	case Ease_InOutCubic: return EaseInOutCubic(t);
-	case Ease_InOutQuad : return EaseInOutQuad(t);
-	case Ease_OutQuad   : return EaseOutQuad(t);
+	case Ease_InOutCubic: return bx::easeInOutCubic(t);
+	case Ease_InOutQuad : return bx::easeInOutQuad(t);
+	case Ease_InOutSine : return bx::easeInOutSine(t);
+	case Ease_OutQuad   : return bx::easeOutQuad(t);
 	default: return t;
 	}
 	// clang-format on

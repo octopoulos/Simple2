@@ -631,6 +631,7 @@ public:
 			bgfx::touch(0);
 
 			app->Render();
+			GetGlobalInput().ResetFixed();
 		}
 
 		// 4) frame
