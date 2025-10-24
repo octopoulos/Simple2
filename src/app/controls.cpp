@@ -70,7 +70,7 @@ void App::Controls()
 		inputLag += deltaTime;
 		for (int i = 0; inputLag >= inputDelta; ++i)
 		{
-			// if (i > 0) GetGlobalInput().ResetFixed(); // TODO: FIX
+			if (i > 0) GetGlobalInput().ResetFixed(); // TODO: FIX
 			FixedControls();
 			inputLag -= inputDelta;
 		}

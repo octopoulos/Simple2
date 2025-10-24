@@ -1,10 +1,11 @@
 // FbxLoader.cpp
 // @author octopoulos
-// @version 2025-10-17
+// @version 2025-10-19
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
 //
+#include "core/common3d.h"             // ComputeTangentsMikktspace, Vertex
 #include "materials/MaterialManager.h" // GetMaterialManager
 #include "textures/TextureManager.h"   // GetTextureManager
 
@@ -205,6 +206,8 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 	const ofbx::Vec4Attributes colors    = geom.getColors();
 	const ofbx::Vec3Attributes tangents  = geom.getTangents();
 
+	const bool hasTangents = (tangents.values && tangents.count == positions.count && false);
+
 	// 3) vertex layout
 	// clang-format off
 	bgfx::VertexLayout layout;
@@ -218,26 +221,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 	// clang-format on
 	mesh->layout = layout;
 
-	// 4) vertex struct
-	struct Vertex
-	{
-		glm::vec3 position;
-		glm::vec3 normal;
-		glm::vec2 uv;
-		glm::vec4 color;
-		glm::vec4 tangent;
-
-		Vertex()
-		    : position(0.0f)
-		    , normal(0.0f, 0.0f, 1.0f)
-		    , uv(0.0f)
-		    , color(1.0f)
-			, tangent(1.0f, 0.0f, 0.0f, 1.0f)
-		{
-		}
-	};
-
-	// 5) process partitions (materials)
+	// 4) process partitions (materials)
 	const int numMaterial = fbxMesh->getMaterialCount();
 	for (int partitionId = 0; partitionId < geom.getPartitionCount(); ++partitionId)
 	{
@@ -317,53 +301,10 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 					ofbx::Vec4 color = colors.get(vertexId);
 					vertex.color     = glm::vec4(TO_FLOAT(color.x), TO_FLOAT(color.y), TO_FLOAT(color.z), TO_FLOAT(color.w));
 				}
-				if (tangents.values && vertexId < tangents.count)
+				if (hasTangents)
 				{
 					ofbx::Vec3 tangent = tangents.get(vertexId);
 					vertex.tangent     = glm::vec4(FbxToNormal(tangent), 1.0f);
-				}
-				else
-				{
-					// Compute tangent for triangle
-					ui::Log("Missing tangent: %d %d", i, triCount);
-					if (i % 3 == 0 && i + 2 < triCount)
-					{
-						const int  v0  = triIndices[i];
-						const int  v1  = triIndices[i + 1];
-						const int  v2  = triIndices[i + 2];
-						ofbx::Vec3 p0  = positions.get(v0);
-						ofbx::Vec3 p1  = positions.get(v1);
-						ofbx::Vec3 p2  = positions.get(v2);
-						ofbx::Vec2 uv0 = uvs.values ? uvs.get(v0) : ofbx::Vec2 { 0, 0 };
-						ofbx::Vec2 uv1 = uvs.values ? uvs.get(v1) : ofbx::Vec2 { 0, 0 };
-						ofbx::Vec2 uv2 = uvs.values ? uvs.get(v2) : ofbx::Vec2 { 0, 0 };
-
-						glm::vec3 pos0 = FbxToPosition(p0);
-						glm::vec3 pos1 = FbxToPosition(p1);
-						glm::vec3 pos2 = FbxToPosition(p2);
-						glm::vec2 duv1 = glm::vec2(TO_FLOAT(uv1.x), 1.0f - TO_FLOAT(uv1.y)) - glm::vec2(TO_FLOAT(uv0.x), 1.0f - TO_FLOAT(uv0.y));
-						glm::vec2 duv2 = glm::vec2(TO_FLOAT(uv2.x), 1.0f - TO_FLOAT(uv2.y)) - glm::vec2(TO_FLOAT(uv0.x), 1.0f - TO_FLOAT(uv0.y));
-
-						glm::vec3   edge1   = pos1 - pos0;
-						glm::vec3   edge2   = pos2 - pos0;
-						const float deltaU1 = duv1.x;
-						const float deltaV1 = duv1.y;
-						const float deltaU2 = duv2.x;
-						const float deltaV2 = duv2.y;
-
-						float f = deltaU1 * deltaV2 - deltaU2 * deltaV1;
-						if (fabs(f) > 1e-6) // Avoid division by zero
-						{
-							f                    = 1.0f / f;
-							glm::vec3 tangent    = f * (deltaV2 * edge1 - deltaV1 * edge2);
-							glm::vec3 normal     = glm::normalize(glm::cross(edge1, edge2));
-							glm::vec3 bitangent  = glm::cross(normal, tangent);
-							float     handedness = dot(bitangent, glm::cross(normal, tangent)) > 0.0f ? 1.0f : -1.0f;
-							vertex.tangent       = glm::vec4(glm::normalize(tangent), handedness);
-						}
-						else vertex.tangent = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-					}
-					else vertex.tangent = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 				}
 
 				vertices.push_back(vertex);
@@ -398,8 +339,14 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 			mesh->sphere = tempSphere;
 
 		// create BGFX buffers
-		if (!vertices.empty())
+		if (vertices.size())
 		{
+			if (!hasTangents)
+			{
+				ui::LogInfo("ProcessMesh: Computing tangents for partition %d in mesh %s", partitionId, Cstr(nodeName));
+				ComputeTangentsMikktspace(vertices, indices);
+			}
+
 			group.vertices = static_cast<uint8_t*>(bx::alloc(entry::getAllocator(), vertices.size() * sizeof(Vertex)));
 			memcpy(group.vertices, vertices.data(), vertices.size() * sizeof(Vertex));
 			group.numVertices = TO_UINT32(vertices.size());
@@ -412,7 +359,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 			continue;
 		}
 
-		if (!indices.empty())
+		if (indices.size())
 		{
 			group.indices = static_cast<uint32_t*>(bx::alloc(entry::getAllocator(), indices.size() * sizeof(uint32_t)));
 			memcpy(group.indices, indices.data(), indices.size() * sizeof(uint32_t));
@@ -439,7 +386,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 		mesh->groups.push_back(std::move(group));
 	}
 
-	// 6) set default material for the mesh
+	// 5) set default material for the mesh
 	mesh->material  = CreateMaterialFromFbx(scene, nullptr, fbxPath, texPath);
 	mesh->material0 = mesh->material;
 

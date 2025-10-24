@@ -1,4 +1,4 @@
-// @version 2025-10-18
+// @version 2025-10-19
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -547,7 +547,7 @@ void GlobalInput::MouseMove(uint64_t deviceId, uint64_t fingerId, int mx, int my
 		device.CalculateMotion();
 	}
 
-	if (DEV_inputMouse) ui::Log("MouseMove: %x/%x/%zu %d,%d,%d %d %d,%d,%f", deviceId, fingerId, device.fingers.size(), mx, my, mz, hasDelta, dx, dy, pressure);
+	// if (DEV_inputMouse) ui::Log("MouseMove: %x/%x/%zu %d,%d,%d %d %d,%d,%f", deviceId, fingerId, device.fingers.size(), mx, my, mz, hasDelta, dx, dy, pressure);
 }
 
 const uint8_t* GlobalInput::PopChar()

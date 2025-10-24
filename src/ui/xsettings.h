@@ -128,7 +128,7 @@ struct XSettings
 	bool     gridDraw;     ///< draw grid?
 	int      gridSize;     ///< number of grid divisions
 	bool     instancing;   ///< use mesh instancing
-	float    lightDir[3];  ///< light direction
+	float    lightDir[4];  ///< light direction + intensity
 	float    orthoZoom;    ///< zoom in orthographic projection
 	int      projection;   ///< 0: ortho, 1: perspective
 	int      renderMode;   ///< &1: screen, &2: model

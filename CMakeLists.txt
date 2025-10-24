@@ -210,6 +210,7 @@ find_package(doctest CONFIG REQUIRED)
 find_package(fastgltf CONFIG REQUIRED)
 #find_package(imgui CONFIG REQUIRED)
 find_package(meshoptimizer CONFIG REQUIRED)
+find_package(mikktspace CONFIG REQUIRED)
 find_package(unofficial-openfbx CONFIG REQUIRED)
 #find_package(RapidObj CONFIG REQUIRED)
 find_package(simdjson CONFIG REQUIRED)
@@ -320,6 +321,7 @@ target_link_libraries(Simple PRIVATE
 	fastgltf::fastgltf
 	#imgui::imgui
 	meshoptimizer::meshoptimizer
+	mikktspace::mikktspace
 	unoffical::openfbx::openfbx
 	#rapidobj::rapidobj
 	simdjson::simdjson

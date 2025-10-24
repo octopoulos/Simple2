@@ -4,6 +4,18 @@
 
 #pragma once
 
+struct Vertex
+{
+	glm::vec3 position = { 0.0f, 0.0f, 0.0f };
+	glm::vec3 normal   = { 0.0f, 0.0f, 1.0f };
+	glm::vec2 uv       = { 0.0f, 0.0f };
+	glm::vec4 color    = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glm::vec4 tangent  = { 1.0f, 0.0f, 0.0f, 1.0f };
+};
+
+/// Compute tangents (call this if they're missing from fbx/gltf)
+void ComputeTangentsMikktspace(std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
+
 // clang-format off
 inline glm::vec3    BulletToGlm(const btVector3& vec)  { return glm::vec3(vec.x(), vec.y(), vec.z()); }
 inline glm::vec4    BulletToGlm(const btVector4& vec)  { return glm::vec4(vec.x(), vec.y(), vec.z(), vec.w()); }

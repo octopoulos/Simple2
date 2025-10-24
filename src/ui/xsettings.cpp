@@ -84,7 +84,7 @@ static std::vector<Config> configs = {
 	X_BOOL   (XSETTINGS, render, 0, gridDraw  , true),
 	X_INT    (XSETTINGS, render, 0, gridSize  , 50, 1, 500),
 	X_BOOL   (XSETTINGS, render, 0, instancing, true),
-	X_FLOATS (XSETTINGS, render, 0, lightDir  , "0.556|-0.508|0.185", -1.0f, 1.0f, 3),
+	X_FLOATS (XSETTINGS, render, 0, lightDir  , "0.556|-0.508|0.185|1.0", -10.0f, 10.0f, 4),
 	X_FLOAT  (XSETTINGS, render, 0, orthoZoom , 1.0f, 0.001f, 10.0f),
 	X_ENUM   (XSETTINGS, render, 0, projection, Projection_Perspective, sProjections),
 	X_ENUM   (XSETTINGS, render, 0, renderMode, RenderMode_Screen, sRenderModes),

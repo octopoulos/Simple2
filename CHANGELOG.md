@@ -1,4 +1,143 @@
 
+**2025-10-24**
+- Oxo v2
+
+**2025-10-22**
+- Oxo game v1
+- Cleanup FX files
+
+**2025-10-21**
+- Normalize recentFiles + report corrupt JSON
+- PBR shaders
+- GLTF improved v1
+
+**2025-10-20**
+- fx-Bounce.cpp
+- Individual fx files with auto integration
+
+**2025-10-18**
+- Debug ~Body
+- Windows 8 version
+
+**2025-10-17**
+- std::string title
+- Remove fmt + fix FBX coordinates
+
+**2025-10-16**
+- Trackpad windows v1
+- Handle 2 fingers gestures
+
+**2025-10-15**
+- Show input vars
+- Device + Finger structs
+- Remove some inputXXX functions
+- FBX correct matrix decomposition + scaling
+
+**2025-10-13**
+- FbxLoader v2
+
+**2025-10-11**
+- Delete object removes the body too
+
+**2025-10-10**
+- Physics with body/object + enable works
+
+**2025-10-08**
+- Click twice = select and move to the object
+
+**2025-10-07**
+- Matrix full info
+- Fbx scaling fixed
+- Click to select an object (raycasting)
+
+**2025-10-06**
+- Shooting reactivated
+- Scale XYZ
+- Change the grid movement for objects and cursor
+- SUBCASE_FMT with FormatStr
+
+**2025-10-04**
+- AddChild sets the parent if not Rubik => Delete works
+- --vsync option
+- Open the last version (save as should update the recent file)
+- New scene works
+- Remove map duplicated in OpenScene
+- Updated shaders
+- Removing fmt v1
+
+**2025-10-02**
+- --renderer and --vendor
+- More PathStr
+- Use PathStr
+- Override texture path for FBX
+
+**2025-10-01**
+- OpenFile: show popup for shaders + textures
+
+**2025-09-29**
+- Remove SetAlpha
+
+**2025-09-26**
+- Minor tweaks
+
+**2025-09-23**
+- Cstr + Format + FormatStr
+
+**2025-09-21**
+- Crash when selecting instance group
+
+**2025-09-20**
+- Raycasting v1
+- ShowInfoTable + showTitle
+
+**2025-09-19**
+- RestartApp + remove cmd.cpp + fix restart/resize
+- Align physics with rubic cubies
+
+**2025-09-18**
+- Debug & render options
+- Rubik: accelerate if moves in buffer
+
+**2025-09-17**
+- Input cleanup: mouse and keyboard
+
+**2025-09-15**
+- Easing functions + interpolation interrupts
+
+**2025-09-14**
+- Smooth faces rotation
+
+**2025-09-13**
+- Scramble the cube
+- Rubik: rotate the whole cube + faces
+- Rubik: detect all faces
+
+**2025-09-12**
+- Mesh/controls + keyIgnores + remove camera.cpp
+
+**2025-09-11**
+- ObjectWindow: geometry
+- ObjectWindow: geometry + materials + physics + transform
+
+**2025-09-10**
+- Bullet convertors + Rubik physics
+
+**2025-09-08**
+- RubikCube + RotateSelected + TransformPosition
+- LoadBgfx + material textures
+
+**2025-09-07**
+- PosNormalUvColor + basic RubikCube
+
+**2025-09-06**
+- TextureName + TextureType + Scene bugfix
+
+**2025-09-05**
+- DecomposeMatrix + lightDir + addChildren
+
+**2025-09-04**
+- FbxLoader + GltfLoader
+
 **2025-09-02**
 - Extra Fx functions
 - GetFxFunctions

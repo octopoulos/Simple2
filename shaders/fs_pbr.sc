@@ -90,6 +90,12 @@ void main()
 		if (occlusionSample.a > 0.0) occlusion = occlusionSample.r * u_occlusion.x;
 	}
 
+	// Unlit mode
+	// if (u_materialFlags.x > 0.5)
+	// {
+	// 	gl_FragColor = vec4(baseColor.rgb, baseColor.a);
+	// 	return;
+	// }
 	// Unlit mode with basic Lambertian lighting
 	if (u_materialFlags.x > 0.5)
 	{
@@ -102,16 +108,10 @@ void main()
 		vec3 lightColor = vec3(u_lightDir.w);
 		float NoL = max(dot(N, L), 0.0);
 		vec3 diffuse = baseColor.rgb * NoL * lightColor;
-		vec3 ambient = baseColor.rgb * 0.1 * occlusion; // Simple ambient term
+		vec3 ambient = baseColor.rgb * 0.5 * occlusion; // Simple ambient term
 		gl_FragColor = vec4(diffuse + ambient, baseColor.a);
 		return;
 	}
-	// Unlit mode
-	// if (u_materialFlags.x > 0.5)
-	// {
-	// 	gl_FragColor = vec4(baseColor.rgb, baseColor.a);
-	// 	return;
-	// }
 
 	// PBR pipeline
 	vec3 N = normalize(v_normal);
