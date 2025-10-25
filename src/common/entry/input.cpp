@@ -1,4 +1,4 @@
-// @version 2025-10-19
+// @version 2025-10-21
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -332,6 +332,8 @@ static UMAP_INT_INT MODIFIER_KEYS = {
 
 void GlobalInput::BeginFrame()
 {
+	ResetFixed();
+
 	// 1) ascii
 	if (lastKey > 0 && RepeatingKey(lastKey))
 		lastAscii = KeyToAscii(lastKey);
@@ -636,7 +638,6 @@ void GlobalInput::Reset()
 	mouseLock   = false;
 
 	BeginFrame();
-	ResetFixed();
 }
 
 void GlobalInput::ResetFixed()

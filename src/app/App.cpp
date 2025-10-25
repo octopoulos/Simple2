@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-10-19
+// @version 2025-10-21
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -631,7 +631,6 @@ public:
 			bgfx::touch(0);
 
 			app->Render();
-			GetGlobalInput().ResetFixed();
 		}
 
 		// 4) frame

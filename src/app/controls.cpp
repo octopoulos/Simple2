@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-10-19
+// @version 2025-10-21
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -68,10 +68,9 @@ void App::Controls()
 		FluidControls();
 
 		inputLag += deltaTime;
-		for (int i = 0; inputLag >= inputDelta; ++i)
+		for (int step = 0; inputLag >= inputDelta; ++step)
 		{
-			if (i > 0) GetGlobalInput().ResetFixed(); // TODO: FIX
-			FixedControls();
+			FixedControls(step);
 			inputLag -= inputDelta;
 		}
 	}
@@ -96,7 +95,7 @@ void App::DeleteSelected()
 	}
 }
 
-void App::FixedControls()
+void App::FixedControls(int step)
 {
 	using namespace entry;
 
@@ -261,10 +260,7 @@ void App::FixedControls()
 		}
 	}
 
-	// 6) reset fixed
-	// GetGlobalInput().ResetFixed();
-
-	// start app with cursor focus
+	// 6) start app with cursor focus
 	if (inputFrame < 1) MoveSelected(true);
 	++inputFrame;
 }

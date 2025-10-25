@@ -1,6 +1,6 @@
 // FbxLoader.cpp
 // @author octopoulos
-// @version 2025-10-19
+// @version 2025-10-21
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -206,7 +206,7 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 	const ofbx::Vec4Attributes colors    = geom.getColors();
 	const ofbx::Vec3Attributes tangents  = geom.getTangents();
 
-	const bool hasTangents = (tangents.values && tangents.count == positions.count && false);
+	const bool hasTangents = (tangents.values && tangents.count == positions.count);
 
 	// 3) vertex layout
 	// clang-format off

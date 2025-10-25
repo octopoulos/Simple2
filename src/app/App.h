@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-10-14
+// @version 2025-10-21
 
 #pragma once
 
@@ -75,7 +75,7 @@ private:
 	int ArrowsFlag();
 
 	/// Fixed-rate input logic (ex: key movement, snap-to-grid)
-	void FixedControls();
+	void FixedControls(int step);
 
 	/// Per-frame input logic (ex: smooth camera movement)
 	void FluidControls();

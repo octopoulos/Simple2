@@ -1,4 +1,4 @@
-// @version 2025-10-12
+// @version 2025-10-21
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -108,7 +108,7 @@ struct Device
 // GlobalInput
 //////////////
 
-#define GI_DOWN(key)          (!ignores[key] && downs[key])
+#define GI_DOWN(key)          (!step && !ignores[key] && downs[key])
 #define GI_KEY(key)           (!ignores[key] && keys[key])
 #define GI_REPEAT(key)        ((!ignores[key] && (downs[key] || ginput.RepeatingKey(key))) ? 1 : 0)
 #define GI_REPEAT_CURSOR(key) ((!ignores[key] && (downs[key] || ginput.RepeatingKey(key, xsettings.cursorInit, xsettings.cursorRepeat))) ? 1 : 0)

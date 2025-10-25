@@ -1,6 +1,6 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-21
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
@@ -130,6 +130,8 @@ void RubikCube::AiControls(const sCamera& camera, int modifier, const bool* down
 	int angle = 90;
 	if (modifier & Modifier_Shift) angle *= -1;
 	if (modifier & Modifier_Meta) angle *= 2;
+
+	const int step = 0;
 
 	auto keyRotateCube = [&](int key, const RubikFace* face) {
 		if (!isDirty && GI_DOWN(key)) RotateCube(face, angle, GlobalInput::EncodeKey(key, modifier), isQueue);
