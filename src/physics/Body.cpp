@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-10-14
+// @version 2025-10-24
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -442,7 +442,7 @@ void Body::CreateShape(int type, const btVector4& newDims)
 
 void Body::Destroy()
 {
-	ui::Log("Body::Destroy");
+	ui::Log("Body::Destroy: %d", shapeType);
 	DestroyShape();
 	DestroyBody();
 }

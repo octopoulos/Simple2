@@ -1,11 +1,11 @@
 // fx-Oxo.cpp
 // @author octopoulos
-// @version 2025-10-19
+// @version 2025-10-21
 
 #include "stdafx.h"
 #include "ui/ui-fx.h"
 //
-#include "entry/input.h" // GetGlobalInput
+#include "entry/input.h"   // GetGlobalInput
 
 #include "bx/easing.h" // easeInOutSine
 
@@ -68,12 +68,12 @@ static void DrawSign(ImDrawList* drawList, const ImVec2& pos, int sign, float ra
 	{
 	// X
 	case 1:
-		drawList->AddLine(ImVec2(pos.x - radius, pos.y - radius), ImVec2(pos.x + radius, pos.y + radius), ImColor(0, 0, 127), thickness);
-		drawList->AddLine(ImVec2(pos.x - radius, pos.y + radius), ImVec2(pos.x + radius, pos.y - radius), ImColor(0, 0, 127), thickness);
+		drawList->AddLine(ImVec2(pos.x - radius, pos.y - radius), ImVec2(pos.x + radius, pos.y + radius), IM_COL32(0, 0, 127, 255), thickness);
+		drawList->AddLine(ImVec2(pos.x - radius, pos.y + radius), ImVec2(pos.x + radius, pos.y - radius), IM_COL32(0, 0, 127, 255), thickness);
 		break;
 	// O
 	case 2:
-		drawList->AddCircle(pos, radius, ImColor(127, 0, 0), 0, thickness);
+		drawList->AddCircle(pos, radius, IM_COL32(127, 0, 0, 255), 0, thickness);
 		break;
 	}
 };
@@ -188,7 +188,7 @@ static void Fx_Oxo(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImV
 
 				// draw square
 				{
-					const ImU32 color = (contain && restartTime < 0.0f) ? ImColor(240, 210, 180) : ImColor(200, 180, 160);
+					const ImU32 color = (contain && restartTime < 0.0f) ? IM_COL32(240, 210, 180, 255) : IM_COL32(200, 180, 160, 255);
 					drawList->AddRectFilled(pos - vecRadius, pos + vecRadius, color);
 				}
 
@@ -233,7 +233,7 @@ static void Fx_Oxo(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImV
 		const ImVec2 dir      = (vec2 - vec0) * 0.15f;
 		const float  delta    = bx::easeInOutSine(bx::max((restartTime - restartDelay * 0.5f - time) * 2.0f / restartDelay, 0.0f));
 		const ImVec2 vecDelta = vec0 * delta + (vec2 + dir) * (1.0f - delta);
-		drawList->AddLine(vec0 - dir, vecDelta, (playerId == 1) ? ImColor(255, 160, 0) : ImColor(0, 160, 255), thickness * 3);
+		drawList->AddLine(vec0 - dir, vecDelta, (playerId == 1) ? IM_COL32(255, 160, 0, 255) : IM_COL32(0, 160, 255, 255), thickness * 3);
 	}
 
 	// 7) display scores
@@ -241,11 +241,11 @@ static void Fx_Oxo(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImV
 		const float gap    = size.x * 0.1f;
 		const char* draws  = Format("D: %d", scores[3]);
 		const float widthD = ImGui::CalcTextSize(draws).x;
-		drawList->AddText(ImVec2(topLeft.x + size.x * 0.5f - widthD * 0.5f, topLeft.y + size.y * 0.05f), ImColor(255, 255, 255), draws);
-		drawList->AddText(ImVec2(topLeft.x + gap, topLeft.y + size.y * 0.05f), ImColor(0, 160, 255), Format("X: %d", scores[1]));
+		drawList->AddText(ImVec2(topLeft.x + size.x * 0.5f - widthD * 0.5f, topLeft.y + size.y * 0.05f), IM_COL32(255, 255, 255, 255), draws);
+		drawList->AddText(ImVec2(topLeft.x + gap, topLeft.y + size.y * 0.05f), IM_COL32(0, 160, 255, 255), Format("X: %d", scores[1]));
 		const char* score2 = Format("O: %d", scores[2]);
 		const float width2 = ImGui::CalcTextSize(score2).x;
-		drawList->AddText(ImVec2(bottomRight.x - gap - width2, topLeft.y + size.y * 0.05f), ImColor(255, 160, 0), score2);
+		drawList->AddText(ImVec2(bottomRight.x - gap - width2, topLeft.y + size.y * 0.05f), IM_COL32(255, 160, 0, 255), score2);
 	}
 }
 

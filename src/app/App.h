@@ -1,6 +1,6 @@
 // App.h
 // @author octopoulos
-// @version 2025-10-21
+// @version 2025-10-24
 
 #pragma once
 
@@ -39,6 +39,7 @@ class App
 	///////
 
 private:
+	bool                          isInit  = false;   ///< initialized?
 	std::unique_ptr<PhysicsWorld> physics = nullptr; ///< physics world
 
 public:
@@ -53,11 +54,7 @@ public:
 	void Destroy();
 
 	/// Get a pointer to physics world
-	btDiscreteDynamicsWorld* GetPhysicsWorld()
-	{
-		ui::Log("GetPhysicsWorld");
-		return physics ? physics->GetWorld() : nullptr;
-	}
+	btDiscreteDynamicsWorld* GetPhysicsWorld() { return physics ? physics->GetWorld() : nullptr; }
 
 	/// Get a shared pointer to self
 	static std::shared_ptr<App> GetApp();

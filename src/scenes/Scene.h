@@ -1,6 +1,6 @@
 // Scene.h
 // @author octopoulos
-// @version 2025-10-14
+// @version 2025-10-24
 
 #pragma once
 
@@ -14,7 +14,7 @@ public:
 	{
 	}
 
-	~Scene() { ui::Log("~Scene"); }
+	~Scene() { ui::Log("~Scene: %zu", children.size()); }
 
 	/// Clear the scene, but keep: camera/cursor/map
 	void Clear();

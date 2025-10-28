@@ -1,6 +1,6 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-10-21
+// @version 2025-10-23
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
@@ -9,8 +9,9 @@
 #include "core/common3d.h"             // BxToGlm
 #include "entry/input.h"               // GetGlobalInput
 #include "geometries/Geometry.h"       // uGeometry
-#include "materials/MaterialManager.h" // GetMaterialManager
+#include "loaders/MeshLoader.h"        // MeshLoader
 #include "loaders/writer.h"            // WRITE_KEY_xxx
+#include "materials/MaterialManager.h" // GetMaterialManager
 #include "ui/ui.h"                     // ui::
 #include "ui/xsettings.h"              // xsettings
 
@@ -262,11 +263,18 @@ void RubikCube::Initialize()
 				if (z == 0) cubieFaceColors[5] = faceColors[5]; // -z
 
 				// use shared geometry for inner cubies
-				const bool isInnerCubie  = (x > 0 && x < S && y > 0 && y < S && z > 0 && z < S);
-				uGeometry  cubieGeometry = CreateBoxGeometry(cubeEdge, cubeEdge, cubeEdge, 1, 1, 1, cubieFaceColors);
+				uGeometry cubieGeometry = CreateBoxGeometry(cubeEdge, cubeEdge, cubeEdge, 1, 1, 1, cubieFaceColors);
 
 				// create a mesh for the cubie
-				auto cubie = std::make_shared<Mesh>(cubieName, ObjectType_RubikNode, cubieGeometry, cubieMaterial);
+				const bool innerX = (x > 0 && x < S);
+				const bool innerY = (y > 0 && y < S);
+				const bool innerZ = (z > 0 && z < S);
+
+				// auto cubie = std::make_shared<Mesh>(cubieName, ObjectType_RubikNode, cubieGeometry, cubieMaterial);
+				std::string pieceName = "edge";
+				if ((x == 0 || x == S) && (y == 0 || y == S) && (z == 0 || z == S)) pieceName = "corner";
+				if (innerX + innerY + innerZ == 2) pieceName = "center";
+				auto cubie = MeshLoader::LoadModelFull(cubieName, FormatStr("rubik/%s", Cstr(pieceName)));
 
 				// position the cubie in the 3D grid
 				const glm::vec3 position(
@@ -274,11 +282,11 @@ void RubikCube::Initialize()
 				    offset + y * spacing,
 				    offset + z * spacing);
 
-				const glm::vec3 scale(1.0f);
+				const glm::vec3 scale(50.0f);
 				cubie->ScaleQuaternionPosition(scale, glm::identity<glm::quat>(), position);
 
 				// add cubie as a child
-				AddChild(cubie); // CREATES A BUG IN ADDCHILD: bad weak_ptr
+				AddChild(cubie);
 			}
 		}
 	}

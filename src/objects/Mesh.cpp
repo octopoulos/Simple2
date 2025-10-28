@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-24
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -76,6 +76,8 @@ void Mesh::CreateShapeBody(int shapeType, float mass, const btVector4& newDims)
 
 void Mesh::Destroy()
 {
+	ui::Log("Mesh::Destroy: %zu %d %s", children.size(), type, Cstr(name));
+
 	// clone => don't destroy data
 	if (!(type & ObjectType_Clone))
 	{

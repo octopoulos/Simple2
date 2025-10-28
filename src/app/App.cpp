@@ -1,6 +1,6 @@
 // App.cpp
 // @author octopoulos
-// @version 2025-10-21
+// @version 2025-10-24
 //
 // export DYLD_LIBRARY_PATH=/opt/homebrew/lib
 
@@ -40,6 +40,9 @@ static std::weak_ptr<App> appWeak = {};
 
 void App::Destroy()
 {
+	ui::Log("App::Destroy: %d", isInit);
+	if (!isInit) return;
+
 	// synchronize settings at exit
 	ui::SaveWindows();
 	bx::store(xsettings.cameraEye, camera->pos2);
@@ -64,6 +67,9 @@ void App::Destroy()
 	BGFX_DESTROY(uCursorCol);
 	BGFX_DESTROY(uLightDir);
 	BGFX_DESTROY(uTime);
+
+	isInit = false;
+	ui::Log("~App::Destroy");
 }
 
 std::shared_ptr<App> App::GetApp()
@@ -113,9 +119,10 @@ int App::Initialize()
 	}
 
 	// 8) time
-	startTime = bx::getHPCounter();
 	lastUs    = NowUs();
+	startTime = bx::getHPCounter();
 
+	isInit = true;
 	return 1;
 }
 
@@ -583,7 +590,11 @@ public:
 	{
 		// Reversed order:
 		// 3) app
-		if (isInit) app.reset();
+		if (isInit)
+		{
+			app->Destroy();
+			app.reset();
+		}
 
 		// 2) imGui
 		if (isInit) imguiDestroy();

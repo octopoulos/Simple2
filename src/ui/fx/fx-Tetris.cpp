@@ -1,13 +1,13 @@
-// fx-Landscape.cpp
+// fx-Tetris.cpp
 // @author octopoulos
-// @version 2025-10-18
+// @version 2025-10-21
 
 #include "stdafx.h"
 #include "ui/ui-fx.h"
 //
 #include "entry/input.h" // GetGlobalInput
 
-static void Fx_Landscape(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
+static void Fx_Tetris(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight, ImVec2 size, ImVec4 mouse, float time)
 {
 	auto&       ginput = GetGlobalInput();
 	const auto& finger = ginput.GetMouse();
@@ -17,4 +17,4 @@ static void Fx_Landscape(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRigh
 	drawList->AddCircleFilled(center, 10.0f, IM_COL32(255, 0, 0, 255));
 }
 
-FX_REGISTER(Landscape)
+FX_REGISTER(Tetris)
