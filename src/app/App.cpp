@@ -7,6 +7,7 @@
 #include "stdafx.h"
 #include "app/App.h"
 //
+#include "common/config.h"             // DEV_memory
 #include "entry/input.h"               // GetGlobalInput
 #include "loaders/MeshLoader.h"        // MeshLoader::
 #include "materials/MaterialManager.h" // GetMaterialManager
@@ -40,7 +41,7 @@ static std::weak_ptr<App> appWeak = {};
 
 void App::Destroy()
 {
-	ui::Log("App::Destroy: %d", isInit);
+	if (DEV_memory) ui::Log("App::Destroy: %d", isInit);
 	if (!isInit) return;
 
 	// synchronize settings at exit
@@ -69,7 +70,7 @@ void App::Destroy()
 	BGFX_DESTROY(uTime);
 
 	isInit = false;
-	ui::Log("~App::Destroy");
+	if (DEV_memory) ui::Log("~App::Destroy");
 }
 
 std::shared_ptr<App> App::GetApp()

@@ -6,6 +6,7 @@
 #include "physics/Body.h"
 //
 #include "app/App.h"        // GetApp
+#include "common/config.h"  // DEV_memory
 #include "core/common3d.h"  // BulletToGlm, BxToBullet, GlmToBullet
 #include "loaders/writer.h" // WRITE_INIT, WRITE_KEY_xxx
 #include "objects/Mesh.h"   // Group, Mesh
@@ -442,7 +443,7 @@ void Body::CreateShape(int type, const btVector4& newDims)
 
 void Body::Destroy()
 {
-	ui::Log("Body::Destroy: %d", shapeType);
+	if (DEV_memory) ui::Log("Body::Destroy: %d", shapeType);
 	DestroyShape();
 	DestroyBody();
 }

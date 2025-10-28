@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-10-21
+// @version 2025-10-24
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -260,8 +260,6 @@ void App::FixedControls(int step)
 		}
 	}
 
-	// 6) start app with cursor focus
-	if (inputFrame < 1) MoveSelected(true);
 	++inputFrame;
 }
 

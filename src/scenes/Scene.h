@@ -13,8 +13,7 @@ public:
 	    : Object3d("Scene", ObjectType_Scene)
 	{
 	}
-
-	~Scene() { ui::Log("~Scene: %zu", children.size()); }
+	~Scene();
 
 	/// Clear the scene, but keep: camera/cursor/map
 	void Clear();

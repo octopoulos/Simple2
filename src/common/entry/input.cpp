@@ -1,4 +1,4 @@
-// @version 2025-10-21
+// @version 2025-10-24
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -80,6 +80,12 @@ void inputSetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::Enum 
 int32_t inputGetGamepadAxis(entry::GamepadHandle _handle, entry::GamepadAxis::Enum _axis)
 {
 	return s_input->m_gamepad[_handle.idx].getAxis(_axis);
+}
+
+bool IsHoveringUi()
+{
+	const auto& io = ImGui::GetIO();
+	return io.WantCaptureMouse;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

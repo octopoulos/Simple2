@@ -1,11 +1,12 @@
 // SettingsWindow.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-10-24
 
 #include "stdafx.h"
 #include "ui/ui.h"
 //
-#include "app/App.h" // App
+#include "app/App.h"                 // App
+#include "textures/TextureManager.h" // TextureType_Count
 
 namespace ui
 {
@@ -40,7 +41,7 @@ public:
 		// TRANSFORM
 		////////////
 
-		BEGIN_COLLAPSE("Transform", ShowObject_Transform, 11 + (xsettings.rotateMode == RotateMode_Quaternion) * 1)
+		BEGIN_COLLAPSE("Transform", ShowObject_Transform, 12 + (xsettings.rotateMode == RotateMode_Quaternion) * 1)
 		{
 			app->ShowObjectSettings(false, ShowObject_Basic | ShowObject_Transform);
 			END_COLLAPSE();
@@ -80,7 +81,7 @@ public:
 			}
 
 			// textures
-			BEGIN_TREE("Textures", ShowObject_MaterialTextures, 8)
+			BEGIN_TREE("Textures", ShowObject_MaterialTextures, TextureType_Count)
 			{
 				app->ShowObjectSettings(false, ShowObject_MaterialTextures);
 				END_TREE();

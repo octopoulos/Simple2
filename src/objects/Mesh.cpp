@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "objects/Mesh.h"
 //
+#include "common/config.h"  // DEV_memory
 #include "core/common3d.h"  // GlmToBullet
 #include "loaders/writer.h" // WRITE_KEY_xxx
 #include "ui/ui.h"          // ui::
@@ -76,7 +77,7 @@ void Mesh::CreateShapeBody(int shapeType, float mass, const btVector4& newDims)
 
 void Mesh::Destroy()
 {
-	ui::Log("Mesh::Destroy: %zu %d %s", children.size(), type, Cstr(name));
+	if (DEV_memory) ui::Log("Mesh::Destroy: %zu %d %s", children.size(), type, Cstr(name));
 
 	// clone => don't destroy data
 	if (!(type & ObjectType_Clone))

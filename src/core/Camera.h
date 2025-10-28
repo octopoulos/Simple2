@@ -1,6 +1,6 @@
 // Camera.h
 // @author octopoulos
-// @version 2025-10-15
+// @version 2025-10-24
 
 #pragma once
 
@@ -33,7 +33,7 @@ using sCamera = std::shared_ptr<class Camera>;
 class Camera : public Object3d
 {
 private:
-	int      action      = CameraAction_None;    ///< CameraActions_
+	int      action      = CameraAction_Orbit;   ///< CameraActions_
 	float    angleDecay  = 0.997f;               ///< angular decay
 	float    angleVel[2] = { 0.0f, 0.0f };       ///< angular velocity
 	float    aspect      = 1.0f;                 ///< aspect ratio (width / height)

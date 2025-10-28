@@ -1,12 +1,12 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-10-17
+// @version 2025-10-24
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
 #include "app/App.h"
 //
-#include "common/config.h"             // DEV_matrix
+#include "common/config.h"             // DEV_matrix, DEV_memory
 #include "core/common3d.h"             // PrintMatrix
 #include "entry/input.h"               // GetGlobalInput
 #include "loaders/MeshLoader.h"        // MeshLoader::
@@ -349,6 +349,11 @@ bool App::SaveScene(const std::filesystem::path& filename)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SCENE
 ////////
+
+Scene::~Scene()
+{
+	if (DEV_memory) ui::Log("~Scene: %zu", children.size());
+}
 
 void Scene::Clear()
 {

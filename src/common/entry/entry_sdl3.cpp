@@ -1,6 +1,6 @@
 // entry_sdl3.cpp
 // @author octopoulos
-// @version 2025-10-18
+// @version 2025-10-24
 
 #include "stdafx.h"
 #include "entry_p.h"
@@ -670,15 +670,15 @@ struct Context
 				break;
 
 				case SDL_EVENT_MOUSE_WHEEL:
-				if (!useFinger)
-				{
-					const SDL_MouseWheelEvent& mev = event.wheel;
-					m_mz += mev.y;
+					if (!useFinger || IsHoveringUi())
+					{
+						const SDL_MouseWheelEvent& mev = event.wheel;
+						m_mz += mev.y;
 
-					if (const WindowHandle handle = findHandle(mev.windowID); isValid(handle))
-						m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz, false, 0, 0);
-				}
-				break;
+						if (const WindowHandle handle = findHandle(mev.windowID); isValid(handle))
+							m_eventQueue.postMouseEvent(handle, m_mx, m_my, m_mz, false, 0, 0);
+					}
+					break;
 
 				case SDL_EVENT_TEXT_INPUT:
 				{

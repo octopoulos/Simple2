@@ -1,10 +1,11 @@
 // PhysicsWorld.cpp
 // @author octopoulos
-// @version 2025-10-14
+// @version 2025-10-24
 
 #include "stdafx.h"
 #include "physics/PhysicsWorld.h"
 //
+#include "common/config.h"           // DEV_memory
 #include "materials/ShaderManager.h" // GetShaderManager
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,7 +80,7 @@ PhysicsWorld::PhysicsWorld()
 
 PhysicsWorld::~PhysicsWorld()
 {
-	ui::Log("~PhysicsWorld");
+	if (DEV_memory) ui::Log("~PhysicsWorld");
 	if (world && debugDraw)
 		world->setDebugDrawer(nullptr);
 

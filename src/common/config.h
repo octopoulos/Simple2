@@ -1,6 +1,6 @@
 // config.h
 // @author octopoulos
-// @version 2025-10-12
+// @version 2025-10-24
 
 #pragma once
 
@@ -16,6 +16,7 @@
 #define DEV_inputMouse  D_TRUE ///< MouseMove
 #define DEV_interpolate false  ///< CompleteInterpolation
 #define DEV_matrix      false  ///< UpdateLocalMatrix
+#define DEV_memory      false  ///< constructor + destructor information
 #define DEV_models      false  ///< ScanModels
 #define DEV_rotate      D_TRUE ///< RotationFromIrot
 #define DEV_rubik       false  ///< RubikCube::Controls
