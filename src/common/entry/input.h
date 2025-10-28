@@ -113,9 +113,9 @@ struct Device
 
 #define GI_DOWN(key)          (!step && !ignores[key] && downs[key])
 #define GI_KEY(key)           (!ignores[key] && keys[key])
-#define GI_REPEAT(key)        ((!ignores[key] && (downs[key] || ginput.RepeatingKey(key))) ? 1 : 0)
-#define GI_REPEAT_CURSOR(key) ((!ignores[key] && (downs[key] || ginput.RepeatingKey(key, xsettings.cursorInit, xsettings.cursorRepeat))) ? 1 : 0)
-#define GI_REPEAT_RUBIK(key)  ((!ignores[key] && (downs[key] || ginput.RepeatingKey(key, xsettings.rubikInit, xsettings.rubikRepeat))) ? 1 : 0)
+#define GI_REPEAT(key)        ((!step && !ignores[key] && (downs[key] || ginput.RepeatingKey(key))) ? 1 : 0)
+#define GI_REPEAT_CURSOR(key) ((!step && !ignores[key] && (downs[key] || ginput.RepeatingKey(key, xsettings.cursorInit, xsettings.cursorRepeat))) ? 1 : 0)
+#define GI_REPEAT_RUBIK(key)  ((!step && !ignores[key] && (downs[key] || ginput.RepeatingKey(key, xsettings.rubikInit, xsettings.rubikRepeat))) ? 1 : 0)
 
 enum Modifiers_ : int
 {

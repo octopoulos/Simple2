@@ -32,6 +32,7 @@ int App::ArrowsFlag()
 	auto&       ginput  = GetGlobalInput();
 	const auto& downs   = ginput.keyDowns;
 	const auto& ignores = ginput.keyIgnores;
+	const int   step    = 0;
 
 	// clang-format off
 	const int flag = 0

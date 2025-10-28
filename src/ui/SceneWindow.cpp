@@ -1,6 +1,6 @@
 // SceneWindow.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-24
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -131,6 +131,10 @@ public:
 			ImGui::TreeNodeEx(Cstr(node->name), treeFlag | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
 			DrawCells(node);
 		}
+
+		// scroll window to make the item visible
+		if (selected && !ImGui::IsItemVisible())
+			ImGui::SetScrollHereY(0.5f);
 
 		if (pushed) ImGui::PopStyleColor();
 	}
