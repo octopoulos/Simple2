@@ -1,6 +1,6 @@
 // map.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-25
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -17,7 +17,7 @@ void App::AddGeometry(uGeometry geometry)
 	if (auto object = std::make_shared<Mesh>(FormatStr("%d:%s", mapNode->NextChildId(), Cstr(GeometryName(geometry->type)))))
 	{
 		object->geometry = geometry;
-		object->material = std::make_shared<Material>("vs_model_texture", "fs_model_texture");
+		object->material = std::make_shared<Material>("model_texture", "vs_model_texture", "fs_model_texture");
 		object->material->LoadTextures({ "colors.png" });
 
 		object->ScaleRotationPosition(

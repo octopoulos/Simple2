@@ -1,6 +1,6 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-10-23
+// @version 2025-10-25
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
@@ -14,6 +14,68 @@
 #include "materials/MaterialManager.h" // GetMaterialManager
 #include "ui/ui.h"                     // ui::
 #include "ui/xsettings.h"              // xsettings
+
+static const std::vector<glm::vec4> faceColors = {
+	glm::vec4(0.85f, 0.85f, 0.85f, 1.00f), // gray
+	glm::vec4(0.00f, 0.60f, 0.95f, 1.00f), // -z (blue)
+	glm::vec4(0.00f, 0.85f, 0.00f, 1.00f), // +z (green)
+	glm::vec4(1.10f, 0.70f, 0.00f, 1.00f), // -x (orange)
+	glm::vec4(0.95f, 0.00f, 0.00f, 1.00f), // +x (red)
+	glm::vec4(1.10f, 1.10f, 1.10f, 1.00f), // -y (white)
+	glm::vec4(1.00f, 0.95f, 0.00f, 1.00f), // +y (yellow)
+};
+
+enum CubeColors_ : int
+{
+	Col_0 = 0,
+	Col_B = 1,
+	Col_G = 2,
+	Col_O = 3,
+	Col_R = 4,
+	Col_W = 5,
+	Col_Y = 6,
+};
+
+struct Cubie
+{
+	std::vector<int>   colors   = {};              ///< material colors
+	std::array<int, 3> irot     = { 0, 0, 0 };     ///< initial rotation
+	std::string        name     = "";              ///< edge: yellow-blue
+	glm::vec3          normal   = glm::vec3(0.0f); ///< face normal
+	int                start[3] = { 0, 0, 0 };     ///< starting position (-1, 0, 1)
+};
+
+// clang-format off
+static const std::vector<Cubie> rubikCubies = {
+	{ { Col_O, Col_B, Col_W }, {   0, 180,  90 }, "corner", { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 0 0 0 -x-y-z
+	{ { Col_W, Col_O }       , { 180, 180,   0 }, "edge"  , { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 0 0 1 -x-y
+	{ { Col_W, Col_G, Col_O }, {   0,   0, 180 }, "corner", { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 0 0 2 -x-y+z
+	{ { Col_O, Col_B }       , {   0,  90,  90 }, "edge"  , { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 0 1 0 -x-z
+	{ { Col_O }              , {   0,   0,  90 }, "center", { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 0 1 1 -x
+	{ { Col_O, Col_G }       , {  90, -90,   0 }, "edge"  , { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 0 1 2 -x+z
+	{ { Col_Y, Col_B, Col_O }, {   0, 180,   0 }, "corner", { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 0 2 0 -x+y-z
+	{ { Col_Y, Col_O }       , {   0, 180,   0 }, "edge"  , { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 0 2 1 -x+y
+	{ { Col_Y, Col_O, Col_G }, {   0, -90,   0 }, "corner", { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 0 2 2 -x+y+z
+	{ { Col_W, Col_B }       , {   0,  90, 180 }, "edge"  , { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 1 0 0 -y-z
+	{ { Col_W }              , { 180,   0,   0 }, "center", { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 1 0 1 -y
+	{ { Col_W, Col_G }       , {   0, -90, 180 }, "edge"  , { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 1 0 2 -y+z
+	{ { Col_B }              , { -90,   0,   0 }, "center", { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 1 1 0 -z
+	{ {}                     , {   0,   0,   0 }, "core"  , { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 1 1 1
+	{ { Col_G }              , {  90,   0,   0 }, "center", { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 1 1 2 +z
+	{ { Col_Y, Col_B }       , {   0,  90,   0 }, "edge"  , { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 1 2 0 +y-z
+	{ { Col_Y }              , {   0,   0,   0 }, "center", { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 1 2 1 +y
+	{ { Col_Y, Col_G }       , {   0, -90,   0 }, "edge"  , { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 1 2 2 +y+z
+	{ { Col_R, Col_W, Col_B }, {  90,  90,   0 }, "corner", { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 2 0 0 +x-y-z
+	{ { Col_W, Col_R }       , { 180,   0,   0 }, "edge"  , { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 2 0 1 +x-y
+	{ { Col_G, Col_W, Col_R }, {  90,   0,   0 }, "corner", { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 2 0 2 +x-y+z
+	{ { Col_B, Col_R }       , { -90,   0,   0 }, "edge"  , { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 2 1 0 +x-z
+	{ { Col_R }              , {   0,   0, -90 }, "center", { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 2 1 1 +x
+	{ { Col_G, Col_R }       , {  90,   0,   0 }, "edge"  , { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 2 1 2 +x+z
+	{ { Col_Y, Col_R, Col_B }, {   0,  90,   0 }, "corner", { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 2 2 0 +x+y-z
+	{ { Col_Y, Col_R }       , {   0,   0,   0 }, "edge"  , { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 2 2 1 +x+y
+	{ { Col_Y, Col_G, Col_R }, {   0,   0,   0 }, "corner", { 0.0f, 1.0f, 0.0f }, { 0, 1, 0 } }, // 2 2 2 +x+y+z
+};
+// clang-format on
 
 static const std::vector<RubikFace> rubikStartFaces = {
 	{ "", "yellow", {  0.0f,  1.0f,  0.0f } },
@@ -192,7 +254,8 @@ void RubikCube::Controls(const sCamera& camera, int modifier, const bool* downs,
 		Key::KeyZ,
 	};
 
-	auto& ginput = GetGlobalInput();
+	auto&     ginput = GetGlobalInput();
+	const int step   = 0;
 
 	if (nextKeys.size())
 	{
@@ -223,20 +286,6 @@ void RubikCube::Initialize()
 {
 	load = MeshLoad_Full;
 
-	// create material for all cubies
-	const auto cubieMaterial = GetMaterialManager().LoadMaterial("rubik_cubie", "vs_rubik", "fs_rubik");
-
-	// define face colors (RGBA)
-	const std::vector<glm::vec4> faceColors = {
-		glm::vec4(0.95f, 0.00f, 0.00f, 1.00f), // +x (red)
-		glm::vec4(1.10f, 0.70f, 0.00f, 1.00f), // -x (orange)
-		glm::vec4(1.00f, 0.95f, 0.00f, 1.00f), // +y (yellow)
-		glm::vec4(1.10f, 1.10f, 1.10f, 1.00f), // -y (white)
-		glm::vec4(0.00f, 0.85f, 0.00f, 1.00f), // +z (green)
-		glm::vec4(0.00f, 0.60f, 0.95f, 1.00f), // -z (blue)
-	};
-	const glm::vec4 defaultColor(0.85f, 0.85f, 0.85f, 1.0f); // black/gray for inner faces
-
 	// total size of each cubie (edge length)
 	const float cubeEdge = 0.95f;               // slightly larger than 1.0 for visible gaps
 	const float spacing  = 1.0f;                // distance between cubie centers
@@ -244,6 +293,7 @@ void RubikCube::Initialize()
 	const float offset   = -S * spacing / 2.0f; // center the cube at origin
 
 	// create n^3 cubies
+	int n = -1;
 	for (int x = 0; x < cubeSize; ++x)
 	{
 		for (int y = 0; y < cubeSize; ++y)
@@ -253,40 +303,44 @@ void RubikCube::Initialize()
 				// name each cubie for identification
 				const auto cubieName = FormatStr("Cubie_%d_%d_%d", x, y, z);
 
-				// determine face colors based on position
-				std::vector<glm::vec4> cubieFaceColors(6, defaultColor);
-				if (x == S) cubieFaceColors[0] = faceColors[0]; // +x
-				if (x == 0) cubieFaceColors[1] = faceColors[1]; // -x
-				if (y == S) cubieFaceColors[2] = faceColors[2]; // +y
-				if (y == 0) cubieFaceColors[3] = faceColors[3]; // -y
-				if (z == S) cubieFaceColors[4] = faceColors[4]; // +z
-				if (z == 0) cubieFaceColors[5] = faceColors[5]; // -z
+				++n;
+				const auto& cubie = rubikCubies[n];
 
-				// use shared geometry for inner cubies
-				uGeometry cubieGeometry = CreateBoxGeometry(cubeEdge, cubeEdge, cubeEdge, 1, 1, 1, cubieFaceColors);
+				if (cubie.name.size()) // x == 1 && y == S && z == 1)
+				{
+					const auto splits = SplitStringView(cubie.name, ':');
+					auto       mesh   = MeshLoader::LoadModelFull(cubieName, FormatStr("rubik/%s", Cstr(splits[0])));
 
-				// create a mesh for the cubie
-				const bool innerX = (x > 0 && x < S);
-				const bool innerY = (y > 0 && y < S);
-				const bool innerZ = (z > 0 && z < S);
+					for (auto& group : mesh->groups)
+					{
+						if (group.material)
+						{
+							const auto& color = group.material->baseColorFactor;
+							ui::Log("Group.material: [%s] %f %f %f %f", Cstr(group.material->name), color.r, color.g, color.b, color.a);
 
-				// auto cubie = std::make_shared<Mesh>(cubieName, ObjectType_RubikNode, cubieGeometry, cubieMaterial);
-				std::string pieceName = "edge";
-				if ((x == 0 || x == S) && (y == 0 || y == S) && (z == 0 || z == S)) pieceName = "corner";
-				if (innerX + innerY + innerZ == 2) pieceName = "center";
-				auto cubie = MeshLoader::LoadModelFull(cubieName, FormatStr("rubik/%s", Cstr(pieceName)));
+							if (const auto splits = SplitStringView(group.material->name, ':'); splits.size() >= 3 && splits[1] == "Face")
+							{
+								if (const int cid = FastAtoi32i(splits[2]); cid >= 1 && cid <= cubie.colors.size())
+								{
+									group.material = group.material->Clone();
+									group.material->baseColorFactor = faceColors[cubie.colors[cid - 1]];
+								}
+							}
+						}
+					}
 
-				// position the cubie in the 3D grid
-				const glm::vec3 position(
-				    offset + x * spacing,
-				    offset + y * spacing,
-				    offset + z * spacing);
+					// position the cubie in the 3D grid
+					const glm::vec3 position(
+						offset + x * spacing,
+						offset + y * spacing,
+						offset + z * spacing);
 
-				const glm::vec3 scale(50.0f);
-				cubie->ScaleQuaternionPosition(scale, glm::identity<glm::quat>(), position);
+					const float     radius = 50.0f;
+					const glm::vec3 scale(radius);
 
-				// add cubie as a child
-				AddChild(cubie);
+					mesh->ScaleIrotPosition(scale, cubie.irot, position);
+					AddChild(mesh);
+				}
 			}
 		}
 	}

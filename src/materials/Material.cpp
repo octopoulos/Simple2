@@ -1,6 +1,6 @@
 // Material.cpp
 // @author octopoulos
-// @version 2025-10-17
+// @version 2025-10-25
 
 #include "stdafx.h"
 #include "materials/Material.h"
@@ -17,9 +17,9 @@ static bgfx::TextureHandle sFallbackBlack  = BGFX_INVALID_HANDLE;
 static bgfx::TextureHandle sFallbackNormal = BGFX_INVALID_HANDLE;
 static bgfx::TextureHandle sFallbackWhite  = BGFX_INVALID_HANDLE;
 
-Material::Material(std::string_view vsName, std::string_view fsName)
+Material::Material(std::string_view matName, std::string_view vsName, std::string_view fsName)
 {
-	Initialize();
+	Initialize(matName);
 	LoadProgram(vsName, fsName);
 }
 
@@ -109,8 +109,10 @@ void Material::FindModelTextures(std::string_view modelName, const VEC_STR& texF
 	}
 }
 
-void Material::Initialize()
+void Material::Initialize(std::string_view matName)
 {
+	name = matName;
+
 	for (int id = 0; id < TextureType_Count; ++id)
 		textures[id] = BGFX_INVALID_HANDLE;
 
@@ -175,8 +177,9 @@ int Material::Serialize(std::string& outString, int depth, int bounds)
 	if (bounds & 1) WRITE_CHAR('{');
 	WRITE_INIT();
 
-	// 1) shaders + program
+	// 1) name + shaders + program
 	WRITE_KEY_STRING(fsName);
+	WRITE_KEY_STRING(name);
 	WRITE_KEY_STRING(vsName);
 	if (state) WRITE_KEY_INT(state);
 

@@ -1,6 +1,6 @@
 // FbxLoader.cpp
 // @author octopoulos
-// @version 2025-10-21
+// @version 2025-10-25
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -45,8 +45,9 @@ inline glm::vec3 FbxToPosition(const ofbx::Vec3& v) { return glm::vec3(TO_FLOAT(
 /// Create material from FBX
 static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Material* fbxMaterial, const std::filesystem::path& fbxPath, std::string_view texPath)
 {
+	const auto       baseName     = fbxPath.stem().string();
 	std::string      fsName       = "fs_pbr";
-	std::string      vsName       = "vs_pbr"; // default to color-based lit shader
+	std::string      vsName       = "vs_pbr";
 	sMaterial        material     = nullptr;
 	std::string      materialName = "DefaultMaterial";
 	int              numTexture   = 0;
@@ -54,7 +55,7 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 
 	if (fbxMaterial)
 	{
-		materialName = fbxMaterial->name[0] ? std::string(fbxMaterial->name) : FormatStr("Material_%d", fbxMaterial->id);
+		materialName = fbxMaterial->name[0] ? FormatStr("%s:%s", Cstr(baseName), fbxMaterial->name) : FormatStr("%s:#%d", Cstr(baseName), fbxMaterial->id);
 
 		// process textures
 		bool hasPbrTextures = false;
@@ -69,8 +70,6 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 					vsName         = "vs_pbr";
 					fsName         = "fs_pbr";
 					hasPbrTextures = true;
-					// vsName         = "vs_model_texture_tangent";
-					// fsName         = "fs_model_texture_tangent";
 				}
 
 				ofbx::DataView filename = texture->getFileName();
@@ -197,6 +196,12 @@ static sMesh ProcessMesh(const ofbx::IScene& scene, const ofbx::Mesh* fbxMesh, c
 	const auto nodeName = mesh->name;
 
 	ui::Log("ProcessMesh: %s", Cstr(nodeName));
+	if (nodeName.starts_with("off:")) return nullptr;
+	if (nodeName.starts_with("shape:"))
+	{
+		ui::Log("SHAPE FOUND!");
+		return nullptr;
+	}
 
 	// 2) process geometry
 	const ofbx::GeometryData&  geom      = fbxMesh->getGeometryData();
@@ -479,9 +484,11 @@ sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy, std::string_view 
 	for (int i = 0, meshCount = scene->getMeshCount(); i < meshCount; ++i)
 	{
 		const ofbx::Mesh* fbxMesh = scene->getMesh(i);
-		sMesh             mesh    = ProcessMesh(*scene, fbxMesh, path, texPath);
-		meshMap[fbxMesh->id]      = mesh;
 
+		sMesh mesh = ProcessMesh(*scene, fbxMesh, path, texPath);
+		if (!mesh) continue;
+
+		meshMap[fbxMesh->id] = mesh;
 		ui::Log("LoadFbx: %d/%d name=%s", i, meshCount, Cstr(mesh->name));
 
 		// find parent mesh

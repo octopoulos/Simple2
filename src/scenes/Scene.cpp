@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-10-24
+// @version 2025-10-25
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -192,8 +192,12 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 			std::string vsName;
 			if (!obj["fsName"].get_string().get(fsName) && !obj["vsName"].get_string().get(vsName))
 			{
+				std::string matName;
+				if (obj["name"].get_string().get(matName))
+					matName = FormatStr("%s:%s", Cstr(vsName), Cstr(fsName));
+
 				if (!mesh->material)
-					mesh->material = std::make_shared<Material>(Cstr(vsName), Cstr(fsName));
+					mesh->material = std::make_shared<Material>(Cstr(matName), Cstr(vsName), Cstr(fsName));
 
 				// state
 				{

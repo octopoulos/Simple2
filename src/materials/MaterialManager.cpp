@@ -1,6 +1,6 @@
 // MaterialManager.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-25
 
 #include "stdafx.h"
 #include "materials/MaterialManager.h"
@@ -38,7 +38,7 @@ sMaterial MaterialManager::LoadMaterial(std::string_view name, std::string_view 
 	}
 
 	// 2) create material
-	auto material = std::make_shared<Material>(vsName, fsName);
+	auto material = std::make_shared<Material>(name, vsName, fsName);
 	if (!material)
 	{
 		ui::LogError("LoadMaterial: Cannot created %s", Cstr(name));

@@ -1,6 +1,6 @@
 // Material.h
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-25
 
 #pragma once
 
@@ -46,21 +46,27 @@ public:
 	std::string         texNames[TEX_COUNT]   = {};                  ///< texture names: 0=diffuse, 1=normal
 	bgfx::TextureHandle textures[TEX_COUNT]   = {};                  ///< all found textures
 
-	Material()
+	Material(std::string_view matName)
 	{
-		Initialize();
+		Initialize(matName);
 	}
 
-	Material(std::string_view vsName, std::string_view fsName);
+	Material(std::string_view matName, std::string_view vsName, std::string_view fsName);
 
 	/// Apply textures, uniforms, ...
 	void Apply() const;
+
+	sMaterial Clone() const
+	{
+		auto clone = std::make_shared<Material>(*this);
+		return clone;
+	}
 
 	/// Find and load model textures
 	void FindModelTextures(std::string_view modelName, const VEC_STR& texFiles);
 
 	/// Initialize textures and uniforms
-	void Initialize();
+	void Initialize(std::string_view matName);
 
 	/// Load the shaders + compile program + remember shader names
 	void LoadProgram(std::string_view vsName, std::string_view fsName);
