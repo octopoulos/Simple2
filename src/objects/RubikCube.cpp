@@ -1,6 +1,6 @@
 // RubikCube.cpp
 // @author octopoulos
-// @version 2025-10-25
+// @version 2025-10-26
 
 #include "stdafx.h"
 #include "objects/RubikCube.h"
@@ -287,10 +287,9 @@ void RubikCube::Initialize()
 	load = MeshLoad_Full;
 
 	// total size of each cubie (edge length)
-	const float cubeEdge = 0.95f;               // slightly larger than 1.0 for visible gaps
-	const float spacing  = 1.0f;                // distance between cubie centers
-	const int   S        = cubeSize - 1;        // shortcut
-	const float offset   = -S * spacing / 2.0f; // center the cube at origin
+	const float spacing = 1.0f;                // distance between cubie centers
+	const int   S       = cubeSize - 1;        // shortcut
+	const float offset  = -S * spacing / 2.0f; // center the cube at origin
 
 	// create n^3 cubies
 	int n = -1;
@@ -335,7 +334,7 @@ void RubikCube::Initialize()
 						offset + y * spacing,
 						offset + z * spacing);
 
-					const float     radius = 50.0f;
+					const float     radius = 52.0f;
 					const glm::vec3 scale(radius);
 
 					mesh->ScaleIrotPosition(scale, cubie.irot, position);

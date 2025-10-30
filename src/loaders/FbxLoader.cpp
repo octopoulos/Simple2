@@ -1,6 +1,6 @@
 // FbxLoader.cpp
 // @author octopoulos
-// @version 2025-10-25
+// @version 2025-10-26
 
 #include "stdafx.h"
 #include "loaders/MeshLoader.h"
@@ -126,20 +126,40 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 		ui::Log("material: %s %s %s %zu", Cstr(materialName), Cstr(vsName), Cstr(fsName), textures.size());
 
 		// PBR-like properties
-		ofbx::Color diffuse   = fbxMaterial->getDiffuseColor();
-		ofbx::Color emissive  = fbxMaterial->getEmissiveColor();
-		const float metallic  = fbxMaterial->getSpecularFactor();
-		const float shininess = fbxMaterial->getShininess();
-		const float roughness = (shininess > 0.0f) ? 1.0f - bx::sqrt(shininess / 100.0f) : 1.0f;
-		material->SetPbrProperties(glm::vec4(diffuse.r, diffuse.g, diffuse.b, 1.0f), metallic, roughness);
-		material->emissiveFactor = glm::vec3(emissive.r, emissive.g, emissive.b);
+		const ofbx::Color diffuseColor   = fbxMaterial->getDiffuseColor();
+		const double      diffuseFactor  = fbxMaterial->getDiffuseFactor();
+		const ofbx::Color emissiveColor  = fbxMaterial->getEmissiveColor();
+		const double      emissiveFactor = fbxMaterial->getEmissiveFactor();
+		const double      specularFactor = fbxMaterial->getSpecularFactor();
+		const double      shininess      = fbxMaterial->getShininess();
+		const float       roughness      = (shininess > 0.0f) ? 1.0f - bx::sqrt(TO_FLOAT(shininess / 100.0)) : 1.0f;
+
+		// clang-format off
+		material->SetPbrProperties(
+			glm::vec4(
+				TO_FLOAT(diffuseColor.r * diffuseFactor),
+				TO_FLOAT(diffuseColor.g * diffuseFactor),
+				TO_FLOAT(diffuseColor.b * diffuseFactor),
+				1.0f
+			),
+			TO_FLOAT(specularFactor),
+			roughness
+		);
+
+		material->emissiveFactor = glm::vec3(
+			TO_FLOAT(emissiveColor.r * emissiveFactor),
+			TO_FLOAT(emissiveColor.g * emissiveFactor),
+			TO_FLOAT(emissiveColor.b * emissiveFactor)
+		);
+		// clang-format on
 
 		// alpha and rendering state
-		const int alphaMode   = (shininess < 1.0f) ? AlphaMode_Blend : AlphaMode_Opaque;
-		material->alphaCutoff = 0.5f;
-		material->alphaMode   = alphaMode;
-		material->doubleSided = false;
-		material->unlit       = !hasPbrTextures;
+		const int alphaMode         = (shininess < 1.0f) ? AlphaMode_Blend : AlphaMode_Opaque;
+		material->alphaCutoff       = 0.5f;
+		material->alphaMode         = alphaMode;
+		material->doubleSided       = false;
+		material->occlusionStrength = 1.0f;
+		material->unlit             = !hasPbrTextures;
 
 		// update render state based on alphaMode and doubleSided
 		{
@@ -149,8 +169,7 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 				| BGFX_STATE_WRITE_A
 				| BGFX_STATE_WRITE_RGB
 				| BGFX_STATE_WRITE_Z;
-			if (alphaMode == AlphaMode_Blend || 1) state |= BGFX_STATE_BLEND_ALPHA; // COCKPIT HAS SOME ALPHA TEXTURE I GUESS => HOW TO DETECT THAT???
-			if (!material->doubleSided) state |= BGFX_STATE_CULL_CW;
+			if (alphaMode == AlphaMode_Blend || true) state |= BGFX_STATE_BLEND_ALPHA;
 			material->state = state;
 		}
 	}
