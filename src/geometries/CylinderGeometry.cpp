@@ -1,6 +1,6 @@
 // CylinderGeometry.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-10-27
 //
 // based on THREE.js CylinderGeometry implementation
 
@@ -58,7 +58,7 @@ uGeometry CreateCylinderGeometry(float radiusTop, float radiusBottom, float heig
 			});
 			// clang-format on
 
-			indexRow.push_back(static_cast<uint16_t>(vertices.size() - 1));
+			indexRow.push_back(TO_UINT16(vertices.size() - 1));
 		}
 		indexArray.push_back(indexRow);
 	}
@@ -95,7 +95,7 @@ uGeometry CreateCylinderGeometry(float radiusTop, float radiusBottom, float heig
 		const float radius = top ? radiusTop : radiusBottom;
 		if (radius <= 0.0f) return;
 
-		const uint16_t centerIndexStart = static_cast<uint16_t>(vertices.size());
+		const uint16_t centerIndexStart = TO_UINT16(vertices.size());
 
 		// center vertices per segment (one per face for unique UVs)
 		for (int x = 1; x <= radial; ++x)
@@ -110,7 +110,7 @@ uGeometry CreateCylinderGeometry(float radiusTop, float radiusBottom, float heig
 			// clang-format on
 		}
 
-		const uint16_t centerIndexEnd = static_cast<uint16_t>(vertices.size());
+		const uint16_t centerIndexEnd = TO_UINT16(vertices.size());
 
 		// surrounding vertices around circumference
 		for (int x = 0; x <= radial; ++x)

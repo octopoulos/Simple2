@@ -1,6 +1,6 @@
 // TextureManager.h
 // @author octopoulos
-// @version 2025-10-07
+// @version 2025-10-26
 
 #pragma once
 
@@ -12,8 +12,9 @@ enum TextureTypes_ : int
 	TextureType_Shininess  = 3,
 	TextureType_Ambient    = 4,
 	TextureType_Emissive   = 5,
-	TextureType_Reflection = 6,
-	TextureType_Count      = 7,
+	TextureType_Occlusion  = 6,
+	TextureType_Reflection = 7,
+	TextureType_Count      = 8,
 };
 
 struct TextureData

@@ -1,6 +1,6 @@
 // common3d.cpp
 // @author octopoulos
-// @version 2025-10-19
+// @version 2025-10-28
 
 #include "stdafx.h"
 #include "core/common3d.h"
@@ -20,7 +20,7 @@ struct MikkTUserData
 static int mikk_getNumFaces(const SMikkTSpaceContext* ctx)
 {
 	const auto* ud = static_cast<const MikkTUserData*>(ctx->m_pUserData);
-	return static_cast<int>(ud->indices->size() / 3);
+	return TO_INT(ud->indices->size() / 3);
 }
 
 static int mikk_getNumVertsOfFace(const SMikkTSpaceContext*, const int) { return 3; }

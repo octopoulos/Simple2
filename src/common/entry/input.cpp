@@ -1,4 +1,4 @@
-// @version 2025-10-24
+// @version 2025-10-28
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -203,7 +203,7 @@ void Device::RemoveFinger(uint64_t fingerId)
 	if (auto it = fingers.find(fingerId); it != fingers.end())
 		fingers.erase(it);
 	else
-		ui::Log("RemoveFingers: Cannot find %lld", fingerId);
+		ui::Log("RemoveFingers: Cannot find %llu", fingerId);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

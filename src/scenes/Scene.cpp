@@ -1,6 +1,6 @@
 // Scene.cpp
 // @author octopoulos
-// @version 2025-10-25
+// @version 2025-10-27
 
 #include "stdafx.h"
 #include "scenes/Scene.h"
@@ -295,6 +295,8 @@ static void ParseObject(simdjson::ondemand::object& doc, sObject3d parent, sObje
 
 bool App::OpenScene(const std::filesystem::path& filename)
 {
+	if (!IsFile(filename)) return false;
+
 	simdjson::ondemand::parser parser;
 
 	simdjson::padded_string json;
@@ -338,11 +340,11 @@ bool App::OpenScene(const std::filesystem::path& filename)
 
 bool App::SaveScene(const std::filesystem::path& filename)
 {
-	std::filesystem::path output = filename.empty() ? xsettings.recentFiles[0] : filename;
+	const std::filesystem::path output = filename.empty() ? xsettings.recentFiles[0] : filename;
 
 	std::string outString;
 	scene->Serialize(outString, 0);
-	ui::Log("SaveScene: %s", Cstr(outString));
+	ui::Log("SaveScene: %s %s", PathStr(filename), Cstr(outString));
 	WriteData(output, outString);
 
 	AddRecent(output);

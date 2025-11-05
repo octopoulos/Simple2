@@ -1,6 +1,6 @@
 // TextureManager.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-28
 
 #include "stdafx.h"
 #include "textures/TextureManager.h"
@@ -16,6 +16,7 @@ static const UMAP_INT_STR textureTypeNames = {
 	{ TextureType_Diffuse   , "Diffuse"    },
 	{ TextureType_Emissive  , "Emissive"   },
 	{ TextureType_Normal    , "Normal"     },
+	{ TextureType_Occlusion , "Occlusion"  },
 	{ TextureType_Reflection, "Reflection" },
 	{ TextureType_Shininess , "Shininess"  },
 	{ TextureType_Specular  , "Specular"   },
@@ -133,7 +134,7 @@ bgfx::TextureHandle TextureManager::AddRawTexture(std::string_view name, const v
 		return BGFX_INVALID_HANDLE;
 	}
 
-	bgfx::setName(handle, name.data(), static_cast<int>(name.size()));
+	bgfx::setName(handle, name.data(), TO_INT(name.size()));
 	textures.emplace(std::string(name), TextureData { 0, std::string(name), handle, info });
 	return handle;
 }

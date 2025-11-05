@@ -22,12 +22,14 @@ static glm::mat4 FbxToMatrix(const ofbx::DMatrix& fbxMat)
 {
 	glm::mat4 matrix = glm::make_mat4(fbxMat.m);
 
+	// clang-format off
 	static const glm::mat4 coord = glm::mat4(
-		-1.0f, 0.0f, 0.0f, 0.0f,  // X stays X (right)
-		0.0f, 0.0f, 1.0f, 0.0f,  // Z -> Y (up)
-		0.0f, -1.0f, 0.0f, 0.0f, // Y -> -Z (forward)
-		0.0f, 0.0f, 0.0f, 1.0f
+		-1.0f,  0.0f, 0.0f, 0.0f, // X stays X (right)
+		 0.0f,  0.0f, 1.0f, 0.0f, // Z -> Y (up)
+		 0.0f, -1.0f, 0.0f, 0.0f, // Y -> -Z (forward)
+		 0.0f,  0.0f, 0.0f, 1.0f
 	);
+	// clang-format on
 
 	return matrix * coord;
 }
@@ -71,6 +73,7 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 					fsName         = "fs_pbr";
 					hasPbrTextures = true;
 				}
+				continue;
 
 				ofbx::DataView filename = texture->getFileName();
 				char           textureCpath[256];
@@ -170,6 +173,7 @@ static sMaterial CreateMaterialFromFbx(const ofbx::IScene& scene, const ofbx::Ma
 				| BGFX_STATE_WRITE_RGB
 				| BGFX_STATE_WRITE_Z;
 			if (alphaMode == AlphaMode_Blend || true) state |= BGFX_STATE_BLEND_ALPHA;
+			if (!material->doubleSided) state |= BGFX_STATE_CULL_CW;
 			material->state = state;
 		}
 	}
@@ -454,7 +458,7 @@ static bx::Aabb TransformAabb(const bx::Aabb& aabb, const glm::mat4& matrix)
 // INTERFACE
 ////////////
 
-sMesh LoadFbx(const std::filesystem::path& path, bool ramcopy, std::string_view texPath)
+sMesh LoadFbx1(const std::filesystem::path& path, bool ramcopy, std::string_view texPath)
 {
 	if (!std::filesystem::exists(path))
 	{

@@ -1,6 +1,6 @@
 // ui-menu.cpp
 // @author octopoulos
-// @version 2025-10-17
+// @version 2025-10-28
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -78,19 +78,21 @@ int App::MainUi()
 void App::OpenedFile(int action, int param, const std::filesystem::path& path)
 {
 	ui::Log("App/OpenedFile: %s action=%d param=%d folder=%s", PathStr(path), action, param, Cstr(openFolder));
-	if (!IsFile(path)) return;
 
 	switch (action)
 	{
 	case OpenAction_Image:
-		if (auto target = selectWeak.lock())
+		if (IsFile(path))
 		{
-			if (target->type & ObjectType_Mesh)
+			if (auto target = selectWeak.lock())
 			{
-				ui::Log("current_path=%s", PathStr(std::filesystem::current_path()));
-				ui::Log("relative=%s", PathStr(std::filesystem::relative(path, "mnt/d")));
-				ui::Log("proximate=%s", PathStr(std::filesystem::proximate(path, "mnt/d")));
-				Mesh::SharedPtr(target)->material->LoadTexture(param, path.string());
+				if (target->type & ObjectType_Mesh)
+				{
+					ui::Log("current_path=%s", PathStr(std::filesystem::current_path()));
+					ui::Log("relative=%s", PathStr(std::filesystem::relative(path, "mnt/d")));
+					ui::Log("proximate=%s", PathStr(std::filesystem::proximate(path, "mnt/d")));
+					Mesh::SharedPtr(target)->material->LoadTexture(param, path.string());
+				}
 			}
 		}
 		break;

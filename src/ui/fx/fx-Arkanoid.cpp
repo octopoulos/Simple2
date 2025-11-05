@@ -1,6 +1,6 @@
 // fx-Arkanoid.cpp
 // @author octopoulos
-// @version 2025-10-18
+// @version 2025-10-28
 
 #include "stdafx.h"
 #include "ui/ui-fx.h"
@@ -46,10 +46,10 @@ static void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight
 		const int rows = 6;
 
 		// layout derived from original 320x180 proportions
-		blockW  = size.x / static_cast<float>(cols); // 10 columns
-		blockH  = size.y / 12.0f;                    // original used H/12 for block height
-		paddleW = size.x * (40.0f / 320.0f);         // scale 40px => proportion of width
-		paddleH = bx::max(4.0f, size.y * 0.03f);     // small height scaled by size
+		blockW  = size.x / TO_FLOAT(cols);       // 10 columns
+		blockH  = size.y / 12.0f;                // original used H/12 for block height
+		paddleW = size.x * (40.0f / 320.0f);     // scale 40px => proportion of width
+		paddleH = bx::max(4.0f, size.y * 0.03f); // small height scaled by size
 
 		ballRadius = bx::max(2.0f, size.x * 0.01f);
 

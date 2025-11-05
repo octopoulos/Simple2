@@ -44,7 +44,7 @@ foreach(opt IN LISTS ALL_WITHS)
 endforeach()
 
 set(3RDPARTY_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty")
-set(IMGUI_DIR "${3RDPARTY_SRC_DIR}/imgui-docking")
+set(IMGUI_DIR        "${3RDPARTY_SRC_DIR}/imgui-docking")
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(DEBUG_INT 1)
@@ -256,7 +256,7 @@ set(    SCENES_SRC_DIR "${SRC_DIR}/scenes")
 set(  TEXTURES_SRC_DIR "${SRC_DIR}/textures")
 set(        UI_SRC_DIR "${SRC_DIR}/ui")
 
-file(GLOB   3RDPARTY_SRC_FILES CONFIGURE_DEPENDS "${IMGUI_DIR}/*.cpp" "${IMGUI_DIR}/*.h" "${3RDPARTY_SRC_DIR}/ImGuiFileDialog/*.cpp" "${3RDPARTY_SRC_DIR}/ImGuiFileDialog/*.h")
+file(GLOB   3RDPARTY_SRC_FILES CONFIGURE_DEPENDS "${IMGUI_DIR}/*.cpp" "${IMGUI_DIR}/*.h" "${3RDPARTY_SRC_DIR}/*.c" "${3RDPARTY_SRC_DIR}/*.h" "${3RDPARTY_SRC_DIR}/ImGuiFileDialog/*.cpp" "${3RDPARTY_SRC_DIR}/ImGuiFileDialog/*.h")
 file(GLOB        APP_SRC_FILES CONFIGURE_DEPENDS "${APP_SRC_DIR}/*.cpp" "${APP_SRC_DIR}/*.h")
 file(GLOB       BGFX_SRC_FILES CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bgfx/src/amalgamated.${CPP_MM}")
 file(GLOB       BIMG_SRC_FILES CONFIGURE_DEPENDS "${CPP_3RDPARTY}/bimg/src/image.cpp" "${CPP_3RDPARTY}/bimg/src/image_decode.cpp" "${CPP_3RDPARTY}/bimg/src/image_gnf.cpp" "${CPP_3RDPARTY}/bimg/3rdparty/astc-encoder/source/*.cpp" "${CPP_3RDPARTY}/bimg/3rdparty/tinyexr/deps/miniz/miniz.*")
@@ -274,7 +274,7 @@ file(GLOB     SCENES_SRC_FILES CONFIGURE_DEPENDS "${SCENES_SRC_DIR}/*.cpp" "${SC
 file(GLOB   TEXTURES_SRC_FILES CONFIGURE_DEPENDS "${TEXTURES_SRC_DIR}/*.cpp" "${TEXTURES_SRC_DIR}/*.h")
 file(GLOB         UI_SRC_FILES CONFIGURE_DEPENDS "${UI_SRC_DIR}/*.cpp" "${UI_SRC_DIR}/*.h" "${UI_SRC_DIR}/fx/*.cpp")
 
-add_executable(Simple "${SRC_DIR}/app/App.cpp")
+add_executable(${PROJECT_NAME} "${APP_SRC_DIR}/App.cpp")
 
 #######################################################################################################################
 # 4) INCLUDES
@@ -284,8 +284,9 @@ add_subdirectory("${CPP_PATH}/AI/" AI)
 
 set(VCPKG_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
 
-target_include_directories(Simple PRIVATE
+target_include_directories(${PROJECT_NAME} PRIVATE
 	"${3RDPARTY_SRC_DIR}"
+	"${APP_SRC_DIR}"
 	"${CPP_3RDPARTY}"
 	"${CPP_3RDPARTY}/bgfx/3rdparty"
 	"${CPP_3RDPARTY}/bgfx/3rdparty/directx-headers/include/directx"
@@ -302,7 +303,6 @@ target_include_directories(Simple PRIVATE
 	"${CPP_PATH}"
 	"${IMGUI_DIR}"
 	"${SRC_DIR}"
-	"${SRC_DIR}/app"
 	"${SRC_DIR}/common"
 	"${VCPKG_INCLUDE_DIR}/bullet"
 	# "${VCPKG_INCLUDE_DIR}/bx"
@@ -312,7 +312,7 @@ target_include_directories(Simple PRIVATE
 # 5) LINK
 #########
 
-target_link_libraries(Simple PRIVATE
+target_link_libraries(${PROJECT_NAME} PRIVATE
 	AI
 	# bgfx::bgfx bgfx::bimg bgfx::bimg_decode bgfx::bx
 	${BULLET_LIBRARIES}
@@ -328,22 +328,22 @@ target_link_libraries(Simple PRIVATE
 )
 
 if(WITH_GLFW)
-	target_link_libraries(Simple PRIVATE glfw)
+	target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 elseif(NOT IS_EMSCRIPTEN)
 	if(WITH_SDL3)
-		target_link_libraries(Simple PRIVATE SDL3::SDL3)
+		target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
 	elseif(WITH_SDL)
-		target_link_libraries(Simple PRIVATE $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>)
+		target_link_libraries(${PROJECT_NAME} PRIVATE $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>)
 	endif()
 endif()
 
 if(WITH_OPENCV)
-	target_link_libraries(Simple PRIVATE opencv_core opencv_imgcodecs opencv_imgproc opencv_video opencv_videoio)
+	target_link_libraries(${PROJECT_NAME} PRIVATE opencv_core opencv_imgcodecs opencv_imgproc opencv_video opencv_videoio)
 endif()
 
  #if(ENTRY_CONFIG_USE_NATIVE)
 if(APPLE)
-	target_link_libraries(Simple PRIVATE
+	target_link_libraries(${PROJECT_NAME} PRIVATE
 		"-framework AppKit"
 		"-framework ApplicationServices"
 		"-framework Foundation"
@@ -657,7 +657,7 @@ set(SOURCES
 	        ${UI_SRC_FILES}
 )
 #message("SOURCES=${SOURCES}")
-target_sources(Simple PRIVATE ${SOURCES})
+target_sources(${PROJECT_NAME} PRIVATE ${SOURCES})
 
 # Exclude .glb, .obj, and .sc files from compilation
 set_source_files_properties(${MODEL_SRC_FILES} ${SHADER_SRC_FILES} PROPERTIES

@@ -1,6 +1,6 @@
 // LogWindow.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-10-28
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -89,7 +89,7 @@ public:
 	{
 		if (!BeginDraw(ImGuiWindowFlags_NoScrollbar)) return;
 
-		const auto numTab = colorNames.size();
+		const size_t numTab = colorNames.size();
 		if (numTab > 1)
 			if (ImGui::BeginTabBar("Log#tabs"))
 			{
@@ -154,7 +154,7 @@ public:
 			for (auto it = lines.end(); it-- != lines.begin();)
 				if (it->text == prevText)
 				{
-					const auto prevSize = lines.size();
+					const size_t prevSize = lines.size();
 					lines.erase(it);
 					break;
 				}

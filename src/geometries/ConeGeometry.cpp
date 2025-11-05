@@ -1,6 +1,6 @@
 // ConeGeometry.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-10-27
 //
 // based on THREE.js ConeGeometry implementation
 
@@ -76,7 +76,7 @@ uGeometry CreateConeGeometry(float radius, float height, int radialSegments, int
 	// 4) bottom cap
 	if (!openEnded)
 	{
-		const uint16_t centerIndex = static_cast<uint16_t>(vertices.size());
+		const uint16_t centerIndex = TO_UINT16(vertices.size());
 
 		// center vertex
 		// clang-format off

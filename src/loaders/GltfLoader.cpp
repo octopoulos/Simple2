@@ -241,7 +241,7 @@ sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy, std::string_view
 				const auto& accessor = asset.accessors[primitive.indicesAccessor.value()];
 				indices.reserve(accessor.count);
 				fastgltf::iterateAccessor<uint32_t>(asset, accessor, [&](uint32_t idx) { indices.push_back(idx); });
-				group.numIndices = static_cast<uint32_t>(indices.size());
+				group.numIndices = TO_UINT32(indices.size());
 				ui::Log("%zu indices", indices.size());
 			}
 
@@ -343,7 +343,7 @@ sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy, std::string_view
 			{
 				group.vertices = reinterpret_cast<uint8_t*>(bx::alloc(entry::getAllocator(), vertices.size() * sizeof(Vertex)));
 				memcpy(group.vertices, vertices.data(), vertices.size() * sizeof(Vertex));
-				group.numVertices = static_cast<uint16_t>(vertices.size());
+				group.numVertices = TO_UINT16(vertices.size());
 				group.vbh         = bgfx::createVertexBuffer(bgfx::makeRef(group.vertices, vertices.size() * sizeof(Vertex)), layout);
 			}
 
@@ -351,8 +351,8 @@ sMesh LoadGltf(const std::filesystem::path& path, bool ramcopy, std::string_view
 			{
 				group.indices = reinterpret_cast<uint32_t*>(bx::alloc(entry::getAllocator(), indices.size() * sizeof(uint32_t)));
 				for (size_t i = 0; i < indices.size(); ++i)
-					group.indices[i] = static_cast<uint32_t>(indices[i]);
-				group.numIndices = static_cast<uint32_t>(indices.size());
+					group.indices[i] = TO_UINT32(indices[i]);
+				group.numIndices = TO_UINT32(indices.size());
 				group.ibh        = bgfx::createIndexBuffer(bgfx::makeRef(group.indices, indices.size() * sizeof(uint32_t)), BGFX_BUFFER_INDEX32);
 			}
 
