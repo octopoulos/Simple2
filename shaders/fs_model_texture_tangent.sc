@@ -23,7 +23,7 @@ void main()
 	// gl_FragColor = vec4(abs(u_lightDir.xyz), 1.0); // Light direction
 	// gl_FragColor = vec4(abs(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(v_tangent, v_bitangent, v_normal)))), 1.0); // Final normal
 	// gl_FragColor = vec4(vec3(max(0.0, dot(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(v_tangent, v_bitangent, v_normal))), normalize(u_lightDir.xyz)))), 1.0); // Diffuse term
-	// gl_FragColor = vec4(color.rgb * mix(0.3, 1.0, max(0.0, dot(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(v_tangent, v_bitangent, v_normal))), normalize(u_lightDir.xyz)))) * vec3(u_lightDir.w), color.a); // Final lit color
+	// gl_FragColor = vec4(color.rgb * mix(0.3, 1.0, max(0.0, dot(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(v_tangent, v_bitangent, v_normal))), normalize(u_lightDir.xyz)))) * vec3(u_lightDir.www), color.a); // Final lit color
 	// return;
 
 	// Normal mapping
@@ -50,7 +50,7 @@ void main()
 	float diffuse = max(0.0, dot(finalNormal, lightDir));
 	float specular = pow(max(0.0, dot(finalNormal, halfway)), 32.0) * 0.2; // Simple Blinn-Phong specular
 	float lambert = mix(ambient, 1.0, diffuse + specular);
-	vec3 lightColor = vec3(u_lightDir.w); // Light intensity
+	vec3 lightColor = vec3(u_lightDir.www); // Light intensity
 
 	// Color
 	vec4 color = toLinear(texture2D(s_texColor, v_texcoord0)) * u_baseColorFactor;
