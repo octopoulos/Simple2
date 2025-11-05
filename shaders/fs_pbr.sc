@@ -62,7 +62,7 @@ void main()
 	// gl_FragColor = vec4(abs(normalize(u_viewPos.xyz - v_position)), 1.0); // View direction
 	// gl_FragColor = vec4(abs(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(normalize(v_tangent), normalize(v_bitangent), normalize(v_normal)))), 1.0); // Final normal
 	// gl_FragColor = vec4(vec3(max(0.0, dot(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(normalize(v_tangent), normalize(v_bitangent), normalize(v_normal)))), normalize(-u_lightDir.xyz)))), 1.0); // NoL term
-	// gl_FragColor = vec4(((1.0 - F_Schlick(max(dot(normalize(u_viewPos.xyz - v_position), normalize(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(normalize(v_tangent), normalize(v_bitangent), normalize(v_normal))))), normalize(-u_lightDir.xyz)), vec3(0.04))) * (1.0 - u_metallicRoughness.x) * u_baseColorFactor.rgb / PI + (D_GGX(max(dot(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(normalize(v_tangent), normalize(v_bitangent), normalize(v_normal))), normalize(normalize(u_viewPos.xyz - v_position) + normalize(-u_lightDir.xyz))), 0.0), u_metallicRoughness.y) * F_Schlick(max(dot(normalize(u_viewPos.xyz - v_position), normalize(normalize(u_viewPos.xyz - v_position) + normalize(-u_lightDir.xyz))), vec3(0.04)) * G_Smith(max(dot(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(normalize(v_tangent), normalize(v_bitangent), normalize(v_normal))), normalize(u_viewPos.xyz - v_position)), 0.0), max(dot(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(normalize(v_tangent), normalize(v_bitangent), normalize(v_normal))), normalize(-u_lightDir.xyz)), 0.0), u_metallicRoughness.y)) / max(4.0 * max(dot(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(normalize(v_tangent), normalize(v_bitangent), normalize(v_normal))), normalize(u_viewPos.xyz - v_position)), 0.0) * max(dot(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(normalize(v_tangent), normalize(v_bitangent), normalize(v_normal))), normalize(-u_lightDir.xyz)), 0.0), 0.001)) * vec3(u_lightDir.w) * max(dot(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(normalize(v_tangent), normalize(v_bitangent), normalize(v_normal))), normalize(-u_lightDir.xyz)), 0.0), u_baseColorFactor.rgb * 0.3 * u_occlusion.x, u_baseColorFactor.a); // Final lit color
+	// gl_FragColor = vec4(((1.0 - F_Schlick(max(dot(normalize(u_viewPos.xyz - v_position), normalize(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(normalize(v_tangent), normalize(v_bitangent), normalize(v_normal))))), normalize(-u_lightDir.xyz)), vec3(0.04))) * (1.0 - u_metallicRoughness.x) * u_baseColorFactor.rgb / PI + (D_GGX(max(dot(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(normalize(v_tangent), normalize(v_bitangent), normalize(v_normal))), normalize(normalize(u_viewPos.xyz - v_position) + normalize(-u_lightDir.xyz))), 0.0), u_metallicRoughness.y) * F_Schlick(max(dot(normalize(u_viewPos.xyz - v_position), normalize(normalize(u_viewPos.xyz - v_position) + normalize(-u_lightDir.xyz))), vec3(0.04)) * G_Smith(max(dot(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(normalize(v_tangent), normalize(v_bitangent), normalize(v_normal))), normalize(u_viewPos.xyz - v_position)), 0.0), max(dot(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(normalize(v_tangent), normalize(v_bitangent), normalize(v_normal))), normalize(-u_lightDir.xyz)), 0.0), u_metallicRoughness.y)) / max(4.0 * max(dot(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(normalize(v_tangent), normalize(v_bitangent), normalize(v_normal))), normalize(u_viewPos.xyz - v_position)), 0.0) * max(dot(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(normalize(v_tangent), normalize(v_bitangent), normalize(v_normal))), normalize(-u_lightDir.xyz)), 0.0), 0.001)) * vec3(u_lightDir.www) * max(dot(normalize(mul(texture2D(s_texNormal, v_texcoord0).xyz * 2.0 - 1.0, mat3(normalize(v_tangent), normalize(v_bitangent), normalize(v_normal))), normalize(-u_lightDir.xyz)), 0.0), u_baseColorFactor.rgb * 0.3 * u_occlusion.x, u_baseColorFactor.a); // Final lit color
 	// return;
 
 	// Fallback values
@@ -105,7 +105,7 @@ void main()
 		mat3 TBN = mat3(T, B, N);
 		N = normalize(mul(normalMap, TBN));
 		vec3 L = normalize(u_lightDir.xyz); // Consistent with fs_model_texture_tangent.sc
-		vec3 lightColor = vec3(u_lightDir.w);
+		vec3 lightColor = vec3(u_lightDir.www);
 		float NoL = max(dot(N, L), 0.0);
 		vec3 diffuse = baseColor.rgb * NoL * lightColor;
 		vec3 ambient = baseColor.rgb * 0.5 * occlusion; // Simple ambient term
@@ -139,7 +139,7 @@ void main()
 	float G = G_Smith(NoV, NoL, roughness);
 	vec3 specular = (D * F * G) / max(4.0 * NoL * NoV, 0.001);
 	vec3 diffuse = (1.0 - F) * (1.0 - metallic) * albedo / PI;
-	vec3 lightColor = vec3(u_lightDir.w);
+	vec3 lightColor = vec3(u_lightDir.www);
 	vec3 color = (diffuse + specular) * lightColor * NoL;
 	vec3 ambient = albedo * 0.1 * occlusion; // Increased ambient
 	color += emissive;
