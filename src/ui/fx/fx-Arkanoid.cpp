@@ -9,13 +9,14 @@ static void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight
 {
 	struct Block
 	{
+		ImU32  color;
 		ImVec2 min;
 		ImVec2 max;
 		bool   active = true;
 
 		bool Contains(const ImVec2& p) const
 		{
-			return (p.x > min.x && p.x < max.x && p.y > min.y && p.y < max.y);
+			return (p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y);
 		}
 	};
 
@@ -35,6 +36,10 @@ static void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight
 	static float  vx         = 0.0f;
 	static float  vy         = 0.0f; // ball velocity (px/sec)
 
+	// time
+	static float endTime;          // time when the game ends
+	static float startTime = time; // time when the game started
+
 	// reset when user requests (mouse.w == 0) or when size changes
 	if (!mouse.w) needInit = 3;
 	if (lastSize.x != size.x || lastSize.y != size.y) needInit = 3;
@@ -48,7 +53,7 @@ static void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight
 		// layout derived from original 320x180 proportions
 		blockW  = size.x / TO_FLOAT(cols);       // 10 columns
 		blockH  = size.y / 12.0f;                // original used H/12 for block height
-		paddleW = size.x * (40.0f / 320.0f);     // scale 40px => proportion of width
+		paddleW = size.x * (60.0f / 320.0f);     // scale 40px => proportion of width
 		paddleH = bx::max(4.0f, size.y * 0.03f); // small height scaled by size
 
 		ballRadius = bx::max(2.0f, size.x * 0.01f);
@@ -58,8 +63,8 @@ static void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight
 		cy = topLeft.y + size.y * (1.0f - 8.0f / 180.0f);
 
 		// velocities in px/sec (scaled to canvas size)
-		const float vx_base = -60.0f; // px/sec on 320 width baseline
-		const float vy_base = -90.0f; // px/sec on 180 height baseline
+		const float vx_base = MerseneFloat(-120.0f, 120.0f); // px/sec on 320 width baseline
+		const float vy_base = -120.0f;                       // px/sec on 180 height baseline
 		const float sx      = size.x / 320.0f;
 		const float sy      = size.y / 180.0f;
 		vx                  = vx_base * sx;
@@ -74,6 +79,7 @@ static void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight
 				{
 					Block& b = blocks[c + r * cols];
 					b.active = true;
+					b.color  = ImColor(MerseneInt32(50, 240), MerseneInt32(50, 240), MerseneInt32(50, 240));
 					b.min    = ImVec2(topLeft.x + c * blockW, topLeft.y + r * blockH);
 					b.max    = ImVec2(topLeft.x + (c + 1) * blockW, topLeft.y + (r + 1) * blockH);
 				}
@@ -87,7 +93,7 @@ static void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight
 
 	// time step
 	const float dt = bx::clamp(time - lastTime, 0.0f, 0.05f);
-	lastTime = time;
+	lastTime       = time;
 
 	// paddle follows mouse.x (mouse.x is expected normalized 0..1 within the region)
 	paddle.min.x = topLeft.x + mouse.x * size.x - paddleW * 0.5f;
@@ -97,6 +103,7 @@ static void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight
 	paddle.max.y = bottomRight.y;
 
 	// --- collisions with blocks (check current ball center) ---
+	bool isHit = false;
 	for (int i = 0; i < 60; ++i)
 	{
 		Block& b = blocks[i];
@@ -104,6 +111,7 @@ static void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight
 		if (!b.Contains(ImVec2(cx, cy))) continue;
 
 		b.active = false;
+		isHit    = true;
 
 		// compute overlaps (how deep is the center inside each side)
 		const float ol  = cx - b.min.x;
@@ -136,21 +144,36 @@ static void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight
 	// paddle collision (if ball center is inside paddle rect)
 	if (paddle.Contains(ImVec2(cx, cy)))
 	{
+		const ImVec2 padCenter = (paddle.min + paddle.max) * 0.5f;
+		const float  deltaX    = cx - padCenter.x;
+
+		vx += deltaX * 2.5f;
 		vy = -std::fabs(vy); // reflect upward
 		// nudge ball above paddle
 		cy = paddle.min.y - ballRadius - 1.0f;
 	}
 
-	// draw blocks (outline + fill) and paddle/ball
+	// draw blocks (outline + fill)
+	int numBlock = 0;
 	for (int i = 0; i < 60; ++i)
 	{
 		const Block& b = blocks[i];
-		if (!b.active) continue;
-		drawList->AddRectFilled(b.min, b.max, IM_COL32(80, 180, 100, 255));
-		drawList->AddRect(b.min, b.max, IM_COL32(255, 255, 255, 120));
+		if (b.active)
+		{
+			++numBlock;
+			drawList->AddRectFilled(b.min, b.max, b.color);
+			drawList->AddRect(b.min, b.max, IM_COL32(255, 255, 255, 120));
+		}
 	}
 
-	drawList->AddRect(paddle.min, paddle.max, IM_COL32(255, 255, 255, 255));
+	// If all blocks are hit, record the end time
+	if (isHit && numBlock == 0) endTime = time;
+
+	// draw the paddle
+	drawList->AddRectFilled(paddle.min, paddle.max, IM_COL32(200, 200, 200, 255));
+	drawList->AddRect(paddle.min, paddle.max, IM_COL32(255, 255, 255, 120));
+
+	// draw the ball
 	drawList->AddCircleFilled(ImVec2(cx, cy), ballRadius, IM_COL32(255, 255, 255, 255));
 
 	// --- integrate position (pixels) ---
@@ -179,6 +202,27 @@ static void Fx_Arkanoid(ImDrawList* drawList, ImVec2 topLeft, ImVec2 bottomRight
 	// ball falls below bottom => reset to initial state
 	if (cy - ballRadius > bottomRight.y)
 		needInit = 1;
+
+	// ----------------------------
+	// STEP 5: DISPLAY SCORE AND TIME
+	// ----------------------------
+	// Format the text to show remaining balls and elapsed time
+	const char* text = Format(
+	    "Left: %d  Time: %.2f",
+	    numBlock,                                       // blocks left
+	    ((endTime > 0.0f) ? endTime : time) - startTime // if game ended, freeze timer
+	);
+
+	// Center the text horizontally
+	const float width = ImGui::CalcTextSize(text).x;
+	drawList->AddText(
+	    ImVec2(
+	        topLeft.x + size.x * 0.5f - width * 0.5f, // X position (center)
+	        topLeft.y + size.y * 0.01f                // Y position (top)
+	        ),
+	    IM_COL32(255, 255, 255, 255), // white color
+	    text                          // actual text to draw
+	);
 }
 
 FX_REGISTER(Arkanoid)
