@@ -1,6 +1,6 @@
 // CapsuleGeometry.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-11-03
 //
 // based on THREE.js CapsuleGeometry implementation
 
@@ -40,7 +40,7 @@ uGeometry CreateCapsuleGeometry(float radius, float height, int capSegments, int
 		if (iy <= caps)
 		{
 			// bottom cap
-			const float t    = float(iy) / float(caps);
+			const float t    = TO_FLOAT(iy) / TO_FLOAT(caps);
 			const float ang  = t * bx::kPiHalf;
 			profileY         = -halfHeight - radius * bx::cos(ang);
 			profileRadius    = radius * bx::sin(ang);
@@ -50,7 +50,7 @@ uGeometry CreateCapsuleGeometry(float radius, float height, int capSegments, int
 		else if (iy <= caps + segmentsH)
 		{
 			// cylinder
-			const float t    = float(iy - caps) / float(segmentsH);
+			const float t    = TO_FLOAT(iy - caps) / TO_FLOAT(segmentsH);
 			profileY         = -halfHeight + t * h;
 			profileRadius    = radius;
 			normalYComponent = 0.0f;
@@ -59,7 +59,7 @@ uGeometry CreateCapsuleGeometry(float radius, float height, int capSegments, int
 		else
 		{
 			// top cap
-			const float t    = float(iy - caps - segmentsH) / float(caps);
+			const float t    = TO_FLOAT(iy - caps - segmentsH) / TO_FLOAT(caps);
 			const float ang  = t * bx::kPiHalf;
 			profileY         = halfHeight + radius * bx::sin(ang);
 			profileRadius    = radius * bx::cos(ang);
@@ -71,13 +71,13 @@ uGeometry CreateCapsuleGeometry(float radius, float height, int capSegments, int
 		float       uOffset = 0.0f;
 
 		if (iy == 0)
-			uOffset = 0.5f / float(radial);
+			uOffset = 0.5f / TO_FLOAT(radial);
 		else if (iy == verticalSegments)
-			uOffset = -0.5f / float(radial);
+			uOffset = -0.5f / TO_FLOAT(radial);
 
 		for (int ix = 0; ix <= radial; ++ix)
 		{
-			const float u     = float(ix) / float(radial);
+			const float u     = TO_FLOAT(ix) / TO_FLOAT(radial);
 			const float theta = u * bx::kPi2;
 			const float sinT  = bx::sin(theta);
 			const float cosT  = bx::cos(theta);

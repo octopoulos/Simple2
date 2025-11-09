@@ -1,12 +1,17 @@
 // PhysicsWorld.cpp
 // @author octopoulos
-// @version 2025-10-24
+// @version 2025-11-05
 
 #include "stdafx.h"
 #include "physics/PhysicsWorld.h"
 //
 #include "common/config.h"           // DEV_memory
 #include "materials/ShaderManager.h" // GetShaderManager
+
+#include <BulletCollision/CollisionDispatch/btBox2dBox2dCollisionAlgorithm.h>
+#include <BulletCollision/CollisionDispatch/btConvex2dConvex2dAlgorithm.h>
+#include <BulletCollision/NarrowPhaseCollision/btMinkowskiPenetrationDepthSolver.h>
+#include <BulletCollision/NarrowPhaseCollision/btVoronoiSimplexSolver.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // BulletDebugDraw
@@ -17,7 +22,7 @@ bgfx::VertexLayout PosColorVertex::ms_layout;
 void BulletDebugDraw::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
 {
 	// convert color to ABGR
-	const uint32_t abgr = (uint32_t(255) << 24) | (uint32_t(255 * color.z()) << 16) | (uint32_t(255 * color.y()) << 8) | uint32_t(255 * color.x());
+	const uint32_t abgr = (TO_UINT32(255) << 24) | (TO_UINT32(255 * color.z()) << 16) | (TO_UINT32(255 * color.y()) << 8) | TO_UINT32(255 * color.x());
 
 	// add vertices
 	lines.push_back({ from.x(), from.y(), from.z(), abgr });
@@ -44,12 +49,14 @@ void BulletDebugDraw::FlushLines()
 	memcpy(vb.data, lines.data(), numVertices * sizeof(PosColorVertex));
 	bgfx::setVertexBuffer(0, &vb);
 
+	// clang-format off
 	bgfx::setState(0
 		| BGFX_STATE_DEPTH_TEST_ALWAYS
 		| BGFX_STATE_PT_LINES
 		| BGFX_STATE_WRITE_RGB
 		| BGFX_STATE_WRITE_Z
 	);
+	// clang-format on
 	bgfx::submit(viewId, program);
 
 	lines.clear();
@@ -73,6 +80,17 @@ PhysicsWorld::PhysicsWorld()
 	dispatcher = new btCollisionDispatcher(config);
 	broadphase = new btDbvtBroadphase();
 	solver     = new btSequentialImpulseConstraintSolver();
+
+	// 2d support
+	{
+		static btVoronoiSimplexSolver*            simplex  = new btVoronoiSimplexSolver();
+		static btMinkowskiPenetrationDepthSolver* pdSolver = new btMinkowskiPenetrationDepthSolver();
+
+		dispatcher->registerCollisionCreateFunc(BOX_2D_SHAPE_PROXYTYPE   , BOX_2D_SHAPE_PROXYTYPE   , new btBox2dBox2dCollisionAlgorithm::CreateFunc());
+		dispatcher->registerCollisionCreateFunc(CONVEX_2D_SHAPE_PROXYTYPE, CONVEX_2D_SHAPE_PROXYTYPE, new btConvex2dConvex2dAlgorithm::CreateFunc(simplex, pdSolver));
+		dispatcher->registerCollisionCreateFunc(BOX_2D_SHAPE_PROXYTYPE   , CONVEX_2D_SHAPE_PROXYTYPE, new btConvex2dConvex2dAlgorithm::CreateFunc(simplex, pdSolver));
+		dispatcher->registerCollisionCreateFunc(CONVEX_2D_SHAPE_PROXYTYPE, BOX_2D_SHAPE_PROXYTYPE   , new btConvex2dConvex2dAlgorithm::CreateFunc(simplex, pdSolver));
+	}
 
 	world = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, config);
 	world->setGravity(btVector3(0, -9.81f, 0));
@@ -118,6 +136,5 @@ void PhysicsWorld::DrawDebug()
 
 void PhysicsWorld::StepSimulation(float delta)
 {
-	//if (world) world->stepSimulation(delta, maxSimulationSteps, 1.0f / 120.0f);
 	if (world) world->stepSimulation(delta, 5, 1.0f / 120.0f);
 }

@@ -1,6 +1,6 @@
 // ConeGeometry.cpp
 // @author octopoulos
-// @version 2025-10-27
+// @version 2025-11-03
 //
 // based on THREE.js ConeGeometry implementation
 
@@ -24,13 +24,13 @@ uGeometry CreateConeGeometry(float radius, float height, int radialSegments, int
 	// 2) side vertices
 	for (int iy = 0; iy <= segmentsH; ++iy)
 	{
-		const float v     = float(iy) / float(segmentsH);
+		const float v     = TO_FLOAT(iy) / TO_FLOAT(segmentsH);
 		const float currR = radius * (1.0f - v);
 		const float y     = -halfHeight + v * height;
 
 		for (int ix = 0; ix <= radial; ++ix)
 		{
-			const float u     = float(ix) / float(radial);
+			const float u     = TO_FLOAT(ix) / TO_FLOAT(radial);
 			const float theta = thetaStart + u * thetaLength;
 
 			const float sinT = bx::sin(theta);
@@ -89,7 +89,7 @@ uGeometry CreateConeGeometry(float radius, float height, int radialSegments, int
 
 		for (int ix = 0; ix <= radial; ++ix)
 		{
-			const float u     = float(ix) / float(radial);
+			const float u     = TO_FLOAT(ix) / TO_FLOAT(radial);
 			const float theta = thetaStart + u * thetaLength;
 
 			const float sinT = bx::sin(theta);

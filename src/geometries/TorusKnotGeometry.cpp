@@ -1,6 +1,6 @@
 // TorusKnotGeometry.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-11-03
 //
 // based on THREE.js TorusKnotGeometry implementation
 
@@ -24,7 +24,7 @@ uGeometry CreateTorusKnotGeometry(float radius, float tube, int tubularSegments,
 	auto calculatePositionOnCurve = [](float u, int p, int q, float radius, glm::vec3& pos) {
 		const float cu      = cosf(u);
 		const float su      = sinf(u);
-		const float quOverP = float(q) / float(p) * u;
+		const float quOverP = TO_FLOAT(q) / TO_FLOAT(p) * u;
 		const float cs      = cosf(quOverP);
 
 		pos.x = radius * (2 + cs) * 0.5f * cu;
@@ -35,7 +35,7 @@ uGeometry CreateTorusKnotGeometry(float radius, float tube, int tubularSegments,
 	// 2) vertices
 	for (int i = 0; i <= tubularSegments; ++i)
 	{
-		const float u = (float(i) / tubularSegments) * float(p) * glm::two_pi<float>();
+		const float u = (TO_FLOAT(i) / tubularSegments) * TO_FLOAT(p) * glm::two_pi<float>();
 
 		glm::vec3 P1, P2;
 		calculatePositionOnCurve(u, p, q, radius, P1);
@@ -48,14 +48,14 @@ uGeometry CreateTorusKnotGeometry(float radius, float tube, int tubularSegments,
 
 		for (int j = 0; j <= radialSegments; ++j)
 		{
-			const float v  = (float(j) / radialSegments) * glm::two_pi<float>();
+			const float v  = (TO_FLOAT(j) / radialSegments) * glm::two_pi<float>();
 			const float cx = -tube * cosf(v);
 			const float cy = tube * sinf(v);
 
 			const glm::vec3 pos    = P1 + cx * N + cy * B;
 			const glm::vec3 normal = glm::normalize(pos - P1);
-			const float     uCoord = float(i) / tubularSegments;
-			const float     vCoord = float(j) / radialSegments;
+			const float     uCoord = TO_FLOAT(i) / tubularSegments;
+			const float     vCoord = TO_FLOAT(j) / radialSegments;
 
 			// clang-format off
 			vertices.push_back({

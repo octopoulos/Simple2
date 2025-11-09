@@ -1,6 +1,6 @@
 // learn.cpp
 // @author octopoulos
-// @version 2025-10-16
+// @version 2025-11-03
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -169,10 +169,10 @@ void App::TestUi()
 			ui::CreateFxNames();
 		}
 
-		const auto funcNames = ui::GetFxNames();
-		const auto numFunc   = funcNames.size();
-		const auto name      = numFunc ? funcNames[xsettings.testId % numFunc] : ""s;
-		const auto func      = ui::GetFxFunction(name);
+		const auto   funcNames = ui::GetFxNames();
+		const size_t numFunc   = funcNames.size();
+		const auto   name      = numFunc ? funcNames[xsettings.testId % numFunc] : ""s;
+		const auto   func      = ui::GetFxFunction(name);
 
 		func(drawList, bgPos, bgEnd, bgSize, mouse, TO_FLOAT(ImGui::GetTime()));
 

@@ -1,6 +1,6 @@
 // PolyhedronGeometry.cpp
 // @author octopoulos
-// @version 2025-09-03
+// @version 2025-11-03
 //
 // based on THREE.js PolyhedronGeometry implementation
 
@@ -36,8 +36,8 @@ uGeometry CreatePolyhedronGeometry(int type, std::string&& args, const float* ve
 		{
 			v[i].resize(cols - i + 1);
 
-			glm::vec3 aj = glm::mix(a, c, float(i) / cols);
-			glm::vec3 bj = glm::mix(b, c, float(i) / cols);
+			glm::vec3 aj = glm::mix(a, c, TO_FLOAT(i) / cols);
+			glm::vec3 bj = glm::mix(b, c, TO_FLOAT(i) / cols);
 
 			const int rows = cols - i;
 			for (int j = 0; j <= rows; ++j)
@@ -45,7 +45,7 @@ uGeometry CreatePolyhedronGeometry(int type, std::string&& args, const float* ve
 				if (j == 0 && i == cols)
 					v[i][j] = aj;
 				else
-					v[i][j] = glm::mix(aj, bj, float(j) / rows);
+					v[i][j] = glm::mix(aj, bj, TO_FLOAT(j) / rows);
 		}
 
 		// construct all of the faces

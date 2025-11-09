@@ -1,4 +1,4 @@
-// @version 2025-08-10
+// @version 2025-11-05
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -400,8 +400,8 @@ struct Context
 		NSRect originalFrame = [window frame];
 		NSRect rect = [window contentRectForFrameRect: originalFrame];
 		CGFloat scaleFactor = [window backingScaleFactor];
-		uint32_t width  = uint32_t(rect.size.width * scaleFactor + 0.1f);
-		uint32_t height = uint32_t(rect.size.height * scaleFactor + 0.1f);
+		uint32_t width  = TO_UINT32(rect.size.width * scaleFactor + 0.1f);
+		uint32_t height = TO_UINT32(rect.size.height * scaleFactor + 0.1f);
 		m_eventQueue.postSizeEvent(handle, width, height);
 
 		// Make sure mouse button state is 'up' after resize.
@@ -482,8 +482,8 @@ struct Context
 
 		WindowHandle handle = { 0 };
 		NSRect contentRect = [m_window[0] contentRectForFrameRect: m_windowFrame];
-		uint32_t width = uint32_t(contentRect.size.width);
-		uint32_t height = uint32_t(contentRect.size.height);
+		uint32_t width  = TO_UINT32(contentRect.size.width);
+		uint32_t height = uinTO_UINT32t32_t(contentRect.size.height);
 		m_eventQueue.postSizeEvent(handle, width, height);
 
 		while (!(m_exit = [dg applicationHasTerminated]) )

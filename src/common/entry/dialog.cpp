@@ -1,4 +1,4 @@
-// @version 2025-07-11
+// @version 2025-11-05
 /*
  * Copyright 2010-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -182,7 +182,7 @@ bool openFileSelectionDialog(
 	bx::write(&writer, &err, "%.*s", _title.getLength(), _title.getPtr());
 	bx::write(&writer, '\0', &err);
 
-	ofn.filter = tmp + uint32_t(bx::seek(&writer));
+	ofn.filter = tmp + TO_UINT32(bx::seek(&writer));
 
 	for (bx::LineReader lr(_filter); !lr.isDone() && err.isOk();)
 	{

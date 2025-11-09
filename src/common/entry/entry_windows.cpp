@@ -1,4 +1,4 @@
-// @version 2025-10-13
+// @version 2025-11-05
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -669,7 +669,7 @@ struct Context
 					{
 						float aspectRatio = 1.0f / m_aspectRatio;
 						width             = bx::uint32_max(ENTRY_DEFAULT_WIDTH / 4, width);
-						height            = uint32_t(float(width) * aspectRatio);
+						height            = TO_UINT32(TO_FLOAT(width) * aspectRatio);
 					}
 					break;
 
@@ -677,7 +677,7 @@ struct Context
 					{
 						float aspectRatio = m_aspectRatio;
 						height            = bx::uint32_max(ENTRY_DEFAULT_HEIGHT / 4, height);
-						width             = uint32_t(float(height) * aspectRatio);
+						width             = TO_UINT32(TO_FLOAT(height) * aspectRatio);
 					}
 					break;
 					}
@@ -909,7 +909,7 @@ struct Context
 	{
 		xsettings.windowSize[0] = _width;
 		xsettings.windowSize[1] = _height;
-		m_aspectRatio = float(_width) / float(_height);
+		m_aspectRatio = TO_FLOAT(_width) / TO_FLOAT(_height);
 
 		ShowWindow(_hwnd, SW_SHOWNORMAL);
 		RECT  rect;
@@ -935,7 +935,7 @@ struct Context
 			GetMonitorInfo(monitor, &mi);
 			newrect       = mi.rcMonitor;
 			rect          = mi.rcMonitor;
-			m_aspectRatio = float(newrect.right - newrect.left) / float(newrect.bottom - newrect.top);
+			m_aspectRatio = TO_FLOAT(newrect.right - newrect.left) / TO_FLOAT(newrect.bottom - newrect.top);
 		}
 
 		SetWindowLong(_hwnd, GWL_STYLE, style);
@@ -962,7 +962,7 @@ struct Context
 		{
 			float aspectRatio = 1.0f / m_aspectRatio;
 			width             = bx::uint32_max(ENTRY_DEFAULT_WIDTH / 4, width);
-			height            = uint32_t(float(width) * aspectRatio);
+			height            = TO_UINT32(TO_FLOAT(width) * aspectRatio);
 
 			left = newrect.left + (newrect.right - newrect.left - width) / 2;
 			top  = newrect.top + (newrect.bottom - newrect.top - height) / 2;

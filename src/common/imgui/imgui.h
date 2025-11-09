@@ -1,4 +1,4 @@
-// @version 2025-07-31
+// @version 2025-11-05
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -20,10 +20,10 @@
 inline uint32_t imguiRGBA(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a = 255)
 {
 	return 0
-		| (uint32_t(_r) <<  0)
-		| (uint32_t(_g) <<  8)
-		| (uint32_t(_b) << 16)
-		| (uint32_t(_a) << 24)
+		| (TO_UINT32(_r) <<  0)
+		| (TO_UINT32(_g) <<  8)
+		| (TO_UINT32(_b) << 16)
+		| (TO_UINT32(_a) << 24)
 		;
 }
 

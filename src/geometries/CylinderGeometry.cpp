@@ -1,6 +1,6 @@
 // CylinderGeometry.cpp
 // @author octopoulos
-// @version 2025-10-27
+// @version 2025-11-03
 //
 // based on THREE.js CylinderGeometry implementation
 
@@ -29,13 +29,13 @@ uGeometry CreateCylinderGeometry(float radiusTop, float radiusBottom, float heig
 	for (int y = 0; y <= segmentsH; ++y)
 	{
 		std::vector<uint16_t> indexRow;
-		const float           v      = float(y) / float(segmentsH);
+		const float           v      = TO_FLOAT(y) / TO_FLOAT(segmentsH);
 		const float           radius = v * (radiusBottom - radiusTop) + radiusTop;
 		const float           posY   = halfHeight - v * height;
 
 		for (int x = 0; x <= radial; ++x)
 		{
-			const float u     = float(x) / float(radial);
+			const float u     = TO_FLOAT(x) / TO_FLOAT(radial);
 			const float theta = thetaStart + u * thetaLength;
 
 			const float sinTheta = bx::sin(theta);
@@ -115,7 +115,7 @@ uGeometry CreateCylinderGeometry(float radiusTop, float radiusBottom, float heig
 		// surrounding vertices around circumference
 		for (int x = 0; x <= radial; ++x)
 		{
-			const float u     = float(x) / float(radial);
+			const float u     = TO_FLOAT(x) / TO_FLOAT(radial);
 			const float theta = u * thetaLength + thetaStart;
 
 			const float cosTheta = bx::cos(theta);

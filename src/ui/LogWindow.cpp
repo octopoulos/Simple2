@@ -1,6 +1,6 @@
 // LogWindow.cpp
 // @author octopoulos
-// @version 2025-10-28
+// @version 2025-11-03
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -140,9 +140,9 @@ public:
 		// try to remove from non-All tabs
 		bool found = false;
 		for (int i = 1, numTab = TO_INT(colorNames.size()); i < numTab; ++i)
-			if (const auto size = colorLines[i].size(); size > 0 && colorLines[i][size - 1].text == prevText)
+			if (const size_t size = colorLines[i].size(); size > 0 && colorLines[i][size - 1].text == prevText)
 			{
-				const auto prevSize = colorLines[i].size();
+				const size_t prevSize = colorLines[i].size();
 				colorLines[i].pop_back();
 				found = true;
 			}

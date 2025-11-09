@@ -1,4 +1,4 @@
-// @version 2025-09-22
+// @version 2025-11-03
 /*
  * Copyright 2011-2025 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -103,7 +103,7 @@ static void resourceBar(const char* _name, const char* _tooltip, uint32_t _num, 
 	itemHovered |= ImGui::IsItemHovered();
 	ImGui::SameLine();
 
-	const float percentage = float(_num) / float(_max);
+	const float percentage = TO_FLOAT(_num) / TO_FLOAT(_max);
 
 	itemHovered |= bar(_name, 0, bx::max(1.0f, percentage * _maxWidth), _maxWidth, _height, s_resourceColor);
 	ImGui::SameLine();
@@ -144,7 +144,7 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 	{
 		const int64_t now  = bx::getHPCounter();
 		const int64_t freq = bx::getHPFrequency();
-		const float   time = float(now % freq) / float(freq);
+		const float   time = TO_FLOAT(now % freq) / TO_FLOAT(freq);
 
 		bool blink = time > 0.5f;
 
@@ -247,7 +247,7 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 	const double       toMsGpu = 1000.0 / stats->gpuTimerFreq;
 	const double       frameMs = double(stats->cpuTimeFrame) * toMsCpu;
 
-	s_frameTime.pushSample(float(frameMs));
+	s_frameTime.pushSample(TO_FLOAT(frameMs));
 
 	char frameTextOverlay[256];
 	bx::snprintf(frameTextOverlay, BX_COUNTOF(frameTextOverlay), "%s%.3fms, %s%.3fms\nAvg: %.3fms, %.1f FPS", ICON_FA_ARROW_DOWN, s_frameTime.m_min, ICON_FA_ARROW_UP, s_frameTime.m_max, s_frameTime.m_avg, 1000.0f / s_frameTime.m_avg);
@@ -335,7 +335,7 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 									ImGui::SameLine(64.0f);
 
 									const float maxWidth = 30.0f * scale;
-									const float cpuMs    = float((encoderStats.cpuTimeEnd - encoderStats.cpuTimeBegin) * toCpuMs);
+									const float cpuMs    = TO_FLOAT((encoderStats.cpuTimeEnd - encoderStats.cpuTimeBegin) * toCpuMs);
 									const float cpuWidth = bx::clamp(cpuMs * scale, 1.0f, maxWidth);
 
 									if (bar("encoder", pos, cpuWidth, maxWidth, itemHeight, cpuColor))
@@ -362,8 +362,8 @@ void showExampleDialog(entry::AppI* _app, const char* _errorText)
 									ImGui::Text("%3d %3d %s", pos, viewStats.view, viewStats.name);
 
 									const float maxWidth       = 30.0f * scale;
-									const float cpuTimeElapsed = float((viewStats.cpuTimeEnd - viewStats.cpuTimeBegin) * toCpuMs);
-									const float gpuTimeElapsed = float((viewStats.gpuTimeEnd - viewStats.gpuTimeBegin) * toGpuMs);
+									const float cpuTimeElapsed = TO_FLOAT((viewStats.cpuTimeEnd - viewStats.cpuTimeBegin) * toCpuMs);
+									const float gpuTimeElapsed = TO_FLOAT((viewStats.gpuTimeEnd - viewStats.gpuTimeBegin) * toGpuMs);
 									const float cpuWidth       = bx::clamp(cpuTimeElapsed * scale, 1.0f, maxWidth);
 									const float gpuWidth       = bx::clamp(gpuTimeElapsed * scale, 1.0f, maxWidth);
 

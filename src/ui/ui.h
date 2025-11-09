@@ -1,6 +1,6 @@
 // ui.h
 // @author octopoulos
-// @version 2025-10-16
+// @version 2025-11-03
 
 #pragma once
 
@@ -169,10 +169,10 @@ public:
 	{                                                   \
 		BEGIN_CHILD(name, flag, numRow, 0.0f)
 
-#define BEGIN_PADDING()                            \
-	auto&      style      = ImGui::GetStyle();     \
-	const auto paddingX   = style.WindowPadding.x; \
-	const int  settingPad = xsettings.settingPad;  \
+#define BEGIN_PADDING()                             \
+	auto&       style      = ImGui::GetStyle();     \
+	const float paddingX   = style.WindowPadding.x; \
+	const int   settingPad = xsettings.settingPad;  \
 	if (settingPad >= 0) ImGui::PushStyleVarX(ImGuiStyleVar_WindowPadding, xsettings.settingPad)
 
 #define BEGIN_TREE(name, flag, numRow)                                                                                                                   \

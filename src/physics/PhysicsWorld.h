@@ -1,6 +1,6 @@
 // PhysicsWorld.h
 // @author octopoulos
-// @version 2025-07-26
+// @version 2025-11-03
 
 #pragma once
 
@@ -58,7 +58,7 @@ public:
 class PhysicsWorld
 {
 private:
-	std::unique_ptr<BulletDebugDraw>     debugDraw;                    ///< debugging
+	std::unique_ptr<BulletDebugDraw>     debugDraw          = {};      ///< debugging
 	int                                  maxSimulationSteps = 10;      ///< maximum number of simulation steps per frame
 	btBroadphaseInterface*               broadphase         = nullptr; ///
 	btDefaultCollisionConfiguration*     config             = nullptr; ///

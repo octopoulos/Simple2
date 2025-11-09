@@ -1,6 +1,6 @@
 // Mesh.cpp
 // @author octopoulos
-// @version 2025-10-24
+// @version 2025-11-03
 
 #include "stdafx.h"
 #include "objects/Mesh.h"
@@ -148,7 +148,7 @@ void Mesh::Render(uint8_t viewId, int renderFlags)
 
 				// figure out how big of a buffer is available
 				const uint32_t drawnChild = bgfx::getAvailInstanceDataBuffer(numChild, stride);
-				const auto     missing    = numChild - drawnChild;
+				const uint32_t missing    = numChild - drawnChild;
 				//ui::Log("numChild=%d missing=%d layout=%d", numChild, missing, layout.getStride());
 
 				bgfx::InstanceDataBuffer idb;

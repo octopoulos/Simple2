@@ -1,6 +1,6 @@
 // xsettings.cpp
 // @author octopoulos
-// @version 2025-10-19
+// @version 2025-11-03
 
 #include "stdafx.h"
 #include "ui/xsettings.h"
@@ -137,7 +137,7 @@ static std::vector<Config> configs = {
 };
 // clang-format on
 
-constexpr int NUM_GAMES = int(sizeof(sGames) / sizeof(*sGames));
+constexpr int NUM_GAMES = TO_INT(sizeof(sGames) / sizeof(*sGames));
 
 static XSettings gameSettings[NUM_GAMES];
 static bool      gameSettingsLoaded[NUM_GAMES];
@@ -217,7 +217,7 @@ int SaveGameSettings(std::string baseName, bool saveGame, std::string_view suffi
 	// save HD/Omega.ini as well - only app section
 	if (saveGame && sections.empty())
 	{
-		if (const auto gameId = xsettings.gameId; gameId >= 0 && gameId < NUM_GAMES)
+		if (const int gameId = xsettings.gameId; gameId >= 0 && gameId < NUM_GAMES)
 			SaveSettings(FormatStr("%s%s.ini", sGames[gameId], Cstr(suffix)), "", { "app", "user" });
 	}
 	return 1;

@@ -1,6 +1,6 @@
 // controls.cpp
 // @author octopoulos
-// @version 2025-10-24
+// @version 2025-11-03
 
 #include "stdafx.h"
 #include "app/App.h"
@@ -205,8 +205,8 @@ void App::FixedControls(int step)
 			{
 				if (auto parent = target->parent.lock())
 				{
-					const auto& children = parent->children;
-					const auto  numChild = children.size();
+					const auto&  children = parent->children;
+					const size_t numChild = children.size();
 					if (GI_REPEAT(Key::LeftBracket))
 					{
 						parent->childId = (parent->childId + numChild - 1) % numChild;
@@ -284,8 +284,8 @@ void App::FluidControls()
 
 			if (ginput.lastDevice)
 			{
-				auto       device    = ginput.devices[ginput.lastDevice];
-				const auto numFinger = device.fingers.size();
+				auto         device    = ginput.devices[ginput.lastDevice];
+				const size_t numFinger = device.fingers.size();
 				if (numFinger >= 2)
 				{
 					const auto& motion = device.motion;
@@ -641,7 +641,7 @@ void App::ThrowMesh(int action, std::string_view name, int shapeType, const VEC_
 
 		if (action == ThrowAction_Spiral)
 		{
-			const auto numChild = parent->children.size();
+			const size_t numChild = parent->children.size();
 			if (numChild)
 			{
 				const auto& child = parent->children.back();

@@ -1,6 +1,6 @@
 // TorusGeometry.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-11-03
 //
 // based on THREE.js TorusGeometry implementation
 
@@ -22,7 +22,7 @@ uGeometry CreateTorusGeometry(float radius, float tube, int radialSegments, int 
 	// 1) vertex generation
 	for (int j = 0; j <= radial; ++j)
 	{
-		const float v   = float(j) / float(radial);
+		const float v   = TO_FLOAT(j) / TO_FLOAT(radial);
 		const float phi = v * bx::kPi2;
 
 		const float cosPhi = bx::cos(phi);
@@ -30,7 +30,7 @@ uGeometry CreateTorusGeometry(float radius, float tube, int radialSegments, int 
 
 		for (int i = 0; i <= tubular; ++i)
 		{
-			const float u     = float(i) / float(tubular);
+			const float u     = TO_FLOAT(i) / TO_FLOAT(tubular);
 			const float theta = u * arc;
 
 			const float cosTheta = bx::cos(theta);

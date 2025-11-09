@@ -1,4 +1,4 @@
-// @version 2025-09-29
+// @version 2025-11-03
 /*
  * Copyright 2014-2015 Daniel Collin. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
@@ -215,7 +215,7 @@ struct OcornutImguiContext
 
 						if (0 != texture.s.mip)
 						{
-							const float lodEnabled[4] = { float(texture.s.mip), 1.0f, 0.0f, 0.0f };
+							const float lodEnabled[4] = { TO_FLOAT(texture.s.mip), 1.0f, 0.0f, 0.0f };
 							bgfx::setUniform(u_imageLodEnabled, lodEnabled);
 							program = m_imageProgram;
 						}
@@ -515,7 +515,7 @@ struct OcornutImguiContext
 		const int64_t frameTime = now - m_last;
 		m_last                  = now;
 		const double freq       = double(bx::getHPFrequency());
-		io.DeltaTime            = float(frameTime / freq);
+		io.DeltaTime            = TO_FLOAT(frameTime / freq);
 
 		io.AddMousePosEvent((float)_mx, (float)_my);
 		io.AddMouseButtonEvent(ImGuiMouseButton_Left  , 0 != (_button & IMGUI_MBUT_LEFT));

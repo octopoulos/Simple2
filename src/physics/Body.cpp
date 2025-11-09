@@ -1,6 +1,6 @@
 // Body.cpp
 // @author octopoulos
-// @version 2025-10-24
+// @version 2025-11-04
 
 #include "stdafx.h"
 #include "physics/Body.h"
@@ -14,12 +14,23 @@
 
 #include <BulletCollision/CollisionShapes/btBox2dShape.h>
 #include <BulletCollision/CollisionShapes/btConvex2dShape.h>
+#include <BulletCollision/CollisionShapes/btConvexPointCloudShape.h>
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 
-/// Those shapes require no offset
-static const USET_INT shapesNoOffsets = {
+/// convex shapes
+static USET_INT shapeConvexes = {
+	ShapeType_Box,
+	ShapeType_Capsule,
+	ShapeType_Cone,
+	ShapeType_ConvexHull,
+	ShapeType_ConvexPoints,
+	ShapeType_Cylinder,
+	ShapeType_Sphere,
+};
+
+/// those shapes require no offset
+static const USET_INT shapeNoOffsets = {
 	ShapeType_BoxObb,
-	ShapeType_Convex2d,
 	ShapeType_ConvexHull,
 	ShapeType_Plane,
 	ShapeType_TriangleMesh,
@@ -34,8 +45,8 @@ static const UMAP_INT_STR shapeTypeNames = {
 	{ ShapeType_Capsule     , "Capsule"      },
 	{ ShapeType_Compound    , "Compound"     },
 	{ ShapeType_Cone        , "Cone"         },
-	{ ShapeType_Convex2d    , "Convex2d"     },
 	{ ShapeType_ConvexHull  , "ConvexHull"   },
+	{ ShapeType_ConvexPoints, "ConvexPoints" },
 	{ ShapeType_Cylinder    , "Cylinder"     },
 	{ ShapeType_Plane       , "Plane"        },
 	{ ShapeType_Sphere      , "Sphere"       },
@@ -150,13 +161,13 @@ void Body::CreateShape(int type, const btVector4& newDims)
 	const int  numGroup = mesh ? TO_INT(mesh->groups.size()) : 0;
 	const auto center   = (numGroup == 1) ? mesh->groups[0].sphere.center : bx::Vec3(0.0f);
 	const auto geometry = mesh ? mesh->geometry : nullptr;
-	const bool noOffset = shapesNoOffsets.contains(type);
+	const bool noOffset = shapeNoOffsets.contains(type & ShapeFlag_Mask);
 	const bool centered = noOffset ? true : std::fabsf(center.x) < 0.001f && std::fabsf(center.y) < 0.001f && std::fabsf(center.z) < 0.001f;
 	auto       compound = (!noOffset && (numGroup > 1 || !centered)) ? new btCompoundShape(true, numGroup) : nullptr;
 
 	// 2) create shape
 	DestroyShape();
-	switch (type)
+	switch (type & ShapeFlag_Mask)
 	{
 	case ShapeType_Box:
 		ui::Log("%d: dims=%f %f %f", type, dims.x(), dims.y(), dims.z());
@@ -181,7 +192,7 @@ void Body::CreateShape(int type, const btVector4& newDims)
 		else ui::LogError("CreateShape/ShapeType_Box: Invalid dims / mesh: %f %f %f %d %d", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
 		break;
 	case ShapeType_Box2d:
-		if (dims.x() > 0.0f && dims.y() > 0.0f && dims.z() > 0.0f)
+		if (dims.x() > 0.0f && dims.y() > 0.0f)
 			shape = new btBox2dShape(dims);
 		else if (numGroup > 0)
 		{
@@ -257,25 +268,6 @@ void Body::CreateShape(int type, const btVector4& newDims)
 		}
 		else ui::LogError("CreateShape/ShapeType_Cone: Invalid dims / mesh: %f %f %f %d %d", dims.x(), dims.y(), dims.z(), !!geometry, numGroup);
 		break;
-	case ShapeType_Convex2d:
-		if (numGroup > 0)
-		{
-			auto hull = new btConvexHullShape();
-			for (const auto& group : mesh->groups)
-			{
-				const float*   data   = reinterpret_cast<const float*>(group.vertices);
-				const uint16_t stride = mesh->layout.getStride();
-
-				for (uint32_t i = 0; i < group.numVertices; ++i)
-				{
-					const float* v = data + i * (stride / sizeof(float));
-					hull->addPoint(btVector3(v[0], v[1], v[2]));
-				}
-			}
-			shape = new btConvex2dShape(hull);
-		}
-		else ui::LogError("CreateShape/ShapeType_Convex2d: Invalid mesh");
-		break;
 	case ShapeType_ConvexHull:
 		if (geometry && geometry->vertices.size())
 		{
@@ -308,6 +300,22 @@ void Body::CreateShape(int type, const btVector4& newDims)
 			shape = hull;
 		}
 		else ui::LogError("CreateShape/ShapeType_ConvexHull: Invalid mesh");
+		break;
+	case ShapeType_ConvexPoints:
+		if (geometry && geometry->vertices.size())
+		{
+			auto                   convex = new btConvexPointCloudShape();
+			const btVector3        scale  = GlmToBullet(mesh->scale);
+			std::vector<btVector3> points;
+			points.reserve(geometry->vertices.size());
+
+			for (const auto& v : geometry->vertices)
+				points.emplace_back(v.px * scale.x(), v.py * scale.y(), v.pz * scale.z());
+
+			convex->setPoints(points.data(), TO_INT(points.size()));
+			shape = convex;
+		}
+		else ui::LogError("CreateShape/ShapeType_ConvexPoints: Invalid geometry");
 		break;
 	case ShapeType_Cylinder:
 		if (dims.x() > 0.0f && dims.y() > 0.0f && dims.z() > 0.0f)
@@ -438,6 +446,13 @@ void Body::CreateShape(int type, const btVector4& newDims)
 			compound->addChildShape(offset, shape);
 		}
 		shape = compound;
+	}
+
+	// 4) convex2d?
+	if (shape && (type & ShapeFlag_Convex2d) && shapeConvexes.contains(type & ShapeFlag_Mask))
+	{
+		btConvexShape* convex = static_cast<btConvexShape*>(shape);
+		shape = new btConvex2dShape(convex);
 	}
 }
 
@@ -578,7 +593,8 @@ TEST_CASE("GeometryShape")
 
 std::string ShapeName(int type)
 {
-	return FindDefault(shapeTypeNames, type, "???");
+	const auto name15 = FindDefault(shapeTypeNames, type & ShapeFlag_Mask, "???");
+	return (type & ShapeFlag_Convex2d) ? name15 + "/2D" : name15;
 }
 
 int ShapeType(std::string_view name)
@@ -588,6 +604,12 @@ int ShapeType(std::string_view name)
 	{
 		for (const auto& [type, name] : shapeTypeNames)
 			shapeNameTypes[name] = type;
+	}
+
+	if (const size_t pos = name.find('/'); pos != std::string_view::npos)
+	{
+		const int type15 = FindDefault(shapeNameTypes, name, GeometryType_None);
+		return (name.substr(pos + 1) == "/2D") ? type15 | ShapeFlag_Convex2d : type15;
 	}
 
 	return FindDefault(shapeNameTypes, name, GeometryType_None);

@@ -1,6 +1,6 @@
 // PlaneGeometry.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-11-03
 //
 // based on THREE.js PlaneGeometry implementation
 
@@ -23,8 +23,8 @@ uGeometry CreatePlaneGeometry(float width, float height, int widthSegments, int 
 	const int gridX1 = gridX + 1;
 	const int gridY1 = gridY + 1;
 
-	const float segWidth  = width / float(gridX);
-	const float segHeight = height / float(gridY);
+	const float segWidth  = width / TO_FLOAT(gridX);
+	const float segHeight = height / TO_FLOAT(gridY);
 
 	std::vector<PosNormalUvColor> vertices;
 	std::vector<uint16_t>         indices;
@@ -32,17 +32,17 @@ uGeometry CreatePlaneGeometry(float width, float height, int widthSegments, int 
 	// 2) vertices
 	for (int iy = 0; iy < gridY1; ++iy)
 	{
-		const float y = float(iy) * segHeight - halfHeight;
+		const float y = TO_FLOAT(iy) * segHeight - halfHeight;
 
 		for (int ix = 0; ix < gridX1; ++ix)
 		{
-			const float x = float(ix) * segWidth - halfWidth;
+			const float x = TO_FLOAT(ix) * segWidth - halfWidth;
 
 			// clang-format off
 			vertices.push_back({
 				x, 0.0f, y,
 				0.0f, 1.0f, 0.0f,
-				float(ix) / float(gridX), 1.0f - float(iy) / float(gridY),
+				TO_FLOAT(ix) / TO_FLOAT(gridX), 1.0f - TO_FLOAT(iy) / TO_FLOAT(gridY),
 				0.8f, 0.8f, 0.8f, 1.0f,
 			});
 			// clang-format on

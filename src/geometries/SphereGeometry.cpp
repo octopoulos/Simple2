@@ -1,6 +1,6 @@
 // SphereGeometry.cpp
 // @author octopoulos
-// @version 2025-09-27
+// @version 2025-11-03
 //
 // based on THREE.js SphereGeometry implementation
 
@@ -25,17 +25,17 @@ uGeometry CreateSphereGeometry(float radius, int widthSegments, int heightSegmen
 	for (int iy = 0; iy <= heightSegments; ++iy)
 	{
 		std::vector<uint16_t> verticesRow;
-		const float           v = float(iy) / float(heightSegments);
+		const float           v = TO_FLOAT(iy) / TO_FLOAT(heightSegments);
 
 		float uOffset = 0.0f;
 		if (iy == 0 && thetaStart == 0.0f)
-			uOffset = 0.5f / float(widthSegments);
+			uOffset = 0.5f / TO_FLOAT(widthSegments);
 		else if (iy == heightSegments && thetaEnd == bx::kPi)
-			uOffset = -0.5f / float(widthSegments);
+			uOffset = -0.5f / TO_FLOAT(widthSegments);
 
 		for (int ix = 0; ix <= widthSegments; ++ix)
 		{
-			const float u = float(ix) / float(widthSegments);
+			const float u = TO_FLOAT(ix) / TO_FLOAT(widthSegments);
 			const float x = -radius * cosf(phiStart + u * phiLength) * sinf(thetaStart + v * thetaLength);
 			const float y = radius * cosf(thetaStart + v * thetaLength);
 			float       z = radius * sinf(phiStart + u * phiLength) * sinf(thetaStart + v * thetaLength);

@@ -1,8 +1,14 @@
 // Body.h
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-11-03
 
 #pragma once
+
+enum ShapeFlags_ : int
+{
+	ShapeFlag_Convex2d = 16, ///< btConvex2dShape
+	ShapeFlag_Mask     = 15, ///< use it to get the underlying type
+};
 
 enum ShapeTypes_ : int
 {
@@ -13,8 +19,8 @@ enum ShapeTypes_ : int
 	ShapeType_Capsule      = 4,  ///< btCapsuleShape
 	ShapeType_Compound     = 5,  ///< btCompoundShape
 	ShapeType_Cone         = 6,  ///< btConeShape
-	ShapeType_Convex2d     = 7,  ///< btConvex2dShape
-	ShapeType_ConvexHull   = 8,  ///< btConvexHullShape
+	ShapeType_ConvexHull   = 7,  ///< btConvexHullShape
+	ShapeType_ConvexPoints = 8,  ///< btConvexPointCloudShape
 	ShapeType_Cylinder     = 9,  ///< btCylinderShape
 	ShapeType_Plane        = 10, ///< btStaticPlaneShape
 	ShapeType_Sphere       = 11, ///< btSphereShape (default bounding)

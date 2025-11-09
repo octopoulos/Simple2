@@ -1,6 +1,6 @@
 // ControlsWindow.cpp
 // @author octopoulos
-// @version 2025-10-13
+// @version 2025-11-03
 
 #include "stdafx.h"
 #include "ui/ui.h"
@@ -28,18 +28,18 @@ int DrawControlButton(uint32_t texId, const ImVec4& color, std::string name, con
 	};
 	// clang-format on
 
-	const auto   scale = bx::clamp(uiScale, 1.0f, 2.0f);
+	const float  scale = bx::clamp(uiScale, 1.0f, 2.0f);
 	const ImVec2 buttonDims(32.0f * scale, 32.0f * scale);
 	const ImVec2 childDims(64.0f * scale, 64.0f * scale);
 	const ImVec2 offset(16.0f * scale, 4.0f * scale);
 
-	const auto  nameStr    = label ? label : Cstr(name);
-	const auto& style      = ImGui::GetStyle();
-	const auto  padding    = style.WindowPadding;
+	const char*  nameStr   = label ? label : Cstr(name);
+	const auto&  style     = ImGui::GetStyle();
+	const ImVec2 padding   = style.WindowPadding;
 	const auto& [uv0, uv1] = buttonNames[name];
 
 	ImGui::BeginChild(nameStr, childDims, true, ImGuiWindowFlags_NoScrollbar);
-	const auto pos = ImGui::GetCursorPos() - padding;
+	const ImVec2 pos = ImGui::GetCursorPos() - padding;
 	ImGui::SetCursorPos(pos + offset);
 	ImGui::ImageWithBg((ImTextureID)(intptr_t)texId, buttonDims, uv0, uv1, color);
 	if (textButton)
@@ -90,8 +90,8 @@ public:
 			//const auto app = static_cast<App*>(engine.get());
 			//app->ScreenFocused(3);
 
-			const auto& style = ImGui::GetStyle();
-			const auto  color = style.Colors[ImGuiCol_Text];
+			const auto&  style = ImGui::GetStyle();
+			const ImVec4 color = style.Colors[ImGuiCol_Text];
 
 			ImGui::PushFont(FindFont("RobotoCondensed"));
 			//if (DrawButton(color, "Open")) app->OpenFile(OpenAction_Capture);
